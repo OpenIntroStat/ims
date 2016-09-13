@@ -1,5 +1,5 @@
 
-OpenIntro Statistics, Second Edition is available at http://www.openintro.org under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported license (CC BY-NC-SA). See [LICENSE](LICENSE.md) for more information.
+OpenIntro - Introductory Statistics with Randomization and Simulation, First Edition is available at http://www.openintro.org under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported license (CC BY-NC-SA). See [LICENSE](LICENSE.md) for more information.
 
 - - -
 
