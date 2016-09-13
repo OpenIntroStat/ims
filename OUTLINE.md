@@ -9,6 +9,9 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 - Experimental design and causality
 - Revisit case study with new terminology we learned
 
+**Editor:** Mine
+**Reviewer:** Andrew
+
 ## Chp 2. Exploratory Data Analysis - Visual summaries and summary statistics
 
 - Cat vs. cat - segmented plots / contingency tables
@@ -17,6 +20,9 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 - Num vs. cat - side-by-side box plots / comparing distributions 
 	- Mention univariate - center, skew, shape, spread
 	- Mention conditional probabilities as well
+
+**Editor:** Andrew
+**Reviewer:** Ben
 
 ## Chp 3. Correlation and Regression (descriptive)
 
@@ -27,6 +33,9 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 	- Line fitting, residuals, and correlation
 	- Fitting a line by least squares regression
 	- Types of outliers in linear regression
+
+**Editor:** Ben
+**Reviewer:** Jo
 
 ## Chp 4. Multiple Regression (descriptive)
 
@@ -40,6 +49,9 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 	- Three scales interpretation (e.g. probability, odds, log-odds)
 	- “parallel” logistic curves? 
 
+**Editor:** Ben
+**Reviewer:** Mine
+
 ## Chp 5. Foundations of Inference
 
 - Understanding inference through simulation
@@ -48,6 +60,9 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 - Hypothesis testing
 - Confidence intervals
 - Simulation case studies
+
+**Editor:** Jo
+**Reviewer:** Andrew
 
 ## Chp 6. Inference for categorical data
 
@@ -59,6 +74,9 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 - Testing for goodness of fit using chi-square (special topic, include simulation version)
 - Testing for independence in two-way tables (special topic)
 
+**Editor:** Andrew
+**Reviewer:** Mine
+
 ## Chp 7. Inference for numerical data
 
 - One-sample means
@@ -67,6 +85,9 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 - Paired data
 - Difference of two means
 - Comparing many means with ANOVA (special topic, include simulation version)
+
+**Editor:** Mine
+**Reviewer:** Jo
 
 ## Chp 8. Inference for regression
 
@@ -80,6 +101,12 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 	- residuals vs. fitted instead of residuals vs. x
 - Inference for logistic regression
 
+**Editor:** Jo
+**Reviewer:** Ben
+
 ## Appendix: Probability
 
 (Keep same content as before, minus the bit of probability that got moved to categorical EDA)
+
+**Editor:** Andrew
+**Reviewer:** Ben
