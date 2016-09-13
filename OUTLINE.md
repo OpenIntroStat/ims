@@ -10,6 +10,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 - Revisit case study with new terminology we learned
 
 **Editor:** Mine
+
 **Reviewer:** Andrew
 
 ## Chp 2. Exploratory Data Analysis - Visual summaries and summary statistics
@@ -22,6 +23,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 	- Mention conditional probabilities as well
 
 **Editor:** Andrew
+
 **Reviewer:** Ben
 
 ## Chp 3. Correlation and Regression (descriptive)
@@ -35,6 +37,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 	- Types of outliers in linear regression
 
 **Editor:** Ben
+
 **Reviewer:** Jo
 
 ## Chp 4. Multiple Regression (descriptive)
@@ -50,6 +53,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 	- “parallel” logistic curves? 
 
 **Editor:** Ben
+
 **Reviewer:** Mine
 
 ## Chp 5. Foundations of Inference
@@ -62,6 +66,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 - Simulation case studies
 
 **Editor:** Jo
+
 **Reviewer:** Andrew
 
 ## Chp 6. Inference for categorical data
@@ -75,6 +80,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 - Testing for independence in two-way tables (special topic)
 
 **Editor:** Andrew
+
 **Reviewer:** Mine
 
 ## Chp 7. Inference for numerical data
@@ -87,6 +93,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 - Comparing many means with ANOVA (special topic, include simulation version)
 
 **Editor:** Mine
+
 **Reviewer:** Jo
 
 ## Chp 8. Inference for regression
@@ -102,6 +109,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 - Inference for logistic regression
 
 **Editor:** Jo
+
 **Reviewer:** Ben
 
 ## Appendix: Probability
@@ -109,4 +117,5 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 (Keep same content as before, minus the bit of probability that got moved to categorical EDA)
 
 **Editor:** Andrew
+
 **Reviewer:** Ben
