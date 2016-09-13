@@ -1,0 +1,1206 @@
+\chapter{Multiple and logistic regression}
+\label{multipleRegressionAndANOVA}
+\label{multipleAndLogisticRegression}
+
+The principles of simple linear regression lay the foundation for more sophisticated regression methods used in a wide range of challenging settings. In Chapter~\ref{multipleAndLogisticRegression}, we explore multiple regression, which introduces the possibility of more than one predictor. %\Comment{[Possibly drop next sentence.]} We will also consider methods for analysis of variance (ANOVA), a tool useful both in practice and when learning about the mechanics of regression.
+
+\section{Introduction to multiple regression}
+\label{introductionToMultipleRegression}
+
+Multiple regression extends the simple bivariate regression (two variables: $x$ and $y$) to the case that still has one response but may have many predictors (denoted $x_1$, $x_2$, $x_3$, ...). The method is motivated by scenarios where many variables may be simultaneously connected to an output.
+
+We will consider Ebay auctions of a video game called \emph{Mario Kart} for the Nintendo Wii, which we first encountered in Section~\ref{lineFittingResidualsCorrelation}. The outcome variable of interest is the total price of an auction, which is the highest bid plus the shipping cost. We will try to determine how total price is related to each characteristics in an auction while simultaneously controlling for other variables. For instance, all other characteristics held constant, are longer auctions associated with a higher or lower prices? And, on average, how much more do buyers tend to pay for additional Wii wheels (plastic steering wheels that attach to the Wii controller) in auctions? Multiple regression will help us answer these and other questions.
+
+The data set \data{mario\_kart} includes results from 143 auctions\footnote{Diez DM, Barr CD, and \c{C}etinkaya-Rundel M. 2012. \emph{openintro}: OpenIntro data sets and supplemental functions. R package version 1.3.}. Four observations from this data set are shown in Table~\ref{marioKartDataMatrix}, and descriptions for each variable are shown in Table~\ref{marioKartVariables}. Notice that the condition and stock photo variables are indicator variables. For instance, the \var{cond\_new} variable takes value 1 if the game up for auction is new and 0 if it is used. Using indicator variables in place of category names allows for these variables to be directly used in regression. See Section~\ref{categoricalPredictorsWithTwoLevels} for additional details. Multiple regression also allows for categorical variables with many levels, though we do not have any such variables in this analysis, and we save these details for a second or third course.
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrlr}
+  \hline
+ & price & cond\_new & stock\_photo & duration & wheels \\ 
+  \hline
+1 & 51.55 &   1 & 1 & 3 &   1 \\ 
+  2 & 37.04 &  0 &  1 & 7 &   1 \\ 
+$\vdots$ &$\vdots$ &$\vdots$ &$\vdots$ &$\vdots$ &$\vdots$ \\
+  142 & 38.76 &  0 &  0 & 7 &   0 \\ 
+  143 & 54.51 &  1 &  1 & 1 &   2 \\ 
+   \hline
+\end{tabular}
+\caption{Four observations from the \data{mario\_kart} data set.}
+\label{marioKartDataMatrix}
+\end{table}
+
+\begin{table}
+\centering\small
+\begin{tabular}{lp{9.5cm}}
+\hline
+{\bf variable} & {\bf description} \\
+\hline
+\var{price} & the total of the final auction price and the shipping cost, in US dollars \\
+\var{cond\_new} & a coded two-level categorical variable, which takes value \resp{1} when the game is new and \resp{0} if the game is used \\
+\var{stock\_photo} & a coded two-level categorical variable, which takes value \resp{1} if the primary photo used in the auction was a stock photo and \resp{0} if the photo was unique to that auction \\
+\var{duration} & the length of the auction, in days, taking values from 1 to 10 \\
+\var{wheels} & the number of Wii wheels included with the auction (a \emph{Wii wheel} is a plastic racing wheel that holds the Wii controller and is an optional but helpful accessory for playing Mario Kart) \\
+\hline
+\end{tabular}
+\caption{Variables and their descriptions for the \data{mario\_kart} data set.\vspace{-3mm}}
+\label{marioKartVariables}
+\end{table}
+
+\subsection{Two single-variable models for the Mario Kart data}
+\label{twoSingleVariableModelsForMarioKartData}
+
+We'll briefly consider 2 single-variable models for the Mario Kart data using the methods from Chapter~\ref{}. We fit a linear regression model with the game's condition as a predictor and then a second model for using the auction's duration as the predictor. The results of these two models are shown in Table~\ref{singleVarModelsForPriceUsingCondAndDuration}, and the models may be written as follows:
+\begin{align*}
+\widehat{price} &= 42.87 + 10.90\times cond\_new \\
+\widehat{price} &= 52.37 - 1.32\times duration
+\end{align*}
+
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{rrrrr}
+%  \cline{2-5}
+ & Estimate & Std. Error & t value & Pr($>$$|$t$|$) \\ 
+  \hline
+(Intercept) & 42.8711 & 0.8140 & 52.67 & 0.0000 \\ 
+  cond\_new & 10.8996 & 1.2583 & 8.66 & 0.0000 \\ 
+   \hline
+\end{tabular} \vspace{5mm}
+
+\begin{tabular}{rrrrr}
+%  \cline{2-5}
+ & Estimate & Std. Error & t value & Pr($>$$|$t$|$) \\ 
+  \hline
+(Intercept) & 52.3736 & 1.2608 & 41.54 & 0.0000 \\ 
+  duration & -1.3172 & 0.2769 & -4.76 & 0.0000 \\ 
+   \hline
+\end{tabular}
+\end{center}
+\caption{Separately fit models for predicting auction price based on the game condition and separately on the duration of the auction.}
+\label{singleVarModelsForPriceUsingCondAndDuration}
+\end{table}
+% library(openintro); library(xtable); data(marioKart); d <- marioKart[marioKart$totalPr < 100,]; d$cond <- relevel(d$cond, "used"); xtable(lm(d$totalPr ~ d$cond)); xtable(lm(d$totalPr ~ d$duration))
+
+\begin{example}{Interpret the 10.90 coefficient in the model using the game condition as a predictor. Is this coefficient significantly different from 0?}
+Note that \var{cond\_new} is a two-level categorical variable that takes value 1 when the game is new and value 0 when the game is used. So 10.90 means that the model predicts a total price of an extra \$10.90 for those games that are new versus those that are used. (See Section~\ref{categoricalPredictorsWithTwoLevels} for a review of the interpretation for two-level categorical predictor variables.) Examining the regression output in Table~\ref{singleVarModelsForPriceUsingCondAndDuration}, we can see that the p-vale for \var{cond\_new} is very close to zero, indicating there is strong evidence that the coefficient is different from zero when using this simple one-variable model.
+\end{example}
+
+\begin{exercise}
+Interpret the -1.32 coefficient in the model using the auction duration as a predictor. Is this coefficient significantly different from 0?\footnote{The auction duration is numerical and takes values from 1 to 10. The value -1.32 indicates that auctions tend to have a final price that is \$1.32 lower for each day they are longer.}
+\end{exercise}
+
+Notice that in the exercise and example above, no causal connection may be inferred because the data come from an observational study of Ebay auctions.
+
+\begin{exercise}
+The intercept for the auction duration model is 52.37, and one might be tempted to make some interpretation of this coefficient, such as, it is the model's predicted price when the auction length is 0 days. Is there any value gained by making this interpretation?\footnote{If an auction is up for 0 days, then no one can bid on it! That means the total auction price would always be zero for such an auction; the interpretation of the intercept holds no practical value for this model.}
+\end{exercise}
+
+
+%Two predictor variables in the \data{mario\_kart} data set that are inherently categorical: a~variable describing the condition of the game and the variable describing whether a stock photo was used for the auction. Two-level categorical variables are often coded using \resp{0}'s and \resp{1}'s, which allows them to be incorporated into a regression model in the same way as a numerical predictor:
+%\begin{align*}
+%\widehat{\var{price}} = \beta_0 + \beta_1\times \var{cond\_new}
+%\end{align*}
+%If we fit this model for total price and game condition using simple linear regression, we obtain the following regression line estimate:
+%\begin{align} \label{simpleLinearModelForTotalPrAndCondNew}
+%\widehat{\var{price}} = 42.87 + 10.90\times \var{cond\_new}
+%\end{align}
+%The \resp{0}-\resp{1} coding of the two-level categorical variable allows for a simple interpretation of the coefficient of \var{cond\_new}. When the game is in \resp{used} condition, the \var{cond\_new} variable takes a value of zero, and the total auction price predicted from the model would be $\$42.87 + \$10.90\times (0) = \$42.87$. If the game is in \resp{new} condition, then the \var{cond\_new} variable takes value one and the total price is predicted to be $\$42.87 + \$10.90\times (1) = \$53.77$. We now see clearly that the coefficient of \var{cond\_new} estimates the difference (\$10.90) in the total auction price when the game is new (\$53.77) versus used (\$42.87).
+
+%\begin{tipBox}{\tipBoxTitle{The coefficient of a two-level categorical variable}
+%The coefficient of a binary variable corresponds to the estimated difference in the outcome between the two levels of the variable.}
+%\end{tipBox}\vspace{-3mm}
+
+%\begin{exercise} \label{exerciseForBinaryPredictorModelForTotalPrAndStockPhoto}
+%The best fitting linear model for the outcome \var{price} and predictor \var{stock\_photo} is
+%\begin{align} \label{simpleLinearModelForTotalPrAndStockPhoto}
+%\widehat{\var{price}} = 44.33 + 4.17\times \var{stock\_photo}
+%\end{align}
+%where the variable \var{stock\_photo} takes value \resp{1} when a stock photo is being used and \resp{0} when the photo is unique to that auction. Interpret the coefficient of \var{stock\_photo}.
+%\end{exercise}
+
+%\begin{example}{In Exercise~\ref{exerciseForBinaryPredictorModelForTotalPrAndStockPhoto}, you found that auctions whose primary photo was a stock photo tended to sell for about \$4.17 more than auctions that feature a unique photo. Suppose a seller learns this and decides to change her Mario Kart auction to have its primary photo be a stock photo. Will modifying her auction in this way earn her, on average, an additional \$4.17?}
+%No, we cannot infer a causal relationship. It might be that there are inherent differences in auctions that use stock photos and those that do not. For instance, if we sorted through the data, we would actually notice that many of the auctions with stock photos tended to also include more Wii wheels. In this case, Wii wheels is a potential confounding variable.
+%\end{example}
+
+\subsection{Including and assessing many variables in a model}
+\label{includingAndAssessingManyVariablesInAModel}
+
+Sometimes there is underlying structure or relationship between the predictor variables. For instance, new games sold on Ebay tend to come with more Wii wheels, which may have led to higher prices for those auctions. We would like to fit a model that included all potentially important variables simultaneously, which would help us evaluate the relationship between a predictor variable and the outcome while controlling for the potential influence of other variables. This is the strategy used in \term{multiple regression}. While we remain cautious about making any causal interpretations using multiple regression, such models are a common first step in providing evidence of a causal connection.
+
+Earlier we had constructed a simple linear model using \var{cond\_new} as a predictor and \var{price} as the outcome. %We also constructed a separate model using only \var{stock\_photo} as a predictor. 
+Next, we want a model that uses this variable and the other three variables, \var{stock\_photo}, \var{duration}, and \var{wheels}, which are described Table~\ref{marioKartVariables}:
+\begin{align}
+\var{price}
+	&= \beta_0 + \beta_1\times \var{cond\_new} +
+		\beta_2\times \var{stock\_photo} \notag \\
+	&\qquad\  + \beta_3 \times  \var{duration} +
+		\beta_4 \times  \var{wheels} + \epsilon \notag \\
+y
+	&= \beta_0 + \beta_1 x_1 + \beta_2 x_2 +
+		\beta_3 x_3 + \beta_4 x_4 + \epsilon
+\label{eqForMultipleRegrOfTotalPrForAllPredictors}
+\end{align}
+where $y$ represents the total price, $x_1$ is the game's condition, $x_2$ is whether a stock photo was used, $x_3$ is the duration of the auction, $x_4$ is the number of Wii wheels included with the game, and $\epsilon$ is the model error, often due to natural variation in the data or from other, unaccounted-for information. In Chapter~\ref{linRegrForTwoVar}, we usually omitted $\epsilon$ and added a ``hat'' to the outcome; in Chapter~\ref{multipleRegressionAndANOVA}, we will more often formalize the model by listing the model error. You can think of $\epsilon$ as representing the true model's residuals, and we estimate those residuals with the observed residuals $e_1$, $e_2$, and so on.
+% If decide to eliminate $\epsilon$, do a search for \epsilon
+Just as with the single predictor case, a multiple regression model may be missing important components or it might not precisely represent the relationship between the outcome and the available explanatory variables. However, while no model is perfect, we wish to explore the possibility that this one may fit the data reasonably well.
+
+We estimate the parameters $\beta_0$, $\beta_1$, ..., $\beta_4$ in the same way as we did in the case of a single predictor. We select $b_0$, $b_1$, ..., $b_4$ that minimize the sum of the squared residuals:
+\begin{align}\label{sumOfSqResInMultRegr}
+SSE = e_1^2 + e_2^2 + \dots + e_n^2
+	= \sum_{i=1}^{n} e_i^2
+	 = \sum_{i=1}^{n} \left(y_i - \hat{y}_i\right)^2
+\end{align}
+%Recall that $e_i$ represents the residual for observation $i$, i.e. $e_i$ corresponds to the estimated model error for observation $i$.
+We typically use a computer to minimize the sum in Equation~\eqref{sumOfSqResInMultRegr} and compute point estimates, as shown in the sample output in Table~\ref{outputForMultipleRegrOutputForAllPredictors}. Using this output, we identify the point estimates $b_i$ of each $\beta_i$, just as we did in the one-predictor case.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrr}
+  \hline
+ & Estimate & Std. Error & t value & Pr($>$$|$t$|$) \\ 
+  \hline
+(Intercept) & 36.2110 & 1.5140 & 23.92 & 0.0000 \\ 
+  cond\_new & 5.1306 & 1.0511 & 4.88 & 0.0000 \\ 
+  stock\_photo & 1.0803 & 1.0568 & 1.02 & 0.3085 \\ 
+  duration & -0.0268 & 0.1904 & -0.14 & 0.8882 \\ 
+  wheels & 7.2852 & 0.5547 & 13.13 & 0.0000 \\ 
+   \hline
+   &&&\multicolumn{2}{r}{$df=136$}
+\end{tabular}
+\caption{Output for the regression model where \var{price} is the outcome and \var{cond\_new}, \var{stock\_photo}, \var{duration}, and \var{wheels} are the predictors.}
+\label{outputForMultipleRegrOutputForAllPredictors}
+\end{table}
+
+\begin{termBox}{\tBoxTitle{Multiple regression model}
+A multiple regression model is a linear model with many predictors. In general, we write the model as
+\begin{align*}
+y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_p x_p + \epsilon
+\end{align*}
+when there are $p$ predictors and $\epsilon$ represents the model error\index{model error}. We often estimate the $\beta_i$ parameters using a computer.}%, which minimizes the sum of the squared residuals, shown in Equation~\eqref{sumOfSqResInMultRegr}.}
+\end{termBox}
+
+\begin{exercise} \label{eqForMultipleRegrOfTotalPrForAllPredictorsWithCoefficients}
+Write out the model in Equation~\eqref{eqForMultipleRegrOfTotalPrForAllPredictors} using the point estimates from Table~\ref{outputForMultipleRegrOutputForAllPredictors}. How many predictors are there in this model?\footnote{$\hat{y} = 36.21 + 5.13x_1 + 1.08x_2 - 0.03x_3 + 7.29x_4 + \epsilon$, and there are $p=4$ predictor variables.}
+\end{exercise}
+
+\begin{exercise}
+What does $\beta_4$, the coefficient of variable $x_4$ (Wii wheels), represent? What is the point estimate of $\beta_4$?\footnote{It is the average difference in auction price for each additional Wii wheel included when holding the other variables constant. The point estimate is $b_4 = 7.29$.}
+\end{exercise}
+
+\begin{exercise} \label{computeMultipleRegressionResidualForMarioKart}
+Compute the residual of the first observation in Table~\ref{marioKartDataMatrix} on page~\pageref{marioKartDataMatrix}. Hint: use the equation from Exercise~\ref{eqForMultipleRegrOfTotalPrForAllPredictorsWithCoefficients}.\footnote{$e_i = y_i - \hat{y_i} = 51.55 - 49.62 = 1.93$, where 49.62 was computed using the predictor values for the observation and the equation identified in Exercise~\ref{eqForMultipleRegrOfTotalPrForAllPredictorsWithCoefficients}.}
+\end{exercise}
+
+\begin{example}{We estimated a coefficient for \var{cond\_new} in Section~\ref{twoSingleVariableModelsForMarioKartData} of $b_1 = 10.90$ with a standard error of $SE_{b_1} = 1.26$ when using simple linear regression. Why might there be a difference between that estimate and the one in the multiple regression setting?} \label{colinearityOfCondNewAndStockPhoto}
+If we examined the data carefully, we would see that some predictors are correlated. For instance, when we estimated the connection of the outcome \var{price} and predictor \var{cond\_new} using simple linear regression, we were unable to control for other variables like the number of Wii wheels included in the auction. That model was biased by the confounding variable \var{wheels}. When we use both variables, this particular underlying and unintentional bias is reduced or eliminated (though bias from other confounding variables may still remain).
+\end{example}
+
+Example~\ref{colinearityOfCondNewAndStockPhoto} describes a common issue in multiple regression: correlation among predictor variables. We say the two predictor variables are \term{collinear} (pronounce as \emph{co-linear}) when they are correlated, and this collinearity complicates model estimation. While it is impossible to prevent collinearity from arising in observational data, experiments are usually designed to prevent predictors from being collinear.
+
+\subsection{Adjusted $R^2$ as a better estimate of explained variance}
+
+We first used $R^2$ in Section~\ref{fittingALineByLSR} to determine the amount of variability in the response that was explained by the model:
+\begin{align*}
+R^2 = 1 - \frac{\text{variability in residuals}}{\text{variability in the outcome}}
+	= 1 - \frac{Var(e_i)}{Var(y_i)}
+\end{align*}
+where $e_i$ represents the residuals of the model and $y_i$ the outcomes. This equation remains valid in the multiple regression framework, but a small enhancement can often be even more informative.
+
+\begin{exercise} \label{computeUnadjustedR2ForAllPredictorsInMarioKart}
+The variance of the residuals for the model given in Exercise~\ref{computeMultipleRegressionResidualForMarioKart} is 23.34, and the variance of the total price in all the auctions is 83.06. Calculate $R^2$ for this model.\footnote{$R^2 = 1 - \frac{23.34}{83.06} = 0.719$.}
+\end{exercise}
+
+This strategy for estimating $R^2$ is okay when there is just a single variable. However, it becomes less helpful when there are many variables. The regular $R^2$ is actually a biased estimate of the amount of variability explained by the model. To get a better estimate, we use the adjusted $R^2$.
+
+\begin{termBox}{\tBoxTitle{Adjusted $\mathbf{R^2}$ as a tool for model assessment}
+The \termsub{adjusted $\mathbf{R^2}$}{adjusted $R^2$} is computed as
+\begin{align*}
+R_{adj}^{2} = 1-\frac{Var(e_i) / (n-p-1)}{Var(y_i) / (n-1)}
+	= 1-\frac{Var(e_i)}{Var(y_i)} \times \frac{n-1}{n-p-1}
+\end{align*}
+where $n$ is the number of cases used to fit the model and $p$ is the number of predictor variables in the model.}
+\end{termBox}
+
+Because $p$ is never negative, the adjusted $R^2$ will be smaller -- often times just a little smaller -- than the unadjusted $R^2$. The reasoning behind the adjusted $R^2$ lies with the \term{degrees of freedom} associated with each variance\footnote{In multiple regression, the degrees of freedom associated with the variance of the estimate of the residuals is $n-p-1$, not $n-1$. For instance, if we were to make predictions for new data using our current model, we would find that the unadjusted $R^2$ is an overly optimistic estimate of the reduction in variance in the response, and using the degrees of freedom in the adjusted $R^2$ formula helps correct this bias.}.
+
+\begin{exercise}
+There were $n=141$ auctions in the \data{mario\_kart} data set and $p=4$ predictor variables in the model. Use $n$, $p$, and the variances from Exercise~\ref{computeUnadjustedR2ForAllPredictorsInMarioKart} to calculate $R_{adj}^2$ for the Mario Kart model.\footnote{$R_{adj}^2 = 1 - \frac{23.34}{83.06}\times \frac{141-4-1}{141-1} = 0.711$.}
+\end{exercise}
+
+\begin{exercise}
+Suppose you added another predictor to the model, but the variance of the errors $Var(e_i)$ didn't go down. What would happen to the $R^2$? What would happen to the adjusted $R^2$? \footnote{The unadjusted $R^2$ would stay the same and the adjusted $R^2$ would go down.}
+\end{exercise}
+
+%As we will see in the next section, the adjusted $R^2$ is a useful tool in determining which variables are useful to include in a final model.
+
+%The regular $R^2$ will always go increase as more variables are added to a model, regardless of whether those additional variables have any additional value. This is not always the case with the adjusted $R^2$ -- it will often go down when a useless variable is added to a model -- and in the next section we will use this property to determine which variables are useful in a model.
+
+%The idea that a predictor that doesn't explain any extra variance would actually ``hurt'' the adjusted $R^2$ highlights a common sentiment in statistics: avoid making a model more complicated than it needs to be.
+
+%%%%%
+\section{Model selection}
+\label{modelSelection}
+
+The best model is not always the most complicated. Sometimes including variables that are not evidently important can actually reduce the accuracy of predictions. In this section we discuss model selection strategies, which will help us eliminate variables that are less important from the model.
+
+In this section, and in practice, the model that includes all available explanatory variables is often referred to as the \term{full model}. Our goal is assess whether the full model is the best model. If it isn't, we want to identify a smaller model that is preferable.
+
+\subsection{Identifying variables that may not be helpful in the model}
+
+Table~\ref{outputForMultipleRegrOutputForAllPredictors2} provides a summary of the regression output for the full model for the auction data. The last column of the table lists p-values that can be used to assess hypotheses of the following form:
+\begin{itemize}
+\setlength{\itemsep}{0mm}
+\item[$H_0$:] $\beta_i = 0$ when the other explanatory variables are included in the model.
+\item[$H_A$:] $\beta_i \neq 0$ when the other explanatory variables are included in the model.
+\end{itemize}
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrr}
+  \hline
+ & Estimate & Std. Error & t value & Pr($>$$|$t$|$) \\ 
+  \hline
+(Intercept) & 36.2110 & 1.5140 & 23.92 & 0.0000 \\ 
+  cond\_new & 5.1306 & 1.0511 & 4.88 & 0.0000 \\ 
+  stock\_photo & 1.0803 & 1.0568 & 1.02 & 0.3085 \\ 
+  duration & -0.0268 & 0.1904 & -0.14 & 0.8882 \\ 
+  wheels & 7.2852 & 0.5547 & 13.13 & 0.0000 \\ 
+   \hline
+\multicolumn{3}{l}{$R_{adj}^2 = 0.7108$}&\multicolumn{2}{r}{$df=136$}
+\end{tabular}
+\caption{The fit for the full regression model, including the adjusted $R^2$.}
+\label{outputForMultipleRegrOutputForAllPredictors2}
+\end{table}
+
+\begin{example}{The coefficient of \var{cond\_new} has a $t$ test statistic of $T=4.88$ and a p-value for its corresponding hypotheses ($H_0: \beta_1 = 0$, $H_A: \beta_1 \neq 0$) of about zero. How can this be interpretted?}
+If we keep all the other variables in the model and add no others, then there is strong evidence that a game's condition (new or used) has a real relationship with the total auction price.
+\end{example}
+
+\begin{example}{Is there strong evidence that using a stock photo is related to the total auction price?}
+The $t$ test statistic for \var{stock\_photo} is $T=1.02$ and the p-value is about 0.31. After accounting for the other predictors, there is not strong evidence that using a stock photo in an auction is related to the total price of the auction. We might consider removing the \var{stock\_photo} variable from the model.
+\end{example}
+
+\begin{exercise}
+Identify the p-values for both the \var{duration} and \var{wheels} variables in the model. Is there strong evidence supporting the connection of these variables with the total price in the model?\footnote{The p-value for the auction duration is 0.8882, which indicates that there is not statistically significant evidence that the duration is related to the total auction price when accounting for the other variables. The p-value for the Wii wheels variable is about zero, indicating that this variable is associated with the total auction price.}
+\end{exercise}
+
+There is not statistically significant evidence that either the stock photo or duration variables are meaningfully contributing to the model. If the coefficients of these variables are not zero, their association with the outcome variable is probably weak. Next we consider common strategies for pruning such variables from a model.
+
+\begin{tipBox}{\tipBoxTitle{Using adjusted $R^2$ instead of p-values for model selection}
+The adjusted $R^2$ may be used as an alternative to p-values for model selection, where a higher adjusted $R^2$ represents a better model fit. For instance, we could compare two models using their adjusted $R^2$, and the model with the higher adjusted $R^2$ would be preferred. This approach tends to include more variables in the final model when compared to the p-value approach.}
+\end{tipBox}
+
+\subsection{Two model selection strategies}
+
+Two common strategies for adding or removing variables in a multiple regression model are called \emph{backward-selection} and \emph{forward-selection}. These techniques are often referred to as \term{stepwise} model selection strategies, because they add or delete one variable at a time as they ``step'' through the candidate predictors. We will discuss these strategies in the context of the p-value approach, however, an $R_{adj}^2$ approach may be employed as an alternative.
+
+The \term{backward-elimination} strategy starts with the model that includes all potential predictor variables. One-by-one variables are eliminated from the model until only variables with statistically significant p-values remain. The strategy within each elimination step is to drop the variable with the largest p-value, refit the model, and reassess the inclusion of all variables.
+
+\begin{example}{Results corresponding to the \emph{full model} for the \data{mario\_kart} data are shown in Table~\ref{outputForMultipleRegrOutputForAllPredictors2}. How should we proceed under the backward-elimination strategy?} \label{backwardEliminationExampleWMarioKartData}
+There are two variables with coefficients that are not statistically different from zero: \var{stock\_photo} and \var{duration}. We first drop the \var{duration} variable since it has a larger corresponding p-value, \emph{then we refit the model}. A regression summary for the new model is shown in Table~\ref{outputForMultipleRegrOutputForAllPredictorsButDuration}.
+
+In the new model, there is not strong evidence that the coefficient for \var{stock\_photo} is different from zero (even though the p-value dropped a little) and the other p-values remain very small. So again we eliminate the variable with the largest non-significant p-value, \var{stock\_photo}, and refit the model. The updated regression summary is shown in Table~\ref{outputForMultipleRegrOutputForAllPredictorsButDurationAndStockPhoto}.
+
+In the latest model, we see that the two remaining predictors have statistically significant coefficients with p-values of about zero. Since there are no variables remaining that could be eliminated from the model, we stop. The final model includes only the \var{cond\_new} and \var{wheels} variables in predicting the total auction price:
+\begin{align*}
+y \ &= \ b_0 + b_1x_1 + b_4x_4 + \epsilon \\
+	&= \ 36.78 + 5.58x_1 + 7.23x_4 + \epsilon
+\end{align*}
+where $x_1$ represents \var{cond\_new} and $x_4$ represents \var{wheels}. The data estimate the standard deviation of the residuals (the model error) is about $\sigma_{\epsilon} \approx s_{e} = 4.887$.
+
+An alternative to using p-values in model selection is to use the adjusted $R^2$. At each elimination step, we refit the model without each of the variables up for potential elimination (e.g. in the first step, we would fit four models, where each would be missing a different predictor). If one of these smaller models has a higher adjusted $R^2$ than our current model, we pick the smaller model with the largest adjusted $R^2$. Had we used the adjusted $R^2$ criteria, we would have kept the \var{stock\_photo} variable along with the \var{cond\_new} and \var{wheels} variables.
+\end{example}
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrr}
+  \hline
+ & Estimate & Std. Error & t value & Pr($>$$|$t$|$) \\ 
+  \hline
+(Intercept) & 36.0483 & 0.9745 & 36.99 & 0.0000 \\ 
+  cond\_new & 5.1763 & 0.9961 & 5.20 & 0.0000 \\ 
+  stock\_photo & 1.1177 & 1.0192 & 1.10 & 0.2747 \\ 
+  wheels & 7.2984 & 0.5448 & 13.40 & 0.0000 \\ 
+   \hline
+\multicolumn{3}{l}{$R_{adj}^2 = 0.7128$}&&\small$df=137$
+\end{tabular}
+\caption{The output for the regression model where \var{price} is the outcome and the duration variable has been eliminated from the model.}
+\label{outputForMultipleRegrOutputForAllPredictorsButDuration}
+\end{table}
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrr}
+  \hline
+ & Estimate & Std. Error & t value & Pr($>$$|$t$|$) \\ 
+  \hline
+(Intercept) & 36.7849 & 0.7066 & 52.06 & 0.0000 \\ 
+  cond\_new & 5.5848 & 0.9245 & 6.04 & 0.0000 \\ 
+  wheels & 7.2328 & 0.5419 & 13.35 & 0.0000 \\ 
+   \hline
+\multicolumn{3}{l}{$R_{adj}^2 = 0.7124$}&&\small$df=138$
+\end{tabular}
+\caption{The output for the regression model where \var{price} is the outcome and the duration and stock photo variables have been eliminated from the model.}
+\label{outputForMultipleRegrOutputForAllPredictorsButDurationAndStockPhoto}
+\end{table}
+
+Notice that the p-value for \var{stock\_photo} changed a little from the full model (0.309) to the model that did not include the \var{duration} variable (0.275). It is common for p-values of one variable to change, due to collinearity, after eliminating a different variable. This fluctuation emphasizes the importance of refitting a model after each variable elimination step. The p-values tend to change dramatically when the eliminated variable is highly correlated with another variable in the model.
+
+\begin{tipBox}{\tipBoxTitle{$R_{adj}^2$ is an alternative to p-values in model selection}
+The adjusted $R^2$ may be used as a criteria for selecting which variables to include or exclude in a model. We seek the model with the highest $R_{adj}^2$. This model may differ a little from a model obtained by using the p-value approach.}
+\end{tipBox}
+
+The \term{forward-selection} strategy is the reverse of the backward-elimination technique. Instead of eliminating variables one-at-a-time, we add variables one-at-a-time until we cannot find any variables that present strong evidence of their importance in the model.
+
+\begin{example}{Construct a model for the \data{mario\_kart} data set using the forward-selection strategy.}\label{forwardEliminationExampleWMarioKartData}
+We start with the model that includes no variables. Then we fit each of the possible models with just one variable. That is, we fit the model including just the \var{cond\_new} predictor, then the model just including the \var{stock\_photo} variable, then a model with just \var{duration}, and a model with just \var{wheels}. Each of the four models (yes, we fit four models!) provides a p-value for the coefficient of the predictor variable. Out of these four variables, the \var{wheels} variable had the smallest p-value. Since its p-value is less than 0.05 (the p-value was smaller than 2e-16), we add the Wii wheels variable to the model. Once a variable is added in forward-selection, it will be included in all models considered and in the final model.
+
+Since we successfully found a first variable to add, we consider adding another. We fit three new models: (1) the model including just the \var{cond\_new} and \var{wheels} variables (output in Table~\ref{outputForMultipleRegrOutputForAllPredictorsButDurationAndStockPhoto}), (2) the model including just the \var{stock\_photo} and \var{wheels} variables, and (3) the model including only the \var{duration} and \var{wheels} variables. Of these models, the first had the lowest p-value for its new variable (the p-value corresponding to \var{cond\_new} was 1.4e-08). Because this p-value is below 0.05, we add the \var{cond\_new} variable to the model. Now the final model is guaranteed to include both the condition and Wii wheels variables.
+
+We repeat the process a third time, fitting two new models: (1) the model including the \var{stock\_photo}, \var{cond\_new}, and \var{wheels} variables (output in Table~\ref{outputForMultipleRegrOutputForAllPredictorsButDuration}) and (2) the model including the \var{duration}, \var{cond\_new}, and \var{wheels} variables. The p-value corresponding to \var{stock\_photo} in the first model (0.275) was smaller than the p-value corresponding to \var{duration} in the second model (0.682). However, since this smaller p-value was not below 0.05, there was not strong evidence that it should be included in the model. Therefore, neither variable is added and we are finished.
+
+The final model is the same as that arrived at using the backward-selection strategy: we include the \var{cond\_new} and \var{wheels} variables into the final model.
+
+As before, we could have used the $R_{adj}^2$ criteria instead of examining p-values in selecting variables for the model. Rather than look for variables with the smallest p-value, we look for the model with the largest $R_{adj}^2$. Using the forward-selection strategy, we start with the model with no predictors. Next we look at each model with a single predictor. If one of these models has a larger $R_{adj}^2$ than the model with no variables, we use this new model. We repeat this procedure, adding one variable at a time, until we cannot find a model with a larger $R_{adj}^2$. If we had done the forward-selection strategy using $R_{adj}^2$, we would have arrived at the model including \var{cond\_new}, \var{stock\_photo}, and \var{wheels}, which is a slightly larger model than we arrived at using the p-value approach.
+\end{example}
+
+\begin{termBox}{\tBoxTitle{Model selection strategies}
+The backward-elimination strategy begins with the largest model and eliminates variables one-by-one until we are satisfied that all remaining variables are important to the model. The forward-selection strategy starts with no variables included in the model, then it adds in variables according to their importance until no other important variables are found.}
+\end{termBox}
+
+There is no guarantee that the backward-elimination and forward-selection strategies will arrive at the same final model using the p-value method. The same is true if we are using the $R_{adj}^2$ criteria. If the backwards-elimination and forward-selection strategies are both tried and they arrive at different models, choose the model with the larger $R_{adj}^2$ as a tie-breaker (other options exist but are beyond the scope of this book).
+
+It is generally acceptable to use just one strategy, usually backward-elimination with either the p-value or adjusted $R^2$ criteria, and report the final model after verifying the conditions for fitting a linear model are reasonable.
+
+%%%%%
+\section{Checking model assumptions using graphs}
+\label{multipleRegressionModelAssumptions}
+
+Multiple regression methods using the model
+\begin{align*}
+y &= \beta_0 + \beta_1x_1 + \beta_2x_2 + \cdots + \beta_px_p + \epsilon
+\end{align*}
+generally depend on the following four assumptions:
+\begin{enumerate}
+\setlength{\itemsep}{0mm}
+\item the residuals of the model are nearly normal,
+\item the variability of the residuals is nearly constant,
+\item the residuals are independent, and
+\item each variable is linearly related to the outcome.
+\end{enumerate}
+Simple and effective plots can be used to check each of these assumptions. We will consider the model for the auction data that uses the game condition and number of wheels as predictors.
+\begin{description}
+\item[Normal probability plot.] A normal probability plot of the residuals is shown in Figure~\ref{mkDiagnosticNormalQuantilePlot}. While the plot exhibits some minor irregularities, there are no outliers that might be cause for concern. In a normal probability plot for residuals, we tend to be most worried about residuals that appear to be outliers, since these indicate long tails in the distribution of residuals.
+\begin{figure}
+\centering
+\includegraphics[width=0.71\textwidth]{08/figures/marioKartDiagnostics/mkDiagnosticNormalQuantilePlot}
+\caption{A normal probability plot of the residuals is helpful in identifying observations that might be outliers.}
+\label{mkDiagnosticNormalQuantilePlot}
+\end{figure}
+\item[Absolute values of residuals against fitted values.] A plot of the absolute value of the residuals against their corresponding fitted values ($\hat{y}_i$) is shown in Figure~\ref{mkDiagnosticEvsAbsF}. This plot is helpful to check the condition that the variance of the residuals is approximately constant. We don't see any obvious deviations from constant variance in this example.
+\begin{figure}
+\centering
+\includegraphics[width=0.72\textwidth]{08/figures/marioKartDiagnostics/mkDiagnosticEvsAbsF}
+\caption{Comparing the absolute value of the residuals against the fitted values ($\hat{y}_i$) is helpful in identifying deviations from the constant variance assumption.}
+\label{mkDiagnosticEvsAbsF}
+\end{figure}
+\item[Residuals in order of their data collection.] A plot of the residuals in the order their corresponding auctions were observed is shown in Figure~\ref{mkDiagnosticInOrder}. Such a plot is helpful in identifying any connection between cases that are close to one another, e.g. we could look for declining prices over time or if there was a time of the day when auctions tended to fetch a higher price. Here we see no structure that indicates a problem\footnote{An especially rigorous check would use \term{time series} methods. For instance, we could check whether consecutive residuals are correlated. Doing so with these residuals yields no statistically significant correlations.}.
+\begin{figure}
+\centering
+\includegraphics[width=0.72\textwidth]{08/figures/marioKartDiagnostics/mkDiagnosticInOrder}
+\caption{Plotting residuals in the order that their corresponding observations were collected helps identify connections between successive observations. If it seems that consecutive observations tend to be close to each other, this indicates the independence assumption of the observations would fail.}
+\label{mkDiagnosticInOrder}
+\end{figure}
+\item[Residuals against each predictor variable.] We consider a plot of the residuals against the \var{cond\_new} variable and the residuals against the \var{wheels} variable. These plots are shown in Figure~\ref{mkDiagnosticEvsVariables}. For the two-level condition variable, we are guaranteed not to see a trend, and instead we are verifying that the variability doesn't fluctuate across groups. In this example, when we consider the residuals against the \var{wheels} variable, we see some possible structure. There appears to be curvature in the residuals, indicating the relationship is probably not linear.
+\begin{figure}
+\centering
+\includegraphics[width=0.85\textwidth]{08/figures/marioKartDiagnostics/mkDiagnosticEvsVariables}
+\caption{In the two-level variable for the game's condition, we check for differences in distribution shape or variability. For numerical predictors, we also check for trends or other structure. We see some slight bowing in the residuals against the \var{wheels} variable.}
+\label{mkDiagnosticEvsVariables}
+\end{figure}
+\end{description}
+
+It is necessary to summarize diagnostics for any model fit. If the diagnostics support the model assumptions, this would improve credibility in the findings. If the diagnostic assessment shows remaining underlying structure in the residuals, we should try to adjust the model to account for that structure. If we are unable to do so, we may still report the model but must also note its shortcomings. In the case of the auction data, we report that there may be a nonlinear relationship between the total price and the number of wheels included for an auction. This information would be important to buyers and sellers; omitting this information could be a setback to the very people who the model might assist.
+
+\begin{tipBox}{\tipBoxTitle[]{``All models are wrong, but some are useful'' -George E.P. Box}
+The truth is that no model is perfect. However, even imperfect models can be useful. Reporting a flawed model can be reasonable so long as we are clear and report the model's shortcomings.}
+\end{tipBox}
+
+\begin{caution}
+{Don't report results when assumptions are heavily violated}
+{While there is a little leeway in model assumptions, don't go too far. If model assumptions are grossly violated, consider a new model, even if it means learning more statistical methods or hiring someone who can help.}
+\end{caution}
+
+\begin{tipBox}{\tipBoxTitle{Confidence intervals in multiple regression}
+Confidence intervals for coefficients in multiple regression can be computed using the same formula as in the single predictor model:
+\begin{align*}
+b_i \pm t_{df}^{\star}SE_{b_{i}}
+\end{align*}
+where $t_{df}^{\star}$ is the appropriate $t$ value corresponding to the confidence level and model degrees of freedom, $df=n-p-1$.}
+\end{tipBox}
+
+
+
+%%%%%
+\section{Logistic regression} %GLM for categorical response with two levels}
+\label{logisticRegression}
+
+In this section we expand to the setting of a categorical response variable with two levels using a \term{logistic regression}. Logistic regression is a type of \term{generalized linear model} (GLM) for response variables where regular multiple regression does not work very well. In particular, the response variable in these settings often takes on a form where residuals look completely different from the normal distribution.
+
+GLMs are founded in the principle of modeling observed outcomes according to a probability distribution, such as the binomial or Poisson distribution, and then using a special form of multiple regression to relate the parameter of the distribution with the predictors. Our focus will be on the case where a response is a categorical variable with two levels (categories), which is called logistic regression. We'll discuss the model details in Section~\ref{modelingTheProbabilityOfAnEvent}.
+
+%By the end of Section~\ref{logisticRegression}, w
+
+We will investigate a new application during Section~\ref{logisticRegression}: we fit a model to classify email messages as spam or not spam for a particular email account. The response variable, \var{spam}, has been encoded to take value~0 when a message is not spam and 1 when it is spam. Our task will be to build an appropriate model that classifies messages as spam or not spam using email characteristics coded as variables. The model will be based on observed data in the \data{email} data set that we first saw in Chapter~\ref{introductionToData}.
+
+\textbf{Disclaimer:} This section features logistic regression as an example of the powerful statistical methods you are now ready to start learning. While we do cover many technical aspects, we do not do so with as much rigor as previous topics and this section should not be treated as a single source for applying logistic regression. %For instance, you will see that we postpone any discussion of diagnostics until long after we have fit and interpreted the logistic regression model. In practice, we would proceed just as we have advocated in the single-variable and multiple regression settings: fit the model, check diagnostics, and then infer the results. 
+With this in mind, we hope this brief introduction will get you excited about a future in statistics, machine learning, or another data-intensive field.
+
+
+\subsection{Email data}
+
+The \data{email} data set was first presented in Chapter~\ref{introductionToData} with a relatively small number of variables. We actually collected a much larger set of variables that we will use as part of our model for classifying spam. Variable descriptions are presented in Table~\ref{emailVariables}. The \var{spam} variable will be the outcome, and the other 10 variables will be the model predictors. While we have limited the predictors used in this section to be categorical variables (where many are represented as indicator variables), numerical predictors may be used in logistic regression. See the footnote for an additional discussion on this topic\footnote{Recall from Chapter~\ref{linRegrForTwoVar} that if outliers are present in predictor variables, the corresponding observations may be especially influential on the resulting model. This was the motivation for omitting these numerical variables, such as the number of characters and line breaks in emails, that we saw in Chapter~\ref{introductionToData}. These variables exhibited strong skew. We could resolve this issue by transforming these variables (e.g. using a log-transformation), but we will omit this further investigation for brevity.}.
+\begin{table}
+\centering\small
+\begin{tabular}{lp{10.5cm}}
+\hline
+{\bf variable} & {\bf description} \\
+\hline
+\var{spam} & Specifies whether the message was spam \\
+\var{to\_multiple} & An indicator variable for if more than one person was listed in the \emph{To} field of the email.  \\
+\var{cc} & An indicator for if someone was CCed on the email.  \\
+%\var{inherit} & The number of occurrences of \emph{inherit} in the email (e.g. {\textbf{inherit}ance})   \\
+\var{attach} & An indicator for if there was an attachment, such as a document or image.   \\
+\var{dollar} & An indicator for if the word ``dollar'' or a dollar symbol, \$, appeared in the email.  \\
+\var{winner} & An indicator for if the word ``winner'' appeared in the email.  \\
+\var{inherit} & An indicator for if the word ``inherit'' (or a variation, like ``inheritance'') appeared in the email.  \\
+\var{password} & An indicator for if the word ``password'' was present in the email.  \\
+%\var{num\_char} & This variable was originally numerical, but we converted it into a categorical variable. It now takes value \resp{level\_1} if  number of line breaks in the email (not including text wrapping)   \\
+%\var{line\_breaks} & \\ %The number of line breaks in the email (not including text wrapping)   \\
+%\var{exclaim\_mess} & \\ %The number of line breaks in the email (not including text wrapping)   \\
+\var{format} & Indicates if the email contained special formatting, such as bolding, tables, or links    \\
+\var{re\_subj} & Indicates whether ``Re:'' was included at the the start of the email subject.   \\
+\var{exclaim\_subj} & Indicates whether any exclamation point was included in the email subject.    \\
+%\var{number} & A categorical variable with three levels: \resp{none} (no numbers present), \resp{small} (only numbers smaller than 1 million present), and \resp{large} (at least one large number is present).   \\
+%\var{sent\_email} & Indicates whether the sender had been sent an email from this email account in the last 30 days \\
+\hline
+\end{tabular}
+\caption{Descriptions for 11 variables in the \data{email} data set. Notice that all of the variables are indicator\index{indicator variable} variables, which take the value 1 if the specified characteristic is present and 0 otherwise.}
+\label{emailVariables}
+\end{table}
+
+We should also be weary of a categorical predictor when one of its categories only appears a small number of times. Each of those variables included in the data set passed a basic check, where we used a cutoff that required at least 100 observations in each category. Recall that in Section~\ref{typesOfOutliersInLinearRegression} we recommended a minimum of 10 observations in each category for a categorical predictor variable. We increased our minimum for the spam application for two reasons. First, 10 may be an insufficient minimum when there are many other categorical predictors. Second, the outcome variable in this case is spam, and spam messages are themselves somewhat rare. For this reason, we need to drastically increase the minimum cutoff for this particular logistic model.
+%, perhaps under 10 times   Each of the variables we consider in this section are categorical 
+%ZZQ observations from the \data{email} data set with ZZQ of these variables are shown in Table~\ref{emailDF}. In total, we have ZZQ variables at our disposal. Meanings for the ZZQ variables shown are described in Table~\ref{emailVariables}.
+%library(openintro); library(xtable); data(email); d <- email[c(1:15, nrow(email)- (4:0)),c("spam", "dollar", "password", "attach", "format", "line_breaks", "number", "sent_email")]; xtable(d, digits=0)
+%\begin{landscape}
+%\begin{table}
+%\begin{center}
+%\begin{tabular}{rrrrrrrrr}
+%  \hline
+% & spam & dollar & password & attach & format & \hspace{-1mm}line\_breaks & number & \hspace{-1mm}sent\_email \\ 
+%  \hline
+%1 & 0 & 0 & 0 & 0 & 1 & 202 & big & 0 \\ 
+%  2 & 0 & 0 & 0 & 0 & 1 & 202 & small & 0 \\ 
+%  3 & 0 & 4 & 0 & 0 & 1 & 192 & small & 0 \\ 
+%  4 & 0 & 0 & 0 & 0 & 1 & 255 & small & 0 \\ 
+%  5 & 0 & 0 & 2 & 0 & 0 & 29 & none & 0 \\ 
+%  6 & 0 & 0 & 2 & 0 & 0 & 25 & none & 0 \\ 
+%  7 & 0 & 0 & 0 & 0 & 1 & 193 & big & 1 \\ 
+%  8 & 0 & 0 & 0 & 1 & 1 & 237 & small & 1 \\ 
+%  9 & 0 & 0 & 0 & 0 & 0 & 69 & small & 0 \\ 
+%  10 & 0 & 0 & 0 & 0 & 1 & 68 & small & 0 \\ 
+%  11 & 0 & 0 & 0 & 0 & 1 & 25 & small & 1 \\ 
+%  12 & 0 & 0 & 0 & 0 & 0 & 79 & small & 0 \\ 
+%  13 & 0 & 0 & 0 & 0 & 1 & 191 & big & 0 \\ 
+%  14 & 0 & 0 & 0 & 0 & 1 & 354 & small & 1 \\ 
+%  15 & 0 & 2 & 0 & 0 & 1 & 330 & big & 0 \\ 
+%  $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ \\ 
+%  3914 & 1 & 2 & 0 & 0 & 0 & 46 & small & 0 \\ 
+%  3915 & 1 & 1 & 0 & 0 & 0 & 13 & big & 0 \\ 
+%  3916 & 0 & 0 & 0 & 0 & 0 & 233 & small & 0 \\ 
+%  3917 & 1 & 0 & 0 & 0 & 0 & 12 & small & 0 \\ 
+%  3918 & 1 & 1 & 0 & 0 & 0 & 15 & small & 0 \\ 
+%   \hline
+%\end{tabular}
+%\end{center}
+%\caption{ZZQ observations for ZZQ variables from the \data{email} data set.}
+%\label{emailDF}
+%\end{table}
+%\end{landscape}
+
+
+%The \var{sent\_email} variable is fairly complex and warrants additional discussion. This variable indicates whether the email account owner had corresponded with the person sending the new email in the past 30 days. For instance, suppose jim@example.com sent an email. If the email account owner had previously sent an email to jim@example.com in the past 30 days, then \var{sent\_email} would take value 1. If no email had been previously sent to jim@example.com, then the \var{sent\_email} would take value 0. 
+% if they emailed a friend john@example.com within the past 30 days, and John replied back, then John's email would  depends on the email account owner's past behavior. If a sender had been sent a message from the account owner in the past 30 days, then this message was listed as 1, otherwise it was 0. In effect, this variable identifies users who the account owner had contacted in the last 30 days. 
+%Since email records were only available for 2012, this variable was set to \resp{NA} for the first 30 days of 2012 to signify that this variable was incomplete. In effect, these emails will not be considered for the spam classifier that we build.
+
+%\begin{exercise}
+%The variables listed in this section pertain to email for one account. If you were managing an email service where you had access to many person's email accounts, what other variables would you like to include? Are there other variables that you'd like to include under this single-account setting? A sample answer is provided in the following paragraph.
+%\end{exercise}
+
+%\subsection{What other variable}
+
+\subsection{Modeling the probability of an event} % with one predictor}
+\label{modelingTheProbabilityOfAnEvent}
+
+%This section first goes into the framework of the logistic regression model, then it features results for classifying spam. If the model details aren't entirely clear, feel free to jump ahead to the examples. 
+
+% isn't completely clear, feel free to move onto the examples. While the details might be unclear, we introduce this topic because we want to highlight the strength of statistical methods that you are prepared to start learning.
+
+\begin{tipBox}{\tipBoxTitle{Notation for logistic regression model}
+The outcome variable for a GLM is denoted by $Y_i$, where the index $i$ is used as a way to think about the model on the scale of a single email. In the email application, $Y_i$ will be used to represent whether email $i$ is spam ($Y_i=1$) or not ($Y_i=0$). \vspace{3mm}
+
+The predictor variables are represented as follows: using $x_{1,i}$ is the value of the first variable for observation $i$, $x_{2,i}$ is the value of the second variable for observation $i$, and so on.}
+\end{tipBox}
+
+Logistic regression is a generalized linear model where the outcome variable is a two-level categorical variable. The outcome, $Y_i$, is written to take value 1 (in our application, this represents a spam message) with probability $p_i$ and value 0 with probability $1-p_i$. It is the probability $p_i$ that we model in relation to predictors.
+
+%Next, we connect the probability $p_i$ to email characteristics. 
+The form of the logistic regression model that relates the probability an email is spam ($p_i$) and the predictors $x_{1,i}$, $x_{2,i}$, ..., $x_{k,i}$ is through a framework that looks a lot like multiple regression:
+\begin{align}
+transformation(p_{i}) = \beta_0 + \beta_1x_{1,i} + \beta_2 x_{2,i} + \cdots \beta_k x_{k,i}
+\label{linkTransformationEquation}
+\end{align}
+The transformation\footnote{For reference in later courses, this transformation is generally called the \term{link function}. The link function is usually chosen based on the nature of the data. For some settings and data, there is more than one viable option for the link function.} in Equation~\eqref{linkTransformationEquation} is a particular function that we apply to $p_i$ so that using multiple regression makes practical and mathematical sense. In the spam application, there are 10 predictor variables, so $k=10$.
+
+Think about what would happen if we did not transform $p_i$ in Equation~\eqref{linkTransformationEquation}. The probability $p_i$ is bounded by 0 and 1, yet the right side could take values outside of this range. A transformation on $p_i$ can be used to put the left side of the equation on the same range as the right side. (There are other ways to get around this issue, but we'll save them for a later course.)
+
+A common transformation for $p_i$ is the \term{logit transformation}, which may be written as follows:
+\begin{align*}
+logit(p_i) = \log_{e}\left( \frac{p_i}{1-p_i} \right)
+\end{align*}
+This transformation is shown in Figure~\ref{logitTransformationFigureHoriz}. In the equation below, we rewrite Equation~\eqref{linkTransformationEquation} using the logit transformation of $p_i$:
+\begin{align}
+\log_{e}\left( \frac{p_i}{1-p_i} \right)
+	= \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \cdots + \beta_k x_{k,i}
+\label{GLMBinomialModelEquation}
+\end{align}
+This model isn't very intuitive, but it still has some resemblance of multiple regression, and we can again fit logistic regression models using software. In fact, once we get into those results, it will start to feel like we're looking at results from multiple regression, even if the interpretation of the coefficients is a bit more complex.
+%To understand this equation, look again at Figure~\ref{logitTransformationFigureHoriz} that relates values on the logit scale to those on the probability scale. If the multiple regression result takes a value of 0.0, then this corresponds to a probability of $0.50$. For example, suppose we are given numbers to plug into the model parameters ($\beta_0$, $\beta_1$, ..., $\beta_k$) and information about an email ($x_{i,1}$, ..., $x_{i,k}$) and the resulting value for the right side is 1.0; then this corresponds to a probability of 0.73, i.e. the model calculates the probability that $Y_i=1$ is 0.73.
+\begin{figure}
+\centering
+\includegraphics[width=0.98\textwidth]{08/figures/logitTransformationFigureHoriz/logitTransformationFigureHoriz}
+\caption{Values of $p_i$ against values of $logit(p_i)$.}
+\label{logitTransformationFigureHoriz}
+\end{figure}
+
+%The logistic regression model is built so that in a special way so that a probability is never 0 or 1, even if it is very close to one of these bounds. The model also becomes relatively unchanging when it gets near these extremes. For example, moving one unit from 0 to 1 on the x-axis (which is on the scale of the right side of Equation~\eqref{GLMBinomialModelEquation}) moves the probability from 0.5 to 0.73. But moving one unit from 3 to 4 on this scale only moves the probability from 0.95 to~0.982.
+
+%In the setting of spam classification, the spam rate in the data is about 0.06 (6\%). Since this average is closer to 0 than 1, when we fit the model, it will tend to predict more probabilities near 0 than near 1 for the observed data. Had the spam rate been higher, say 90\%, then we would expect the model to predict more probabilities near 1 than 0. The intercept of the model, $\beta_0$, is the model term that shifts the fitted probabilities according to the average spam rate.
+
+%It might seem a little funny to assign probabilities to emails we have already classified, but this is really no different than calculating fitted values $\hat{y}_i$ in multiple regression. We will plot the observed outcomes against the probabilities as one component of evaluating the appropriateness of the model.
+
+\begin{example}{Here we create a spam filter with a single predictor: \var{to\_multiple}. This variable indicates whether more than one email address was listed in the \emph{To} field of the email. The following logistic regression model was fit using statistical software:
+\begin{align*}
+\log\left( \frac{p_i}{1-p_i} \right) = -2.59 - 2.04\times\text{\var{to\_multiple}}
+\end{align*}
+%library(openintro); data(email); tm <- email$to_multiple > 0; g <- glm(email$spam ~ tm, family=binomial); summary(g); a <- exp(-2.59-2.04); a/(1+a)
+If an email is randomly selected and it has just one address in the \emph{To} field, what is the probability it is spam? What if more than one address is listed in the \emph{To} field?}\label{logisticExampleWithToMultiple}
+If there is only one email in the \emph{To} field, then \var{to\_multiple} takes value 0 and so the right side of the model equation is just -2.59. Solving for $p_i$: $\frac{e^{-2.59}}{1 + e^{-2.59}} = 0.07$. Just as we labeled a fitted value of $y_i$ with a ``hat'' in single-variable and multiple regression, we will do the same for this probability: $\hat{p}_i = 0.07$.
+
+If there is more than one address listed in the \emph{To} field, then the regression part of the model equals $-2.59 - 2.04\times1 = -4.63$, which corresponds to a probability $\hat{p}_i = 0.01$.
+
+Notice that we could examine -2.59 and -4.63 in Figure~\ref{logitTransformationFigureHoriz} to estimate the probability before formally calculating the value.
+\end{example}
+
+To convert from values on the regression-scale (e.g. -2.59 and -4.63 in Example~\ref{logisticExampleWithToMultiple}), use the following formula, which is the result of solving for $p_i$ in Equation~\eqref{GLMBinomialModelEquation}:
+\begin{align*}
+p_i
+	= \frac{e^{\beta_0 + \beta_1 x_{1,i}+\cdots+\beta_k x_{k,i}}}
+		{\ 1\ \ +\ \ e^{\beta_0 + \beta_1 x_{1,i}+\cdots+\beta_k x_{k,i}}\ }
+\end{align*}
+As with most applied data problems, we substitute the point estimates for the parameters (the $\beta_i$) so that we may make use of this formula. In Example~\ref{logisticExampleWithToMultiple}, the probabilities were calculated as
+\begin{align*}
+&\frac{e^{-2.59}}{1\ +\ e^{-2.59}} = 0.07 && \frac{e^{-2.59 - 2.04}}{1\ +\ e^{-2.59 - 2.04}} = 0.01
+\end{align*}
+While the information about whether the email is addressed to multiple people is a helpful start in classifying email as spam or not, the probabilities of 7\% and 1\% are not dramatically different. To get more precise estimates, we'll need to include many more variables in the model.
+
+We used statistical software to fit the logistic regression model with all ten predictors described in Table~\ref{emailVariables}. Like multiple regression, the result may be summarized in a summary table, which is shown in Table~\ref{emailLogisticModelResults}. This table structure is almost identical to that of multiple regression; the only real difference is that the p-values are calculated using the normal distribution rather than the $t$ distribution. %For each variable, there is a point estimate of its coefficient in the model, a corresponding standard error for that estimate, a $t$ test statistic, and a
+In the email application, the p-value indicates whether there is strong evidence that the corresponding variable provides helpful information in classifying spam for this logistic model.
+
+Just like multiple regression, we could trim some variables from the model using the p-value. An alternative way to trim the model is the use a metric called \termsub{Akaike information criterion}{Akaike information criterion (AIC)} (\emph{Akaike} is pronounced like \emph{ah-kah-ee-kay}), often written as \emph{AIC}, where lower values usually correspond to parsimonious\index{parsimonious} models (models that throw out variables that are not very useful). The previously suggested alternative, adjusted $R^2$, is not generally calculated in logistic regression. If we were to use the p-value or AIC approach in this example with backwards elimination (start with the full model and trim the predictors), we would ultimately eliminate \var{exclaim\_subj}, \var{cc}, \var{dollar}, and \var{inherit}. While the p-value and AIC selections agree in this particular example, this is not always the case.
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{rrrrr}
+  \hline
+ & Estimate & Std. Error & z value & Pr($>$$|$z$|$) \\ 
+  \hline
+(Intercept) & -1.5787 & 0.1159 & -13.62 & 0.0000 \\ 
+  to\_multiple & -2.9584 & 0.4288 & -6.90 & 0.0000 \\ 
+  winner & 1.7970 & 0.3356 & 5.35 & 0.0000 \\ 
+  format & -1.2055 & 0.1464 & -8.23 & 0.0000 \\ 
+  re\_subj & -2.4817 & 0.3978 & -6.24 & 0.0000 \\ 
+  exclaim\_subj & 0.3135 & 0.2585 & 1.21 & 0.2254 \\ 
+  cc & -0.4873 & 0.3532 & -1.38 & 0.1678 \\ 
+  attach & 1.0655 & 0.2418 & 4.41 & 0.0000 \\ 
+  dollar & -0.2566 & 0.1958 & -1.31 & 0.1900 \\ 
+  inherit & 0.5683 & 0.3490 & 1.63 & 0.1035 \\ 
+  password & -1.6729 & 0.7289 & -2.30 & 0.0217 \\ 
+\hline
+\end{tabular}
+\end{center}
+\caption{Summary table for the logistic regression model that uses each of the variables presented in Table~\ref{emailVariables} as predictors for classifying spam email. The \var{number} variable has three categories, and it is adjusted by statistical software into 2 indicator variables: one for emails with only small numbers and one for emails with big numbers.} % An email where both indicators are zero for an email, this indicates that email included no numbers.}
+\label{emailLogisticModelResults}
+\end{table}
+% library(openintro); ?email # run example
+% library(xtable); xtable(g)
+
+\begin{exercise}
+Examine Table~\ref{emailLogisticModelResults} and identify the row corresponding to the \var{to\_multiple} variable. Is the point estimate the same as we found before, -2.03, or is it different? Explain why this might be.\footnote{The estimates are different; the estimate in the full model is -2.96 versus -2.03 for the single-predictor model. The full model estimate is calculated while accounting for all other variables in the model.}% This is similar to how the coefficients of variables in the Mario Kart regression model varied a little when using different sets of predictors.}
+\end{exercise}
+
+Point estimates generally will change a little -- and sometimes a lot -- in one model versus another. This is usually due to colinearity in the predictor variables and is also something we saw when we compared estimates from single-variable models to the multiple-variable models in Sections~\ref{twoSingleVariableModelsForMarioKartData} and~\ref{includingAndAssessingManyVariablesInAModel}.
+
+\begin{example}{Examine Table~\ref{emailLogisticModelResults}. Which variables appear most useful in classifying spam email?}
+There are two considerations here. We first would look for the larger estimates (both positive and negative), which indicates a relatively strong influence in the model. Additionally, we should consider the standard error of the estimates. While an estimated coefficient may be large, if it's standard error is also relatively large then it is hard to say if the large estimate is due to the variable's importance or from random fluctuation. Thus, the most important variables are likely those with larger estimates and smaller standard errors.
+
+Besides the intercept, coefficients of \var{to\_multiple}, \var{winner}, \var{re\_subj}, and possibly also the levels of the \var{number} variable appear important with relatively small standard errors. The \var{password} variable has a sizable estimate, however, it also has a fairly large standard error, so it's high value is less uncertain.
+\end{example}
+
+\begin{example}{Examine the winner variable shown in Table~\ref{emailLogisticModelResults}, which is an indicator variable for whether the word ``winner'' appeared in the email. Suppose we were given an email to classify and the word ``winner'' appeared in the email. How would this affect the predicted probability that this email is spam in the full model?} \label{exampleForSpamAndWinner}
+%Would the information that ``winner'' appears in the email be counted in the model a evidence for or against the email being spam?}
+The estimated coefficient of \var{winner} is positive (1.7970). A positive coefficient estimate in logistic regression, just like in multiple regression, corresponds to a positive association between the predictor and the response variable when accounting for the other variables in the model. Since the response variable takes value 1 if an email is spam and 0 otherwise, the positive coefficient indicates that the presence of ``winner'' in an email provides some evidence that the email is spam. (Ideally, we would include all variables in the model for the calculation since the coefficients are fit assuming all variables are available.)
+\end{example}
+
+\begin{exercise} 
+\label{exerciseForSpamAndFormat}The estimated coefficient of \var{format}, a variable that takes value 1 when the email is in HTML format and 0 when the email is plain text, is -0.8483. Suppose we examine the format for the email described in Example~\ref{exampleForSpamAndWinner}, and we find that the email is in the HTML format. Would this characteristic increase or reduce the probability that the email is spam according to the full model?\footnote{Since HTML corresponds to a value of 1 in the format variable and the coefficient of this variable is negative, this would lower the probability estimate returned from the model.}
+\end{exercise}
+
+\subsection{Inference for the email application}
+
+Example~\ref{exampleForSpamAndWinner} and Exercise~\ref{exerciseForSpamAndFormat} highlight a key characteristic of logistic regression (and multiple regression). In the spam filter example, some email characteristics will push the email's classification in the direction of spam while other characteristics will push it in the opposite direction.
+
+If we were to implement our spam filter -- in this case, we should only consider implementing it for the one email account for which we have data -- then future email we try to classify will ultimately fall into one of three categories:
+\begin{enumerate}
+\item The characteristics generally indicate the email is not spam, and so the resulting probability that the email is spam is quite low, say under 0.10.
+\item The characteristics generally indicate the email is spam, and so the resulting probability that the email is spam is quite large, say over 0.90.
+\item The characteristics somewhat balance each other out in terms of evidence for and against the message being classified as spam, meaning those emails cannot be adequately classified as spam or not spam.
+\end{enumerate}
+If we were managing an email service, we would have to think about what should be done in each of these three instances. In this application, there are usually just two possibilities: filter the email out from the regular inbox and put it in a ``spambox'', or let the email go to the regular inbox.
+
+In the first of the three scenarios, we are pretty sure the message is not spam, so we should let it through to the regular inbox. In the second scenario, we are pretty sure the message is spam, so we store it in the spambox. In the third situation, there is a lot of uncertainty about the email; in this application, we'd probably want to err on the side of sending more mail to the inbox rather than mistakenly putting good messages in the spambox. So, in summary: the first and last categories describe emails that go to the regular inbox, and the second scenario describes emails sent to the spambox.
+
+\begin{exercise}
+Suppose you were using this email service and you saw you had 100 messages in your spambox. If we used the guidelines above for putting messages in your spambox, about how many legitimate (non-spam) messages would you expect to find among the 100 messages?\footnote{First, note that the cutoff for the predicted probability is 90\%. So a worst case scenario is that all the messages are hovering around a probability of 0.9. This means that, at worst, we should expect to find about 10 legitimate messages among the 100 messages placed in the spambox.}
+\end{exercise}
+
+Almost any classifier will have some error. In the spam filter example, we have decided that it is okay to allow up to 10\% of the messages in the spambox be real messages. If we wanted to make it a little harder to classify messages as spam and use, say, a cutoff of 0.95, this would have two effects. Because it raises the standard for what can be classified as spam, it both reduces the number of good emails that are classified as spam but also will fail to correctly classify a larger fraction of actual spam messages. While our model may be very impressive, these practical considerations are absolutely crucial to making a helpful spam filter. WIthout them, we could actually do more harm than good.
+
+%First, it would misclassify fewer messages as spam. However, it has also raised the standard  This is actually a relatively high rate still, and a quality email provider would hope to build a classifier that would have a lower rate of . What if an important message slipped through to the spambox? Will the end-user actually check the spambox so she will find the messages incorrectly classified as spam? These types of considerations are key to 
+
+
+%\subsection{Special discussion of the full logistic model}
+%
+%\begin{example}{Why is the standard error for the estimated coefficient of the \var{password} variable much larger than the standard error of other estimates?}
+%To answer this question, we must investigate the data itself. Doing so, we would find that only 90 of the 3,921 emails contain the word ``password''. Because there is very limited information about emails containing the word ``password'', the standard error for this variable's coefficient is larger than we might have expected.
+%\end{example}
+%
+%\begin{example}{Examine Table~\ref{emailLogisticModelResults}. Which variables appear most useful in classifying spam email?}
+%There are two considerations here. We first would look for the larger estimates (both positive and negative), which indicates a relatively strong influence in the model. Additionally, we should consider the standard error of the estimates. While an estimated coefficient may be large, if it's standard error is also relatively large then it is hard to say if the large estimate is due to the variable's importance or from random fluctuation. Thus, the most important variables are likely those with larger estimates and smaller standard errors.
+%
+%Besides the intercept, coefficients of \var{to\_multiple}, \var{winner}, \var{re\_subj}, and possibly also the levels of the \var{number} variable appear important with relatively small standard errors. The \var{password} variable has a sizable estimate, however, it also has a fairly large standard error, so it's high value is less uncertain.
+%\end{example}
+%
+%
+%
+%%\subsection{Interpreting coefficients in logistic regression}
+%%\subsection{Using many predictors to create the spam filter}
+%%\subsection{Generalized linear model assumptions}
+%%\subsection{Examining the predictors before modeling}
+%%\subsection{Model estimate for the email data}
+%
+%
+%\begin{tipBox}{\tipBoxTitle{Isn't it odd that we assign probabilities to something we've observed?}
+%It may seem a little odd that the model will assign a probability for each email even though we know which are spam and which are not. In truth, the model is fit according to this data, and the probabilities provided are simply a snapshot of what we might anticipate seeing in the future.}
+%\end{tipBox}
+
+
+
+
+
+\subsection{Diagnostics for the email classifier}
+
+Usually we would check model assumptions using diagnostics immediately after fitting a regression model. However, as we noted in the disclaimer at the start of Section~\ref{logisticRegression}, this introduction to logistic regression is really to highlight how far you've come in the world of applied statistics and provide one example of an advanced application that you are ready to start rigorously thinking about.
+
+\begin{termBox}{\tBoxTitle{Logistic regression assumptions}
+There are two key conditions for fitting a logistic regression model: \vspace{-1.5mm}
+\begin{enumerate}
+\setlength{\itemsep}{0mm}
+\item The model relating the probability parameter $p_i$ and the predictor variables closely resembles the truth.
+\item Each outcome $Y_i$ is independent of the others.
+\end{enumerate}}
+\end{termBox}
+
+The first condition of the logistic regression model is not easily checked without a fairly sizable amount of data. Luckily, we've got 3,921 emails that were used to fit our model! Let's first visualize these by plotting the true classification of the emails against the model's fitted probabilities, as shown in Figure~\ref{logisticModelPredict}. The fitted probabilities are fairly dispersed, even if the vast majority of emails (spam or not) still have fitted probabilities below 0.5.
+\begin{figure}
+\centering
+\includegraphics[width=0.98\textwidth]{08/figures/logisticModel/logisticModelPredict}
+\caption{The predicted probabilities based on the model for the 3,912 observations, where they have been grouped into the spam and not spam groups. Notice that there are many more non-spam messages than spam messages.}
+\label{logisticModelPredict}
+\end{figure}
+
+This may at first seem very discouraging: we have fit a logistic model to create a spam filter, but no emails have a fitted spam probability above 0.9. That is, we were unable to classify a single message is spam. This may be initially frustrating, but we should not despair. While statistical methods themselves will not bail us out with our exact data set of 3,921 emails and 10 predictors, we could easily collect more variables. In fact, there are much better predictors that we haven't even considered yet, which is the topic of Section~\ref{improvingTheSetOfVariablesForASpamFilter}.
+
+Look again at Figure~\ref{logisticModelPredict}. The data is so dense that we cannot get a good sense of whether the probabilities are fairly well represented. For example, if we looked at all emails with fitted probabilities between 0.08 and 0.12, then we would expect about 8-12\% of them to be spam. There's just too much data to check this visually. Instead, we'll borrow an advanced statistical called a \term{natural spline}. Like logistic regression, you are now sufficiently prepared to learn about applying techniques with natural splines, but it is a topic that we won't cover in this course. So instead, we'll just tell you what they do: they fit a flexible, curved line to data rather than assuming a simple straight line.
+
+We've fit a natural spline model to calculate the empirical probabilities in Figure~\ref{logisticModelPredict}, which we have added in a new plot, Figure~\ref{logisticModelSpline}. This line trends higher, roughly following the $y=x$ line. The $y=x$ line is what we would expect to see if the model fit perfectly. Naturally, we see some variation, which is represented by the confidence bounds for the line. We see some deviation near the probability of 0.1, where the solid black line suggests the actual fraction of emails in this vicinity is slightly less than 10\%. However, for the most part, the model seems to fit reasonably well for these data. % that about 10\% of emails are spam. For a fitted probability of 0.5, the line shows that about 53\% of the emails are spam. We've added error bounds for this line, which shows as the data become more sparse for higher probabilities, the line's fit becomes more uncertain. Since we see the dashed $y=x$ line contained within these bounds, it seems like the logistic model is reasonable for these data.
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{08/figures/logisticModel/logisticModelSpline}
+\caption{Here we have computed an local estimate of the probability a message is spam based on its predicted probability, shown as the solid black line (with confidence bounds on the fit). This line is fit using natural splines, which are an advanced method that allows the line to curve based on the data. The line closely follows what we would expect if the logistic regression model was accurate.}
+\label{logisticModelSpline}
+\end{figure}
+
+We will check the second logistic regression model assumption -- independence of the outcomes -- by plotting the model residuals in the order the observations were collected. The residuals for a logistic regression model are calculated the same way as with multiple regression: the actual minus the expected outcome. In logistic regression, the expected value of an outcome is actually just the fitted probability for the observation, i.e. the residual can be written as
+\begin{align*}
+e_i = Y_i - \hat{p}_i
+\end{align*}
+If we compute these residuals for all the observations, we can then plot them against a variety of variables, as we did with the residuals in multiple regression. Likewise, we may look at them over time, as highlighted in Figure~\ref{}. In this plot, we do observe some clustering, so it seems there may be some additional underlying structure remaining to be understood. One way to do this is to add more variables to the model to see if an extended model would explain this remaining structure. Alternatively, other ways include using more advanced methods. We have also shown a snapshot of just the first 200 observations so you can look for correlation in successive observations. If there is dependence between successive observations, it is difficult to see and so not very strong.
+
+
+\subsection{Improving the set of variables for a spam filter}
+\label{improvingTheSetOfVariablesForASpamFilter}
+
+If we were building a spam filter for an email service that managed many accounts (e.g. Gmail or Hotmail), we would spend much more time thinking about data collection and other variables that could be useful in spam classification. For example, we would use transformations or other techniques that would help us include strongly skewed numerical variables as predictors, and we could even use information from across many email accounts to generate new variables for the spam filter.
+
+Take a few minutes to think about additional variables that might be useful in identifying spam if you were given the option to collect more variables and observations. Below is a sample list of variables that we thought might be useful:
+\begin{enumerate}
+\item An indicator variable to represent whether there was prior two-way correspondence an email's sender. For instance, if I sent a message to john@example.com and then John later sends me an email, then this variable would take value 1 for the email that John sent to me since I had previously sent him an email. If I hadn't sent him an email, it would be set to 0.
+% to to indicate variable set the variable to 1. Otherwise set it to 0.
+%For each email, examine the \emph{From} field. If the account receiving this message previously sent an email to this email address, then specify a value of 1 to indicate prior correspondence. If there was no prior correspondence, then set the value to 0.
+\item Utilize an account's past spam flagging information. Create another indicator variable that takes value 1 for a message if I've previously classified a message from that sender as spam.
+%We should make a related variable to the one above indicating whether the sender previously been flagged for spam.
+%Both this new variable and the previous variable could be considered in two forms: one that is a simple indicator, and one that lists the number of correspondences or number of times the times the sender has been flagged.
+\item We should examine URLs or links that appear in previous spam messages, then we can create a variable indicating whether an incoming message has a link that was found in a known spam message.
+%\item We may look for additional keywords as possible indicators of spam. For instance, it may be helpful to generate three variables that indicate whether the words \emph{lottery}, \emph{viagra}, and \emph{Nigeria} were included in each email message.
+\item There is a lot of information contained in what are called \emph{email headers}\index{email headers}, which are usually hidden from view but may easily be accessed by a web server. Header information for an email indicates which computer server (domain) sent the email along with many other details. While the technical aspects of this information are beyond the scope of this textbook, interested readers may learn more about these headers to think of new variables that might be useful in a spam filter. In fact, use of these variables would be crucial to any viable spam filter.
+\end{enumerate}
+It is important to know that the model we have built is a very preliminary step in the creation of a spam filter. The work that goes into creating a successful service like Gmail requires enormous resources, ingenuity, and effort. That said, this section provides ideas and insights into data and statistical methods that are used in such work.
+
+If we were to pursue the creation of a spam filter, a crucial next step would be the creation of variables that utilize data across user accounts. Examine the first three proposed variables listed above; we could make corresponding cross-account variables. For example, we could consider.
+
+To think of yet more possible variables, try to think about how spammers might try to get around the variables we've created above. In a way, spam filters are in an intellectual arms race with spammers; they want to head off any loopholes before spammers are able to exploit those weaknesses. This highlights an important feature of excellent statisticians: they must be learn to adapt to new applications, often in a variety of fields. This is one of the demands of being a statistician, but it is also one of the benefits. There is always another field of applications with data that is waiting when you're ready for something new.
+
+
+
+
+%\subsection{Other generalized linear models}
+%
+%Logistic regression is one example of a larger class of models called \emph{generalized linear models} (GLMs). Many of these models share key characteristics with logistic regression:
+%\begin{itemize}
+%\item[(1)] We choose a reasonable distribution for modeling the response variable. In the case of logistic regression, we used a binomial distribution.
+%\item[(2)] We identify the key parameter of the distribution from (1), and then we construct a model of the following form:
+%\begin{align*}
+%transformation(parameters)
+%	= \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \cdots + \beta_k x_{k,i}
+%\end{align*}
+%The particular transformation chosen depends on the distribution.
+%\end{itemize}
+%This is an oversimplification, but not terribly much of one. For instance, if the response variable can be reasonably modeled using a Poisson distribution (see Section~\ref{poisson}), then the model parameter is the population's success rate $\lambda_i$, and we use a $\log_{e}$ transformation:
+%\begin{align*}
+%Y_i &\sim Poisson(\lambda_i) \\
+%\log_{e}\lambda_i &= \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \cdots + \beta_k x_{k,i}
+%\end{align*}
+
+
+
+
+%%%%%
+\section{ANOVA and regression with categorical variables}
+\label{anovaAndRegrWithCategoricalVariables}
+
+Fitting and interpreting models using categorical variables as predictors is similar to what we have encountered in simple and multiple regression. However, there is a twist: a single categorical variable will have multiple corresponding parameter estimates. To be precise, if the variable has $C$ categories, then there will be $C-1$ parameter estimates. Furthermore, it is not appropriate to use a Z or T score to determine the significance of the categorical variable as a predictor unless it only has $C=2$ levels.
+
+In this section, we will learn a new method called \term{analysis of variance (ANOVA)} and a new test statistic called $F$. ANOVA is used to assess whether the mean of the outcome variable is different for different levels of a categorical variable:
+\begin{itemize}
+\setlength{\itemsep}{0mm}
+\item[$H_0$:] The mean outcome is the same across all categories. In statistical notation, $\mu_1 = \mu_2 = \cdots = \mu_k$ where $\mu_i$ represents the mean of the outcome for observations in category $i$.
+\item[$H_A$:] The mean of the outcome variable is different for some (or all) groups.
+\end{itemize}
+These hypotheses are used to evaluate a model of the form
+\begin{align} 
+y_{i,j} = \mu_i + \epsilon_{j} \label{anovaModelForMeans}
+\end{align}
+where an observation $y_{i,j}$ belongs to group $i$ and has error $\epsilon_j$. Generally we make three assumptions in applying this model:
+\begin{itemize}
+\setlength{\itemsep}{0mm}
+\item the errors are independent,
+\item the errors are nearly normal, and
+\item the errors have nearly constant variance.
+\end{itemize}
+These conditions probably look familiar: they are the same conditions we used for multiple regression. When these three assumptions are reasonable, we may perform an ANOVA to determine whether the data provide strong evidence against the null hypothesis that all the $\mu_i$ are equal.
+
+\begin{tipBox}{\tipBoxTitle{Level, category, and group are synonyms}
+We sometimes call the levels of a categorical variable its categories or its groups.}
+\end{tipBox}
+
+\begin{example}{College departments commonly run multiple lectures of the same introductory course each semester because of high demand. Consider a statistics department that runs three lectures of an introductory statistics course. We might like to determine whether there are statistically significant differences in first exam scores in these three classes ($A$, $B$, and $C$). Describe how the model and hypotheses above could be used to determine whether there are any differences between the three classes.} \label{firstExampleForThreeStatisticsClassesAndANOVA}
+The hypotheses may be written in the following form:
+\begin{itemize}
+\setlength{\itemsep}{0mm}
+\item[$H_0$:] The average score is identical in all lectures. Any observed difference is due to chance. Notationally, we write $\mu_A=\mu_B=\mu_C$.
+\item[$H_A$:] The average score varies by class. We would reject the null hypothesis in favor of this hypothesis if there were larger differences among the class averages than what we might expect from chance alone.
+\end{itemize}
+We could label students in the first class as $y_{A,1}$, $y_{A,2}$, $y_{A,3}$, and so on. Students in the second class would be labeled $y_{B,1}$, $y_{B,2}$, etc. And students in the third class: $y_{C,1}$, $y_{C,2}$, etc. Then we could estimate the true averages ($\mu_A$, $\mu_B$, and $\mu_C$) using the group averages: $\bar{y}_{A}$, $\bar{y}_B$, and $\bar{y}_C$.
+\end{example}
+
+Strong evidence favoring the alternative hypothesis in ANOVA is described by unusually large differences among the group means. We will soon learn that assessing the variability of the group means relative to the variability among individual observations within each group is key to ANOVA's success.
+
+\begin{example}{Examine Figure~\ref{toyANOVA}. Compare groups I, II, and III. Can you visually determine if the differences in the group centers is due to chance or not? Now compare groups IV, V, and VI. Do these differences appear to be due to chance?}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.75\textwidth]{08/figures/toyANOVA/toyANOVA}
+\caption{Side-by-side dot plot for the outcomes for six groups.}
+\label{toyANOVA}
+\end{figure}
+Any real difference in the means of groups I, II, and III is difficult to discern, because the data within each group are very volatile relative to any differences in the average outcome. On the other hand, it appears there are differences in the centers of groups IV, V, and VI. For instance, group IV appears to have a lower mean than that of the other two groups. Investigating groups IV, V, and VI, we see the differences in the groups' centers are noticeable because those differences are large \emph{relative to the variability in the individual observations within each group}.
+\end{example}
+
+\subsection{Is batting performance related to player position in MLB?}
+
+We would like to discern whether there are real differences between the batting performance of baseball players according to their position: outfielder (\resp{OF}), infielder (\resp{IF}), designated hitter (\resp{DH}), and catcher (\resp{C}). We will use a data set called \data{mlbBat10}, which includes batting records of 327 Major League Baseball (MLB) players from the 2010 season. Six of the 327 cases represented in \data{mlbBat10} are shown in Table~\ref{mlbBat10DataMatrix}, and descriptions for each variable are provided in Table~\ref{mlbBat10Variables}. The measure we will use for the player batting performance (the outcome variable) is on-base percentage (\var{OBP}). The on-base percentage roughly represents the fraction of the time a player successfully gets on base or hits a home run.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{rlllrrrrrr}
+  \hline
+ & name & team & position & AB & H & HR &RBI & AVG & OBP \\ 
+  \hline
+1 & I Suzuki & SEA & OF & 680 & 214 & 6 & 43 & 0.315 & 0.359 \\ 
+  2 & D Jeter & NYY & IF & 663 & 179 & 10 & 67 & 0.270 & 0.340 \\ 
+  3 & M Young & TEX & IF & 656 & 186 & 21 & 91 & 0.284 & 0.330 \\ 
+  $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ \\
+  325 & B Molina & SF & C & 202 & 52 & 3 & 17 & 0.257 & 0.312 \\ 
+  326 & J Thole & NYM & C & 202 & 56 & 3 & 17 & 0.277 & 0.357 \\ 
+  327 & C Heisey & CIN & OF & 201 & 51 & 8 & 21 & 0.254 & 0.324 \\ 
+   \hline
+\end{tabular}
+\caption{Six cases from the \data{mlbBat10} data matrix.}
+\label{mlbBat10DataMatrix}
+\end{table}
+
+\begin{table}
+\centering\small
+\begin{tabular}{lp{9.5cm}}
+\hline
+{\bf variable} & {\bf description} \\
+\hline
+%\begin{itemize}
+\var{name} & Player name \\
+\var{team} & The player's team, where the team names are abbreviated \\
+\var{position} & The player's primary field position (\resp{OF}, \resp{IF}, \resp{DH}, \resp{C}) \\
+\var{AB} & Number of opportunities at bat \\
+\var{H} & Number of hits \\
+\var{HR} & Number of home runs \\
+\var{RBI} & Number of runs batted in \\
+\var{batAverage} & Batting average, which is equal to $\resp{H}/\resp{AB}$ \\
+\hline
+\end{tabular}
+\caption{Variables and their descriptions for the \data{mlbBat10} data set.}
+\label{mlbBat10Variables}
+\end{table}
+
+\begin{exercise} \label{nullHypForOBPAgainstPosition}
+The null hypothesis under consideration is the following: $\mu_{\resp{OF}} = \mu_{\resp{IF}} = \mu_{\resp{DH}} = \mu_{\resp{C}}$.
+Write the null and corresponding alternative hypotheses in plain language. Answers in the footnote\footnote{$H_0$: The average on-base percentage is equal across the four positions. $H_A$: The average on-base percentage varies across some (or all) groups.}.
+\end{exercise}
+
+\begin{example}{The player positions have been divided into four groups: outfield (\resp{OF}), infield (\resp{IF}), designated hitter (\resp{DH}), and catcher (\resp{C}). What would be an appropriate point estimate of the batting average by outfielders, $\mu_{\resp{OF}}$?}
+A good estimate of the batting average by outfielders would be the sample average of \var{batAverage} for just those players whose position is outfield: $\bar{y}_{OF} = 0.334$.
+\end{example}
+
+Table~\ref{mlbHRPerABSummaryTable} provides summary statistics for each group. A side-by-side box plot for the batting average is shown in Figure~\ref{mlbANOVABoxPlot}. Notice that the variability appears to be approximately constant across groups; nearly constant variance across groups is an important assumption that must be satisfied before we consider the ANOVA approach.
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{lrrrr}
+\hline
+	& \resp{OF} & \resp{IF} & \resp{DH} & \resp{C} \\
+\hline
+Sample size ($n_i$)	& 120 & 154 & 14 & 39 \\
+Sample mean ($\bar{y}_i$)	& 0.334 & 0.332 & 0.348 & 0.323 \\
+Sample SD ($s_i$)	& 0.029 & 0.037 & 0.036 & 0.045 \\
+\hline
+\end{tabular}
+\caption{Summary statistics of on-base percentage, split by player position.}
+\label{mlbHRPerABSummaryTable}
+\end{table}
+\begin{figure}
+\centering
+\includegraphics[width=0.85\textwidth]{08/figures/mlbANOVA/mlbANOVABoxPlot}
+\caption{Side-by-side box plot of the on-base percentage for 327 players across four groups.}
+\label{mlbANOVABoxPlot}
+\end{figure}
+
+\begin{example}{The largest difference between the sample means is between the designated hitter and the catcher positions. Consider again the original hypotheses:
+\begin{itemize}
+\setlength{\itemsep}{0mm}
+\item[$H_0$:] $\mu_{\resp{OF}} = \mu_{\resp{IF}} = \mu_{\resp{DH}} = \mu_{\resp{C}}$
+\item[$H_A$:] The average on-base percentage ($\mu_i$) varies across some (or all) groups.
+\end{itemize}
+Why might it be inappropriate to run the test by simply estimating whether the difference of $\mu_{\var{DH}}$ and $\mu_{\resp{C}}$ is statistically significant at a 0.05 significance level?}
+\label{multipleComparisonExampleThatIncludesDiscussionOfClassrooms}
+The primary issue here is that we are inspecting the data before picking the groups that will be compared. It is inappropriate to examine all data by eye (informal testing) and only afterwards decide which parts to formally test. This is called \term{data snooping} or \term{data fishing}. Naturally we would pick the groups with the large differences for the formal test, leading to an unintentional inflation in the Type 1 Error rate. To understand this better, let's consider a slightly different problem.
+
+Suppose we are to measure the aptitude for students in 20 classes in a large elementary school at the beginning of the year. In this school, all students are randomly assigned to classrooms, so any differences we observe between the classes at the start of the year are completely due to chance. However, with so many groups, we will probably observe a few groups that look rather different from each other. If we select only these classes that look so different, we will probably make the wrong conclusion that the assignment wasn't random. While we might only formally test differences for a few pairs of classes, we informally evaluated the other classes by eye before choosing the most extreme cases for a comparison.
+\end{example}
+
+For additional reading on the ideas expressed in Example~\ref{multipleComparisonExampleThatIncludesDiscussionOfClassrooms}, we recommend reading about the \term{prosecutor's fallacy}\footnote{See, for example, \url{http://www.stat.columbia.edu/~cook/movabletype/archives/2007/05/the_prosecutors.html}.}.
+
+In the next section we will learn how to use the $F$ statistic and ANOVA to test whether differences in means could have happened just by chance.
+
+\subsection{Analysis of variance (ANOVA) and the $F$ test}
+
+The method of analysis of variance focuses on answering one question: is the variability in the sample means so large that it seems unlikely to be from chance alone? This question is different from earlier testing procedures since we will \emph{simultaneously} consider many groups, and evaluate whether their sample means differ more than we would expect from natural variation. We call this variability the \term{mean square between groups ($MSG$)}, and it has an associated degrees of freedom, $df_{G}=k-1$ when there are $k$ groups. The $MSG$ is sort of a scaled variance formula for means. If the null hypothesis is true, any variation in the sample means is due to chance and shouldn't be too large%; it should be roughly equal to the variability in the outcome variable
+. Details of $MSG$ calculations are provided in the footnote\footnote{Let $\bar{y}$ represent the mean of outcomes across all groups. Then the mean square between groups is computed as
+\begin{align*}
+MSG = \frac{1}{df_{G}}SSG = \frac{1}{k-1}\sum_{i=1}^{k} n_{i}\left(\bar{y}_{i} - \bar{y}\right)^2
+\end{align*}
+where $SSG$ is called the \term{sum of squares between groups} and $n_{i}$ is the sample size of group $i$.}, however, we typically use software for these computations.
+
+The mean square between the groups is, on its own, quite useless in a hypothesis test. We need a benchmark value for how much variability should be expected among the sample means if the null hypothesis is true. To this end, we compute the mean of the squared errors, often abbreviated as the \term{mean square error ($MSE$)}, which has an associated degrees of freedom value $df_E=n-k$. It is helpful to think of $MSE$ as a measure of the variability of the residuals. Details of the computations of the $MSE$ are provided in the footnote\footnote{Let $\bar{y}$ represent the mean of outcomes across all groups. Then the \term{sum of squares total ($SST$)} is computed as
+\begin{align*}
+SST = \sum_{i=1}^{n} \left(y_{i} - \bar{y}\right)^2
+\end{align*}
+where the sum is over all observations in the data set. Then we compute the \term{sum of squared errors ($SSE$)} in one of three equivalent ways:
+\begin{align*}
+SSE &= SST - SSG \\
+	&= (n_1-1)s_1^2 + (n_2-1)s_2^2 + \cdots + (n_k-1)s_k^2 \\
+	&= \sum_{j=1}^{n} e_i^2
+\end{align*}
+where $s_i^2$ is the sample variance (square of the standard deviation) of the residuals in group $i$, and the last expression represents the sum of the squared residuals across all groups. Then the $MSE$ is the standardized form of $SSE$: $MSE = \frac{1}{df_{E}}SSE$.} for the interested reader.
+
+When the null hypothesis is true, any differences among the sample means are only due to chance, and the $MSG$ and $MSE$ should be about equal. As a test statistic for ANOVA, we examine the fraction of $MSG$ and $MSE$:
+\begin{align} \label{formulaForTheFStatistic}
+F = \frac{MSG}{MSE}
+\end{align}
+The $MSG$ represents a measure of the between-group variability, and $MSE$ the variability within each of the groups.
+
+\begin{exercise}
+For the baseball data, $MSG = 0.00252$ and $MSE=0.00127$. Identify the degrees of freedom associated with each mean square and verify the $F$ statistic is 1.994.
+\end{exercise}
+
+We use the $F$ statistic to evaluate the hypotheses in what is called an \term{F test}. We compute a p-value from the $F$ statistic using an $F$ distribution, which has two associated parameters: $df_{1}$ and $df_{2}$. For the $F$ statistic in ANOVA, $df_{1} = df_{G}$ and $df_{2}= df_{E}$. An $F$ distribution with 3 and 323 degrees of freedom, corresponding to the $F$ statistic for the baseball hypothesis test, is shown in Figure~\ref{fDist3And323}.
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.7\textwidth]{08/figures/fDist3And323/fDist3And323}
+\caption{An $F$ distribution with $df_1=3$ and $df_2=323$.}
+\label{fDist3And323}
+\end{figure}
+
+The larger the observed variability in the sample means ($MSG$) relative to the residuals ($MSE$), the larger $F$ will be and the stronger the evidence against the null hypothesis. Because larger values of $F$ represent stronger evidence against the null hypothesis, we use the upper tail of the distribution to compute a p-value.
+
+\begin{termBox}{\tBoxTitle{The $F$ statistic and the $F$ test}
+Analysis of variance (ANOVA) is used to test whether the mean outcome differs across 2 or more groups. ANOVA uses a test statistic $F$, which represents a standardized ratio of variability in the sample means relative to the variability of the residuals. If $H_0$ is true and the model assumptions are satisfied, the statistic $F$ follows an $F$ distribution with parameters $df_{1}=k-1$ and $df_{2}=n-k$. The upper tail of the $F$ distribution is used to represent the p-value.}
+\end{termBox}
+
+\begin{exercise}\label{describePValueAreaForFDistributionInMLBOBPExample}
+The test statistic for the baseball example is $F=1.994$. Shade the area corresponding to the p-value in Figure~\ref{fDist3And323}.
+\end{exercise}
+
+\begin{example}{The p-value corresponding to the solution for Exercise~\ref{describePValueAreaForFDistributionInMLBOBPExample} is equal to about 0.115. Does this provide strong evidence against the null hypothesis?}
+The p-value is larger than 0.05, indicating the evidence is not sufficiently strong to reject the null hypothesis at a significance level of 0.05. That is, the data do not provide strong evidence that the average on-base percentage varies by player's primary field position.
+\end{example}
+
+\subsection{Reading regression and ANOVA output from software}
+
+The calculations required to perform an ANOVA by hand are tedious and prone to human error. For these reasons it is common to use a statistical software to calculate the $F$ statistic and p-value.
+
+An ANOVA can be summarized in a table very similar to that of a regression summary. Table~\ref{anovaSummaryTableForOBPAgainstPosition} shows an ANOVA summary to test whether the mean of on-base percentage varies by player positions in the MLB.
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrrrr}
+  \hline
+ & Df & Sum Sq & Mean Sq & F value & Pr($>$F) \\ 
+  \hline
+position & 3 & 0.0076 & 0.0025 & 1.9943 & 0.1147 \\ 
+  Residuals & 323 & 0.4080 & 0.0013 &  &  \\    \hline
+\multicolumn{6}{r}{$s_{pooled} = 0.036$ on $df=323$}
+\end{tabular}
+\caption{ANOVA summary for testing whether the average on-base percentage differs across player positions.}
+\label{anovaSummaryTableForOBPAgainstPosition}
+\end{table}
+
+\begin{exercise}
+Earlier you verified that the $F$ statistic for this analysis was 1.994, and the p-value of 0.115 was provided. Circle these values in Table~\ref{anovaSummaryTableForOBPAgainstPosition} and notice the corresponding column name. Notice that both of these values are in the row labeled \emph{position}, which corresponds to the categorical variable representing the player position variable.
+\end{exercise}
+
+\begin{exercise}
+The $s_{pooled}=0.036$ on $df=323$ describes the estimated standard deviation associated with the residuals. Verify that $s_{pooled}$ equals the square root of the $MSE$ for the \emph{Residuals} row.
+\end{exercise}
+
+\subsection{Graphical diagnostics for an ANOVA analysis}
+
+There are three primary conditions we must check for an ANOVA analysis, all related to the residuals (errors) associated with the model. Recall that we assume the errors are independent, nearly normal, and have nearly constant variance across the groups.
+
+\begin{description}
+\item[Independence.] If observations are collected in a particular order, we should plot the residuals in the order the corresponding observations were collected (e.g. see Figure~\ref{mkDiagnosticInOrder} on page~\pageref{mkDiagnosticInOrder}). For the baseball data, the data were collected from a sorted table, making such a review impossible. However, we can consider the nature of the data: Do we have reason to believe players are not independent? There are not obvious reasons why independence should not hold, so we will assume independence is reasonable in lieu of being able to examine this condition using data.
+\item[Approximately normal.] The normality assumption for the residuals is especially important when the sample size is quite small. Figure~\ref{mlbANOVADiagNormality} shows a normal probability plot for the residuals from the baseball data. We do see some deviation from normality at the low end, where there is a longer tail than what we would expect if the residuals were truly normal. While we should report this finding with the results of the hypothesis test, this slight deviation probably has little impact on the test results since there are so many players included in the sample and they are not spread thinly across many groups. % but can be slightly relaxed for residuals of groups with larger sample sizes. We do see some deviations from normality in the lower tail. However, the three smallest residuals are from the infield and outfield groups. Because each of these groups each contain over 100 cases, so the potential outliers probably alright (but these observations are worth mentioning in a report of the analysis).
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{08/figures/mlbANOVA/mlbANOVADiagNormality}
+\caption{Normal probability plot of the residuals.}
+\label{mlbANOVADiagNormality}
+\end{figure}
+\item[Constant variance.] The last assumption is that the variance associated with the residuals is nearly constant from one group to the next. This assumption can be checked by examining a side-by-side box plot of the outcomes, as in Figure~\ref{mlbANOVABoxPlot}. In this case, the variability is similar in the four groups but not identical. We see in Table~\ref{mlbHRPerABSummaryTable} on page~\pageref{mlbHRPerABSummaryTable} that the standard deviation varies a bit from one group to the next. Whether these differences are from natural variation is unclear, so we should report this uncertainty with the final results.
+%\begin{figure}
+%\centering
+%\includegraphics[width=0.75\textwidth]{08/figures/mlbANOVA/mlbANOVADiagConstantVar}
+%\caption{Side-by-side box plot of the residuals in their corresponding groups.}
+%\label{mlbANOVADiagConstantVar}
+%\end{figure}
+\end{description}
+
+\begin{caution}
+{Diagnostics for an ANOVA analysis}
+{Independence is always important to an ANOVA analysis. The normality condition is very important when the sample sizes for each group are relatively small. The constant variance condition is especially important when the sample sizes differ between groups.}
+\end{caution}
+
+\subsection{Multiple comparisons and controlling Type 1 Error rate}
+\label{multipleComparisonsAndControllingTheType1ErrorRate}
+
+When we reject the null hypothesis in an ANOVA analysis, we might wonder, which of these groups have different means? To answer this question, we compare the means of each possible pair of groups. For instance, if there are three groups and there is strong evidence that there are some differences in the group means, there are three comparisons to make: group 1 to group 2, group 1 to group 3, and group 2 to group 3. These comparisons can be accomplished using a two-sample $t$ test, but we must use a modified significance level and a pooled estimate of the standard deviation across groups.
+
+\begin{example}{Example~\ref{firstExampleForThreeStatisticsClassesAndANOVA} on page~\pageref{firstExampleForThreeStatisticsClassesAndANOVA} discussed three statistics lectures, all taught during the same semester. Table~\ref{summaryStatisticsForClassTestData} shows summary statistics for these three courses, and a side-by-side box plot of the data is shown in Figure~\ref{classDataSBSBoxPlot}. We would like to conduct an ANOVA for these data. Do you see any deviations from the three conditions for ANOVA?}
+In this case (like many others) it is difficult to check independence in a rigorous way. Instead, the best we can do is use common sense to consider reasons the assumption of independence may not hold. For instance, the independence assumption may not be reasonable if there is a star teaching assistant that only half of the students may access; such a scenario would divide a class into two subgroups. After carefully considering the data, we believe that assuming independence may be acceptable.
+
+The distributions in the side-by-side box plot appear to be roughly symmetric and show no noticeable outliers.
+
+The box plots show approximately equal variability, which can be verified in Table~\ref{summaryStatisticsForClassTestData}, supporting the constant variance assumption.
+\end{example}
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrr}
+  \hline
+Class $i$	& A	& B	& C \\ 
+  \hline
+$n_i$		& 58	& 55	& 51 \\ 
+$\bar{y}_i$	& 75.1	& 72.0	& 78.9 \\ 
+$s_i$		& 13.9	& 13.8	& 13.1 \\ 
+\hline
+\end{tabular}
+\caption{Summary statistics for the first midterm scores in three different lectures of the same course.}
+\label{summaryStatisticsForClassTestData}
+\end{table}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{08/figures/classData/classDataSBSBoxPlot}
+\caption{Side-by-side box plot for the first midterm scores in three different  lectures of the same course.}
+\label{classDataSBSBoxPlot}
+\end{figure}
+
+\begin{exercise} \label{exerExaminingAnovaSummaryTableForMidtermData}
+An ANOVA was conducted for the midterm data, and a summary is shown in Table~\ref{anovaSummaryTableForMidtermData}. What should we conclude?
+\end{exercise}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrrrr}
+  \hline
+ & Df & Sum Sq & Mean Sq & F value & Pr($>$F) \\ 
+  \hline
+lecture & 2 & 1290.11 & 645.06 & 3.48 & 0.0330 \\ 
+  Residuals & 161 & 29810.13 & 185.16 &  &  \\ 
+   \hline
+\multicolumn{6}{r}{$s_{pooled}=13.61$ on $df=161$}
+\end{tabular}
+\caption{ANOVA summary table for the midterm data.}
+\label{anovaSummaryTableForMidtermData}
+\end{table}
+
+%\Comment{Need to include SD estimate from analysis in tables AND use it in multiple comparisons below.}
+
+There is strong evidence that the different means in each of the three classes is not simply due to chance. We might wonder, which of the classes are actually different? As discussed in earlier chapters, a two-sample $t$ test could be used to test for differences in each possible pair of groups. However, one pitfall was discussed in Example~\ref{multipleComparisonExampleThatIncludesDiscussionOfClassrooms} on page~\pageref{multipleComparisonExampleThatIncludesDiscussionOfClassrooms}: when we run so many tests, the Type~1 Error rate increases. This issue is resolved by using a modified significance level.
+
+\begin{termBox}{\tBoxTitle{Multiple comparisons and the Bonferroni correction for $\alpha$}
+The scenario of testing many pairs of groups is called \term{multiple comparisons}. The \term{Bonferroni correction} suggests that a more stringent significance level is more appropriate for these tests:
+\begin{align*}
+\alpha^* = \alpha / K
+\end{align*}
+where $K$ is the number of comparisons being considered (formally or informally). If there are $k$ groups, then usually all possible pairs are compared and $K=\frac{k(k-1)}{2}$.}
+\end{termBox}
+
+\begin{example}{In Exercise~\ref{exerExaminingAnovaSummaryTableForMidtermData}, you found that the data showed strong evidence of differences in the average midterm grades between the three lectures. Complete the three possible pairwise comparisons using the Bonferroni correction and report any differences.} \label{multipleComparisonsOfThreeStatClasses}
+We use a modified significance level of $\alpha^* = 0.05/3 = 0.0167$. Additionally, we use the pooled estimate of the standard deviation: $s_{pooled}=13.61$ on $df=161$.
+
+Lecture A versus Lecture B: The estimated difference and standard error are, respectively,
+\begin{align*}
+\bar{y}_A - \bar{y}_{B} &= 75.1 - 72 = 3.1
+	&SE = \sqrt{\frac{13.61^2}{58} + \frac{13.61^2}{55}} &= 2.56
+\end{align*}
+(See Section~\ref{pooledStandardDeviations} on page~\ref{pooledStandardDeviations} for additional details.) This results in a $T$ score of 1.21 on $df = 161$ (we use the $df$ associated with $s_{pooled}$) and a two-tailed p-value of 0.228. This p-value is larger than $\alpha^*=0.0167$, so there is not strong evidence of a difference in the means of lectures A and B.
+
+Lecture A versus Lecture C: The estimated difference and standard error are 3.8 and 2.61, respectively. This results in a $T$ score of 1.46 on $df = 161$ and a two-tailed p-value of 0.1462. This p-value is larger than $\alpha^*$, so there is not strong evidence of a difference in the means of lectures A and C.
+
+Lecture B versus Lecture C: The estimated difference and standard error are 6.9 and 2.65, respectively. This results in a $T$ score of 2.60 on $df = 161$ and a two-tailed p-value of 0.0102. This p-value is smaller than $\alpha^*$. Here we find strong evidence of a difference in the means of lectures B and C.
+\end{example}
+
+We might summarize the findings of the analysis from Example~\ref{multipleComparisonsOfThreeStatClasses} using the following notation:
+\begin{align*}
+\mu_A &\stackrel{?}{=} \mu_B
+	&\mu_A &\stackrel{?}{=} \mu_C
+	&\mu_B &\neq \mu_C
+\end{align*}
+The midterm mean in lecture A is not statistically distinguishable from those of lectures B or C. However, there is strong evidence that lectures B and C are different. In the first two pairwise comparisons, we did not have sufficient evidence to reject the null hypothesis. Recall that failing to reject $H_0$ does not imply $H_0$ is true.
+
+\begin{caution}
+{Sometimes an ANOVA will reject the null but no groups will have statistically significant differences}
+{It is possible to reject the null hypothesis using ANOVA and then to not subsequently identify differences in the pairwise comparisons. However, \emph{this does not invalidate the ANOVA conclusion}. It only means we have not been able to successfully identify which groups differ in their means.}
+\end{caution}
+
+The ANOVA procedure examines the big picture: it considers all groups simultaneously to decipher whether there is evidence that some difference exists. Even if the test indicates that there is strong evidence of differences in group means, identifying with high confidence a specific difference as statistically significant is more difficult.
+
+Consider the following analogy: we observe a Wall Street firm that makes large quantities of money based on predicting mergers. Mergers are generally difficult to predict, and if the prediction success rate is extremely high, that may be considered sufficiently strong evidence to warrant investigation by the Securities and Exchange Commission (SEC). While the SEC may be quite certain that there is insider trading taking place at the firm, the evidence against any single trader may not be very strong. It is only when the SEC considers all the data that they identify the pattern. This is effectively the strategy of ANOVA: stand back and consider all the groups simultaneously.
+
+\subsection{Using ANOVA for multiple regression}
+
+The ANOVA methodology can be extended to multiple regression, where we simultaneously incorporate categorical and numerical predictors into a model. The methods discussed so far -- an outcome for a single categorical variable -- is called \term{one-way ANOVA}. There are two extensions that we briefly discuss here: evaluating all variables in a model simultaneously, and using ANOVA in model selection where some variables are numerical and others categorical.
+
+Some software will supply additional information about a multiple regression model fit beyond the regression summaries described in this textbook. This additional information can be used in an assessment of the utility of the full model. For instance, below is the full regression summary for the Mario Kart game analysis from Section~\ref{modelSelection} (implemented with R statistical software\footnote{R is free and can be downloaded at \url{www.r-project.org}.}) using all four predictors:
+\begin{verbatim}
+    Residuals:
+         Min       1Q   Median       3Q      Max 
+    -11.3788  -2.9854  -0.9654   2.6915  14.0346 
+    
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+    (Intercept) 36.21097    1.51401  23.917  < 2e-16 ***
+    cond\_new      5.13056    1.05112   4.881 2.91e-06 ***
+    stock\_photo   1.08031    1.05682   1.022    0.308    
+    duration    -0.02681    0.19041  -0.141    0.888    
+    wheels       7.28518    0.55469  13.134  < 2e-16 ***
+    ---
+    Signif. codes:  0 Ô***Õ 0.001 Ô**Õ 0.01 Ô*Õ 0.05 Ô.Õ 0.1 Ô Õ 1 
+    
+    Residual standard error: 4.901 on 136 degrees of freedom
+    Multiple R-squared: 0.719,	Adjusted R-squared: 0.7108 
+    F-statistic: 87.01 on 4 and 136 DF,  p-value: < 2.2e-16 
+\end{verbatim}
+The main output labeled \texttt{Coefficients} should be familiar as the multiple regression summary. The last three lines are new and provide details about
+\begin{itemize}
+\setlength{\itemsep}{0mm}
+\item the standard deviation associated with the residuals (4.901),
+\item degrees of freedom (136),
+\item $R^2$ (0.719) and adjusted $R^2$ (0.7108), and
+\item also an $F$ statistic (174.4 with $df_1=4$ and $df_2=136$) with an associated p-value ($<$2.2e-16, i.e. about zero).
+\end{itemize}
+The $F$ statistic and p-value in the last line can be used for a test of the entire model. The p-value can be used to the answer the following question: Is there strong evidence that the model as a whole is significantly better than using no variables? In this case, with a p-value of less than $2.2\times10^{-16}$, there is extremely strong evidence that the variables included are helpful in prediction. Notice that the p-value does not verify that all variables are actually important in the model; it only considers the importance of all of of the variables simultaneously. This is similar to how ANOVA was earlier used to assess differences across all means without saying anything about the difference between a particular pair of means.
+
+The second setting for ANOVA in the general multiple regression framework is one that is more delicate: model selection. We could compare the variability in the residuals of two models that differ by just one predictor using ANOVA as a tool to evaluate whether the data support the inclusion of that variable in the model. We postpone further details of this method to a later course.
+
+%\begin{caution}
+%{Read software carefully before applying ANOVA to variable selection in multiple regression}
+%{The way ANOVA is applied in a multiple regression for model selection is complex. Do not apply ANOVA in a model selection framework without first understanding how to obtain proper p-values for predictor variables.}
+%\end{caution}
+
+%\Summary{Connect salary data to the }
+
+
+%%%%%
+%\section{Logistic regression for a binomial outcome}
+
+%\subsection{Evaluating the 2010 House election using 2008 results}
+
+%\subsection{Modeling the probability of an event}
+
+%\subsection{Fitting a model to}
+
+
+
+

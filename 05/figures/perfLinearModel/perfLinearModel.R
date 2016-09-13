@@ -1,0 +1,16 @@
+library(openintro)
+data(COL)
+
+set.seed(4)
+pdf('perfLinearModel.pdf', 4.5, 3.1)
+par(mar=c(3,4,1,1), mgp=c(1.9,0.6,0))
+x <- sample(33, 12, prob=c(33:24, 11:33))
+y <- 5 + 57.49*x
+plot(x,y, ylim=range(c(0,y^1.0)), axes=FALSE, xlab='Number of Target Corporation stocks to purchase', ylab='', pch=20, cex=1.7, col=COL[1])
+buildAxis(1,x,4,nMax=4)
+mtext('Total cost of the shares (dollars)', 2, 2.8)
+par(mgp=c(2.8,0.75,0), las=1)
+buildAxis(2,y,3,nMax=4)
+#abline(h=0,v=0)
+abline(5, 57.49, col=COL[5])
+dev.off()

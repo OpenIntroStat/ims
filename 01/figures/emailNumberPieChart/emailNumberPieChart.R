@@ -1,0 +1,16 @@
+library(openintro)
+data(email)
+data(COL)
+
+myPDF("emailNumberPieChart.pdf", 6*1.25, 3.2*1.25, mar=c(0,2,0,0.5), mgp=c(2.4, 0.5, 0), las=1)
+layout(matrix(1:2, 1), c(1, 1.1))
+tab <- table(email$number)
+pie(tab, col=COL[c(3,1,2)], radius=0.75)
+
+par(las=1, mar=c(3.6, 5.2, 1, 1))
+barplot(c(tab), axes=FALSE, xlab='number', ylab='', main='', col=paste(COL[c(3,1,2)], "FF", sep=""))
+#mtext("count", 2, 3, las=0)
+#axis(1)
+axis(2) #, seq(0, 2000, 1000))
+abline(h=0)
+dev.off()

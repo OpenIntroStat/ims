@@ -1,0 +1,20 @@
+
+Col <- c('#773311', '#6688AA', '#AACC88')
+
+#===> plot <===#
+par(las=1, mar=c(1.7,0,0.5,0), mgp=c(5, 0.6, 0))
+X <- seq(-20,20,0.02)
+Y <- dnorm(X)
+plot(X-7, Y, type='l', axes=F, xlim=c(-10,5.5), ylim=c(0.02,2*dnorm(0)), col=Col[1])
+lines(X*1.7+2, Y/1.7, col=Col[2])
+lines(X/2-3, Y*2, col=Col[3])
+abline(h=0, col='#333333')
+axis(1, at=-3, labels=expression(mu), col.axis=Col[3], col=Col[3])
+#axis(1, at=-7, labels=expression(mu), col.axis=Col[1])
+#axis(1, at=2, labels=expression(mu), col.axis=Col[2])
+temp <- expression(mu-sigma, mu, mu+sigma)
+#axis(1, at=-3+ (-1:1)/2, labels=expression(, mu,), col.axis=Col[3], col=Col[3])
+axis(1, at=-7+ (-1:1), labels=temp, col.axis=Col[1], col=Col[1])
+axis(1, at=2 + (-1:1)*1.7, labels=temp, col.axis=Col[2], col=Col[2])
+axis(1, at=c(-20, 20), col='#333333')
+#lines(c(-3,-3),c(0,dnorm(0)*2), col=Col[3], lty=3)

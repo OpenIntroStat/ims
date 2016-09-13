@@ -1,0 +1,42 @@
+library(openintro)
+library(xtable)
+load("SP500andIBM.rda")
+IBM    <- gr$R[,2]*100
+NASDAQ <- gr$R[,1]*100
+
+
+myPDF("SP500andIBM.pdf", mar=c(3.2, 3.6, 1, 1), mgp=c(2.4, 0.55, 0))
+plot(NASDAQ, IBM, type='n', axes=FALSE, xlab='', ylab='% change in IBM stock', xlim=c(-5, 5), ylim=c(-5, 5.2))
+mtext("% change in NASDAQ", 1, 2)
+rect(-1000, -1000, 1000, 1000, col='#00000011')
+abline(h=seq(-100, 100, 4), lwd=2.3, col='#FFFFFF')
+abline(h=seq(-100, 100, 2), lwd=0.8, col='#FFFFFF')
+abline(v=seq(-100, 100, 4), lwd=2.3, col='#FFFFFF')
+abline(v=seq(-100, 100, 2), lwd=0.8, col='#FFFFFF')
+g <- lm(IBM ~ NASDAQ)
+abline(g, col='#00000066', lwd=1.5)
+points(NASDAQ, IBM, pch=20, col='#22558866', cex=1.2)
+abline(g, col='#00000022', lwd=1.5)
+axis(1, at=seq(-100, 100, 4))
+axis(2, at=seq(-100, 100, 4))
+box()
+dev.off()
+
+myPDF("SP500andIBMRes.pdf", 5, 2.5, mar=c(3.2, 2, 0.5, 0.5))
+res  <- g$residuals
+plot(NASDAQ, res, type='n', axes=FALSE, xlab='', ylab='% change in IBM stock')
+mtext("% change in NASDAQ", 1, 2)
+rect(-1000, -1000, 1000, 1000, col='#00000011')
+abline(h=seq(-100, 100, 2), lwd=2.3, col='#FFFFFF')
+abline(h=seq(-100, 100, 1), lwd=0.8, col='#FFFFFF')
+abline(v=seq(-100, 100, 4), lwd=2.3, col='#FFFFFF')
+abline(v=seq(-100, 100, 2), lwd=0.8, col='#FFFFFF')
+points(NASDAQ, res, pch=20, col='#22558866', cex=1.2)
+abline(h=0, lty=2, col='#00000088')
+axis(1, at=seq(-100, 100, 4))
+axis(2, at=seq(-100, 100, 2))
+box()
+dev.off()
+
+summary(g)
+xtable(summary(g))

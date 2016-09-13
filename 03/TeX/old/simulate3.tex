@@ -1,0 +1,224 @@
+\section{Principles of simulating randomness}
+\label{simulateRandomness}
+
+\subsection{Why simulate?}
+
+In this section, we describe how to successfully design and run simulations. This foundational understanding is a prerequisite for using the power of a computer to run hundreds, thousands, or even millions of simulations. We will use simulations in Sections~\ref{smallSampleHTForProportion} and~\ref{smallSampleHTForTwoOrMoreProportion} to simulate null distributions and compute p-values for hypothesis tests where the large sample methods from Chapter~5 are not appropriate.
+
+This section 
+
+%Collecting data to investigate the properties of randomness can be very expensive, and simulation provides a cheap alternative. Simulations become even cheaper and faster when statisticians write a program to substitute for simulations by hand. %Each of the examples and problems in this section can be coded by an experienced statistician in just a few minutes. Once simulation is coded into a computer, the statistician can run millions of these simulations in just a few seconds.
+%Figure~\ref{dieProp} on page~\pageref{dieProp} represents 100,000 die rolls. We tried to pay an undergraduate student to do it but she quit\footnote{Kidding. We wouldn't want anyone to have to go through that.}, so we turned to a computer to help us. That program was written in under 10 minutes and it took a desktop computer about 1 second to simulate all 100,000 die rolls (!).
+
+\subsection{Simulation examples}
+
+\begin{example}{Below is a series of random numbers between 0 and 9 generated from a computer:
+\begin{center}
+7 1 5 9 1 7 4 4 3 1 \\
+1 3 5 3 9 8 2 0 7 6 \\
+%\resp{7} \resp{1} \resp{5} \resp{9} \resp{1} \resp{7} \resp{4} \resp{4} \resp{3} \resp{1} \\
+%\resp{1} \resp{3} \resp{5} \resp{3} \resp{9} \resp{8} \resp{2} \resp{0} \resp{7} \resp{6} \\
+\end{center}
+This is much like rolling a ten sided die where each outcome is equally probable and recording the outcomes. Is there a way we could use these 20 random numbers to represent 20 coin flips?}\label{coinSimExam}
+Yes, we can use these random numbers to \emph{simulate} coin tosses. The outcomes \resp{H} and \resp{T} are equally likely, and a random number has an equal chance of being in $\{0, 1, 2, 3, 4\}$ %$\{$\resp{0}, \resp{1}, \resp{2}, \resp{3}, \resp{4}$\}$ 
+and $\{5, 6, 7, 8, 9\}$.% $\{$\resp{5}, \resp{6}, \resp{7}, \resp{8}, \resp{9}$\}$.
+ We represent a result of \resp{H} by the random numbers {0}-{4} and let the remaining numbers, {5}-{9}, correspond to tossing a \resp{T}. Under this setup, independent random numbers provides a way to represent independent coin tosses. Furthermore, we confirm the probability of \resp{H} is 0.5:
+\begin{eqnarray*}
+P(\text{\resp{T}}) = P(\text{0 or 1 or 2 or 3 or 4})  %P(\text{\resp{0} or \resp{1} or \resp{2} or \resp{3} or \resp{4}})
+= \frac{1}{10} + \frac{1}{10} + \frac{1}{10} + \frac{1}{10} + \frac{1}{10} = 1/2
+\end{eqnarray*}
+%Let $X_1, ..., X_{20}$ represent 20 random numbers (not the ones above since those are already known), which are assumed independent. Then
+%\begin{eqnarray*}
+%P(X_1 = 0) = P(X_1 = 1) = \cdots = P(X_1 =8) = P(X_1=9) = 0.1
+%\end{eqnarray*}
+%And this is also true for $X_2$, ..., $X_{20}$. Then, how can a random number $X_1$ be transformed into a coin flip where $P($\var{H}$)=P($\var{T}$)=0.5$? (Here, \var{H} means ``heads'' and \var{T} means ``tails''.)
+%One method is to split the numbers 0-9 up and assign some to mean \var{H} and the others to mean \var{T}. For instance, if $X_1$ is 0, 1, 2, 3, or 4, then call the coin flip \var{H}. If the random number is anything else -- 5, 6, 7, 8, or 9 -- then the simulated coin flip is \var{T}. Under this setup,
+%\begin{eqnarray*}
+%P(\text{\var{H}}) = P(0)+P(1)+P(2)+P(3)+P(4)=0.5
+%\end{eqnarray*}
+%and the same is true of \var{T}. 
+Using our assignment from random numbers to outcomes of a coin flip, we can simulate 20 tosses, as shown in Table~\ref{coinSim}. The simulation results in 11 \resp{H}s and 9 \resp{T}s.
+\end{example}
+\begin{table}[hht]
+\begin{center}
+\begin{tabular}{l ccccc ccccc}
+Random \# & 7 & 1 & 5 & 9 & 1 & 7 & 4 & 4 & 3 & 1 \\
+\hline
+Coin flip & \var{T} &\var{H} & \var{T} & \var{T} & \var{H} & \var{T} & \var{H} & \var{H} & \var{H} & \var{H}  \\
+\hline
+\hline
+Random \# & 1 & 3 & 5 & 3 & 9 & 8 & 2 & 0 & 7 & 6 \\
+\hline
+Coin flip & \var{H} & \var{H} & \var{T} & H & \var{T} & \var{T} & \var{H} & \var{H} & \var{T} & \var{T} \\
+\end{tabular}
+\end{center}
+\caption{Simulation of coin flips with 20 random numbers.}
+\label{coinSim}
+\end{table}
+
+In Example~\exam{coinSimExam}, it would have been equally reasonable to run the simulation with 0-4 corresponding to Tails and 5-9 to Heads. The point of a simulation is to represent a random process using random numbers, and there are many ways to do this. \\
+
+\begin{example}{We now use random numbers between {00} and {99} to simulate the revenue of 10 statistics students of the bookstore from Section~\ref{expectation}:
+\begin{center}
+16 59 65 81 58 33 29 94 62 85
+%\resp{16} \resp{59} \resp{65} \resp{81} \resp{58} \resp{33} \resp{29} \resp{94} \resp{62} \resp{85}
+\end{center}
+What is the mean revenue based on these 10 simulated students.}\label{simBookstoreRev}
+The bookstore classifies students into three types: those who buy no books (20\%), those who buy only the textbook for \$137 (55\%), and those who buy both the textbook and the study guide (25\%). Unlike Example~\exam{coinSimExam}, the group probabilities are multiples of $1/100$, not $1/10$. Thus, we cannot represent all these probabilities by grouping the numbers {0}-{9}. Instead we use the numbers {00}, {01}, ..., {99}.
+
+We assign ranges of the numbers {00}-{99} to each outcome. Each random pair of digits has probability $1/100$. Because $P($\var{purchase} = \resp{none}$) = 20/100$, twenty random numbers must be assigned to \resp{none}: {00}-{19}. Likewise, the outcomes \resp{textbook} and \resp{both} are assigned appropriate portions of the random numbers: {20}-{74} and {75}-{99}, respectively.
+
+The revenue from 10 student can be simulated using the random numbers above, shown in Table~\ref{bookSim}. The mean revenue per student is \$133.20. Earlier we computed the true mean for this probability distribution as \$117.85.
+\end{example}
+\begin{table}[hht]
+\begin{center}
+\begin{tabular}{l ccccc}
+\hline
+\hline
+Random \# & 16 & 59 & 65 & 81 & 58 \\%\resp{16} & \resp{59} & \resp{65}       & \resp{81} & \resp{58}    \\
+\hline
+\var{purchase} & \resp{none} & \small\resp{textbook} & \small\resp{textbook} & \resp{both} & \small\resp{textbook}   \\
+\var{revenue} & \resp{0} & \resp{137} & \resp{137} & \resp{170} & \resp{137}  \\
+\hline
+\hline
+Random \# &  33 & 29 & 94 & 62 & 85 \\ % \resp{33} &   \resp{29} & \resp{94} &    \resp{62} &    \resp{85} \\
+\hline
+\var{purchase} & \small\resp{textbook} & \small\resp{textbook} & \resp{both} & \small\resp{textbook} & \resp{both}  \\
+\var{revenue} & \resp{137} & \resp{137} & \resp{170} & \resp{137} & \resp{170} \\
+\hline
+\hline
+\end{tabular}
+\end{center}
+\caption{Simulation of 10 students and their corresponding revenues.}
+\label{bookSim}
+% R <- c(0, 137, 137, 170, 137, 137, 137, 170, 137, 170)
+\end{table}
+
+\begin{exercise}\label{simulatingDice}
+Let $X$ represent a random number between {0} and {9}. Verify
+\begin{eqnarray*}
+P(X=1 \text{ } | \text{ } X\text{ is 1, 2, 3, 4, 5, or 6}) = 1/6 %\resp{1}, \resp{2}, \resp{3}, \resp{4}, \resp{5}, or \resp{6}}) = 1/6
+\end{eqnarray*}
+Answer in the footnote\footnote{This conditional probability is found by first finding the following two probabilities:
+\begin{eqnarray*}
+P(X=\text{ 1 and }X\text{ is in }\{1,2,3,4,5,6\})
+%P(X=\text{ \resp{1} and }X\text{ is in }\{\text{\resp{1}, \resp{2}, \resp{3}, \resp{4}, \resp{5}, \resp{6}}\})
+\quad \text{ and } \quad
+P(X\text{ is in }\{1,2,3,4,5,6\})
+%P(X\text{ is in }\{\text{\resp{1}, \resp{2}, \resp{3}, \resp{4}, \resp{5}, \resp{6}}\})
+\end{eqnarray*}
+The first probability is the same as $P(X=1)$, and this probability equals 1/10. The second probability is just 6/10. Therefore, the conditional probability is the ratio of these two probabilities: $\frac{1/10}{6/10} = 1/6$.}.
+\end{exercise}
+
+\begin{example}{Can you use the information in Exercise~\exer{simulatingDice} to simulate 10 die rolls using the random numbers below?
+\begin{center}
+8 5 4 7 5 4 3 5 0 9 \\
+4 5 7 5 3 3 6 1 5 3
+%\resp{8} \resp{5} \resp{4} \resp{7} \resp{5} \resp{4} \resp{3} \resp{5} \resp{0} \resp{9} \\
+%\resp{4} \resp{5} \resp{7} \resp{5} \resp{3} \resp{3} \resp{6} \resp{1} \resp{5} \resp{3}
+\end{center}
+}\label{simulatingDiceExam}
+%We can use Exercise~\exer{simulatingDice} to simulate die rolls based on the random numbers.
+Instead of obtaining a die roll from every random number, we only consider those numbers {1}, {2}, ..., {6} and let each represent a die roll. If a random number is 0, 7, 8, or 9, we ignore it. Exercise~\exer{simulatingDice} guarantees the probability each outcome in a simulated roll is $1/6$. This technique is applied in Table~\ref{dieSim} to simulate the outcomes of ten die rolls.
+\end{example}
+\begin{table}[hht]
+\begin{center}
+\begin{tabular}{l ccccc ccccc}
+Random \# &{8} &{5} &{4} &{7} &{5} &{4} &{3} &{5} &{9} &{0} \\
+\hline
+Outcome & - & \resp{5} & \resp{4} & - & \resp{5} & \resp{4} & \resp{3} & \resp{5} & - & -  \\
+\hline
+\hline
+Random \# &{4} &{5} &{7} &{5} &{3} &{3} &{6} &{1} &{5} &{3} \\
+\hline
+Outcome & \resp{4} & \resp{5} & - & \resp{5} & stop & -- & -- & -- & --  & -- 
+\end{tabular}
+\end{center}
+\caption{Simulation of 10 die rolls. We stop after we simulate the tenth roll.}
+\label{dieSim}
+\end{table}
+
+\subsection{Simulations using random numbers}
+
+In Examples~\exam{coinSimExam}-\exam{simulatingDiceExam}, random variables and processes were simulated using careful assignment of random numbers to outcomes\footnote{The random numbers are generated by a computer using a complex algorithm that produces seemingly random and independent numbers. Because these numbers are not truly random but are computer generated, they are often called \term{pseudo random numbers}.}. In a simulation setup, each of the following must be guaranteed:
+\begin{itemize}
+\item[(1)] The probability of each outcome in a simulation is equal to the actual probability of the outcome in reality.
+\item[(2)] Each random number is only assigned to a single outcome.
+\end{itemize}
+It is also acceptable to consider only some subset of the random numbers. For instance, in Example~\exam{simulatingDiceExam}, we only used random numbers {1} through {6}. \\
+
+\begin{exercise}
+About one in five people smoke in the US. Using the random numbers below, simulate the smoking behavior of 20 people.
+\begin{center}
+4 5 7 0 6\hspace{3mm} 2 1 1 7 5 \\
+9 7 7 6 8\hspace{3mm} 7 4 3 2 2 \\
+2 4 4 1 7\hspace{3mm} 8 8 7 5 2 \\
+\end{center}
+Note: you will not need all thirty numbers. One assignment arrangement is provided in the footnote\footnote{Assign 0-1 to \resp{smoker} and 2-9 to \resp{nonSmoker}.}.
+\end{exercise}
+
+Example~\exam{simBookstoreRev} required two random numbers per simulation because one revenue probability was not a multiples of $1/10$ but instead of $1/100$. If the probabilities had been in multiples of $1/1000$, then three digits would have been necessary per simulated outcome. \\
+
+\begin{exercise}\label{retailReturnAnIem}
+A large retail company knows that 23.7\% of its customers return an item.
+
+(a) Using some of the random numbers below, simulate 15 customers, classifying each as either \resp{returnItem} or \resp{not}. Hint in the footnote\footnote{Use 738 for the first customer, 675 for the second, 443 for the third, etc.}.
+\begin{center}
+73867\hspace{1mm} 54439\hspace{1mm} 92138 \\
+01549\hspace{1mm} 38302\hspace{1mm} 08879 \\
+80786\hspace{1mm} 81483\hspace{1mm} 75366 \\
+\end{center}
+
+(b) If it takes 10 minutes for an employee to accept a return and restock the item(s), how much time must employees devote to returns in this simulation?
+\end{exercise}
+
+For simulating the die rolls, the desired probabilities were $1/6 = 0.16\bar{6}$, which is not a multiple of $1/10$, $1/100$, $1/1000$, etc. Instead of using more digits, a better method was needed. Using only a subset of the random numbers ensured we could simulate the probabilities exactly, whicih you proved in Exercise~\exer{simulatingDice}. \\
+
+\begin{exercise}
+The probability a randomly selected person was born on a given day of the week (\resp{Sunday}, \resp{Monday}, etc.) is $1/7$.
+\begin{center}
+05685\hspace{1mm} 93746\hspace{1mm} 82365 \\
+43132\hspace{1mm} 73550\hspace{1mm} 79515 \\
+\end{center}
+Using these random numbers, simulate the days of the week that 15 random babies were born.
+\end{exercise}
+
+\subsection{Estimating distribution properties}
+
+We computed the expected revenue per student in Example~\exam{revFromStudent} on page~\pageref{revFromStudent}. We can also estimate this average revenue through simulation. If we take the average revenues from the simulated sample in Example~\exam{simBookstoreRev}, it will provide an estimate of the true expected value.
+\begin{eqnarray*}
+\frac{\$0 + \$137 + \$137 + \cdots + \$170}{10} = \$133.20
+\end{eqnarray*}
+The true value is \$117.85. If we simulate a larger set of revenues, shown in Table~\ref{largeRevSim}, we can usually obtain a better estimate of the mean: \$114.78.
+\begin{table}
+\begin{center}
+\begin{tabular}{rrrrr rrrrr}
+\$137 & \$137 & \$137 & \$0 & \$137 & \hspace{0.8cm} \$137 & \$0 & \$0 & \$0 & \$0  \\
+\$170 & \$0 & \$137 & \$137 & \$137 &  \$137 & \$170 & \$137 & \$0 & \$137 \\
+\$137 & \$137 & \$170 & \$170 & \$137 & \$0 & \$0 & \$170 & \$137 & \$137 \\
+\$170 & \$137 & \$0 & \$170 & \$137 & \$137 & \$0 & \$170 & \$137 & \$137 \\
+\$137 & \$137 & \$170 & \$170 & \$137 & \$170 & \$170 & \$137 & \$137 & \$137
+\end{tabular}
+\end{center}
+\caption{Fifty simulated bookstore revenues.}
+\label{largeRevSim}
+% x <- sample(c(0,137,170),50,T,c(0.2,.55,.25)); for(i in 1:50) cat(x[i], '& \\$')
+\end{table}
+
+%We can also simulate this  provided  method to approximate the mean of the process, i.e. estimate the expectation of the distribution. Using a small simulation sample, the expectation was estimated by simply providing the average of the simulation sample. This simulation-to-estimate procedure is not limited to the expectation. 
+
+A simulation can also be run to estimate the variance, standard deviation, or any other property of the distibution. The sample standard deviation from the results of Example~\exam{simBookstoreRev} and Table~\ref{largeRevSim} are \$49.32 and \$63.06, respectively. The true standard deviation can be computed as \$60.49. In general, the larger the sample (or simulation), the more accurate estimates tend to be. \\
+
+\begin{exercise}
+Using the simulation results of Exercise~\exer{retailReturnAnIem}(b), estimate how much time staff would expect to devote to accepting returns and restocking items per customer transaction. Your estimate should take the form
+\begin{eqnarray*}
+\frac{\text{total time devoted to returns in the simulation sample}}
+	{\text{total number of simulated customers}}
+\end{eqnarray*}
+\end{exercise}
+
+\vspace{5cm}
+
+We will include a random number table for this chapter when we release an end-of-chapter problem set (scheduled for Jan 4th, 2010).
+
+%\LARGE\color{red} MUST MAKE A NOTE SOMEWHERE OF A TABLE OF RANDOM NUMBERS.
