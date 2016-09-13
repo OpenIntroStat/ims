@@ -1,6 +1,6 @@
 This document contains the proposed outline for OpenIntro - Introductory Statistics with Randomization and Simulation, Second Edition.
 
-# Chp 1. Introduction to data
+## Chp 1. Introduction to data
 
 - Case Study (capable of extending to MLR or 2 by 2 table)
 - Taxonomy of Data
@@ -9,7 +9,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 - Experimental design and causality
 - Revisit case study with new terminology we learned
 
-# Chp 2. Exploratory Data Analysis - Visual summaries and summary statistics
+## Chp 2. Exploratory Data Analysis - Visual summaries and summary statistics
 
 - Cat vs. cat - segmented plots / contingency tables
 	- Conditional probability from contingency tables
@@ -18,7 +18,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 	- Mention univariate - center, skew, shape, spread
 	- Mention conditional probabilities as well
 
-# Chp 3. Correlation and Regression (descriptive)
+## Chp 3. Correlation and Regression (descriptive)
 
 - Visual summaries of data: scatterplot, side-by-side boxplots, histogram, density plot, box plot (lead out with multivariate, follow with univariate)
 - Describing distributions: correlation, central tendency, variability, skew, modality
@@ -28,7 +28,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 	- Fitting a line by least squares regression
 	- Types of outliers in linear regression
 
-# Chp 4. Multiple Regression (descriptive)
+## Chp 4. Multiple Regression (descriptive)
 
 - Num vs. whatever - MLR
 	- Introduction to multiple regression
@@ -40,7 +40,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 	- Three scales interpretation (e.g. probability, odds, log-odds)
 	- “parallel” logistic curves? 
 
-# Chp 5. Foundations of Inference
+## Chp 5. Foundations of Inference
 
 - Understanding inference through simulation
 - Randomization case study: gender discrimination
@@ -49,7 +49,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 - Confidence intervals
 - Simulation case studies
 
-# Chp 6. Inference for categorical data
+## Chp 6. Inference for categorical data
 
 - Inference for a single proportion
 	- Simulation
@@ -59,7 +59,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 - Testing for goodness of fit using chi-square (special topic, include simulation version)
 - Testing for independence in two-way tables (special topic)
 
-# Chp 7. Inference for numerical data
+## Chp 7. Inference for numerical data
 
 - One-sample means
 	- Bootstrap (for means, medians)
@@ -68,7 +68,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 - Difference of two means
 - Comparing many means with ANOVA (special topic, include simulation version)
 
-# Chp 8. Inference for regression
+## Chp 8. Inference for regression
 
 - Inference for linear regression
 	- Bootstrap for regression coefficients
@@ -80,6 +80,6 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 	- residuals vs. fitted instead of residuals vs. x
 - Inference for logistic regression
 
-# Appendix: Probability
+## Appendix: Probability
 
 (Keep same content as before, minus the bit of probability that got moved to categorical EDA)
