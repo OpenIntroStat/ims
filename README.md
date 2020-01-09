@@ -1,1 +1,5 @@
-This is a minimal example of a book based on R Markdown and **bookdown** (https://github.com/rstudio/bookdown). Please see the page "Get Started" at https://bookdown.org/home/about/ for how to compile this example.
+# Introduction to Statistics with Randomization and Simulation
+
+**THIS IS A WORK IN PROGRESS!!!**
+
+We're currently working on 2nd edition of OpenIntro - Introduction to Statistics with Randomization and Simulation. If you're looking for the source files for the 1st edition of the book, please download the zipped release [here](/releases).
