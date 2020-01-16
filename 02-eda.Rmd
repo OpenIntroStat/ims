@@ -233,7 +233,7 @@ Looking for modes isn't about finding a clear and correct answer about the numbe
 
 ### Variance and standard deviation {#variability}
 
-The mean is used to describe the center of a data set, but the \indexthis{variability}{variability}variablity in the data is also important. Here, we introduce two measures of variability: the variance and the standard deviation. Both of these are very useful in data analysis, even though the formulas are a bit tedious to calculate by hand. The standard deviation is the easier of the two to conceptually understand, and it roughly describes how far away the typical observation is from the mean.
+The mean is used to describe the center of a data set, but the \indexthis{variability}{variability}variability in the data is also important. Here, we introduce two measures of variability: the variance and the standard deviation. Both of these are very useful in data analysis, even though the formulas are a bit tedious to calculate by hand. The standard deviation is the easier of the two to conceptually understand, and it roughly describes how far away the typical observation is from the mean.
 
 We call the distance of an observation from its mean its \index{deviation}deviation. Below are the deviations for the $1^{st}_{}$, $2^{nd}_{}$, $3^{rd}$, and $50^{th}_{}$ observations in the `num_char` variable. For computational convenience, the number of characters is listed in the thousands and rounded to the first decimal.
 \begin{align*}
@@ -458,7 +458,7 @@ include_graphics("01/figures/email50NumCharDotPlotRobustEx/email50NumCharDotPlot
 
 Table: (\#tab:robustOrNotTable) A comparison of how the median, IQR, mean ($\bar{x}$), and standard deviation ($s$) change when extreme observations are present.
 
-|                          | \bf robust |        | \bf not robust |        |
+|                          |  robust |        |  not robust |        |
 |--------------------------|:----------:|:------:|:--------------:|:------:|
 | scenario                 |   median   |   IQR  |    $\bar{x}$   |   $s$  |
 | original `num_char` data |    6,890   | 12,875 |     11,600     | 13,130 |
@@ -541,7 +541,7 @@ Common goals in transforming data are to see the data structure differently, red
 
 The \data{county} data set offers many numerical variables that we could plot using dot plots, scatterplots, or box plots, but these miss the true nature of the data. 
 Rather, when we encounter geographic data, we should map it using an \index{intensity map}intensity map, where colors are used to show higher and lower values of a variable. 
-Figures \@ref(fig:countyIntensityMaps1) and \@ref(fig:countyIntensityMaps2) shows intensity maps for federal spending per capita (`fed_spend`), poverty rate in percent (`poverty`), homeownership rate in percent (`homeownership`), and median household income (`med_income`). 
+Figures \@ref(fig:countyIntensityMaps1) and \@ref(fig:countyIntensityMaps2) shows intensity maps for federal spending per capita (`fed_spend`), poverty rate in percent (`poverty`), home ownership rate in percent (`homeownership`), and median household income (`med_income`). 
 The color key indicates which colors correspond to which values. 
 Note that the intensity maps are not generally very helpful for getting precise values in any given county, but they are very helpful for seeing geographic trends and generating interesting research questions.
 
@@ -577,6 +577,7 @@ What interesting features are evident in the `med_income` intensity map?^[Note: 
 
 \index{intensity map|)}
 \index{data!county|)}
+
 
 ## Categorical Data  {#categoricalData}
 
@@ -808,6 +809,213 @@ include_graphics(c("01/figures/emailNumberPieChart/emailNumberPieChart.png"))
 
 \index{data!email|)}
 
+## ggplot2:  graphics in R
+
+The tidy way to build figures in R is through `ggplot2` (`gg` stands for `g`rammar of `g`raphics).
+Your understanding of `ggplot` will build over the course, but the basic thing to understand when starting off is that the plot is built on layers.  You will always need to specify your `geom` and `aes`thetic, but all of the following will be aspects of your graph (many are created behind the scenes).
+
+**geom**: the geometric "shape" used to display data
+ 
+  * bar, point, line, ribbon, text, etc.
+ 
+**aesthetic**: an attribute controlling how geom is displayed with respect to variables.  
+The `aes` command connects your data set **variables** to the appropriate places in the plot.
+You must have `aes` so that the graph knows which variables provide the necessary information.
+
+  * x position, y position, color, fill, shape, size, etc.
+
+**scale**: adjust information in the aesthetic to map onto the plot
+
+  * *particular* assignment of colors, shapes, sizes, etc.; making axes continuous or constrained to a particular range of values.
+ 
+**guide**: helps user convert visual data back into raw data (legends, axes)
+
+**stat**: a transformation applied to data before geom gets it
+
+  * example: histograms work on binned data
+  
+When creating `ggplot2` figures, don't be afraid to look for help!  Searching for particular structures will be immensely helpful.  
+Also, the `ggplot2` cheat sheet can be found here: https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf
+
+Notice that the package `ggplot2` contains the function `ggplot`.
+Additionally, while the pipe (`%>%`) operator is used to chain in `dplyr`, the plus (`+`) operator is used to chain in `ggplot2`.
+
+## Numerical Data in R {#numericalDataR}
+
+In this section we provide the `R` code for reproducing the statistics and figures explored in the previous sections.
+
+### Numerical Summaries in R {#variabilityR}
+
+Using the pipe function and the `dplyr` function `summarize` we can apply the standard `R` summary measures like `mean`, `median`, `sd`, `var`.
+
+```{r echo=TRUE}
+email50 %>% 
+  dplyr::summarize(mean(num_char), median(num_char), sd(num_char), var(num_char))
+```
+
+The same information can be calculated for each level of `number`:
+
+```{r echo=TRUE}
+email50 %>% 
+  dplyr::group_by(number) %>%
+  dplyr::summarize(mean(num_char), median(num_char), sd(num_char), var(num_char))
+```
 
 
+The `summary` function will summarize the variables, but it does not provide measures of variability.
+
+```{r echo=TRUE}
+email50 %>% select(num_char, number) %>%
+  summary()
+```
+
+`skimr` is a `tidyverse` summary command that provides many summary measures for both numerical and categorical data.
+
+[MCR-TODO: I really like skim, but I didn't realize that the new(ish?) version had such a long preamble.  Feels distracting.]
+
+```{r echo=TRUE}
+library(skimr)
+library(openintro)
+data(email50)
+email50 %>% dplyr::select(num_char, number) %>%
+  skim()
+```
+
+
+### Scatterplots in R {#scatterPlotsR}
+
+Notice that the package `ggplot2` contains the function `ggplot`.
+Additionally, while the pipe (`%>%`) operator is used to chain in `dplyr`, the plus (`+`) operator is used to chain in `ggplot2`.
+
+```{r echo=TRUE}
+ggplot2::ggplot(data = email50, aes(x = num_char, y = line_breaks)) +
+  geom_point()
+```
+
+
+
+### Dot plots in R {#dotPlotR}
+
+```{r echo=TRUE, warnings=FALSE, message = FALSE}
+ggplot(email50, aes(x = num_char)) + 
+  geom_dotplot()
+```
+
+### Histograms in R {#histogramsAndShapeR}
+
+In this histogram below, we've added an argument to the histogram itself, specifying the width of the bins.  
+Additionally, we've added layers to create x and y labels.
+
+```{r echo=TRUE}
+ggplot(data=email50, aes(x = num_char)) +
+  geom_histogram(breaks = seq(0,65,5)) +
+  xlab("Number of Characters (in thousands)") +
+  ylab("Frequency")
+```
+
+### Box plots in R
+
+```{r echo=TRUE}
+data(county)
+ggplot(county, aes(y = income)) +
+  geom_boxplot() +
+  ylab("Median Income ($1000s")
+```
+
+### Comparing numerical data across groups {#comparingAcrossGroupsR}
+
+```{r echo=TRUE}
+county %>% 
+  mutate(change = ifelse(pop2000 < pop2010, "no gain", "gain")) %>%
+  ggplot(aes(y = income, x = change)) +
+  geom_boxplot() +
+  ylab("Median Income ($1000s") +
+  xlab("Change in Population")
+```
+
+## Categorical Data in R {#categoricalDataR}
+
+### Contingency tables in R
+
+```{r echo=TRUE}
+email %>% dplyr::select(spam, number) %>%
+  table() %>%
+  addmargins() %>%
+  kable()
+
+email %>% dplyr::select(number) %>%
+  table() %>%
+  kable()
+```
+
+###  Bar plots in R
+
+The default y-axis in `geom_bar` is to count (frequency).
+
+```{r echo = TRUE}
+email %>%
+  ggplot(aes(x = number)) +
+  geom_bar()
+```
+
+To plot the percentages on the y-axis, the figure needs to recompute the labels according to the counts.
+
+```{r echo = TRUE}
+email %>%
+  ggplot(aes(x = number)) +
+  geom_bar(aes(y = (..count..)/sum(..count..))) +
+  ylab("proportion")
+```
+
+### Segmented bar plots in R
+
+Segmented bar plots are created by using a color to separate the counts within the image.
+
+```{r echo = TRUE}
+email %>%
+  dplyr::mutate(spamID = ifelse(spam == 0, "not spam", "spam")) %>%
+  ggplot(aes(x = number, fill = spamID)) +
+  geom_bar(position = "stack")
+```
+
+
+The standardized version of the stacked bar plot is created by changing `postion = "stacked"` to `postion = "fill"`.
+
+```{r echo = TRUE}
+email %>%
+  dplyr::mutate(spamID = ifelse(spam == 0, "not spam", "spam")) %>%
+  ggplot(aes(x = number, fill = spamID)) +
+  geom_bar(position = "fill")
+```
+
+
+### Mosaic plots in R
+
+
+To create mosaic plots in `R`, import the additional package, `ggmosaic`.  
+Note that for the mosaic plots, the variables are specified as a `product`.  
+See the options and outputs below.
+
+```{r echo = TRUE}
+library(ggmosaic)
+ggplot(email) +
+  geom_mosaic(aes(x=product(number), fill = number))
+```
+
+
+```{r echo = TRUE}
+library(ggmosaic)
+email %>%
+  dplyr::mutate(spamID = ifelse(spam == 0, "not spam", "spam")) %>%
+ggplot() +
+  geom_mosaic(aes(x=product(spamID, number), fill = spamID))
+```
+
+```{r echo = TRUE}
+library(ggmosaic)
+email %>%
+  dplyr::mutate(spamID = ifelse(spam == 0, "not spam", "spam")) %>%
+ggplot() +
+  geom_mosaic(aes(x=product(number,spamID), fill = number))
+```
 
