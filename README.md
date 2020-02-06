@@ -30,7 +30,7 @@ Tentative outline:
 	- Mention univariate - center, skew, shape, spread
 	- Mention conditional probabilities as well
 
-## Chp 3. Correlation and Regression (descriptive)
+### Chp 3. Correlation and Regression (descriptive)
 
 - Visual summaries of data: scatterplot, side-by-side boxplots, histogram, density plot, box plot (lead out with multivariate, follow with univariate)
 - Describing distributions: correlation, central tendency, variability, skew, modality
