@@ -1,6 +1,5 @@
 # Exploratory Data Analysis {#eda}
 
-
 ## Numerical Data {#numericalData}
 
 [MCR-TODO: MCR wrote these bullet points, are they addressed?]
@@ -621,20 +620,19 @@ Table: (\#tab:emailSpamNumberTableTotals) A contingency table for `spam` and `nu
 |                               | `Total`    |      549     | 2827 | 545 | 3921 |
 
 
-```{r}
-library(openintro)
-data(email)
+```{r email-spam-number-table, eval=FALSE}
 table(email[,c("spam", "number")])[2:1,] %>% 
-  addmargins() %>% kable(caption="A contingency table for `spam` and `number`.")
+  addmargins() %>% 
+  kable(caption="A contingency table for `spam` and `number`.")
 #xtable(tab); rowSums(tab); colSums(tab); sum(tab)
 ```
 
 
-```{r emailNumberTable}
-library(openintro)
-data(email)
+```{r email-number-table, eval=FALSE}
 table(email[,c("number")]) %>% 
-  addmargins() %>% t() %>% kable(caption="A frequency table for the `number` variable.")
+  addmargins() %>% 
+  t() %>% 
+  kable(caption="A frequency table for the `number` variable.")
 ```
 
 A bar plot is a common way to display a single categorical variable. 
@@ -874,10 +872,8 @@ email50 %>% select(num_char, number) %>%
 [MCR-TODO: I really like skim, but I didn't realize that the new(ish?) version had such a long preamble.  Feels distracting.]
 
 ```{r echo=TRUE}
-library(skimr)
-library(openintro)
-data(email50)
-email50 %>% dplyr::select(num_char, number) %>%
+email50 %>% 
+  select(num_char, number) %>%
   skim()
 ```
 
@@ -916,8 +912,7 @@ ggplot(data=email50, aes(x = num_char)) +
 ### Box plots in R
 
 ```{r echo=TRUE}
-data(county)
-ggplot(county, aes(y = income)) +
+ggplot(county, aes(y = per_capita_income)) +
   geom_boxplot() +
   ylab("Median Income ($1000s")
 ```
@@ -927,7 +922,7 @@ ggplot(county, aes(y = income)) +
 ```{r echo=TRUE}
 county %>% 
   mutate(change = ifelse(pop2000 < pop2010, "no gain", "gain")) %>%
-  ggplot(aes(y = income, x = change)) +
+  ggplot(aes(y = per_capita_income, x = change)) +
   geom_boxplot() +
   ylab("Median Income ($1000s") +
   xlab("Change in Population")
@@ -937,13 +932,17 @@ county %>%
 
 ### Contingency tables in R
 
-```{r echo=TRUE}
-email %>% dplyr::select(spam, number) %>%
+```{r spam-number-table, echo=TRUE, eval=FALSE}
+email %>% 
+  select(spam, number) %>%
   table() %>%
   addmargins() %>%
   kable()
+```
 
-email %>% dplyr::select(number) %>%
+```{r table, echo=TRUE, eval=FALSE}
+email %>% 
+  select(number) %>%
   table() %>%
   kable()
 ```
@@ -960,7 +959,7 @@ email %>%
 
 To plot the percentages on the y-axis, the figure needs to recompute the labels according to the counts.
 
-```{r echo = TRUE}
+```{r email-number-barplot-prop, echo = TRUE}
 email %>%
   ggplot(aes(x = number)) +
   geom_bar(aes(y = (..count..)/sum(..count..))) +
@@ -971,9 +970,9 @@ email %>%
 
 Segmented bar plots are created by using a color to separate the counts within the image.
 
-```{r echo = TRUE}
+```{r email-number-spam-barplot-prop, echo = TRUE}
 email %>%
-  dplyr::mutate(spamID = ifelse(spam == 0, "not spam", "spam")) %>%
+  mutate(spamID = ifelse(spam == 0, "not spam", "spam")) %>%
   ggplot(aes(x = number, fill = spamID)) +
   geom_bar(position = "stack")
 ```
@@ -983,7 +982,7 @@ The standardized version of the stacked bar plot is created by changing `postion
 
 ```{r echo = TRUE}
 email %>%
-  dplyr::mutate(spamID = ifelse(spam == 0, "not spam", "spam")) %>%
+  mutate(spamID = ifelse(spam == 0, "not spam", "spam")) %>%
   ggplot(aes(x = number, fill = spamID)) +
   geom_bar(position = "fill")
 ```
@@ -997,25 +996,21 @@ Note that for the mosaic plots, the variables are specified as a `product`.
 See the options and outputs below.
 
 ```{r echo = TRUE}
-library(ggmosaic)
 ggplot(email) +
   geom_mosaic(aes(x=product(number), fill = number))
 ```
 
 
 ```{r echo = TRUE}
-library(ggmosaic)
 email %>%
-  dplyr::mutate(spamID = ifelse(spam == 0, "not spam", "spam")) %>%
-ggplot() +
+  mutate(spamID = ifelse(spam == 0, "not spam", "spam")) %>%
+  ggplot() +
   geom_mosaic(aes(x=product(spamID, number), fill = spamID))
 ```
 
 ```{r echo = TRUE}
-library(ggmosaic)
 email %>%
   dplyr::mutate(spamID = ifelse(spam == 0, "not spam", "spam")) %>%
 ggplot() +
   geom_mosaic(aes(x=product(number,spamID), fill = number))
 ```
-
