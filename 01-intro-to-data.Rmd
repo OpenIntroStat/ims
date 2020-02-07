@@ -150,15 +150,15 @@ Effective presentation and description of data is a first step in most analyses.
 
 \index{data!email50|(}
 
-Table \@ref(tab:email50DF) displays the first six rows of a data set concerning 50 emails received in 2012. These observations will be referred to as the \data{email50} data set, and they are a random sample from a larger data set that we will see in Section \@ref(categoricalData).
+Table \@ref(tab:email50DF) displays the first six rows of a data set concerning 50 emails received in 2012. These observations will be referred to as the \data{email50} data set, and they are a random sample from a larger data set that we will see in Section \@ref(inference-cat).
 
 Each row in the table represents a single email or \index{case}case.^[A case is also sometimes called a \index{unit of observation}unit of observation or an \index{observational unit}observational unit.] The columns represent characteristics, called \indexsub{variables}{variable}variables, for each of the emails. For example, the first row represents email 1, which is not spam, contains 21,705 characters, 551 line breaks, is written in HTML format, and contains only small numbers.
 
 In practice, it is especially important to ask clarifying questions to ensure important aspects of the data are understood. For instance, it is always important to be sure we know what each variable means and the units of measurement. Descriptions of all five email variables are given in Table \@ref(tab:email50Variables).
 
 ```{r email50DF}
-library(openintro)
-email50 %>% select(spam, num_char, line_breaks, format, number) %>%
+email50 %>% 
+  select(spam, num_char, line_breaks, format, number) %>%
   head() %>%
   kable(caption = "Six rows from the `email50` data matrix.")
 ```
@@ -199,35 +199,36 @@ These data were collected from the US Census website.^[http://quickfacts.census.
 
 
 ```{r countyDF}
-library(openintro)
-county <- countyComplete[,c("name", "state", "pop2000", "pop2010", "fed_spending", "poverty", "home_ownership", "housing_multi_unit", "per_capita_income", "median_household_income")]
-colnames(county) <- c("name", "state", "pop2000", "pop2010", "fed_spend", "poverty", "homeownership", "multiunit", "income", "med_income")
-county$fed_spend <- county$fed_spend / county$pop2010
+county_partial <- county_complete %>%
+  select(name, state, pop2010, pop2017, fed_spending_2009, poverty_2017, 
+         homeownership_2010, housing_multi_unit_2010, per_capita_income_2017, 
+         median_household_income_2016, smoking_ban_2010)
+colnames(county_partial) <- c("name", "state", "pop2010", "pop2017", "fed_spend", 
+                      "poverty", "homeownership", "multiunit", 
+                      "income", "med_income", "smoking_ban")
+county_partial <- county_partial %>%
+  mutate(fed_spend = fed_spend / pop2010)
 
-county %>% head(7) %>% 
+county_partial %>% 
+  head(7) %>% 
   kable(caption = "Seven rows from the `county` data set.") 
 ```
-
-
-
 
 Table: (\#tab:countyVariables) Variables and their descriptions for the `county` data set.
 
 | **variable**    | **description**                                                                                                                       |
 |-----------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `name`          | County name                                                                                                                           |
-| `state`         | State where the county resides (also including the District of Columbia)                                                              |
-| `pop2000`       | Population in 2000                                                                                                                    |
-| `pop2010`       | Population in 2010                                                                                                                    |
-| `fed_spend`     | Federal spending per capita                                                                                                           |
-| `poverty`       | Percent of the population in poverty                                                                                                  |
-| `homeownership` | Percent of the population that lives in their own home or lives with the owner (e.g. children living with parents who own the home)   |
-| `multiunit`     | Percent of living units that are in multi-unit structures (e.g. apartments)                                                           |
-| `income`        | Income per capita                                                                                                                     |
-| `med_income`    | Median household income for the county, where a household's income equals the total income of its occupants who are 15 years or older |
-| `smoking_ban`   | Type of county-wide smoking ban in place at the end of 2011, which takes one of three values: `none`, `partial`, or `comprehensive`, where a `comprehensive` ban means smoking was not permitted in restaurants, bars, or workplaces, and `partial` means smoking was banned in at least one of those three locations                                                                            |
-
-
+| `name`          | County name                                    |
+| `state`         | State where the county resides (also including the District of Columbia) |
+| `pop2000`       | Population in 2010                             |
+| `pop2010`       | Population in 2017                             |
+| `fed_spend`     | Federal spending per capita in 2009            |
+| `poverty`       | Percent of the population in poverty in 2017   |
+| `homeownership` | Percent of the population that lives in their own home or lives with the owner in 2010 (e.g. children living with parents who own the home) |
+| `multiunit`     | Percent of living units that are in multi-unit structures in 2010 (e.g. apartments) |
+| `income`        | Income per capita in 2017                      |
+| `med_income`    | Median household income for the county, where a household's income equals the total income of its occupants who are 15 years or older in 2016 |
+| `smoking_ban`   | Type of county-wide smoking ban in place at the end of 2010, which takes one of three values: `none`, `partial`, or `comprehensive`, where a `comprehensive` ban means smoking was not permitted in restaurants, bars, or workplaces, and `partial` means smoking was banned in at least one of those three locations |
 
 ### Types of variables {#variableTypes}
 
@@ -706,10 +707,10 @@ Consider the \data{email50} data that was described previously in this chapter.
 We can `glimpse` the data to see the variables, or we can apply `head` to see the first few rows of the dataset.
 
 ```{r echo=TRUE}
-library(openintro)
 data(email50)
 glimpse(email50)
-head(email50) %>% kable()
+head(email50) %>% 
+  kable()
 ```
 
 
@@ -721,13 +722,14 @@ For example `data[i,j]` will produce the $(i,j)^{th}$ entry of data, and `data[i
 ```{r echo=TRUE}
 email50$num_char
 email50[47,3]
-email[47,] %>% kable()
+email[47,] %>% 
+  kable()
 ```
 
 ### Tidy Structure of Data {#datastruc}
 
 For plotting, analyses, model building, etc., the data should be structured according to certain principles.   
-Hadley Wickham provides a thorough discussion and advice for cleaning up the data in @Wickham14.
+Hadley Wickham provides a thorough discussion and advice for cleaning up the data in @Wickham2014.
 
 * *Tidy Data*: rows (cases/observational units) and columns (variables).  
 The key is that *every* row is a case and *every* column is a variable.  
