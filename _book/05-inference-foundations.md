@@ -1,3 +1,4 @@
+
 # Foundations of inference {#inference-foundations}
 
 ## Understanding inference through simulation

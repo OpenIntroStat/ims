@@ -1,3 +1,4 @@
+
 # Correlation and Regression {#cor-reg}
 
 ## Visual summaries of data: scatterplot, side-by-side boxplots, histogram, density plot, box plot (lead out with multivariate, follow with univariate)

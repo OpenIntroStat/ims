@@ -1,87 +1,17 @@
+
 --- 
-title: ""
+title: "Introduction to Statistics with Randomization and Simulation"
 author: "Mine Çetinkaya-Rundel, Johanna Hardin, David Diez, others..."
-date: "2020-01-13"
+date: "2020-02-07"
 site: bookdown::bookdown_site
 documentclass: book
 bibliography: [book.bib, packages.bib]
 biblio-style: apalike
 link-citations: yes
 description: "This is ISRS2!"
+header-includes:
+- \usepackage{subfig}
 ---
-
-
-```r
-setwd("~/gitRepos/DataCamp/randomization-and-simulation")
-bookdown::render_book("index.Rmd", output_dir = "_book")
-```
-
-
-```r
-#install_github("openintrostats/openintro-r-package")
-library(openintro)
-```
-
-```
-## Please visit openintro.org for free statistics materials
-```
-
-```
-## 
-## Attaching package: 'openintro'
-```
-
-```
-## The following object is masked from 'package:datasets':
-## 
-##     cars
-```
-
-```r
-library(tidyverse)
-```
-
-```
-## ── Attaching packages ────────────────── tidyverse 1.3.0 ──
-```
-
-```
-## ✓ ggplot2 3.2.1     ✓ purrr   0.3.3
-## ✓ tibble  2.1.3     ✓ dplyr   0.8.3
-## ✓ tidyr   1.0.0     ✓ stringr 1.4.0
-## ✓ readr   1.3.1     ✓ forcats 0.4.0
-```
-
-```
-## ── Conflicts ───────────────────── tidyverse_conflicts() ──
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()
-```
-
-```r
-library(knitr)
-```
-
-
-```r
-# move to _common.R based on R4DS: https://github.com/hadley/r4ds/blob/master/_common.R
-set.seed(25)
-options(digits = 3)
-
-knitr::opts_chunk$set(
-  comment = "#>",
-  collapse = TRUE,
-  cache = TRUE,
-  echo = FALSE, # hide code unless otherwise noted in chunk options
-  out.width = "70%",
-  fig.align = 'center',
-  fig.width = 6,
-  fig.asp = 0.618,  # 1 / phi
-  fig.show = "hold"
-)
-
-options(dplyr.print_min = 6, dplyr.print_max = 6)
-```
 
 # Welcome {-}
 
