@@ -1,3 +1,5 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/2afbdb92-43e5-415b-b3dd-61a4d9168b0f/deploy-status)](https://app.netlify.com/sites/isrs2/deploys)
+
 # Introduction to Statistics with Randomization and Simulation
 
 **THIS IS A WORK IN PROGRESS!!!**
