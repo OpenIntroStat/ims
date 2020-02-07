@@ -1,7 +1,8 @@
 # _common.R based on R4DS: https://github.com/hadley/r4ds/blob/master/_common.R
-# Not currently used, need to figure out how to hook it up
 set.seed(25)
 options(digits = 3)
+
+# knitr chunk options ----------------------------------------------------------
 
 knitr::opts_chunk$set(
   comment = "#>",
@@ -15,4 +16,15 @@ knitr::opts_chunk$set(
   fig.show = "hold"
 )
 
+# dplyr options ----------------------------------------------------------------
+
 options(dplyr.print_min = 6, dplyr.print_max = 6)
+
+# packages ---------------------------------------------------------------------
+
+#install_github("openintrostats/openintro-r-package")
+library(openintro)
+library(tidyverse)
+library(knitr)
+library(ggmosaic)
+library(skimr)
