@@ -16,6 +16,8 @@ Tentative outline:
 
 ### Chp 1. Introduction to data
 
+*Plannded draft completion date: 13 June 2020*
+
 - Case Study (capable of extending to MLR or 2 by 2 table)
 - Taxonomy of Data
 - Overview of data collection principles
@@ -24,6 +26,8 @@ Tentative outline:
 - Revisit case study with new terminology we learned
 
 ### Chp 2. Exploratory Data Analysis - Visual summaries and summary statistics
+
+*Plannded draft completion date: 20 June 2020*
 
 - Cat vs. cat - segmented plots / contingency tables
 	- Conditional probability from contingency tables
@@ -34,6 +38,8 @@ Tentative outline:
 
 ### Chp 3. Correlation and Regression (descriptive)
 
+*Plannded draft completion date: 27 June 2020*
+
 - Visual summaries of data: scatterplot, side-by-side boxplots, histogram, density plot, box plot (lead out with multivariate, follow with univariate)
 - Describing distributions: correlation, central tendency, variability, skew, modality
 - Num vs. num - SLR
@@ -43,6 +49,8 @@ Tentative outline:
 	- Types of outliers in linear regression
 
 ### Chp 4. Multiple Regression (descriptive)
+
+*Plannded draft completion date: 4 July 2020*
 
 - Num vs. whatever - MLR
 	- Introduction to multiple regression
@@ -56,6 +64,8 @@ Tentative outline:
 
 ### Chp 5. Foundations of Inference
 
+*Plannded draft completion date: 11 July 2020*
+
 - Understanding inference through simulation
 - Randomization case study: gender discrimination
 - Randomization case study: opportunity cost
@@ -64,6 +74,8 @@ Tentative outline:
 - Simulation case studies
 
 ### Chp 6. Inference for categorical data
+
+*Plannded draft completion date: 18 July 2020*
 
 - Inference for a single proportion
 	- Simulation
@@ -75,6 +87,8 @@ Tentative outline:
 
 ### Chp 7. Inference for numerical data
 
+*Plannded draft completion date: 1 August 2020*
+
 - One-sample means
 	- Bootstrap (for means, medians)
 	- t-distribution
@@ -83,6 +97,8 @@ Tentative outline:
 - Comparing many means with ANOVA (special topic, include simulation version)
 
 ### Chp 8. Inference for regression
+
+*Plannded draft completion date: 22 August 2020*
 
 - Inference for linear regression
 	- Bootstrap for regression coefficients
