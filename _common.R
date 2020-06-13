@@ -16,15 +16,17 @@ knitr::opts_chunk$set(
   fig.show = "hold"
 )
 
-# dplyr options ----------------------------------------------------------------
-
-options(dplyr.print_min = 6, dplyr.print_max = 6)
-
 # packages ---------------------------------------------------------------------
 
 #install_github("openintrostats/openintro")
-library(openintro)
-library(tidyverse)
 library(knitr)
 library(ggmosaic)
 library(skimr)
+library(kableExtra)
+library(janitor)
+library(openintro)
+library(tidyverse)
+
+# dplyr options ----------------------------------------------------------------
+
+options(dplyr.print_min = 6, dplyr.print_max = 6)
