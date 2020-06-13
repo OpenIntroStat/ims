@@ -1,38 +1,20 @@
 # Introduction to data {#intro-to-data}
 
-```{block2, chp1-intro, type='chapterintro', echo=TRUE}
+```{block2, chp1-intro, type="chapterintro", echo=TRUE}
 Scientists seek to answer questions using rigorous methods and careful observations. 
-These observations -- collected from the likes of field notes, surveys, and experiments -- form the backbone of a statistical investigation and are called \index{data}data. 
+These observations -- collected from the likes of field notes, surveys, and experiments -- form the backbone of a statistical investigation and are called \index{data}**data**. 
 Statistics is the study of how best to collect, analyze, and draw conclusions from data, and in this first chapter, we focus on both the properties of data and on the collection of data.
 ```
-
-<!--
-%\begin{tipBox}{\tipBoxTitle[Chapter Goal:]{Thinking about data}
-%Understand basics about data organization, data types, numerical summaries of data, graphical summaries of data, and foundational techniques for data collection. We begin and end the chapter with case studies.}
-%\end{tipBox}
--->
-
-
-1. Identify a question or problem.
-2. Collect relevant data on the topic.
-3. Analyze the data.
-4. Form a conclusion.
-<!--%\item Make decisions based on the conclusion.-->
-
-Statistics as a subject focuses on making stages 2-4 objective, rigorous, and efficient. That is, statistics has three primary components: How best can we collect data? How should it be analyzed? And what can we infer from the analysis?
-
-The topics scientists investigate are as diverse as the questions they ask. However, many of these investigations can be addressed with a small number of data collection techniques, analytic tools, and fundamental concepts in statistical inference. This chapter provides a glimpse into these and other themes we will encounter throughout the rest of the book. We introduce the basic principles of each branch and learn some tools along the way. We will encounter applications from other fields, some of which are not typically associated with science but nonetheless can benefit from statistical study.
-
 
 ## Case Study: using stents to prevent strokes {#basicExampleOfStentsAndStrokes}
 
 \index{data!stroke|(}
 
-Section \@ref(basicExampleOfStentsAndStrokes) introduces a classic challenge in statistics: evaluating the efficacy of a medical treatment. 
+In this section we introduce a classic challenge in statistics: evaluating the efficacy of a medical treatment. 
 Terms in this section, and indeed much of this chapter, will all be revisited later in the text. 
 The plan for now is simply to get a sense of the role statistics can play in practice.
 
-In this section we will consider an experiment that studies effectiveness of stents in treating patients at risk of stroke.^[Chimowitz MI, Lynn MJ, Derdeyn CP, et al. 2011. Stenting versus Aggressive Medical Therapy for Intracranial Arterial Stenosis. New England Journal of Medicine 365:993-1003. http://www.nejm.org/doi/full/10.1056/NEJMoa1105335. NY Times article reporting on the study: http://www.nytimes.com/2011/09/08/health/research/08stent.html.]
+In this section we will consider an experiment that studies effectiveness of stents in treating patients at risk of stroke.^[Chimowitz MI, Lynn MJ, Derdeyn CP, et al. 2011. Stenting versus Aggressive Medical Therapy for Intracranial Arterial Stenosis. New England Journal of Medicine 365:993-1003. http://www.nejm.org/doi/full/10.1056/NEJMoa1105335. NY Times article reporting on the study: http://www.nytimes.com/2011/09/08/health/research/08stent.html. `openintro::stent30` and `openintro::stent365`.]
 Stents are small mesh tubes that are placed inside narrow or weak arteries to assist in patient recovery after cardiac events and reduce the risk of an additional heart attack or death. 
 
 Many doctors have hoped that there would be similar benefits for patients at risk of stroke. We start by writing the principal question the researchers hope to answer:
@@ -63,13 +45,12 @@ stent <- stent30_renamed %>%
     group        = fct_rev(group),
     `0-30 days`  = fct_rev(`0-30 days`),
     `0-365 days` = fct_rev(`0-365 days`),
-    )
-set.seed(1256)
+  )
 stent %>%
   sample_n(5) %>% 
   arrange(group) %>%
   mutate(patient = 1:n()) %>%
-  select(patient, everything()) %>%
+  relocate(patient) %>%
   kable(caption = "Results for five patients from the stent study.")
 ```
 
@@ -80,7 +61,6 @@ In this table, we can quickly see what happened over the entire study.
 For instance, to identify the number of patients in the treatment group who had a stroke within 30 days, we look on the left-side of the table at the intersection of the treatment and stroke: 33.
 
 ```{r}
-#TODO: Clean up headings
 #TODO: Add total row
 stent %>%
   pivot_longer(cols = c(`0-30 days`, `0-365 days`), 
@@ -88,17 +68,19 @@ stent %>%
                values_to = "outcome") %>%
   count(group, stage, outcome) %>%
   pivot_wider(names_from = c(stage, outcome), values_from = n) %>%
-  kable(caption = "Descriptive statistics for the stent study.")
+  adorn_totals(where = "row") %>%
+  kable(caption = "Descriptive statistics for the stent study.",
+        col.names = c("", "stroke", "no event", "stroke", "no event")) %>%
+  add_header_above(c(" " = 1, "0-30 days" = 2, "0-365 days" = 2), extra_css = "border-bottom: 2px solid") %>%
+  row_spec(1, extra_css = "border-top: 2px solid") %>%
+  row_spec(3, extra_css = "border-top: 2px solid")
 ```
 
-[MCR-TODO: Figure out LaTeX exercise counter stuff that's differently formatted for in text exercises.]
-**Exercise:** see \@ref(exr:test)
-
-```{exercise echo=TRUE, label = "test", name = "Proportion of stroke victims"}
+```{block2, type="guidedpractice", echo=TRUE}
 Of the 224 patients in the treatment group, 45 had a stroke by the end of the first year. 
 Using these two numbers, compute the proportion of patients in the treatment group who had a stroke by the end of their first year.
-```
 (Please note: answers to all Guided Practice exercises are provided using footnotes.)^[The proportion of the 224 patients who had a stroke within 365 days: $45/224 = 0.20$.]
+```
 
 We can compute summary statistics from the table.
 A \index{summary statistic}summary statistic is a single number summarizing a large amount of data.
@@ -109,7 +91,7 @@ For instance, the primary results of the study after 1 year could be described b
 
 These two summary statistics are useful in looking for differences in the groups, and we are in for a surprise: an additional 8% of patients in the treatment group had a stroke! 
 This is important for two reasons. 
-First, it is contrary to what doctors expected, which was that stents would **reduce** the rate of strokes. 
+First, it is contrary to what doctors expected, which was that stents would *reduce* the rate of strokes. 
 Second, it leads to a statistical question: do the data show a "real" difference between the groups?
 
 This second question is subtle. 
@@ -121,11 +103,13 @@ So what we are really asking is the following: is the difference so large that w
 
 While we don't yet have our statistical tools to fully address this question on our own, we can comprehend the conclusions of the published analysis: there was compelling evidence of harm by stents in this study of stroke patients.
 
+```{block2, type="rmdwarning", echo=TRUE}
 **Be careful:**
 Do not generalize the results of this study to all patients and all stents.
 This study looked at patients with very specific characteristics who volunteered to be a part of this study and who may not be representative of all stroke patients.
 In addition, there are many types of stents and this study only considered the self-expanding Wingspan stent (Boston Scientific).
 However, this study does leave us with an important lesson: we should keep our eyes open for surprises.
+```
 
 \index{data!stroke|)}
 
