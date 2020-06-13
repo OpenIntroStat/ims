@@ -22,7 +22,7 @@ options(dplyr.print_min = 6, dplyr.print_max = 6)
 
 # packages ---------------------------------------------------------------------
 
-#install_github("openintrostats/openintro-r-package")
+#install_github("openintrostats/openintro")
 library(openintro)
 library(tidyverse)
 library(knitr)
