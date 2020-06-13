@@ -103,17 +103,36 @@ So what we are really asking is the following: is the difference so large that w
 
 While we don't yet have our statistical tools to fully address this question on our own, we can comprehend the conclusions of the published analysis: there was compelling evidence of harm by stents in this study of stroke patients.
 
-```{block2, type="rmdwarning", echo=TRUE}
-**Be careful:**
-Do not generalize the results of this study to all patients and all stents.
+**Be careful:** Do not generalize the results of this study to all patients and all stents.
 This study looked at patients with very specific characteristics who volunteered to be a part of this study and who may not be representative of all stroke patients.
 In addition, there are many types of stents and this study only considered the self-expanding Wingspan stent (Boston Scientific).
 However, this study does leave us with an important lesson: we should keep our eyes open for surprises.
-```
 
 \index{data!stroke|)}
 
-## Taxonomy of Data {#dataBasics}
+### Exercises
+
+```{block2, type="rmdwarning", echo=TRUE}
+Exercise formatting is still work in progress! Any text here is just a placeholder.
+```
+
+1. **Migraine and acupuncture, Part I.** A migraine is a particularly painful type of headache, which patients sometimes wish to treat with acupuncture.
+To determine whether acupuncture relieves migraine  pain, researchers conducted a randomized controlled study where 89 females diagnosed with migraine headaches were randomly assigned to one of two groups: treatment or control.
+43 patients in the treatment group received acupuncture  that is specifically designed to treat migraines.
+46 patients in the control group received placebo acupuncture (needle insertion at non-acupoint locations).
+24 hours after patients received acupuncture, they were asked 
+if they were pain free.
+Results are summarized in the contingency table below.
+
+```{r}
+2+2
+```
+
+(a) hi
+(b) mello
+(c) jello
+
+## Data basics {#data-basics}
 
 Effective presentation and description of data is a first step in most analyses. This section introduces one structure for organizing data as well as some terminology that will be used throughout this book.
 
@@ -121,137 +140,149 @@ Effective presentation and description of data is a first step in most analyses.
 
 \index{data!email50|(}
 
-Table \@ref(tab:email50DF) displays the first six rows of a data set concerning 50 emails received in 2012. These observations will be referred to as the \data{email50} data set, and they are a random sample from a larger data set that we will see in Section \@ref(inference-cat).
+Table \@ref(tab:loan50DF) displays rows 1, 2, 3, and 50 of a data set for 50 randomly sampled loans offered through Lending Club, which is a peer-to-peer lending company. These observations will be referred to as the `loan50` data set, which can be found in the `openintro` R package.
 
-Each row in the table represents a single email or \index{case}case.^[A case is also sometimes called a \index{unit of observation}unit of observation or an \index{observational unit}observational unit.] The columns represent characteristics, called \indexsub{variables}{variable}variables, for each of the emails. For example, the first row represents email 1, which is not spam, contains 21,705 characters, 551 line breaks, is written in HTML format, and contains only small numbers.
+Each row in the table represents a single loan.
+The formal name for a row is a \index{case}**case** or \index{observational unit}\index{unit of observation}**observational unit**.
+The columns represent characteristics, called \index{variable}**variable**, for each of the loans.
+For example, the first row represents a loan of \$7,500 with an interest rate of 7.34\%, where the borrower is based in Maryland (MD) and has an income of \$70,000.
 
-In practice, it is especially important to ask clarifying questions to ensure important aspects of the data are understood. For instance, it is always important to be sure we know what each variable means and the units of measurement. Descriptions of all five email variables are given in Table \@ref(tab:email50Variables).
-
-```{r email50DF}
-email50 %>% 
-  select(spam, num_char, line_breaks, format, number) %>%
-  head() %>%
-  kable(caption = "Six rows from the `email50` data matrix.")
+```{block2, type="guidedpractice", echo=TRUE}
+What is the grade of the first loan in Figure~\ref{loan50DF}?
+And what is the home ownership status of the borrower for that first loan?
+For these Guided Practice questions, you can check your answer in the footnote.^[The loan's grade is A, and the borrower rents their residence.]
 ```
 
-[MCR-TODO: Unbelievably annoying that I can't print the help file.  Do you know how??  Otherwise, we have to leave this as a markdown table.]
+In practice, it is especially important to ask clarifying questions to ensure important aspects of the data are understood.
+For instance, it is always important to be sure we know what each variable means and the units of measurement.
+Descriptions of the variables in the `loan50` dataset are given in Table \@ref(tab:loan50Variables).
 
-Table: (\#tab:email50Variables) Variables and their descriptions for the `email50` data set.
+```{r loan50DF}
+loan50 %>% 
+  select(loan_amount, interest_rate, term, grade, state, total_income, homeownership) %>%
+  slice_head(n = 6) %>%
+  kable(caption = "Six rows from the `loan50` data set",
+        row.names = TRUE)
+```
 
-| **variable**                   | **description**                                                                                                                          |
-|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| `spam`                       | Indicator for whether the email was spam.                                                                                                     |
-| `num_char`    | The number of characters in the email, in thousands.                                                                                                      |
-| `line_breaks` | The number of line breaks in the email (does not count text wrapping).                                                                       |
-| `format`                     | Indicates if the email contained special formatting, such as bolding, tables, or links, which would indicate the message is in HTML format |
-| `number`                     | Indicates whether the email contained no number, a small number (under 1 million), or a large number                                       |
+```{r loan50Variables}
+loan50_var_def <- tribble(
+  ~variable,       ~description,
+  "loan_amount",   "Amount of the loan received, in US dollars.",
+  "interest_rate", "Interest rate on the loan, in an annual percentage.",
+  "term",          "The length of the loan, which is always set as a whole number of months.",
+  "grade",         "Loan grade, which takes a values A through G and represents the quality of the loan and its likelihood of being repaid.",
+  "state",         "US state where the borrower resides.",
+  "total_income",  "Borrower's total income, including any second income, in US dollars.",
+  "homeownership", "Indicates whether the person owns, owns but has a mortgage, or rents."
+)
 
-\index{data!email50|)}
+loan50_var_def %>%
+  kable(caption = "Variables and their descriptions for the `loan50` data set.")
+```
 
-The data in Table \@ref(tab:email50DF) represent a \index{data matrix}data matrix, which is a common way to organize data. 
-Each row of a data matrix corresponds to a unique case, and each column corresponds to a variable. 
-A data matrix for the stroke study introduced in Section \@ref(basicExampleOfStentsAndStrokes) is shown in Table \@ref(tab:stentStudyResultsDF), where the cases were patients and there were three variables recorded for each patient.
+\index{data!loan50|)}
 
-Data matrices are a convenient way to record and store data. 
-If another individual or case is added to the data set, an additional row can be easily added. 
-Similarly, another column can be added for a new variable.
+The data in Figure \@ref(tab:loan50DF) represent a \index{data frame}**data frame**, which is a convenient and common way to organize data, especially if collecting data in a spreadsheet.
+Each row of a data frame corresponds to a unique case (observational unit), and each column corresponds to a variable.
+
+When recording data, use a data matrix unless you have a very good reason to use a different structure.
+This structure allows new cases to be added as rows or new variables as new columns.
+
+```{block2, type="guidedpractice", echo=TRUE}
+The grades for assignments, quizzes, and exams in a course are often recorded in a gradebook that takes the form of a data frame. 
+How might you organize grade data using a data frame?^[There are multiple strategies that can be followed. One common strategy is to have each student represented by a row, and then add a column for each assignment, quiz, or exam. Under this setup, it is easy to review a single line to understand the grade history of a student. There should also be columns to include student information, such as one column to list student names.]
+```
 
 \index{data!county|(}
 
-```{exercise echo=TRUE}
-We consider a publicly available data set that summarizes information about the 3,143 counties in the United States, and we call this the \data{county} data set. 
-This data set includes information about each county: its name, the state where it resides, its population in 2000 and 2010, per capita federal spending, poverty rate, and five additional characteristics. 
-How might these data be organized in a data matrix? 
-Reminder: look in the footnotes for answers to in-text exercises.^[Each county may be viewed as a case, and there are eleven pieces of information recorded for each case. A table with 3,143 rows and 11 columns could hold these data, where each row represents a county and each column represents a particular piece of information.]
+```{block2, type="guidedpractice", echo=TRUE}
+We consider data for 3,142 counties in the United States,
+which includes the name of each county, the state where it resides, its population in 2017, how its population changed from 2010 to 2017, poverty rate, and nine additional characteristics.
+How might these data be organized in a data frame?^[Each county may be viewed as a case, and there are eleven pieces of information recorded for each case. A table with 3,142 rows and 14 columns could hold these data, where each row represents a county and each column represents a particular piece of information.]
 ```
 
-Seven rows of the \data{county} data set are shown in Table \@ref(tab:countyDF), and the variables are summarized in Table \@ref(tab:countyVariables). 
-These data were collected from the US Census website.^[http://quickfacts.census.gov/qfd/index.html]
-
+The data described in the Guided Practice above represents the **county** data set, which is shown as a data frame in Table \@ref(tab:countyDF).
+The variables as well as the variables in the dataset that did not fit in Table \@ref(tab:countyDF) are described in Table \@ref(tab:countyVariables)
 
 ```{r countyDF}
-county_partial <- county_complete %>%
-  select(name, state, pop2010, pop2017, fed_spending_2009, poverty_2017, 
-         homeownership_2010, housing_multi_unit_2010, per_capita_income_2017, 
-         median_household_income_2016, smoking_ban_2010)
-colnames(county_partial) <- c("name", "state", "pop2010", "pop2017", "fed_spend", 
-                      "poverty", "homeownership", "multiunit", 
-                      "income", "med_income", "smoking_ban")
-county_partial <- county_partial %>%
-  mutate(fed_spend = fed_spend / pop2010)
-
-county_partial %>% 
-  head(7) %>% 
-  kable(caption = "Seven rows from the `county` data set.") 
+county %>%
+  select(name, state, pop2017, pop_change, unemployment_rate, median_edu) %>%
+  slice_head(n = 6) %>% 
+  kable(caption = "Six observations and six variables from the `county` data set.") 
 ```
 
-Table: (\#tab:countyVariables) Variables and their descriptions for the `county` data set.
+```{r countyVariables}
+county_var_def <- tribble(
+  ~variable,           ~description,
+  "name",              "Name of county.",
+  "state",             "Name of state.",
+  "pop2000",           "Population in 2000.",
+  "pop2010",           "Population in 2010.",
+  "pop2017",           "Population in 2017.",
+  "pop_change",        "Population change from 2010 to 2017.",
+  "poverty",           "Percent of population in poverty in 2017.",
+  "homeownership",     "Homeownership rate, 2006-2010.",
+  "multi_unit",        "Percent of housing units in multi-unit structures, 2006-2010.",
+  "unemployment_rate", "Unemployment rate in 2017.",
+  "metro",             "Whether the county contains a metropolitan area.",
+  "median_edu",        "Median education level (2013-2017).",
+  "per_capita_income", "Per capita (per person) income (2013-2017).",
+  "median_hh_income",  "Median household income.",
+  "smoking_ban",       "Describes whether the type of county-level smoking ban in place in 2010, taking one of the values `none`, `partial`, or `comprehensive`."
+)
 
-| **variable**    | **description**                                                                                                                       |
-|-----------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `name`          | County name                                    |
-| `state`         | State where the county resides (also including the District of Columbia) |
-| `pop2000`       | Population in 2010                             |
-| `pop2010`       | Population in 2017                             |
-| `fed_spend`     | Federal spending per capita in 2009            |
-| `poverty`       | Percent of the population in poverty in 2017   |
-| `homeownership` | Percent of the population that lives in their own home or lives with the owner in 2010 (e.g. children living with parents who own the home) |
-| `multiunit`     | Percent of living units that are in multi-unit structures in 2010 (e.g. apartments) |
-| `income`        | Income per capita in 2017                      |
-| `med_income`    | Median household income for the county, where a household's income equals the total income of its occupants who are 15 years or older in 2016 |
-| `smoking_ban`   | Type of county-wide smoking ban in place at the end of 2010, which takes one of three values: `none`, `partial`, or `comprehensive`, where a `comprehensive` ban means smoking was not permitted in restaurants, bars, or workplaces, and `partial` means smoking was banned in at least one of those three locations |
-
-### Types of variables {#variableTypes}
-
-Examine the `fed_spend`, `pop2010`, `state`, and `smoking_ban` variables in the \data{county} data set. 
-Each of these variables is inherently different from the other three yet many of them share certain characteristics.
-
-First consider `fed_spend`, which is said to be a \index{numerical}numerical variable since it can take a wide range of numerical values, and it is sensible to add, subtract, or take averages with those values. 
-On the other hand, we would not classify a variable reporting telephone area codes as numerical since their average, sum, and difference have no clear meaning.
-
-The `pop2010` variable is also numerical, although it seems to be a little different than `fed_spend`. 
-This variable of the population count can only be a whole non-negative number (0, 1, 2 ...). 
-For this reason, the population variable is said to be \index{discrete}discrete since it can only take numerical values with jumps. 
-On the other hand, the federal spending variable is said to be \index{continuous}continuous.
-
-The variable `state` can take up to 51 values after accounting for Washington, DC: `AL`, ..., and `WY`. 
-Because the responses themselves are categories, `state` is called a \index{categorical}categorical variable,^[Sometimes also called a \index{nominal}nominal variable.] and the possible values are called the variable's \index{levels}levels.
-
-
-```{r variables, out.width="57%", fig.cap='Breakdown of variables into their respective types.'}
-include_graphics("01/figures//variables/variables.png")
+county_var_def %>%
+  kable(caption = "Variables and their descriptions for the `county` data set.")
 ```
 
+### Types of variables {#variable-types}
 
-Finally, consider the `smoking_ban` variable, which describes the type of county-wide smoking ban and takes a value `none`,`partial`, or `comprehensive` in each county. 
-This variable seems to be a hybrid: it is a categorical variable but the levels have a natural ordering. 
-A variable with these properties is called an \index{ordinal}ordinal variable. 
-To simplify analyses, any ordinal variables in this book will be treated as categorical variables.
+Examine the `unemployment_rate`, `pop2017`, `state`, and `median_edu` variables in the `county` data set. 
+Each of these variables is inherently different from the other three, yet some share certain characteristics.
 
-```{example echo=TRUE}
-Data were collected about students in a statistics course. 
-Three variables were recorded for each student: number of siblings, student height, and whether the student had previously taken a statistics course. 
+First consider `unemployment_rate`, which is said to be a \index{numerical}**numerical** variable since it can take a wide range of numerical values, and it is sensible to add, subtract, or take averages with those values.
+On the other hand, we would not classify a variable reporting telephone area codes as numerical since the average, sum, and difference of area codes doesn't have any clear meaning.
+
+The `pop2017` variable is also numerical, although it seems to be a little different than `unemployment_rate`.
+This variable of the population count can only take whole non-negative numbers (0, 1, 2, ...).
+For this reason, the population variable is said to be \index{discrete}**discrete** since it can only take numerical values with jumps.
+On the other hand, the unemployment rate variable is said to be \index{continuous}**continuous**.
+
+The variable `state` can take up to 51 values after accounting for Washington, DC: AL, AK, ..., and WY.
+Because the responses themselves are categories, `state` is called a \index{categorical}**categorical** variable, and the possible values are called the variable's \index{levels}**levels** .
+
+Finally, consider the `median_edu` variable, which describes the median education level of county residents and takes values `below_hs`, `hs_diploma`, `some_college`, or `bachelors` in each county.
+This variable seems to be a hybrid: it is a categorical variable but the levels have a natural ordering.
+A variable with these properties is called an \index{ordinal}**ordinal** variable, while a regular categorical variable without this type of special ordering is called a \index{nominal}**nominal** variable.
+To simplify analyses, any ordinal variable in this book will be treated as a nominal (unordered) categorical variable.
+
+```{r variables, out.width="75%", fig.cap="Breakdown of variables into their respective types."}
+include_graphics("01/figures/variables/variables.png")
+```
+
+```{block2, type="example", echo=TRUE}
+Data were collected about students in a statistics course.
+Three variables were recorded for each student: number of siblings, student height, and whether the student had previously taken a statistics course.
 Classify each of the variables as continuous numerical, discrete numerical, or categorical.
-
----
-
-The number of siblings and student height represent numerical variables. 
-Because the number of siblings is a count, it is discrete. 
-Height varies continuously, so it is a continuous numerical variable. 
-The last variable classifies students into two categories -- those who have and those who have not taken a statistics course -- which makes this variable categorical.
+<br><br>
+*The number of siblings and student height represent numerical variables.
+Because the number of siblings is a count, it is discrete.
+Height varies continuously, so it is a continuous numerical variable.
+The last variable classifies students into two categories -- those who have and those who have not taken a statistics course -- which makes this variable categorical.*
 ```
-
 
 \index{data!stroke}
 
-```{exercise echo=TRUE} 
-Consider the variables `group` and `outcome` (at 30 days) from the stent study in Section \@ref(basicExampleOfStentsAndStrokes). 
-Are these numerical or categorical variables?^[There are only two possible values for each variable, and in both cases they describe categories. Thus, each is a categorical variable.]
+```{block2, type="guidedpractice", echo=TRUE}
+An experiment is evaluating the effectiveness of a new drug in treating migraines.
+A `group` variable is used to indicate the experiment group for each patient: treatment or control.
+The `num_migraines` variable represents the number of migraines the patient experienced during a 3-month period. Classify each variable as either numerical or categorical?^[The `group` variable can take just one of two group names, making it categorical. The `num_migraines` variable describes a count of the number of migraines, which is an outcome where basic arithmetic is sensible, which means this is numerical outcome; more specifically, since it represents a count, `num_migraines` is a discrete numerical variable.]
 ```
 
-### Relationships between variables {#variableRelations}
+### Relationships between variables {#variable-relations}
 
-Many analyses are motivated by a researcher looking for a relationship between two or more variables. 
+Many analyses are motivated by a researcher looking for a relationship between two or more variables.
 A social scientist may like to answer some of the following questions:
 
 1. Is federal spending, on average, higher or lower in counties with high rates of poverty?
