@@ -40,7 +40,7 @@ theme_set(theme_minimal(base_size = 14))
 # function to print terms ------------------------------------------------------
 
 make_terms_table <- function(x, n_cols = 4){
-  x <- sort(x)
+  x <- sort(x) %>% unique()
   n_rows <- (length(x) / n_cols) %>% ceiling()
   desired_length <- n_rows * n_cols
   x_updated <- c(x, rep("", (desired_length - length(x))))
