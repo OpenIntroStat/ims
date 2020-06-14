@@ -1,5 +1,5 @@
 # _____ Simple Random _____ #
-BuildSRS <- function(n, N) {
+build_srs <- function(n, N) {
   
   colSamp <- COL[4]
   PCH <- rep(c(1, 3, 20)[3], 3)
@@ -20,7 +20,7 @@ BuildSRS <- function(n, N) {
 
 
 # _____ Stratified _____ #
-BuildStratified <- function(N) {
+build_stratified <- function(N) {
   
   colSamp <- COL[4]
   col <- rep(COL[1], N)
@@ -82,7 +82,7 @@ BuildStratified <- function(N) {
 
 
 # _____ Cluster _____ #
-BuildCluster <- function() {
+build_cluster <- function() {
   colSamp <- COL[4]
   PCH <- rep(c(1, 3, 20)[3], 3)
   plot(0, xlim = c(0, 2), ylim  =  c(0.01, 1.04), type = 'n', axes = FALSE)
@@ -148,7 +148,7 @@ BuildCluster <- function() {
 
   
 # _____ Multistage Sampling _____ #
-BuildMultistage <- function() {
+build_multistage <- function() {
   colSamp <- COL[4]
   PCH <- rep(c(1, 3, 20)[3], 3)
   plot(0, xlim = c(0, 2), ylim = 0:1 + 0.035,
