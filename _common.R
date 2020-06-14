@@ -7,7 +7,7 @@ options(digits = 3)
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
-  cache = TRUE,
+  #cache = TRUE,
   echo = FALSE, # hide code unless otherwise noted in chunk options
   out.width = "70%",
   fig.align = 'center',
@@ -34,4 +34,4 @@ options(dplyr.print_min = 6, dplyr.print_max = 6)
 # ggplot2 theme ----------------------------------------------------------------
 # to be replaced with theme_openintro...
 
-theme_set(theme_minimal())
+theme_set(theme_minimal(base_size = 14))
