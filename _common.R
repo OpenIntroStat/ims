@@ -36,3 +36,14 @@ options(dplyr.print_min = 6, dplyr.print_max = 6)
 # to be replaced with theme_openintro...
 
 theme_set(theme_minimal(base_size = 14))
+
+# function to print terms ------------------------------------------------------
+
+make_terms_table <- function(x, n_cols = 4){
+  x <- sort(x)
+  n_rows <- (length(x) / n_cols) %>% ceiling()
+  desired_length <- n_rows * n_cols
+  x_updated <- c(x, rep("", (desired_length - length(x))))
+  matrix(x_updated, nrow = n_rows) %>%
+    kable()
+}
