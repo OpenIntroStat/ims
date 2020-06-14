@@ -6,7 +6,7 @@ These observations -- collected from the likes of field notes, surveys, and expe
 Statistics is the study of how best to collect, analyze, and draw conclusions from data, and in this first chapter, we focus on both the properties of data and on the collection of data.
 ```
 
-## Case Study: using stents to prevent strokes {#basicExampleOfStentsAndStrokes}
+## Case Study: using stents to prevent strokes {#basic-stents-strokes}
 
 \index{data!stroke|(}
 
@@ -61,7 +61,6 @@ In this table, we can quickly see what happened over the entire study.
 For instance, to identify the number of patients in the treatment group who had a stroke within 30 days, we look on the left-side of the table at the intersection of the treatment and stroke: 33.
 
 ```{r}
-#TODO: Add total row
 stent %>%
   pivot_longer(cols = c(`0-30 days`, `0-365 days`), 
                names_to = "stage", 
@@ -110,10 +109,14 @@ However, this study does leave us with an important lesson: we should keep our e
 
 \index{data!stroke|)}
 
-### Exercises
+### Exercises {#basic-stents-strokes-exercises}
 
 ```{block2, type="rmdwarning", echo=TRUE}
 Exercise formatting is still work in progress! Any text here is just a placeholder.
+```
+
+```{block2, type="todo", echo=TRUE}
+TODO: Update exercises.
 ```
 
 1. **Migraine and acupuncture, Part I.** A migraine is a particularly painful type of headache, which patients sometimes wish to treat with acupuncture.
@@ -291,21 +294,21 @@ A social scientist may like to answer some of the following questions:
 
 > How useful a predictor is median education level for the median household income for US counties?
 
-To answer these questions, data must be collected, such as the `county` data set shown in Figure \@ref(tab:countyDF).
+To answer these questions, data must be collected, such as the `county` data set shown in Table \@ref(tab:countyDF).
 Examining \index{summary statistic}**summary statistics** could provide insights for each of the three questions about counties.
 Additionally, graphs can be used to visually exploring the data.
 
 \index{scatterplot}**Scatterplots** are one type of graph used to study the relationship between two numerical variables.
-Figure~\ref{multiunitsVsOwnership} compares the variables `homeownership` and `multi_unit`, which is the percent of units in multi-unit structures
-(e.g. apartments, condos).
+Figure \@ref(fig:county-multi-unit-homeownership) displays the relationship between the variables `homeownership` and `multi_unit`, which is the percent of units in multi-unit structures (e.g. apartments, condos).
 Each point on the plot represents a single county.
-For instance, the highlighted dot corresponds to County~413 in the `county` data set: Chattahoochee County, Georgia, which has 39.4\% of units in multi-unit structures and a homeownership rate of 31.3\%.
+For instance, the highlighted dot corresponds to County 413 in the `county` data set: Chattahoochee County, Georgia, which has 39.4\% of units in multi-unit structures and a homeownership rate of 31.3\%.
 The scatterplot suggests a relationship between the two variables: counties with a higher rate of multi-units tend to have lower homeownership rates.
 We might brainstorm as to why this relationship exists and investigate each idea to determine which are the most reasonable explanations.
 
-```{r multiunitsVsOwnership, caption = "A scatterplot of homeownership versus the percent of units that are in multi-unit structures for US counties. The highlighted dot represents Chattahoochee County, Georgia, which has a multi-unit rate of 39.4% and a homeownership rate of 31.3%."}
+```{r county-multi-unit-homeownership, fig.cap = "A scatterplot of homeownership versus the percent of units that are in multi-unit structures for US counties. The highlighted dot represents Chattahoochee County, Georgia, which has a multi-unit rate of 39.4% and a homeownership rate of 31.3%.", warning=FALSE}
 ggplot(county, aes(x = multi_unit, y = homeownership)) +
-  geom_point(alpha = 0.3, color = COL["blue", "full"], fill = COL["black", "full"], shape = 21) +
+  geom_point(alpha = 0.3, color = COL["blue", "full"], 
+             fill = COL["black", "full"], shape = 21) +
   labs(
     x = "Percent of Units in Multi-Unit Structures",
     y = "Homeownership Rate"
@@ -313,48 +316,156 @@ ggplot(county, aes(x = multi_unit, y = homeownership)) +
   geom_point(data = county %>% filter(name == "Chattahoochee County"), 
              size = 3, color = COL["red", "full"], shape = 1) +
   geom_text(data = county %>% filter(name == "Chattahoochee County"),
-            label = "Chattahoochee County", nudge_y = -4)
+            label = "Chattahoochee County", fontface = "italic",
+            nudge_x = 15, nudge_y = -3, color = COL["red", "full"]) +
+  guides(color = FALSE) +
+  geom_segment(data = county %>% filter(name == "Chattahoochee County"),
+               aes(x = 0, y = homeownership, xend = multi_unit, yend = homeownership, 
+                   color = COL["red", "full"]), linetype = "dashed") +
+  geom_segment(data = county %>% filter(name == "Chattahoochee County"),
+               aes(x = multi_unit, y = 0, xend = multi_unit, yend = homeownership, 
+                   color = COL["red", "full"]), linetype = "dashed") +
+  scale_x_continuous(labels = percent_format(scale = 1)) +
+  scale_y_continuous(labels = percent_format(scale = 1))
 ```
 
+The multi-unit and homeownership rates are said to be associated because the plot shows a discernible pattern.
+When two variables show some connection with one another, they are called \index{associated}**associated** variables.
+Associated variables can also be called \index{dependent}**dependent** variables and vice-versa.
 
-```{r countyfedspendVsPoverty, out.width="80%", fig.cap='A scatterplot showing `fed_spend` against `poverty`. Owsley County of Kentucky, with a poverty rate of 41.5% and federal spending of $21.50 per capita, is highlighted.'}
-include_graphics("01/figures/county_fed_spendVsPoverty/county_fed_spendVsPoverty.png")
+```{block2, type="guidedpractice", echo=TRUE}
+Examine the variables in the `loan50` data set, which are described in Table \@ref(tab:loan50Variables).
+Create two questions about possible relationships between variables in `loan50` that are of interest toyou.^[Two example questions: (1) What is the relationship between loan amount and total income? (2) If someone's income is above the average, will their interest rate tend to be above or below the average?]
 ```
 
-
-```{exercise echo=TRUE}
-Examine the variables in the \data{email50} data set, which are described in Table \@ref(tab:email50Variables). 
-Create two questions about the relationships between these variables that are of interest to you.^[Two sample questions: (1) Intuition suggests that if there are many line breaks in an email then there would also tend to be many characters: does this hold true? (2) Is there a connection between whether an email format is plain text (versus HTML) and whether it is a spam message?]
+```{block2, type="example", echo=TRUE}
+This example examines the relationship between the change in population from 2010 to 2017 and median household income for counties, which is visualized as a scatterplot in Figure \@ref(fig:county-pop-change-med-hh-income). Are these variables associated?
 ```
 
-The `fed_spend` and `poverty` variables are said to be associated because the plot shows a discernible pattern. 
-When two variables show some connection with one another, they are called \index{associated}associated variables. 
-Associated variables can also be called \index{dependent}dependent variables and vice-versa.
-
-```{example echo=TRUE}
-The relationship between the homeownership rate and the percent of units in multi-unit structures (e.g. apartments, condos) is visualized using a scatterplot in Figure \@ref(fig:multiunitsVsOwnership). 
-Are these variables associated?
-    
----
-
-It appears that the larger the fraction of units in multi-unit structures, the lower the homeownership rate. 
-Since there is some relationship between the variables, they are associated.
+```{r county-pop-change-med-hh-income, fig.cap = "A scatterplot showing `pop_change` against `median_hh_income`. Owsley County of Kentucky, is highlighted, which lost 3.63% of its population from 2010 to 2017 and had median household income of $22,736.}", warning=FALSE}
+ggplot(county, aes(x = median_hh_income, y = pop_change)) +
+  geom_point(alpha = 0.3, color = COL["blue", "full"], 
+             fill = COL["black", "full"], shape = 21) +
+  labs(
+    x = "Median Household Income",
+    y = "Population Change over 7 Years"
+  ) +
+  geom_point(data = county %>% filter(name == "Owsley County"), 
+             size = 3, color = COL["red", "full"], shape = 1) +
+  guides(color = FALSE) +
+  geom_segment(data = county %>% filter(name == "Owsley County"),
+               aes(x = 0, y = pop_change, 
+                   xend = median_hh_income, yend = pop_change, 
+                   color = COL["red", "full"]), linetype = "dashed") +
+  geom_segment(data = county %>% filter(name == "Owsley County"),
+               aes(x = median_hh_income, y = -40, 
+                   xend = median_hh_income, yend = pop_change, 
+                   color = COL["red", "full"]), linetype = "dashed") +
+  scale_x_continuous(labels = dollar_format(scale = 0.001, suffix = "K")) +
+  scale_y_continuous(labels = percent_format(scale = 1), limits = c(-40, 40))
 ```
 
+Because there is a downward trend in Figure \@ref(fig:county-multi-unit-homeownership) -- counties with more units in multi-unit structures are associated with lower homeownership -- these variables are said to be \index{negative association}**negatively associated**.
+A \index{positive association}**positive association** is shown in the relationship between the `median_hh_income` and `pop_change` variables in Figure \@ref(fig:county-pop-change-med-hh-income), where counties with higher median household income tend to have higher rates of population growth.
 
-```{r multiunitsVsOwnership2, out.width="80%", fig.cap='A scatterplot of the homeownership rate versus the percent of units that are in multi-unit structures for all 3,143 counties. Interested readers may find an image of this plot with an additional third variable, county population, presented at http://www.openintro.org/stat/down/MHP.png.'}
-include_graphics("01/figures/multiunitsVsOwnership/multiunitsVsOwnership.png")
+If two variables are not associated, then they are said to be \index{independent}**independent**.
+That is, two variables are independent if there is no evident relationship between the two.
+
+```{block2, type="onebox", echo=TRUE}
+**Associated or independent, not both.**
+A pair of variables are either related in some way (associated) or not (independent). 
+No pair of variables is both associated and independent.
 ```
 
-Because there is a downward trend in Figure \@ref(fig:multiunitsVsOwnership) -- counties with more units in multi-unit structures are associated with lower homeownership -- these variables are said to be \indexsub{negatively associated}{negative association}negatively associated. A \index{positive association}positive association is shown in the relationship between the `poverty` and `fed_spend` variables represented in Figure \@ref(fig:countyfedspendVsPoverty), where counties with higher poverty rates tend to receive more federal spending per capita.
+### Explanatory and response variables
 
-If two variables are not associated, then they are said to be \index{independent}independent. That is, two variables are independent if there is no evident relationship between the two.
+When we ask questions about the relationship between two variables, we sometimes also want to determine if the change in one variable causes a change in the other.
+Consider the following rephrasing of an earlier question bout the `county` data set:
 
-\begin{termBox}{\tBoxTitle{Associated or independent, not both}
-A pair of variables are either related in some way (associated) or not (independent). No pair of variables is both associated and independent.}
-\end{termBox}
+> If there is an increase in the median household income in a county, does this drive an increase in its population?
+
+In this question, we are asking whether one variable affects another.
+If this is our underlying belief, then *median household income* is the \index{explanatory}**explanatory variable** variable and the *population change* is the
+\index{response}**response variable** variable in the hypothesized relationship.^[Sometimes the explanatory variable is called the \index{independent}**independent** variable and the response variable is called the \index{dependent}**dependent** variable. However, this becomes confusing since a *pair* of variables might be independent or dependent, so we avoid this language.]
 
 \index{data!county|)}
+
+```{block2, type="onebox", echo=TRUE}
+**Explanatory and response variables.**
+When we suspect one variable might causally affect another, we label the first variable the explanatory variable and the second the response variable. 
+
+<center>
+explanatory variable $\rightarrow$ *might affect* $\rightarrow$ response variable
+</center>
+<br>
+For many pairs of variables, there is no hypothesized relationship, and these labels would not be applied to either variable in such cases.
+```
+
+Bear in mind that the act of labeling the variables in this way does nothing to guarantee that a causal relationship exists.
+A formal evaluation to check whether one variable causes a change in another requires an experiment.
+
+### Introducing observational studies and experiments
+
+There are two primary types of data collection: observational studies and experiments.
+
+Researchers perform an \index{observational study}**observational study** when they collect data in a way that does not directly interfere with how the data arise.
+For instance, researchers may collect information via surveys, review medical or company records, or follow a \index{cohort}**cohort** of many similar individuals to form hypotheses about why certain diseases might develop.
+In each of these situations, researchers merely observe the data that arise.
+In general, observational studies can provide evidence of a naturally occurring association between variables, but they cannot by themselves show a causal connection.
+
+When researchers want to investigate the possibility of a causal connection, they conduct an \index{experiment}**experiment**.
+Usually there will be both an explanatory and a response variable.
+For instance, we may suspect administering a drug will reduce mortality in heart attack patients over the following year.
+To check if there really is a causal connection between the explanatory variable and the response, researchers will collect a sample of individuals and split them into groups.
+The individuals in each group are *assigned* a treatment.
+When individuals are randomly assigned to a group, the experiment is called a \index{randomized experiment}**randomized experiment**.
+For example, each heart attack patient in the drug trial could be randomly assigned,  perhaps by flipping a coin, into one of two groups: the first group receives a \index{placebo}**placebo** (fake treatment) and the second group receives the drug.
+See the case study in Section \@ref(basic-stents-strokes) for another example of an experiment, though that study did not employ a placebo.
+
+```{block2, type="onebox", echo=TRUE}
+**Association $\neq$ Causation.**
+In general, association does not imply causation, and causation can only be inferred from a randomized experiment.
+```
+
+### Exercises {#data-basics-exercises}
+
+```{block2, type="todo", echo=TRUE}
+TODO: Update exercises.
+```
+
+## Sampling principles and strategies
+
+\index{sample|(}
+\index{population|(}
+
+The first step in conducting research is to identify topics or questions that are to be investigated.
+A clearly laid out research question is helpful in identifying what subjects or cases should be studied and what variables are important.
+It is also important to consider *how* data are collected so that they are reliable and help achieve the research goals.
+
+### Populations and samples
+
+Consider the following three research questions:
+
+1. What is the average mercury content in swordfish in the Atlantic Ocean?
+1. Over the last 5 years, what is the average time to complete a degree for Duke undergrads?
+1. Does a new drug reduce the number of deaths in patients with severe heart disease?
+
+Each research question refers to a target \index{population}**population**. 
+In the first question, the target population is all swordfish in the Atlantic ocean, and each fish represents a case. 
+Often times, it is too expensive to collect data for every case in a population. 
+Instead, a sample is taken. 
+A \index{sample}**sample** represents a subset of the cases and is often a small fraction of the population. 
+For instance, 60 swordfish (or some other number) in the population might be selected, and this sample data may be used to provide an estimate of the population average and answer the research question.
+
+```{block2, type="guidedpractice", echo=TRUE}
+For the second and third questions above, identify the target population and what represents an individual case.^[The question *"Over the last 5 years, what is the average time to complete a degree for Duke undergrads?"* is only relevant to students who complete their degree; the average cannot be computed using a student who never finished her degree. Thus, only Duke undergrads who graduated in the last five years represent cases in the population under consideration. Each such student is an individual case. For the question *"Does a new drug reduce the number of deaths in patients with severe heart disease?"*, a person with severe heart disease represents a case. The population includes all people with severe heart disease.]
+```
+
+```{block2, type="uptohere", echo=TRUE}
+**UPDATED UP TO HERE**
+```
+
+## Experiments
 
 
 ## Overview of data collection principles {#overviewOfDataCollectionPrinciples}
@@ -512,7 +623,7 @@ There are two primary types of data collection: observational studies and experi
 
 Researchers perform an \index{observational study}observational study when they collect data in a way that does not directly interfere with how the data arise. For instance, researchers may collect information via surveys, review medical or company records, or follow a \index{cohort}cohort of many similar individuals to study why certain diseases might develop. In each of these situations, researchers merely observe what happens. In general, observational studies can provide evidence of a naturally occurring association between variables, but they cannot by themselves show a causal connection.
 
-When researchers want to investigate the possibility of a causal connection, they conduct an \index{experiment}experiment. Usually there will be both an explanatory and a response variable. For instance, we may suspect administering a drug will reduce mortality in heart attack patients over the following year. To check if there really is a causal connection between the explanatory variable and the response, researchers will collect a sample of individuals and split them into groups. The individuals in each group are *assigned* a treatment. When individuals are randomly assigned to a group, the experiment is called a \index{randomized experiment}randomized experiment. For example, each heart attack patient in the drug trial could be randomly assigned,  perhaps by flipping a coin, into one of two groups: the first group receives a \index{placebo}placebo (fake treatment) and the second group receives the drug. See the case study in Section \@ref(basicExampleOfStentsAndStrokes) for another example of an experiment, though that study did not employ a placebo.
+When researchers want to investigate the possibility of a causal connection, they conduct an \index{experiment}experiment. Usually there will be both an explanatory and a response variable. For instance, we may suspect administering a drug will reduce mortality in heart attack patients over the following year. To check if there really is a causal connection between the explanatory variable and the response, researchers will collect a sample of individuals and split them into groups. The individuals in each group are *assigned* a treatment. When individuals are randomly assigned to a group, the experiment is called a \index{randomized experiment}randomized experiment. For example, each heart attack patient in the drug trial could be randomly assigned,  perhaps by flipping a coin, into one of two groups: the first group receives a \index{placebo}placebo (fake treatment) and the second group receives the drug. See the case study in Section \@ref(basic-stents-strokes) for another example of an experiment, though that study did not employ a placebo.
 
 \begin{tipBox}{\tipBoxTitle{association $\neq$ causation}
 In a data analysis, association does not imply causation, and causation can only be inferred from a randomized experiment.}
@@ -698,7 +809,7 @@ When a doctor knows a patient has been given the real treatment, she might inadv
 To guard against this bias, which again has been found to have a measurable effect in some instances, most modern studies employ a \index{double-blind}double-blind setup where doctors or researchers who interact with patients are, just like the patients, unaware of who is or is not receiving the treatment.^[There are always some researchers in the study who do know which patients are receiving which treatment. However, they do not interact with the study's patients and do not tell the blinded health care professionals who is receiving which treatment.]
 
 ```{exercise echo=TRUE}
-Look back to the study in Section \@ref(basicExampleOfStentsAndStrokes) where researchers were testing whether stents were effective at reducing strokes in at-risk patients. 
+Look back to the study in Section \@ref(basic-stents-strokes) where researchers were testing whether stents were effective at reducing strokes in at-risk patients. 
 Is this an experiment? 
 Was the study blinded? 
 Was it double-blinded?^[The researchers assigned the patients into their treatment groups, so this study was an experiment. However, the patients could distinguish what treatment they received, so this study was not blind. The study could not be double-blind since it was not blind.]
