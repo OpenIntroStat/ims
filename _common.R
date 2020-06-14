@@ -30,3 +30,8 @@ library(tidyverse)
 # dplyr options ----------------------------------------------------------------
 
 options(dplyr.print_min = 6, dplyr.print_max = 6)
+
+# ggplot2 theme ----------------------------------------------------------------
+# to be replaced with theme_openintro...
+
+theme_set(theme_minimal())
