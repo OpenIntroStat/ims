@@ -26,6 +26,7 @@ library(kableExtra)
 library(janitor)
 library(openintro)
 library(tidyverse)
+library(scales)
 
 # dplyr options ----------------------------------------------------------------
 
