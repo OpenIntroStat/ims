@@ -16,7 +16,7 @@ Tentative outline:
 
 ### [Chp 1. Introduction to data](https://isrs2.netlify.app/intro-to-data.html)
 
-*Plannded draft completion date: 13 June 2020* :check:
+*Plannded draft completion date: 13 June 2020* :heavy_check_mark:
 
 - Case Study (capable of extending to MLR or 2 by 2 table)
 - Data basics
