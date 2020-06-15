@@ -113,3 +113,7 @@ Tentative outline:
 ### Appendix: Probability
 
 (Keep same content as before, minus the bit of probability that got moved to categorical EDA)
+
+---
+
+Please note that this project is released with a [Contributor Code of Conduct](https://www.contributor-covenant.org/version/2/0/code_of_conduct/). By participating in this project you agree to abide by its terms.
