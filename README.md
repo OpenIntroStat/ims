@@ -14,16 +14,16 @@ Some restructuring, some reordering, and some new content with better treatment 
 
 Tentative outline:
 
-### Chp 1. Introduction to data
+### [Chp 1. Introduction to data](https://isrs2.netlify.app/intro-to-data.html)
 
-*Plannded draft completion date: 13 June 2020*
+*Plannded draft completion date: 13 June 2020* :check:
 
 - Case Study (capable of extending to MLR or 2 by 2 table)
-- Taxonomy of Data
-- Overview of data collection principles
-- Observational studies and sampling strategies
-- Experimental design and causality
-- Revisit case study with new terminology we learned
+- Data basics
+- Sampling principles and strategies
+- Experiments
+- Data in R
+- Chapter review
 
 ### Chp 2. Exploratory Data Analysis - Visual summaries and summary statistics
 
