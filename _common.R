@@ -27,6 +27,7 @@ library(janitor)
 library(openintro)
 library(tidyverse)
 library(scales)
+library(infer)
 
 # dplyr options ----------------------------------------------------------------
 
