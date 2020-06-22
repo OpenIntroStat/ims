@@ -36,7 +36,8 @@ In this study, the control group provides a reference point against which we can
 
 Researchers studied the effect of stents at two time points: 30 days after enrollment and 365 days after enrollment. 
 The results of 5 patients are summarized in Table \@ref(tab:stentStudyResultsDF). 
-Patient outcomes are recorded as `stroke` or `no event`, representing whether or not the patient had a stroke at the end of a time period.
+Patient outcomes are recorded as `stroke` or `no event`, representing whether or
+not the patient had a stroke during that time period.
 
 ```{block2, type="data", echo=TRUE}
 The data from this study can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`stent30`](http://openintrostat.github.io/openintro/reference/stent30.html) and [`stent365`](http://openintrostat.github.io/openintro/reference/stent365.html).
@@ -44,7 +45,7 @@ The data from this study can be found in the [openintro](http://openintrostat.gi
 
 ```{r stentStudyResultsDF}
 stent30_renamed <- stent30 %>% rename(`0-30 days` = outcome)
-stent365_renamed <- stent365 %>% rename(`0-365 days` = outcome)
+stent365_renamed <- stent365 %>% rename(`31-365 days` = outcome)
 stent <- stent30_renamed %>%
   select(-group) %>%
   bind_cols(stent365_renamed) %>% 
@@ -52,7 +53,7 @@ stent <- stent30_renamed %>%
   mutate(
     group        = fct_rev(group),
     `0-30 days`  = fct_rev(`0-30 days`),
-    `0-365 days` = fct_rev(`0-365 days`),
+    `0-365 days` = fct_rev(`31-365 days`),
   )
 stent %>%
   sample_n(5) %>% 
@@ -66,11 +67,15 @@ Considering data from each patient individually would be a long, cumbersome path
 Instead, performing a statistical data analysis allows us to consider all of the data at once. 
 Table \@ref(tab:stentStudyResultsDFsummary) summarizes the raw data in a more helpful way. 
 In this table, we can quickly see what happened over the entire study. 
-For instance, to identify the number of patients in the treatment group who had a stroke within 30 days, we look on the left-side of the table at the intersection of the treatment and stroke: 33.
+For instance, to identify the number of patients in the treatment group who had a stroke within 30 days after 
+the treatment, we look in the leftmost column (0-30 days), at the intersection of treatment and stroke: 33.
+To identify the number of control patients who did not have a stroke between 31
+and 365 days after receiving treatment, we look at the rightmost column (31-365
+days), at the intersection of control and no event: 199.
 
 ```{r stentStudyResultsDFsummary}
 stent %>%
-  pivot_longer(cols = c(`0-30 days`, `0-365 days`), 
+  pivot_longer(cols = c(`0-30 days`, `31-365 days`), 
                names_to = "stage", 
                values_to = "outcome") %>%
   count(group, stage, outcome) %>%
@@ -78,7 +83,7 @@ stent %>%
   adorn_totals(where = "row") %>%
   kable(caption = "Descriptive statistics for the stent study.",
         col.names = c("", "stroke", "no event", "stroke", "no event")) %>%
-  add_header_above(c(" " = 1, "0-30 days" = 2, "0-365 days" = 2), extra_css = "border-bottom: 2px solid") %>%
+  add_header_above(c(" " = 1, "31-30 days" = 2, "0-365 days" = 2), extra_css = "border-bottom: 2px solid") %>%
   row_spec(1, extra_css = "border-top: 2px solid") %>%
   row_spec(3, extra_css = "border-top: 2px solid")
 ```
