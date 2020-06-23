@@ -36,24 +36,23 @@ In this study, the control group provides a reference point against which we can
 
 Researchers studied the effect of stents at two time points: 30 days after enrollment and 365 days after enrollment. 
 The results of 5 patients are summarized in Table \@ref(tab:stentStudyResultsDF). 
-Patient outcomes are recorded as `stroke` or `no event`, representing whether or
-not the patient had a stroke during that time period.
+Patient outcomes are recorded as `stroke` or `no event`, representing whether or not the patient had a stroke during that time period.
 
 ```{block2, type="data", echo=TRUE}
 The data from this study can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`stent30`](http://openintrostat.github.io/openintro/reference/stent30.html) and [`stent365`](http://openintrostat.github.io/openintro/reference/stent365.html).
 ```
 
 ```{r stentStudyResultsDF}
-stent30_renamed <- stent30 %>% rename(`0-30 days` = outcome)
-stent365_renamed <- stent365 %>% rename(`31-365 days` = outcome)
+stent30_renamed <- stent30 %>% rename(`30 days` = outcome)
+stent365_renamed <- stent365 %>% rename(`365 days` = outcome)
 stent <- stent30_renamed %>%
   select(-group) %>%
   bind_cols(stent365_renamed) %>% 
   relocate(group) %>%
   mutate(
     group        = fct_rev(group),
-    `0-30 days`  = fct_rev(`0-30 days`),
-    `0-365 days` = fct_rev(`31-365 days`),
+    `30 days`    = fct_rev(`30 days`),
+    `365 days`   = fct_rev(`365 days`),
   )
 stent %>%
   sample_n(5) %>% 
@@ -67,15 +66,12 @@ Considering data from each patient individually would be a long, cumbersome path
 Instead, performing a statistical data analysis allows us to consider all of the data at once. 
 Table \@ref(tab:stentStudyResultsDFsummary) summarizes the raw data in a more helpful way. 
 In this table, we can quickly see what happened over the entire study. 
-For instance, to identify the number of patients in the treatment group who had a stroke within 30 days after 
-the treatment, we look in the leftmost column (0-30 days), at the intersection of treatment and stroke: 33.
-To identify the number of control patients who did not have a stroke between 31
-and 365 days after receiving treatment, we look at the rightmost column (31-365
-days), at the intersection of control and no event: 199.
+For instance, to identify the number of patients in the treatment group who had a stroke within 30 days after the treatment, we look in the leftmost column (30 days), at the intersection of treatment and stroke: 33.
+To identify the number of control patients who did not have a stroke after 365 days after receiving treatment, we look at the rightmost column (365 days), at the intersection of control and no event: 199.
 
 ```{r stentStudyResultsDFsummary}
 stent %>%
-  pivot_longer(cols = c(`0-30 days`, `31-365 days`), 
+  pivot_longer(cols = c(`30 days`, `365 days`), 
                names_to = "stage", 
                values_to = "outcome") %>%
   count(group, stage, outcome) %>%
@@ -83,7 +79,7 @@ stent %>%
   adorn_totals(where = "row") %>%
   kable(caption = "Descriptive statistics for the stent study.",
         col.names = c("", "stroke", "no event", "stroke", "no event")) %>%
-  add_header_above(c(" " = 1, "31-30 days" = 2, "0-365 days" = 2), extra_css = "border-bottom: 2px solid") %>%
+  add_header_above(c(" " = 1, "30 days" = 2, "365 days" = 2), extra_css = "border-bottom: 2px solid") %>%
   row_spec(1, extra_css = "border-top: 2px solid") %>%
   row_spec(3, extra_css = "border-top: 2px solid")
 ```
@@ -94,8 +90,7 @@ Using these two numbers, compute the proportion of patients in the treatment gro
 (Please note: answers to all Guided Practice exercises are provided using footnotes.)^[The proportion of the 224 patients who had a stroke within 365 days: $45/224 = 0.20$.]
 ```
 
-We can compute summary statistics from the table to give us a better idea of 
-how the impact of the stent treatment differed between the two groups.
+We can compute summary statistics from the table to give us a better idea of  how the impact of the stent treatment differed between the two groups.
 A **summary statistic** is a single number summarizing a large amount of data.
 For instance, the primary results of the study after 1 year could be described by two summary statistics: the proportion of people who had a stroke in the treatment and control groups.
 
@@ -897,16 +892,12 @@ Suggest a variable that might explain the negative relationship.^[Answers will v
 
 Observational studies come in two forms: prospective and retrospective studies.
 A **prospective study** identifies individuals and collects information as events unfold.
-For instance, medical researchers may identify and follow a group of patients over many years to assess the possible influences of behavior on cancer risk. One example of such a study is The
-Nurses' Health Study. Started in 1976 and expanded in 1989, the Nurses' Health 
-Study has collected data on over 275,000 nurses and is still enrolling
-participants. This prospective study recruits registered nurses and then
-collects data from them using questionnaires. **Retrospective studies** collect
-data after events have taken place, e.g. researchers may review past events in
-medical records.Some data sets may contain both prospectively- and 
-retrospectively-collected variables, such as medical studies which gather 
-information on participants' lives before they enter the study and subsequently 
-collect data on participants throughout the study. 
+For instance, medical researchers may identify and follow a group of patients over many years to assess the possible influences of behavior on cancer risk. 
+One example of such a study is The Nurses' Health Study. 
+Started in 1976 and expanded in 1989, the Nurses' Health Study has collected data on over 275,000 nurses and is still enrolling participants. 
+This prospective study recruits registered nurses and then collects data from them using questionnaires. 
+**Retrospective studies** collect data after events have taken place, e.g. researchers may review past events in medical records.
+Some data sets may contain both prospectively- and retrospectively-collected variables, such as medical studies which gather information on participants' lives before they enter the study and subsequently collect data on participants throughout the study. 
 
 ```{r include=FALSE}
 terms_chp_1 <- c(terms_chp_1, "prospective study", "retrospective study")
@@ -940,19 +931,16 @@ Consider the salaries of Major League Baseball (MLB) players, where each player 
 To take a simple random sample of 120 baseball players and their salaries, we could write the names of that season's several hundreds of players onto slips of paper, drop the slips into a bucket, shake the bucket around until we are sure the names are all mixed up, then draw out slips until we have the sample of 120 players. 
 In general, a sample is referred to as "simple random" if each case in the population has an equal chance of being included in the final sample *and* knowing that a case is included in a sample does not provide useful information about which other cases are included.
 
+\index{sample!strata|textbf}
+
 **Stratified sampling** is a divide-and-conquer sampling strategy.
-The population is divided into groups called
-\term{strata}\index{sample!strata|textbf}.
-The strata are chosen so that similar cases are grouped
-together, then a second sampling method, usually simple
-random sampling, is employed within each stratum.
-In the baseball salary example, each of the 30 teams could represent a strata,
-since some teams have a lot more money
-(up to 4 times as much!). Then we might randomly sample 4 players from each team
-for our sample of 120 players.
+The population is divided into groups called **strata**.
+The strata are chosen so that similar cases are grouped together, then a second sampling method, usually simple random sampling, is employed within each stratum.
+In the baseball salary example, each of the 30 teams could represent a strata, since some teams have a lot more money (up to 4 times as much!). 
+Then we might randomly sample 4 players from each team for our sample of 120 players.
 
 ```{r include=FALSE}
-terms_chp_1 <- c(terms_chp_1, "simple random sampling")
+terms_chp_1 <- c(terms_chp_1, "simple random sampling", "stratified sampling", "strata")
 ```
 
 **Stratified sampling** is especially useful when the cases in each stratum are very similar with respect to the outcome of interest. 
@@ -1078,9 +1066,7 @@ Are the "four" principles the same as the enumerated list above?
 
 ### Reducing bias in human experiments {#reducing-bias-human-experiments}
 
-Randomized experiments have long been considered to be the gold standard for
-data collection, but they do not ensure an unbiased perspective into the cause
-and effect relationship in all cases.
+Randomized experiments have long been considered to be the gold standard for data collection, but they do not ensure an unbiased perspective into the cause and effect relationship in all cases.
 Human studies are perfect examples where bias can unintentionally arise.
 Here we reconsider a study where a new drug was used to treat heart attack patients.
 In particular, researchers wanted to know if the drug reduced deaths in patients.
@@ -1110,12 +1096,16 @@ Often times, a placebo results in a slight but real improvement in patients.
 This effect has been dubbed the **placebo effect**.
 
 ```{r include=FALSE}
-terms_chp_1 <- c(terms_chp_1, "blind", "placebo", "placebo~effect")
+terms_chp_1 <- c(terms_chp_1, "blind", "placebo", "placebo effect")
 ```
 
 The patients are not the only ones who should be blinded: doctors and researchers can accidentally bias a study.
 When a doctor knows a patient has been given the real treatment, they might inadvertently give that patient more attention or care than a patient that they know is on the placebo.
-To guard against this bias, which again has been found to have a measurable effect in some instances, most modern studies employ a \term{double-blind} setup where doctors or researchers who interact with patients are, just like the patients, unaware of who is or is not receiving the treatment.^[There are always some researchers involved in the study who do know which patients are receiving which treatment. However, they do not interact with the study's patients and do not tell the blinded health care professionals who is receiving which treatment.]
+To guard against this bias, which again has been found to have a measurable effect in some instances, most modern studies employ a **double-blind** setup where doctors or researchers who interact with patients are, just like the patients, unaware of who is or is not receiving the treatment.^[There are always some researchers involved in the study who do know which patients are receiving which treatment. However, they do not interact with the study's patients and do not tell the blinded health care professionals who is receiving which treatment.]
+
+```{r include=FALSE}
+terms_chp_1 <- c(terms_chp_1, "double-blind")
+```
 
 ```{block2, type="guidedpractice", echo=TRUE}
 Look back to the study in Section \@ref(basic-stents-strokes) where researchers were testing whether stents were effective at reducing strokes in at-risk patients. 
@@ -1180,22 +1170,14 @@ glimpse(email50)
 head(email50) 
 ```
 
-Sometimes it is necessary to extract a column or a row from a data set. In `R`, 
-the `$` operator can be used to extract a column from a dataset. For example, 
-`data$variable` would extract the `variable` column from the `data` dataframe.
-When extracted, these columns can be thought of as vectors. With these vectors,
-if you desired to pull off a specific entry, you could use square brackets
-(`[ ]`), with the index (number) of the entry you wish to extract in the
-brackets. For example, `data$variable[2]` would extract the second entry (row)
-of the `variable` column. 
+Sometimes it is necessary to extract a column or a row from a data set. 
+In `R`, the `$` operator can be used to extract a column from a dataset. 
+For example, `data$variable` would extract the `variable` column from the `data` dataframe.
+When extracted, these columns can be thought of as vectors. With these vectors, if you desired to pull off a specific entry, you could use square brackets (`[ ]`), with the index (number) of the entry you wish to extract in the brackets. 
+For example, `data$variable[2]` would extract the second entry (row) of the `variable` column. 
 
-Because a dataframe can be (roughly) thought of as a set of many different 
-vectors, you can extract rows and columns from a dataframe using familiar 
-matrix notation (e.g. `[row, column]`. For example `data[i,j]` will extract the
-$(i,j)^{th}$ entry of data, `data[i, ]` will extract the $i^{th}$ row, and 
-`data[ , j]` will extract the $j^{th}$ column. Notice, when extracting an 
-entire row (or column), you do not need to specify the columns (or rows) you
-would like, which is why the second entry does not contain a number. 
+Because a dataframe can be (roughly) thought of as a set of many different vectors, you can extract rows and columns from a dataframe using familiar matrix notation (e.g. `[row, column]`. 
+For example `data[i,j]` will extract the $(i,j)^{th}$ entry of data, `data[i, ]` will extract the $i^{th}$ row, and `data[ , j]` will extract the $j^{th}$ column. Notice, when extracting an  entire row (or column), you do not need to specify the columns (or rows) you would like, which is why the second entry does not contain a number. 
 
 ```{r echo=TRUE}
 email50$num_char
