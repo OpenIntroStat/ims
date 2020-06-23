@@ -36,23 +36,23 @@ In this study, the control group provides a reference point against which we can
 
 Researchers studied the effect of stents at two time points: 30 days after enrollment and 365 days after enrollment. 
 The results of 5 patients are summarized in Table \@ref(tab:stentStudyResultsDF). 
-Patient outcomes are recorded as `stroke` or `no event`, representing whether or not the patient had a stroke at the end of a time period.
+Patient outcomes are recorded as `stroke` or `no event`, representing whether or not the patient had a stroke during that time period.
 
 ```{block2, type="data", echo=TRUE}
 The data from this study can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`stent30`](http://openintrostat.github.io/openintro/reference/stent30.html) and [`stent365`](http://openintrostat.github.io/openintro/reference/stent365.html).
 ```
 
 ```{r stentStudyResultsDF}
-stent30_renamed <- stent30 %>% rename(`0-30 days` = outcome)
-stent365_renamed <- stent365 %>% rename(`0-365 days` = outcome)
+stent30_renamed <- stent30 %>% rename(`30 days` = outcome)
+stent365_renamed <- stent365 %>% rename(`365 days` = outcome)
 stent <- stent30_renamed %>%
   select(-group) %>%
   bind_cols(stent365_renamed) %>% 
   relocate(group) %>%
   mutate(
     group        = fct_rev(group),
-    `0-30 days`  = fct_rev(`0-30 days`),
-    `0-365 days` = fct_rev(`0-365 days`),
+    `30 days`    = fct_rev(`30 days`),
+    `365 days`   = fct_rev(`365 days`),
   )
 stent %>%
   sample_n(5) %>% 
@@ -66,11 +66,12 @@ Considering data from each patient individually would be a long, cumbersome path
 Instead, performing a statistical data analysis allows us to consider all of the data at once. 
 Table \@ref(tab:stentStudyResultsDFsummary) summarizes the raw data in a more helpful way. 
 In this table, we can quickly see what happened over the entire study. 
-For instance, to identify the number of patients in the treatment group who had a stroke within 30 days, we look on the left-side of the table at the intersection of the treatment and stroke: 33.
+For instance, to identify the number of patients in the treatment group who had a stroke within 30 days after the treatment, we look in the leftmost column (30 days), at the intersection of treatment and stroke: 33.
+To identify the number of control patients who did not have a stroke after 365 days after receiving treatment, we look at the rightmost column (365 days), at the intersection of control and no event: 199.
 
 ```{r stentStudyResultsDFsummary}
 stent %>%
-  pivot_longer(cols = c(`0-30 days`, `0-365 days`), 
+  pivot_longer(cols = c(`30 days`, `365 days`), 
                names_to = "stage", 
                values_to = "outcome") %>%
   count(group, stage, outcome) %>%
@@ -78,7 +79,7 @@ stent %>%
   adorn_totals(where = "row") %>%
   kable(caption = "Descriptive statistics for the stent study.",
         col.names = c("", "stroke", "no event", "stroke", "no event")) %>%
-  add_header_above(c(" " = 1, "0-30 days" = 2, "0-365 days" = 2), extra_css = "border-bottom: 2px solid") %>%
+  add_header_above(c(" " = 1, "30 days" = 2, "365 days" = 2), extra_css = "border-bottom: 2px solid") %>%
   row_spec(1, extra_css = "border-top: 2px solid") %>%
   row_spec(3, extra_css = "border-top: 2px solid")
 ```
@@ -89,7 +90,7 @@ Using these two numbers, compute the proportion of patients in the treatment gro
 (Please note: answers to all Guided Practice exercises are provided using footnotes.)^[The proportion of the 224 patients who had a stroke within 365 days: $45/224 = 0.20$.]
 ```
 
-We can compute summary statistics from the table.
+We can compute summary statistics from the table to give us a better idea of  how the impact of the stent treatment differed between the two groups.
 A **summary statistic** is a single number summarizing a large amount of data.
 For instance, the primary results of the study after 1 year could be described by two summary statistics: the proportion of people who had a stroke in the treatment and control groups.
 
@@ -139,13 +140,15 @@ To determine whether acupuncture relieves migraine  pain, researchers conducted 
 if they were pain free.
 Results are summarized in the contingency table below.
 
+<!--
 ```{r}
 2+2
 ```
 
 (a) hi
-(b) mello
+(b) mello 
 (c) jello
+-->
 
 ## Data basics {#data-basics}
 
@@ -161,9 +164,9 @@ Table \@ref(tab:loan50DF) displays six rows of a data set for 50 randomly sample
 The data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`loan50`](http://openintrostat.github.io/openintro/reference/loan50.html).
 ```
 
-Each row in the table represents a single loan.
+Each row in the table represents a single loan. 
 The formal name for a row is a **case** or \index{unit of observation}**observational unit**.
-The columns represent characteristics, each column referred to as a **variable**, for each of the loans.
+The columns represent characteristics of each loan, where each column is referred to as a **variable**.
 For example, the first row represents a loan of \$7,500 with an interest rate of 7.34\%, where the borrower is based in Maryland (MD) and has an income of \$70,000.
 
 ```{r include=FALSE}
@@ -173,11 +176,11 @@ terms_chp_1 <- c(terms_chp_1, "case", "observational unit", "variable")
 ```{block2, type="guidedpractice", echo=TRUE}
 What is the grade of the first loan in Table \@ref(tab:loan50DF)?
 And what is the home ownership status of the borrower for that first loan?
-For these Guided Practice questions, you can check your answer in the footnote.^[The loan's grade is A, and the borrower rents their residence.]
+Reminder: for these Guided Practice questions, you can check your answer in the footnote.^[The loan's grade is A, and the borrower rents their residence.]
 ```
 
 In practice, it is especially important to ask clarifying questions to ensure important aspects of the data are understood.
-For instance, it is always important to be sure we know what each variable means and the units of measurement.
+For instance, it is always important to be sure we know what each variable means and its units of measurement.
 Descriptions of the variables in the `loan50` dataset are given in Table \@ref(tab:loan50Variables).
 
 ```{r loan50DF}
@@ -218,7 +221,7 @@ This structure allows new cases to be added as rows or new variables as new colu
 
 ```{block2, type="guidedpractice", echo=TRUE}
 The grades for assignments, quizzes, and exams in a course are often recorded in a gradebook that takes the form of a data frame. 
-How might you organize grade data using a data frame?^[There are multiple strategies that can be followed. One common strategy is to have each student represented by a row, and then add a column for each assignment, quiz, or exam. Under this setup, it is easy to review a single line to understand the grade history of a student. There should also be columns to include student information, such as one column to list student names.]
+How might you organize a course's grade data using a data frame?^[There are multiple strategies that can be followed. One common strategy is to have each student represented by a row, and then add a column for each assignment, quiz, or exam. Under this setup, it is easy to review a single line to understand the grade history of a student. There should also be columns to include student information, such as one column to list student names.]
 ```
 
 \index{data!county|(}
@@ -252,8 +255,8 @@ county_var_def <- tribble(
   "homeownership",     "Homeownership rate, 2006-2010.",
   "multi_unit",        "Percent of housing units in multi-unit structures, 2006-2010.",
   "unemployment_rate", "Unemployment rate in 2017.",
-  "metro",             "Whether the county contains a metropolitan area.",
-  "median_edu",        "Median education level (2013-2017).",
+  "metro",             "Whether the county contains a metropolitan area, taking one of the values `yes` or `no`.",
+  "median_edu",        "Median education level (2013-2017), taking one of the values `below_hs`, `hs_diploma`, `some_college`, or `bachelors`.", 
   "per_capita_income", "Per capita (per person) income (2013-2017).",
   "median_hh_income",  "Median household income.",
   "smoking_ban",       "Describes whether the type of county-level smoking ban in place in 2010, taking one of the values `none`, `partial`, or `comprehensive`."
@@ -398,7 +401,7 @@ The larger the median household income for a county, the higher the population g
 While this trend isn't true for every county, the trend in the plot is evident. Since there is some relationship between the variables, they are associated.
 ```
 
-```{r county-pop-change-med-hh-income, fig.cap = "A scatterplot showing `pop_change` against `median_hh_income`. Owsley County of Kentucky, is highlighted, which lost 3.63% of its population from 2010 to 2017 and had median household income of $22,736.}", warning=FALSE}
+```{r county-pop-change-med-hh-income, fig.cap = "A scatterplot showing `pop_change` against `median_hh_income`. Owsley County of Kentucky, is highlighted, which lost 3.63% of its population from 2010 to 2017 and had median household income of $22,736.", warning=FALSE}
 ggplot(county, aes(x = median_hh_income, y = pop_change)) +
   geom_point(alpha = 0.3, color = COL["blue", "full"], 
              fill = COL["black", "full"], shape = 21) +
@@ -548,7 +551,7 @@ Consider the following possible responses to the three research questions:
 
 1. A man on the news got mercury poisoning from eating swordfish, so the average mercury concentration in swordfish must be dangerously high.
 2. I met two students who took more than 7 years to graduate from Duke, so it must take longer to graduate at Duke than at many other colleges.
-3. My friend's dad had a heart attack and died after they gave him a new heart disease drug, so~the drug must not work.
+3. My friend's dad had a heart attack and died after they gave him a new heart disease drug, so the drug must not work.
 
 
 Each conclusion is based on data.
@@ -572,7 +575,7 @@ include_graphics("01/images/mn-winter/mn-winter.jpg")
 
 Anecdotal evidence typically is composed of unusual cases that we recall based on their striking characteristics. 
 For instance, we are more likely to remember the two people we met who took 7 years to graduate than the six others who graduated in four years. 
-Instead of looking at the most unusual cases, we should examine a sample of many cases that represent the population.
+Instead of looking at the most unusual cases, we should examine a sample of many cases that better represent the population.
 
 ### Sampling from a population
 
@@ -636,13 +639,13 @@ par(par_og) # restore original par
 
 ```{block2, type="example", echo=TRUE}
 Suppose we ask a student who happens to be majoring in nutrition to select several graduates for the study.
-What kind of students do you think she might collect?
-Do you think her sample would be representative of all graduates?
+What kind of students do you think they might collect?
+Do you think their sample would be representative of all graduates?
 
 ---
 
-Perhaps she would pick a disproportionate number of graduates from health-related fields. Or perhaps her selection would be a good representation of the population.
-When selecting samples by hand, we run the risk of picking a **biased** sample, even if their bias is unintended.
+Perhaps they would pick a disproportionate number of graduates from health-related fields. Or perhaps their selection would be a good representation of the population.
+When selecting samples by hand, we run the risk of picking a **biased** sample, even if our bias is unintended.
 ```
 
 ```{r include=FALSE}
@@ -717,7 +720,7 @@ par(par_og) # restore original par
 
 If someone was permitted to pick and choose exactly which graduates were included in the sample, it is entirely possible that the sample could be skewed to that person's interests, which may be entirely unintentional.
 This introduces **bias** into a sample. Sampling randomly helps resolve this problem.
-The most basic random sample is called a **simple random sample**, and which is equivalent to using a raffle to select cases.
+The most basic random sample is called a **simple random sample**, and is equivalent to using a raffle to select cases.
 This means that each case in the population has an equal chance of being included and there is no implied connection between the cases in the sample.
 
 ```{r include=FALSE}
@@ -812,7 +815,7 @@ terms_chp_1 <- c(terms_chp_1, "convenience sample")
 ```
 
 ```{block2, type="guidedpractice", echo=TRUE}
-We can easily access ratings for products, sellers, and companies through websites. These ratings are based only on those people who go out of their way to provide a rating. If 50% of online reviews for a product are negative, do you think this means that 50% of buyers are dissatisfied with the product?^[Answers will vary. From our own anecdotal experiences, we believe people tend to rant more about products that fell below expectations than rave about those that perform as expected. For this reason, we suspect there is a negative bias in product ratings on sites like Amazon. However, since our experiences may not be representative, we also keep an open mind.]
+We can easily access ratings for products, sellers, and companies through websites. These ratings are based only on those people who go out of their way to provide a rating. If 50% of online reviews for a product are negative, do you think this means that 50% of buyers are dissatisfied with the product? Why or why not?^[Answers will vary. From our own anecdotal experiences, we believe people tend to rant more about products that fell below expectations than rave about those that perform as expected. For this reason, we suspect there is a negative bias in product ratings on sites like Amazon. However, since our experiences may not be representative, we also keep an open mind.]
 ```
 
 \index{sample!bias|)}
@@ -832,14 +835,14 @@ terms_chp_1 <- c(terms_chp_1, "observational data")
 
 Making causal conclusions based on experiments is often reasonable.
 However, making the same causal conclusions based on observational data can be treacherous and is not recommended.
-Thus, observational studies are generally only sufficient to show associations or form hypotheses that we later check using experiments.
+Thus, observational studies are generally only sufficient to show associations or form hypotheses that can be later checked with experiments.
 
 ```{block2, type="guidedpractice", echo=TRUE}
-Suppose an observational study tracked sunscreen use and skin cancer, and it was found that the more sunscreen someone used, the more likely the person was to have skin cancer. Does this mean sunscreen \emph{causes} skin cancer?^[No. See the paragraph following the exercise for an explanation.]
+Suppose an observational study tracked sunscreen use and skin cancer, and it was found that the more sunscreen someone used, the more likely the person was to have skin cancer. Does this mean sunscreen *causes* skin cancer?^[No. See the paragraph following the exercise for an explanation.]
 ```
 
 Some previous research tells us that using sunscreen actually reduces skin cancer risk, so maybe there is another variable that can explain this hypothetical association between sunscreen usage and skin cancer. 
-One important piece of information that is absent is sun exposure. If someone is out in the sun all day, she is more likely to use sunscreen *and* more likely to get skin cancer. Exposure to the sun is unaccounted for in the simple investigation.
+One important piece of information that is absent is sun exposure. If someone is out in the sun all day, they are more likely to use sunscreen *and* more likely to get skin cancer. Exposure to the sun is unaccounted for in the simple investigation.
 
 ```{r sun-causes-cancer}
 par_og <- par(no.readonly = TRUE) # save original par
@@ -874,7 +877,7 @@ Study with a similar scenario to that described here:
 http://onlinelibrary.wiley.com/doi/10.1002/ijc.22745/full
 -->
 
-Sun exposure is what is called a **confounding variable**^[Also called a **lurking variable**, **confounding factor**, or a **confounder**.], which is a variable that is correlated with both the explanatory and response variables. 
+Sun exposure is what is called a **confounding variable**^[Also called a **lurking variable**, **confounding factor**, or a **confounder**.], which is a variable that is associated with both the explanatory and response variables. 
 While one method to justify making causal conclusions from observational studies is to exhaust the search for confounding variables, there is no guarantee that all confounding variables can be examined or measured.
 
 ```{r include=FALSE}
@@ -889,11 +892,12 @@ Suggest a variable that might explain the negative relationship.^[Answers will v
 
 Observational studies come in two forms: prospective and retrospective studies.
 A **prospective study** identifies individuals and collects information as events unfold.
-For instance, medical researchers may identify and follow a group of patients over many years to assess the possible influences of behavior on cancer risk.
-One example of such a study is The Nurses' Health Study, started in 1976 and expanded in 1989.
-This prospective study recruits registered nurses and then collects data from them using questionnaires.
+For instance, medical researchers may identify and follow a group of patients over many years to assess the possible influences of behavior on cancer risk. 
+One example of such a study is The Nurses' Health Study. 
+Started in 1976 and expanded in 1989, the Nurses' Health Study has collected data on over 275,000 nurses and is still enrolling participants. 
+This prospective study recruits registered nurses and then collects data from them using questionnaires. 
 **Retrospective studies** collect data after events have taken place, e.g. researchers may review past events in medical records.
-Some data sets may contain both prospectively- and retrospectively-collected variables.
+Some data sets may contain both prospectively- and retrospectively-collected variables, such as medical studies which gather information on participants' lives before they enter the study and subsequently collect data on participants throughout the study. 
 
 ```{r include=FALSE}
 terms_chp_1 <- c(terms_chp_1, "prospective study", "retrospective study")
@@ -908,7 +912,7 @@ Here we consider four random sampling techniques: simple, stratified, cluster, a
 \index{sample!simple random sampling}
 \index{sample!stratified sampling}
 
-```{r simple-stratified, fig.cap="Examples of simple random and stratified sampling. In the top panel, simple random sampling was used to randomly select the 18 cases. In the bottom panel, stratified sampling was used: cases were grouped into strata, then simple random sampling was employed within each stratum.", warning=FALSE, fig.width=10}
+```{r simple-stratified, fig.cap="Examples of simple random and stratified sampling. In the top panel, simple random sampling was used to randomly select the 18 cases (denoted in red). In the bottom panel, stratified sampling was used: cases were grouped into strata, then simple random sampling was employed to randomly select 3 cases within each stratum.", warning=FALSE, fig.width=10}
 
 source("helpers/helper-sampling.R")   # source helper
 par_og <- par(no.readonly = TRUE)     # save original par
@@ -927,20 +931,16 @@ Consider the salaries of Major League Baseball (MLB) players, where each player 
 To take a simple random sample of 120 baseball players and their salaries, we could write the names of that season's several hundreds of players onto slips of paper, drop the slips into a bucket, shake the bucket around until we are sure the names are all mixed up, then draw out slips until we have the sample of 120 players. 
 In general, a sample is referred to as "simple random" if each case in the population has an equal chance of being included in the final sample *and* knowing that a case is included in a sample does not provide useful information about which other cases are included.
 
+\index{sample!strata|textbf}
+
 **Stratified sampling** is a divide-and-conquer sampling strategy.
-The population is divided into groups called
-\term{strata}\index{sample!strata|textbf}.
-The strata are chosen so that similar cases are grouped
-together, then a second sampling method, usually simple
-random sampling, is employed within each stratum.
-In~the baseball salary example, the teams could represent
-the strata, since some teams have a lot more money
-(up to 4~times as much!).
-Then we might randomly sample 4 players from each team for
-a total of 120 players.
+The population is divided into groups called **strata**.
+The strata are chosen so that similar cases are grouped together, then a second sampling method, usually simple random sampling, is employed within each stratum.
+In the baseball salary example, each of the 30 teams could represent a strata, since some teams have a lot more money (up to 4 times as much!). 
+Then we might randomly sample 4 players from each team for our sample of 120 players.
 
 ```{r include=FALSE}
-terms_chp_1 <- c(terms_chp_1, "simple random sampling")
+terms_chp_1 <- c(terms_chp_1, "simple random sampling", "stratified sampling", "strata")
 ```
 
 **Stratified sampling** is especially useful when the cases in each stratum are very similar with respect to the outcome of interest. 
@@ -962,7 +962,7 @@ When we combine these estimates into a single estimate for the full population, 
 
 In a **cluster sample**, we break up the population into many groups, called **clusters**. 
 Then we sample a fixed number of clusters and include all observations from each of those clusters in the sample. 
-A **multistage sample** is like a cluster sample, but rather than keeping all observations in each cluster, we collect a random sample within each selected cluster.
+A **multistage sample** is like a cluster sample, but rather than keeping all observations in each cluster, we would collect a random sample within each selected cluster.
 
 ```{r include=FALSE}
 terms_chp_1 <- c(terms_chp_1, "cluster sampling", "cluster", "multistage sample")
@@ -987,8 +987,7 @@ A~downside of these methods is that more advanced techniques are typically requi
 
 ```{block2, type="example", echo=TRUE}
 Suppose we are interested in estimating the malaria rate in a densely tropical portion of rural Indonesia.
-We learn that there are 30 villages in that part of the Indonesian jungle, each more or less similar to the next.
-Our goal is to test 150 individuals for malaria.
+We learn that there are 30 villages in that part of the Indonesian jungle, each more or less similar to the next, but the distances between the villages is substantial. Our goal is to test 150 individuals for malaria.
 What sampling method should be employed?
 
 ---
@@ -1009,7 +1008,7 @@ Update exercises.
 ## Experiments
 
 Studies where the researchers assign treatments to cases are called **experiments**. 
-When this assignment includes randomization, e.g.~using a coin flip to decide which treatment a patient receives, it is called a **randomized experiment**. 
+When this assignment includes randomization, e.g. using a coin flip to decide which treatment a patient receives, it is called a **randomized experiment**. 
 Randomized experiments are fundamentally important when trying to show a causal connection between two variables.
 
 ```{r include=FALSE}
@@ -1018,9 +1017,9 @@ terms_chp_1 <- c(terms_chp_1, "experiment", "randomized experiment")
 
 ### Principles of experimental design
 
-1. **Controlling.** Researchers assign treatments to cases, and they do their best to **control** any other differences in the groups.^[This is a different concept than a *control group*, which we discuss in the second principle and in Section \@ref(reducing-bias-human-experiments).] 
+1. **Controlling.** Researchers assign treatments to cases, and they do their best to **control** any other differences in the groups^[This is a different concept than a *control group*, which we discuss in the second principle and in Section \@ref(reducing-bias-human-experiments).].  
 For example, when patients take a drug in pill form, some patients take the pill with only a sip of water while others may have it with an entire glass of water. 
-To control for the effect of water consumption, a doctor may ask all patients to drink a 12 ounce glass of water with the pill.
+To control for the effect of water consumption, a doctor may instruct every patient to drink a 12 ounce glass of water with the pill.
 
 ```{r include=FALSE}
 terms_chp_1 <- c(terms_chp_1, "control")
@@ -1032,7 +1031,7 @@ Randomizing patients into the treatment or control group helps even out such dif
 
 1. **Replication.** The more cases researchers observe, the more accurately they can estimate the effect of the explanatory variable on the response. 
 In a single study, we **replicate** by collecting a sufficiently large sample. 
-Additionally, a group of scientists may replicate an entire study to verify an earlier finding.
+Alternatively, a group of scientists may replicate an entire study to verify an earlier finding.
 
 ```{r include=FALSE}
 terms_chp_1 <- c(terms_chp_1, "replicate")
@@ -1067,7 +1066,7 @@ Are the "four" principles the same as the enumerated list above?
 
 ### Reducing bias in human experiments {#reducing-bias-human-experiments}
 
-Randomized experiments are the gold standard for data collection, but they do not ensure an unbiased perspective into the cause and effect relationship in all cases.
+Randomized experiments have long been considered to be the gold standard for data collection, but they do not ensure an unbiased perspective into the cause and effect relationship in all cases.
 Human studies are perfect examples where bias can unintentionally arise.
 Here we reconsider a study where a new drug was used to treat heart attack patients.
 In particular, researchers wanted to know if the drug reduced deaths in patients.
@@ -1084,25 +1083,29 @@ terms_chp_1 <- c(terms_chp_1, "treatment group", "control group")
 Put yourself in the place of a person in the study. 
 If you are in the treatment group, you are given a fancy new drug that you anticipate will help you. 
 On the other hand, a person in the other group doesn't receive the drug and sits idly, hoping her participation doesn't increase her risk of death. 
-These perspectives suggest there are actually two effects: the one of interest is the effectiveness of the drug, and the second is an emotional effect that is difficult to quantify.
+These perspectives suggest there are actually two effects in this study: the one of interest is the effectiveness of the drug, and the second is an emotional effect to (not) taking the drug, which is difficult to quantify.
 
 Researchers aren't usually interested in the emotional effect, which might bias the study.
 To circumvent this problem, researchers do not want patients to know which group they are in.
 When researchers keep the patients uninformed about their treatment, the study is said to be **blind**.
-But there is one problem: if a patient doesn't receive a treatment, she will know she is in the control group.
+But there is one problem: if a patient doesn't receive a treatment, they will know they're in the control group.
 The solution to this problem is to give fake treatments to patients in the control group.
 A fake treatment is called a **placebo**, and an effective placebo is the key to making a study truly blind.
 A classic example of a placebo is a sugar pill that is made to look like the actual treatment pill.
 Often times, a placebo results in a slight but real improvement in patients.
-This effect has been dubbed the **placebo~effect**.
+This effect has been dubbed the **placebo effect**.
 
 ```{r include=FALSE}
-terms_chp_1 <- c(terms_chp_1, "blind", "placebo", "placebo~effect")
+terms_chp_1 <- c(terms_chp_1, "blind", "placebo", "placebo effect")
 ```
 
 The patients are not the only ones who should be blinded: doctors and researchers can accidentally bias a study.
-When a doctor knows a patient has been given the real treatment, she might inadvertently give that patient more attention or care than a patient that she knows is on the placebo.
-To guard against this bias, which again has been found to have a measurable effect in some instances, most modern studies employ a \term{double-blind} setup where doctors or researchers who interact with patients are, just like the patients, unaware of who is or is not receiving the treatment.^[There are always some researchers involved in the study who do know which patients are receiving which treatment. However, they do not interact with the study's patients and do not tell the blinded health care professionals who is receiving which treatment.]
+When a doctor knows a patient has been given the real treatment, they might inadvertently give that patient more attention or care than a patient that they know is on the placebo.
+To guard against this bias, which again has been found to have a measurable effect in some instances, most modern studies employ a **double-blind** setup where doctors or researchers who interact with patients are, just like the patients, unaware of who is or is not receiving the treatment.^[There are always some researchers involved in the study who do know which patients are receiving which treatment. However, they do not interact with the study's patients and do not tell the blinded health care professionals who is receiving which treatment.]
+
+```{r include=FALSE}
+terms_chp_1 <- c(terms_chp_1, "double-blind")
+```
 
 ```{block2, type="guidedpractice", echo=TRUE}
 Look back to the study in Section \@ref(basic-stents-strokes) where researchers were testing whether stents were effective at reducing strokes in at-risk patients. 
@@ -1110,7 +1113,7 @@ Is this an experiment? Was the study blinded? Was it double-blinded?^[The resear
 ```
 
 ```{block2, type="guidedpractice", echo=TRUE}
-For the study in Section \~ref(basic-stents-strokes), could the researchers have employed a placebo?
+For the study in Section \@ref(basic-stents-strokes), could the researchers have employed a placebo?
 If so, what would that placebo have looked like?^[Ultimately, can we make patients think they got treated from a surgery? In fact, we can, and some experiments use a **sham surgery**. In a sham surgery, the patient does undergo surgery, but the patient does not receive the full treatment, though they will still get a placebo effect.]
 ```
 
@@ -1127,44 +1130,63 @@ UPDATED UP TO HERE
 ```
 
 
-## Data in R
+## Data in `R`
 
-`R` is a powerful and open source software tool for working with data.  
-Throughout this text, we provide some guidance on how to use `R` within the context of the statistical content that is being covered.  
-As educators, we see the value of teaching with modern software in order to empower students to take optimal advantage of the concepts they are learning.  
-However, we understand the limitations of some educational structures, and we know that not every classroom will be able to implement `R` alongside the statistical concepts.  
-Generally, we will present the `R` techniques at the end of each chapter.  
-There are times in the text when the concepts are not distinguishable from the software, and in those cases, we have have provided the `R` code within the main body of the chapter.
+`R` is a powerful and open source software tool for working with data. 
+Throughout this text, we provide some guidance on how to use `R` within the
+context of the statistical content that is being covered.  
 
-We start with an introduction to `R` focused on how datasets are structured in `R` and how the user can work with a data object.
+As educators, we see the value of teaching with modern software to
+empower students to take optimal advantage of the concepts they are learning.
+However, we understand the limitations of some educational structures, and we
+know that not every classroom will be able to implement `R` alongside the 
+statistical concepts. Generally, we will present the `R` techniques at the end
+of each chapter. There are times in the text when the concepts are not
+distinguishable from the software, and in those cases, we have have provided the
+`R` code within the main body of the chapter.
 
-### Dataframes in R
+We start with an introduction to `R`, focused on how datasets are structured in
+`R` and how the user can work with a data object in `R`.
 
-Throughout the text, we will work with many different datasets.  
-Some datasets are pre-loaded into R, some get loaded through R packages, and some datasets will be created by the student.  
-Dataset can be viewed through the RStudio environment, but the data can also be investigated through the notebook features of an RMarkdown file.
+### Dataframes in `R`
+
+Throughout the text, we will work with many different datasets. Some datasets
+are pre-loaded into `R`, some get loaded through `R` packages, and some datasets
+will be created by the student. Datasets can be viewed through the RStudio
+environment, but the data can also be investigated through the notebook features
+of an RMarkdown file.
 
 Consider the \data{email50} data that was described previously in this chapter.  
-We can `glimpse` the data to see the variables, or we can apply `head` to see the first few rows of the dataset.
+We can use the `glimpse()` function to see the variables included in the dataset
+and their data type. Or, we could use the `head()` function to see the first
+few rows of the dataset.
 
 ```{r echo=TRUE}
 data(email50)
 glimpse(email50)
-head(email50) %>% 
-  kable()
 ```
 
+```{r echo = TRUE}
+head(email50) 
+```
 
-Sometimes it is necessary to pull out one column or one entry from a data set.  
-The `$` operator will pull out a column, and the square brackets will index a dataset like a matrix.  
-For example `data[i,j]` will produce the $(i,j)^{th}$ entry of data, and `data[i,]` will produce the $i^{th}$ row.
+Sometimes it is necessary to extract a column or a row from a data set. 
+In `R`, the `$` operator can be used to extract a column from a dataset. 
+For example, `data$variable` would extract the `variable` column from the `data` dataframe.
+When extracted, these columns can be thought of as vectors. With these vectors, if you desired to pull off a specific entry, you could use square brackets (`[ ]`), with the index (number) of the entry you wish to extract in the brackets. 
+For example, `data$variable[2]` would extract the second entry (row) of the `variable` column. 
 
+Because a dataframe can be (roughly) thought of as a set of many different vectors, you can extract rows and columns from a dataframe using familiar matrix notation (e.g. `[row, column]`. 
+For example `data[i,j]` will extract the $(i,j)^{th}$ entry of data, `data[i, ]` will extract the $i^{th}$ row, and `data[ , j]` will extract the $j^{th}$ column. Notice, when extracting an  entire row (or column), you do not need to specify the columns (or rows) you would like, which is why the second entry does not contain a number. 
 
 ```{r echo=TRUE}
 email50$num_char
 email50[47,3]
+```
+
+```{r echo = FALSE, ca}
 email[47,] %>% 
-  kable()
+  kable(caption = "Data from the 47th row of the email dataset.")
 ```
 
 ### Tidy Structure of Data {#datastruc}
@@ -1178,7 +1200,7 @@ No exceptions.
 * Creating tidy data is often not trivial.
 
 
-Within R (really within any type of computing language, Python, SQL, Java, etc.), it is important to understand how to build data using the patterns of the language.  
+Within `R` (really within any type of computing language, Python, SQL, Java, etc.), it is important to understand how to build data using the patterns of the language.  
 Some things to consider:
 
 * `object_name <- anything` is a way of assigning `anything` to the new `object_name`.
@@ -1193,7 +1215,7 @@ object_name <- data_table %>%
 ```
 
 is extended chaining.  `%>%` is never at the front of the line, it is always connecting one idea with the continuation of that idea on the next line.
-* In R, all functions take arguments in round parentheses (as opposed to subsetting observations or variables from data objects which happen with square parentheses).  Additionally, the spot to the left of `%>%` is always a data table.
+* In `R`, all functions take arguments in round parentheses (as opposed to subsetting observations or variables from data objects which happen with square parentheses).  Additionally, the spot to the left of `%>%` is always a data table.
 * The pipe syntax should be read as *then*, `%>%`.
 
 ### Using the pipe to chain
@@ -1231,7 +1253,7 @@ hsb2 %>%
 
 
 What if we are interested only in `public` schools?  
-First, we should take note of another piece of R syntax: the double equal sign. 
+First, we should take note of another piece of `R` syntax: the double equal sign. 
 This is the logical test for “is equal to”. 
 In other words, we first determine if school type is equal to public for each of the observations in the dataset and filter for those where this is true.
 
@@ -1288,7 +1310,7 @@ hsb2 <- hsb2 %>% dplyr::mutate(read_cat = ifelse(read < avg_read,
 
 The decision criteria for this new variable is based on a TRUE/FALSE question: if the reading score of the student is below the average reading score, label “below average”, otherwise, label “at or above average”.
 
-This can be accomplished using the `ifelse` function in R.
+This can be accomplished using the `ifelse` function in `R`.
 
 The first argument of the function is the logical test.
 
