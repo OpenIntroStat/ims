@@ -16,7 +16,7 @@ Tentative outline:
 
 ### [Chp 1. Introduction to data](https://isrs2.netlify.app/intro-to-data.html)
 
-*Plannded draft completion date: 13 June 2020* :heavy_check_mark:
+*Planned draft completion date: 13 June 2020* :heavy_check_mark:
 
 - Case Study (capable of extending to MLR or 2 by 2 table)
 - Data basics
@@ -27,7 +27,7 @@ Tentative outline:
 
 ### Chp 2. Exploratory Data Analysis - Visual summaries and summary statistics
 
-*Plannded draft completion date: 20 June 2020*
+*Planned draft completion date: 20 June 2020*
 
 - Cat vs. cat - segmented plots / contingency tables
 	- Conditional probability from contingency tables
@@ -38,7 +38,7 @@ Tentative outline:
 
 ### Chp 3. Correlation and Regression (descriptive)
 
-*Plannded draft completion date: 27 June 2020*
+*Planned draft completion date: 27 June 2020*
 
 - Visual summaries of data: scatterplot, side-by-side boxplots, histogram, density plot, box plot (lead out with multivariate, follow with univariate)
 - Describing distributions: correlation, central tendency, variability, skew, modality
@@ -50,7 +50,7 @@ Tentative outline:
 
 ### Chp 4. Multiple Regression (descriptive)
 
-*Plannded draft completion date: 4 July 2020*
+*Planned draft completion date: 4 July 2020*
 
 - Num vs. whatever - MLR
 	- Introduction to multiple regression
@@ -64,7 +64,7 @@ Tentative outline:
 
 ### Chp 5. Foundations of Inference
 
-*Plannded draft completion date: 11 July 2020*
+*Planned draft completion date: 11 July 2020*
 
 - Understanding inference through simulation
 - Randomization case study: gender discrimination
@@ -75,7 +75,7 @@ Tentative outline:
 
 ### Chp 6. Inference for categorical data
 
-*Plannded draft completion date: 18 July 2020*
+*Planned draft completion date: 18 July 2020*
 
 - Inference for a single proportion
 	- Simulation
@@ -87,7 +87,7 @@ Tentative outline:
 
 ### Chp 7. Inference for numerical data
 
-*Plannded draft completion date: 1 August 2020*
+*Planned draft completion date: 1 August 2020*
 
 - One-sample means
 	- Bootstrap (for means, medians)
@@ -98,7 +98,7 @@ Tentative outline:
 
 ### Chp 8. Inference for regression
 
-*Plannded draft completion date: 22 August 2020*
+*Planned draft completion date: 22 August 2020*
 
 - Inference for linear regression
 	- Bootstrap for regression coefficients
