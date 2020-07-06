@@ -205,13 +205,50 @@ Figure \@ref(fig:discRandDotPlot) shows a plot of the differences found from 100
 
 ```{r discRandDotPlot, fig.cap="A stacked dot plot of differences from 100 simulations produced under the null hypothesis, $H_0$, where `gender_simulated` and `decision` are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study, and are shown as solid dots.", warning=FALSE, fig.width=10}
 
-include_graphics("05/figures/discRandDotPlot/discRandDotPlot.png")
-#source("05/figures/discRandDotPlot/discRandDotPlot.R")   # source helper
-#par_og <- par(no.readonly = TRUE)     # save original par
-#par(mar = rep(0.5,4), mfrow = c(2,1)) # no margin, 2 figures 
-#build_srs(n = 18, N = 108)            # build figure
-#build_stratified(N = 108)             # build figure
-#par(par_og)                           # restore original par
+gender <- c(rep('male', 24), rep('female', 24))
+outcome <- c(rep(c('promoted', 'not promoted'), c(21, 3)), rep(c('promoted', 'not promoted'), c(14, 10)))
+
+nsim  = 100
+n     = length(gender)
+group = gender
+var1  = outcome
+success = "promoted"
+sim   = matrix(NA, nrow = n, ncol = nsim)
+n1    = n2 = 24
+
+statistic <- function(var1, group){	
+	t1 <- var1 == success & group == levels(as.factor(group))[1]
+	t2 <- var1 == success & group == levels(as.factor(group))[2]
+	sum(t1)/n1 - sum(t2)/n2 
+}
+
+for(i in 1:nsim){
+	sim[,i] = sample(group, n, replace = FALSE)
+}
+
+sim_dist = apply(sim, 2, statistic, var1 = outcome)
+diffs    = sim_dist
+pval     = sum(diffs >= 0.29) / nsim
+values  <- table(sim_dist)
+
+
+X <- c()
+Y <- c()
+for(i in 1:length(diffs)){
+	x   <- diffs[i]
+	rec <- sum(sim_dist == x)
+	X   <- append(X, rep(x, rec))
+	Y   <- append(Y, 1:rec)
+}
+
+
+plot(X, Y, xlim=range(diffs)+c(-1,1)*sd(diffs)/4, xlab = "Difference in promotion rates", axes = FALSE, ylim=c(0,max(Y)), col=COL[1], cex=0.8, pch=1, lwd=1.5)
+axis(1, at = seq(-0.4,0.4,0.1), labels = c(-0.4,"",-0.2,"",0,"",0.2,"",0.4))
+abline(h=0)
+theta <- seq(0, 2*pi, length.out = 500)
+x     <- 0.335 + 0.08 * cos(theta)
+y     <- 1 + 1 * sin(theta)
+points(X[X > 0.25], Y[X > 0.25], lwd=3, col = COL[4], cex=0.4)
 ```
 
 Note that the distribution of these simulated differences is centered around 0. Because we simulated differences in a way that made no distinction between men and women, this makes sense: we should expect differences from chance alone to fall around zero with some random fluctuation for each simulation.
@@ -423,19 +460,103 @@ And again: 0.067.
 And again: -0.173. 
 We'll do this 1,000 times. The results are summarized in a dot plot in Figure \@ref(fig:OpportunityCostDiffsDotPlot), where each point represents a simulation. Since there are so many points, it is more convenient to summarize the results in a histogram such as the one in Figure \@ref(fig:OpportunityCostDiffs), where the height of each histogram bar represents the fraction of observations in that group.
 
-\begin{figure}[p]
-\centering
-\includegraphics[width=0.93\textwidth]{02/figures/OpportunityCost/OpportunityCostDiffsDotPlot}
-\caption{A stacked dot plot of 1,000 chance differences produced under the null hypothesis, $H_0$. Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study.}
-\label{OpportunityCostDiffsDotPlot}
-\end{figure}
 
-\begin{figure}[p]
-\centering
-\includegraphics[width=0.93\textwidth]{02/figures/OpportunityCost/OpportunityCostDiffsRightTail}
-\caption{A histogram of 1,000 chance differences produced under the null hypothesis, $H_0$. Histograms like this one are a more convenient representation of data or results when there are a large number of observations.}
-\label{OpportunityCostDiffs}
-\end{figure}
+```{r OpportunityCostDiffsDotPlot, fig.cap="A stacked dot plot of 1,000 chance differences produced under the null hypothesis, $H_0$. Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study.", warning=FALSE, fig.width=10}
+
+
+DotPlotRegularized <- function(x,
+                               width = 5,
+                               col = "#569BBD",
+                               cex = 1, ...) {
+  x    <- sort(x)
+  xu   <- unique(x)
+  xlim <- range(x)
+  X    <- table(x)
+  height <- max(X) / width
+  plot(0, 0, xlim = xlim, ylim = c(0, height),
+       type = "n", axes = FALSE, ...)
+  axis(1)
+  
+  spread <- min(diff(xu)) / width / 2
+  for (i in seq_along(X)) {
+    val     <- xu[i]
+    num     <- X[i]
+    num.rep <- round(num / width) + 1
+    pos     <- rep(1:width, num.rep)
+    rel.pos <- (pos[1:num] - width / 2) * spread
+    ver.pos <- rep(1:num.rep, rep(width, num.rep))
+    ver.pos <- ver.pos[1:num]
+    points(val + rel.pos, ver.pos, pch = ".",
+           col = col, cex = cex)
+  }
+  abline(h = 0)
+}
+
+group   <- c(rep('control', 75), rep('treatment', 75))
+outcome <- c(rep(c('buy DVD', 'do not buy DVD'), c(56, 19)),
+             rep(c('buy DVD', 'do not buy DVD'), c(41, 34)))
+
+nsim  = 1000
+n     = length(group)
+group = group
+var1  = outcome
+success = "do not buy DVD"
+sim   = matrix(NA, nrow = n, ncol = nsim)
+n1    = n2 = 75
+
+Statistic <- function(var1, group){	
+  t1 <- var1 == success & group == levels(as.factor(group))[1]
+  t2 <- var1 == success & group == levels(as.factor(group))[2]
+  sum(t1)/n1 - sum(t2)/n2 
+}
+
+for(i in 1:nsim){
+  sim[,i] = sample(group, n, replace = FALSE)
+}
+
+sim_dist = apply(sim, 2, Statistic, var1 = outcome)
+diffs    = sim_dist
+pval     = sum(diffs >= 0.29) / nsim
+values  <- table(sim_dist)
+
+xlab <- paste0("Simulated difference in proportions ",
+               "of students who do not buy the DVD")
+
+DotPlotRegularized(diffs, xlab = xlab, ylab = "", cex = 2)
+text(0.2, 5, "observed\ndifference", pos = 3)
+lines(rep(0.2, 2), c(0, 5), lty = 2, col = COL[6])
+```
+
+
+
+```{r OpportunityCostDiffs, fig.cap="A histogram of 1,000 chance differences produced under the null hypothesis, $H_0$. Histograms like this one are a more convenient representation of data or results when there are a large number of observations.", warning=FALSE, fig.width=10}
+
+X <- c()
+Y <- c()
+udiffs <- sort(unique(diffs))
+for(i in 1:length(udiffs)){
+  x   <- udiffs[i]
+  rec <- sum(sim_dist == x)
+  X   <- append(X, rep(x, rec))
+  Y   <- append(Y, 1:rec)
+}
+
+bin.width <- diff(udiffs)[1]
+breaks <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
+
+histPlot(diffs, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
+         xlab = "", ylab = "Proportion of simulated scenarios                ")
+diffs.tmp <- diffs[diffs > 0.19]
+histPlot(diffs.tmp, breaks = breaks, col = COL[1], add = TRUE)
+axis(1)
+axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
+lines(c(0.2, 0.2), c(0, 30), lty = 3, lwd = 3)
+text(0.2, 30, "observed\ndifference", pos = 3)
+par(las = 0)
+mtext(xlab, 1, 2.5)
+
+```
+
 
 If there was no treatment effect, then we'd only observe a difference of at least +20%  about 0.6%  of the time, or about 1-in-150 times. 
 That is really rare! 
@@ -585,23 +706,15 @@ However, what distinguishes statistical hypothesis tests from a court system is 
 There are two competing hypotheses: the null and the alternative. 
 In a hypothesis test, we make a statement about which one might be true, but we might choose incorrectly. There are four possible scenarios in a hypothesis test, which are summarized in Table \@ref(tab:fourHTScenarios).
 
-\begin{table}[ht]
-\centering
-\begin{tabular}{l l c c c}
-& & \multicolumn{2}{c}{\textbf{Test conclusion}} \\
-  \cline{3-4}
-\vspace{-3.7mm} \\
-& & do not reject $H_0$ &  reject $H_0$ in favor of $H_A$ &
-\ \hspace{7mm} \  \\
-  \cline{2-4}
-\vspace{-3.7mm} \\
-& $H_0$ true & okay &  Type 1 Error \\
-\raisebox{1.5ex}{\textbf{Truth}} & $H_A$ true & Type 2 Error & okay \\
-  \cline{2-4}
-\end{tabular}
-\caption{Four different scenarios for hypothesis tests.}
-\label{fourHTScenarios}
-\end{table}
+
+
+|                                  |            | Test conclusion |              |
+|:----------------------------------|:------------|:---------------:|:------------:|
+|                                  | $H_0$ true |       okay      | Type 1 Error |
+| **Truth** | $H_A$ true |   Type 2 Error  |     okay     |
+Table: Four different scenarios for hypothesis tests. {#tab:fourHTScenarios}
+
+
 
 A **Type 1 Error** is rejecting the null hypothesis when $H_0$ is actually true. 
 Since we rejected the null hypothesis in the gender discrimination and opportunity cost studies, it is possible that we made a Type 1 Error in one or both of those studies. 
@@ -1476,6 +1589,25 @@ $Z$ & 0.00 & 0.01 & 0.02 & \highlightT{0.03} & \highlightO{0.04} & 0.05 & 0.06 &
 \caption{A section of the normal probability table. The percentile for a normal random variable with $Z=0.43$ has been \highlightT{highlighted}, and the percentile closest to 0.8000 has also been \highlightO{highlighted}.\textA{\vspace{-3mm}}}
 \label{zTableShort}
 \end{table}
+
+
+|                  |                     |                     |                     |    Second decimal place of $Z$   |                                  |                     |                     |                     |                     |                     |
+|:----------------:|--------------------:|--------------------:|--------------------:|:--------------------------------:|---------------------------------:|--------------------:|--------------------:|--------------------:|--------------------:|--------------------:|
+|        $Z$       |                0.00 |                0.01 |                0.02 |                \highlightT{0.03} |                \highlightO{0.04} |                0.05 |                0.06 |                0.07 |                0.08 |                0.09 |
+|        0.0       | \scriptsize{0.5000} | \scriptsize{0.5040} | \scriptsize{0.5080} |              \scriptsize{0.5120} |              \scriptsize{0.5160} | \scriptsize{0.5199} | \scriptsize{0.5239} | \scriptsize{0.5279} | \scriptsize{0.5319} | \scriptsize{0.5359} |
+|        0.1       | \scriptsize{0.5398} | \scriptsize{0.5438} | \scriptsize{0.5478} |              \scriptsize{0.5517} |              \scriptsize{0.5557} | \scriptsize{0.5596} | \scriptsize{0.5636} | \scriptsize{0.5675} | \scriptsize{0.5714} | \scriptsize{0.5753} |
+|        0.2       | \scriptsize{0.5793} | \scriptsize{0.5832} | \scriptsize{0.5871} |              \scriptsize{0.5910} |              \scriptsize{0.5948} | \scriptsize{0.5987} | \scriptsize{0.6026} | \scriptsize{0.6064} | \scriptsize{0.6103} | \scriptsize{0.6141} |
+|        0.3       | \scriptsize{0.6179} | \scriptsize{0.6217} | \scriptsize{0.6255} |              \scriptsize{0.6293} |              \scriptsize{0.6331} | \scriptsize{0.6368} | \scriptsize{0.6406} | \scriptsize{0.6443} | \scriptsize{0.6480} | \scriptsize{0.6517} |
+| \highlightT{0.4} | \scriptsize{0.6554} | \scriptsize{0.6591} | \scriptsize{0.6628} | \highlightT{\scriptsize{0.6664}} |              \scriptsize{0.6700} | \scriptsize{0.6736} | \scriptsize{0.6772} | \scriptsize{0.6808} | \scriptsize{0.6844} | \scriptsize{0.6879} |
+|        0.5       | \scriptsize{0.6915} | \scriptsize{0.6950} | \scriptsize{0.6985} |              \scriptsize{0.7019} |              \scriptsize{0.7054} | \scriptsize{0.7088} | \scriptsize{0.7123} | \scriptsize{0.7157} | \scriptsize{0.7190} | \scriptsize{0.7224} |
+|        0.6       | \scriptsize{0.7257} | \scriptsize{0.7291} | \scriptsize{0.7324} |              \scriptsize{0.7357} |              \scriptsize{0.7389} | \scriptsize{0.7422} | \scriptsize{0.7454} | \scriptsize{0.7486} | \scriptsize{0.7517} | \scriptsize{0.7549} |
+|        0.7       | \scriptsize{0.7580} | \scriptsize{0.7611} | \scriptsize{0.7642} |              \scriptsize{0.7673} |              \scriptsize{0.7704} | \scriptsize{0.7734} | \scriptsize{0.7764} | \scriptsize{0.7794} | \scriptsize{0.7823} | \scriptsize{0.7852} |
+| \highlightO{0.8} | \scriptsize{0.7881} | \scriptsize{0.7910} | \scriptsize{0.7939} |              \scriptsize{0.7967} | \highlightO{\scriptsize{0.7995}} | \scriptsize{0.8023} | \scriptsize{0.8051} | \scriptsize{0.8078} | \scriptsize{0.8106} | \scriptsize{0.8133} |
+|        0.9       | \scriptsize{0.8159} | \scriptsize{0.8186} | \scriptsize{0.8212} |              \scriptsize{0.8238} |              \scriptsize{0.8264} | \scriptsize{0.8289} | \scriptsize{0.8315} | \scriptsize{0.8340} | \scriptsize{0.8365} | \scriptsize{0.8389} |
+|        1.0       | \scriptsize{0.8413} | \scriptsize{0.8438} | \scriptsize{0.8461} |              \scriptsize{0.8485} |              \scriptsize{0.8508} | \scriptsize{0.8531} | \scriptsize{0.8554} | \scriptsize{0.8577} | \scriptsize{0.8599} | \scriptsize{0.8621} |
+|        1.1       | \scriptsize{0.8643} | \scriptsize{0.8665} | \scriptsize{0.8686} |              \scriptsize{0.8708} |              \scriptsize{0.8729} | \scriptsize{0.8749} | \scriptsize{0.8770} | \scriptsize{0.8790} | \scriptsize{0.8810} | \scriptsize{0.8830} |
+|     $\vdots$     |            $\vdots$ |            $\vdots$ |            $\vdots$ |                         $\vdots$ |                         $\vdots$ |            $\vdots$ |            $\vdots$ |            $\vdots$ |            $\vdots$ |            $\vdots$ |
+
 
 We can also find the Z score associated with a percentile. For example, to identify Z for the $80^{th}$ percentile, we look for the value closest to 0.8000 in the middle portion of the table: 0.7995. We determine the Z score for the $80^{th}$ percentile by combining the row and column Z values: 0.84.
 
