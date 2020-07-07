@@ -14,7 +14,8 @@ knitr::opts_chunk$set(
   fig.align = 'center',
   fig.width = 6,
   fig.asp = 0.618,  # 1 / phi
-  fig.show = "hold"
+  fig.show = "hold",
+  message = FALSE
 )
 
 # packages ---------------------------------------------------------------------
@@ -29,6 +30,7 @@ library(openintro)
 library(tidyverse)
 library(scales)
 library(infer)
+library(patchwork)
 
 # dplyr options ----------------------------------------------------------------
 
