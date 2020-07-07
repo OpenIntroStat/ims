@@ -28,6 +28,7 @@ library(openintro)
 library(tidyverse)
 library(scales)
 library(infer)
+library(patchwork)
 
 # dplyr options ----------------------------------------------------------------
 
