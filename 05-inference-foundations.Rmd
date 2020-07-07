@@ -365,7 +365,7 @@ temptbl <- tribble(
 )
 
 temptbl %>%
- kable(caption = "The data from Table \\ref{tab:OpportunityCostTable} summarized using row proportions. Row proportions are particularly useful here since we can view the proportion of *buy* and *not buy* decisions in each group.",
+ kable(caption = "The data above are now summarized using row proportions. Row proportions are particularly useful here since we can view the proportion of *buy* and *not buy* decisions in each group.",
     col.names = c("", "buy DVD", "not buy DVD", "Total")) %>%
  kable_styling() %>%
  add_header_above(c( " ", "`decision`" = 2, " "))
@@ -693,7 +693,7 @@ Maybe we should use a bigger number, or maybe a smaller number.
 If you're a little puzzled, that probably means you're reading with a critical eye -- good job! 
 We've made a video to help clarify *why 0.05*:
 <center>
-[http://www.openintro.org/why05](www.openintro.org/why05)
+[https://www.openintro.org/book/stat/why05/](https://www.openintro.org/book/stat/why05/)
 </center>
 <br>
 Sometimes it's also a good idea to deviate from the standard. 
@@ -890,12 +890,34 @@ If we repeat this simulation 10,000 times, we can build a **null distribution** 
 terms_chp_5 <- c(terms_chp_5, "null distribution")
 ```
 
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.8\textwidth]{02/figures/CPR_study/CPR_study_right_tail}
-\caption{Null distribution of the point estimate, $\hat{p}_t - \hat{p}_c$. The shaded right tail shows observations that are at least as large as the observed difference, 0.13.}
-\label{CPR_study_right_tail}
-\end{figure}
+```{r CPR_study_right_tail, fig.cap="Null distribution of the point estimate, $\hat{p}_t - \hat{p}_c$. The shaded right tail shows observations that are at least as large as the observed difference, 0.13.", warning=FALSE, fig.width=10}
+
+tr <- rep(1:2, c(50, 40))
+su <- c(rep(c("s", "d"), c(11, 39)), rep(c("s", "d"), c(14, 26)))
+
+N <- 10^5
+d <- rep(NA, N)
+for(i in 1:N){
+	trf  <- sample(tr)
+	p1   <- sum(su[trf == 1] == "s") / 50
+	p2   <- sum(su[trf == 2] == "s") / 40
+	d[i] <- p2 - p1
+}
+#sum((d) > 0.1299) / N
+
+udiffs    <- sort(unique(d))
+bin.width <- diff(udiffs)[1]
+breaks    <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
+
+hist(d, breaks = breaks, col=COL[7,3], main="", xlab="Differences under the null hypothesis", ylab="", axes=FALSE)
+axis(1)
+axis(2, at=(0:3)*N/20, labels=c(0, NA, NA, 3)/20)
+hist(d[d > 0.1299], breaks = breaks, col=COL[1], add=TRUE)
+abline(h=0)
+lines(rep(0.13, 2), c(0, 3)*N/25, lty=3, lwd=1.7)
+text(0.13, 3*N/25, "0.13", pos=3, cex=0.7)
+
+```
 
 The right tail area is about 0.13. (Note: it is only a coincidence that we also have $\hat{p}_t - \hat{p}_c=0.13$.) 
 However, contrary to how we calculated the p-value in previous studies, the p-value of this test is not 0.13!
@@ -908,12 +930,20 @@ A difference of -0.13 would correspond to 13% higher survival rate in the contro
 %There is something different in this study than in the past studies: in this study, we are particularly interested in whether blood thinners increase \emph{or} decrease the risk of death in patients who undergo CPR before arriving at the hospital.\footnote{Realistically, we probably are interested in either direction in the past studies as well, and so we should have used the approach we now discuss in this section. However, for simplicity and the sake of not introducing too many concepts at once, we skipped over these details in earlier sections.} For example, there are chance differences of $\hat{p}_t - \hat{p}_c = -0.14$, that would have been stronger evidence against the null hypothesis as our observed difference of +0.13. Likewise, anything less than or equal -0.13 would provide as much evidence against the null hypothesis as +0.13, and for this reason, we must count both tails towards the p-value, as shown in Figure \ref{CPR_study_p_value}.
 -->
 
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.7\textwidth]{02/figures/CPR_study/CPR_study_p_value}
-\caption{Null distribution of the point estimate, $\hat{p}_t - \hat{p}_c$. All values that are at least as extreme as +0.13 but in either direction away from 0 are shaded.}
-\label{CPR_study_p_value}
-\end{figure}
+
+```{r CPR_study_p_value, fig.cap="Null distribution of the point estimate, $\hat{p}_t - \hat{p}_c$. All values that are at least as extreme as +0.13 but in either direction away from 0 are shaded.", warning=FALSE, fig.width=10}
+
+hist(d, breaks = breaks, col=COL[7,3], main="", xlab="Differences under the null hypothesis", ylab="", axes=FALSE)
+axis(1)
+axis(2, at=(0:3)*N/20, labels=c(0, NA, NA, 3)/20)
+hist(d[d > 0.1299], breaks = breaks, col=COL[1], add=TRUE)
+abline(h=0)
+hist(d[d < -0.1299], breaks = breaks, col=COL[1], add=TRUE)
+abline(h=0)
+lines(rep(0.13, 2), c(0, 3)*N/25, lty=3, lwd=1.7)
+text(0.13, 3*N/25, "0.13", pos=3, cex=0.7)
+```
+
 
 For a two-sided test, take the single tail (in this case, 0.13) and double it to get the p-value: 0.26. 
 Since this p-value is larger than 0.05, we do not reject the null hypothesis. 
@@ -949,13 +979,6 @@ Using $\alpha=0.05$, we show that freely switching from two-sided tests to one-s
 Suppose we are interested in finding any difference from 0. 
 We've created a smooth-looking **null distribution** representing differences due to chance in Figure \@ref{fig:type1ErrorDoublingExampleFigure}.
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.7\textwidth]{02/figures/type1ErrorDoublingExampleFigure/type1ErrorDoublingExampleFigure}
-\caption{The shaded regions represent areas where we would reject $H_0$ under the bad practices considered in when $\alpha = 0.05$.}
-\label{type1ErrorDoublingExampleFigure}
-\end{figure}
-
 Suppose the sample difference was larger than 0. 
 Then if we can flip to a one-sided test, we would use $H_A$: difference $> 0$. 
 Now if we obtain any observation in the upper 5% of the distribution, we would reject $H_0$ since the p-value would just be a the single tail. 
@@ -968,6 +991,26 @@ That is, if the null hypothesis is true, then we would observe this situation ab
 
 By examining these two scenarios, we can determine that we will make a Type 1 Error $5\%+5\%=10\%$ of the time if we are allowed to swap to the "best" one-sided test for the data. 
 This is twice the error rate we prescribed with our significance level: $\alpha=0.05$ (!).
+```
+
+```{r type1ErrorDoublingExampleFigure, fig.cap="The shaded regions represent areas where we would reject $H_0$ under the bad practices considered in when $\alpha = 0.05$.", warning=FALSE, fig.width=10}
+par(las=1, mar=c(2,0,0.5,0), mgp=c(3,0.9,0))
+X <- seq(-4,4,0.01)
+Y <- dnorm(X)
+plot(X, Y, type='l', axes=F, xlim=c(-3.4,3.4))
+axis(1, at=c(-5, 0, 5), label=expression(0, 0, 0), cex.axis=1.2)
+these <- which(X >= 1.65)
+polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
+these <- which(X <= -1.65)
+polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
+
+arrows(-2,0.17, -1.9, 0.08, length=0.07, col=COL[1], lwd=1.5)
+text(-1.92, 0.21, '5%', cex=1.2, col=COL[1])
+arrows(2,0.17, 1.9, 0.08, length=0.07, col=COL[1], lwd=1.5)
+text(2.08, 0.21, '5%', cex=1.2, col=COL[1])
+
+lines(X, Y, lwd=1.5)
+abline(h=0)
 ```
 
 ```{block2, type = "cautionbox", echo = TRUE}
@@ -1308,12 +1351,119 @@ We've encountered four case studies so far this chapter. While they differ in th
 
 Figure \@ref(fig:FourCaseStudies) shows the null distributions in each of the four case studies where we ran 10,000 simulations. In the case of the opportunity cost study, which originally had just 1,000 simulations, we've included an additional 9,000 simulations.
 
-\begin{figure}[ht]
-\centering
-\includegraphics[width=\textwidth]{02/figures/FourCaseStudies/FourCaseStudies}
-\caption{The null distribution for each of the four case studies presented in Sections \ref{caseStudyOpportunityCost}-\ref{SimulationCaseStudies}.}
-\label{FourCaseStudies}
-\end{figure}
+
+```{r FourCaseStudies, fig.cap="The null distribution for each of the four case studies presented in Sections \\ref{caseStudyOpportunityCost}-\\ref{SimulationCaseStudies}.", warning=FALSE, fig.width=10}
+
+number.of.simulations <- 10000
+m.fact <- number.of.simulations / 1e3
+
+# _____ Opportunity Cost _____ #
+set.seed(2)
+group   <- c(rep('control', 75), rep('treatment', 75))
+outcome <- c(rep(c('buy DVD', 'do not buy DVD'), c(56, 19)),
+             rep(c('buy DVD', 'do not buy DVD'), c(41, 34)))
+nsim  = number.of.simulations
+n     = length(group)
+group = group
+var1  = outcome
+success = "do not buy DVD"
+sim   = matrix(NA, nrow = n, ncol = nsim)
+n1    = n2 = 75
+Statistic <- function(var1, group){	
+  t1 <- var1 == success & group == levels(as.factor(group))[1]
+  t2 <- var1 == success & group == levels(as.factor(group))[2]
+  sum(t1)/n1 - sum(t2)/n2 
+}
+for(i in 1:nsim){
+  sim[,i] = sample(group, n, replace = FALSE)
+}
+sim_dist = apply(sim, 2, Statistic, var1 = outcome)
+diffs    = sim_dist
+pval     = sum(diffs >= 0.29) / nsim
+values  <- table(sim_dist)
+X <- c()
+Y <- c()
+udiffs <- sort(unique(diffs))
+for(i in 1:length(udiffs)){
+  x   <- udiffs[i]
+  rec <- sum(sim_dist == x)
+  X   <- append(X, rep(x, rec))
+  Y   <- append(Y, 1:rec)
+}
+bin.width <- diff(udiffs)[1]
+breaks <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
+histPlot(diffs, breaks = breaks, axes = FALSE,
+         col = COL[2,2], xlab = "", ylab = "")
+axis(1)
+rect(-0.135, 12 * m.fact, 0.135, 28 * m.fact,
+     col = rgb(1,1,1,0.65), border = rgb(0,0,0,0))
+text(0, 20 * m.fact, cex = 2, "Opportunity Cost")
+
+
+
+# _____ CPR / Blood Thinner _____ #
+set.seed(1)
+tr <- rep(1:2, c(50, 40))
+su <- c(rep(c("s", "d"), c(11, 39)),
+        rep(c("s", "d"), c(14, 26)))
+N <- number.of.simulations * 10
+d <- rep(NA, N)
+for(i in 1:N){
+	trf  <- sample(tr)
+	p1   <- sum(su[trf == 1] == "s") / 50
+	p2   <- sum(su[trf == 2] == "s") / 40
+	d[i] <- p2 - p1
+}
+#sum((d) > 0.1299) / N
+udiffs    <- sort(unique(d))
+bin.width <- diff(udiffs)[1]
+breaks    <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
+histPlot(d, breaks = breaks, col = COL[2,2],
+         main="", xlab="", ylab="", axes=FALSE)
+axis(1)
+rect(-0.07, 153 * m.fact, 0.07, 347 * m.fact,
+     col = rgb(1,1,1,0.65), border = rgb(0,0,0,0))
+text(0, 250 * m.fact, cex = 2,
+     paste0("CPR "))
+
+
+
+# _____ Medical Consultant _____ #
+set.seed(2)
+pHat <- rbinom(number.of.simulations, 62, 0.1)/62
+M    <- max(pHat)*62
+histPlot(pHat, breaks=(-1:(2*M)+0.75)/2/62,
+         xlab="", ylab="", axes = FALSE, col = COL[2,2])
+axis(1)
+rect(0.023, 21 * m.fact, 0.168, 38.5 * m.fact,
+     col = rgb(1,1,1,0.65), border = rgb(0,0,0,0))
+text(0.1, 30 * m.fact, cex = 2,
+     paste0("Medical Consultant"))
+
+
+# _____ Tappers + Listeners _____ #
+set.seed(6)
+nsim <- number.of.simulations
+n    <- 120
+p    <- 0.5
+X    <- matrix(sample(c(0,1), nsim * n, TRUE), nsim, n)
+p.   <- apply(X, 1, sum) / n
+un    <- sort(unique(p.))
+bin.width <- diff(un)[10]
+breaks <- c(un - bin.width / 4, un + bin.width / 4)
+histPlot(p., breaks = breaks, axes = FALSE, col = COL[2,2],
+         xlab = "", ylab = "")
+axis(1)
+rect(0.42, 11 * m.fact, 0.58, 20 * m.fact,
+     col = rgb(1,1,1,0.65), border = rgb(0,0,0,0))
+text(0.5, 15.5 * m.fact, cex = 2,
+     paste0("Tappers + Listeners"))
+
+
+
+
+
+```
 
 ```{block2, type="guidedpractice", echo=TRUE}
 Describe the shape of the distributions and note anything that you find interesting.^[In general, the distributions are reasonably symmetric. The case study for the medical consultant is the only distribution with any evident skew.]
@@ -1333,12 +1483,14 @@ terms_chp_5 <- c(terms_chp_5, "Central Limit Theorem")
 
 An example of a perfect normal distribution is shown in Figure \@ref(fig:simpleNormal). Imagine laying a normal curve over each of the four null distributions in Figure \@ref(fig:FourCaseStudies). While the mean and standard deviation may change for each plot, the general shape remains roughly intact.
 
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.5\textwidth]{02/figures/simpleNormal/simpleNormal}
-\caption{A normal curve.}
-\label{simpleNormal}
-\end{figure}
+
+```{r simpleNormal, fig.cap="A normal curve.", warning=FALSE, fig.width=10}
+X <- seq(-5,5,0.01)
+Y <- dnorm(X)
+plot(X, Y, type='l', axes=F, xlim=c(-4,4), lwd=2, col=COL[5])
+#axis(1, at=-3:3)
+abline(h=-0.002, col=COL[5])
+```
 
 Mathematical theory guarantees that a sample proportion or a difference in sample proportions will follow something that resembles a normal distribution when certain conditions are met. These conditions fall into two categories:
 
@@ -1370,13 +1522,18 @@ Book prices were collected for 73 courses at UCLA in Spring 2010. Data were coll
 Here again we can apply the normal distribution, this time in the context of numerical data. We'll explore this example and construct such a hypothesis test in Section \@ref(paired-data).
 ```
 
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.73\textwidth]{04/figures/textbooksS10/diffInTextbookPricesS10}
-\caption{Histogram of the difference in price for each book sampled. These data are strongly skewed.\index{skew!example: strong}\textA{\vspace{-3mm}}}
-\label{diffInTextbookPricesS10_CLTsection}
-\end{figure}
 
+
+```{r diffInTextbookPricesS10_CLTsection, fig.cap="Histogram of the difference in price for each book sampled. These data are strongly skewed.\index{skew!example: strong}\textA{\vspace{-3mm}}", warning=FALSE, fig.width=10}
+
+d <- read_delim("05/data/textS10.txt", 
+     "\t", escape_double = FALSE, trim_ws = TRUE)
+
+histPlot(d$diff, axes=FALSE, xlim=c(-20, 80), xlab='UCLA price - Amazon price (USD)', ylab='', col=COL[1])
+mtext("Frequency", 2, 2.1, las=0)
+axis(1,cex.axis=0.87, tck=-0.03)
+axis(2, at=seq(0, 30, 10), cex.axis=0.87, tck=-0.02)
+```
 
 ```{block2, type="example", echo=TRUE}
 Elmhurst College in Illinois released anonymized data for family income and financial support provided by the school for Elmhurst's first-year students in 2011. Figure \@ref(fig:elmhurstScatterWLSROnly_CLTsection) shows a *regression line* fit to a scatterplot of a sample of the data. One question we will ask is, do the data show a real trend, or is the trend we observe reasonably explained by chance?
