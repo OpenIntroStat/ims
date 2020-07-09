@@ -2460,13 +2460,6 @@ In Section \@ref(caseStudyOpportunityCost) we were introduced to the opportunity
 
 Figure \@ref(fig:OpportunityCostDiffs-w-normal) summarizes the null distribution as determined using the randomization method. The best fitting normal distribution for the null distribution has a mean of 0. We can calculate the standard error of this distribution by borrowing a formula that we will become familiar with in Section \@ref(diff-two-prop), but for now let's just take the value $SE = 0.078$ as a given. Recall that the point estimate of the difference was 0.20, as shown in the plot. Next, we'll use the normal distribution approach to compute the two-tailed p-value.
 
-\begin{figure}
-\centering
-\includegraphics[width=0.85\textwidth]{02/figures/OpportunityCost/OpportunityCostDiffs-w-normal}
-\caption{Null distribution of differences with an overlaid normal curve for the opportunity cost study. 10,000 simulations were run for this figure.}
-\label{OpportunityCostDiffs-w-normal}
-\end{figure}
-
 
 ```{r OpportunityCostDiffs-w-normal, fig.cap="Null distribution of differences with an overlaid normal curve for the opportunity cost study. 10,000 simulations were run for this figure.", warning=FALSE, fig.width=10}
 
@@ -2532,9 +2525,13 @@ mtext(paste0("Simulated difference in proportions ",
 
 
 As we learned in Section \@ref(normalDist), it is helpful to draw and shade a picture of the normal distribution so we know precisely what we want to calculate. Here we want to find the area of the two tails representing the p-value.
-\begin{center}
-\includegraphics[width=0.6\textwidth]{02/figures/OpportunityCost/OpportunityCostDiffs_normal_only}
-\end{center}
+
+
+```{r OpportunityCostDiffs_normal_only, fig.cap="", warning=FALSE, fig.width=10}
+normTail(0, 0.078, -0.2, 0.2, col = COL[1])
+```
+
+
 Next, we can calculate the Z score using the observed difference, 0.20, and the two model parameters. The standard error, $SE = 0.078$, is the equivalent of the model's standard deviation.
 \begin{align*}
 Z = \frac{\text{observed difference} - 0}{SE} = \frac{0.20 - 0}{0.078} = 2.56
@@ -2557,7 +2554,7 @@ We have confirmed that the randomization approach we used earlier and the normal
 
 #### Normal model application: medical consultant {-}
 
-In Section \@ref(sec-med-consult) we learned about a medical consultant who reported that only 3 of her 62 clients who underwent a liver transplant had complications, which is less than the more common complication rate of 0.10. As in the other case studies, we identified a suitable null distribution using a simulation approach, as shown in Figure \@ref(fig:MedConsNullSim_w_normal). Here we have added the best-fitting normal curve to the figure, which has a mean of 0.10. Borrowing a formula that we'll encounter in Chapter \@ref(inference-cat), the standard error of this distribution was also computed: $SE = 0.038$.
+In Section \@ref(sec-med-consult) we learned about a medical consultant who reported that only 3 of her 62 clients who underwent a liver transplant had complications, which is less than the more common complication rate of 0.10. As in the other case studies, we identified a suitable null distribution using a simulation approach, as shown in Figure \@ref(fig:MedConsNullSim-w-normal). Here we have added the best-fitting normal curve to the figure, which has a mean of 0.10. Borrowing a formula that we'll encounter in Chapter \@ref(inference-cat), the standard error of this distribution was also computed: $SE = 0.038$.
 
 <!--
 %\begin{align*}
@@ -2568,12 +2565,21 @@ In Section \@ref(sec-med-consult) we learned about a medical consultant who repo
 
 In the previous analysis, we obtained a p-value of 0.2444, and we will try to reproduce that p-value using the normal distribution approach. However, before we begin, we want to point out a simple detail that is easy to overlook: the null distribution we earlier generated is slightly skewed, and the distribution isn't that smooth. In fact, the normal distribution only sort-of fits this model. We'll discuss this discrepancy more in a moment.
 
-\begin{figure}
-\centering
-\includegraphics[width=0.75\textwidth]{02/figures/MedicalConsultant/MedConsNullSim_w_normal}
-\caption{The null distribution for $\hat{p}$, created from 10,000 simulated studies, along with the best-fitting normal model.}
-\label{MedConsNullSim_w_normal}
-\end{figure}
+
+```{r MedConsNullSim-w-normal, fig.cap="The null distribution for $\hat{p}$, created from 10,000 simulated studies, along with the best-fitting normal model.", warning=FALSE, fig.width=10}
+pHat <- rbinom(10^4, 62, 0.1)/62
+M    <- max(pHat)*62
+
+histPlot(pHat, breaks=(-1:(2*M)+0.75)/2/62, xlab=expression(hat(p)[sim]*"    "), col=COL[2], ylab="", axes = FALSE)
+axis(1)
+x0 <- seq(-0.1, .5, length.out = 1000)
+y0 <- dnorm(x0, 0.1, 0.038)
+lines(x0, 150 * y0)
+lines(c(0.05, 0.05), c(0, 1200), lty = 2, lwd = 2)
+text(0.05, 1200, "Observed\nvalue", pos = 3, cex = 0.8)
+
+```
+
 
 We'll again begin by creating a picture. Here a normal distribution centered at 0.10 with a standard error of 0.038.
 \begin{center}
@@ -2585,7 +2591,7 @@ Z = \frac{\hat{p} - p_0}{SE_{\hat{p}}} = \frac{0.048 - 0.10}{0.038} = -1.37
 \end{align*}
 Identifying $Z = -1.37$ in the normal probability table or using statistical software, we can determine that the left tail area is 0.0853. Doubling this value yields the total area in the two tails: about 0.17. This is the estimated p-value for the hypothesis test. However, there's a problem: this is very different than the earlier p-value we computed: 0.2444.
 
-The discrepancy is explained by normal model's poor representation of the null distribution in Figure \@ref(fig:MedConsNullSim_w_normal). As noted earlier, the null distribution from the simulations is not very smooth, and the distribution itself is slightly skewed. That's the bad news. The good news is that we can foresee these problems using some simple checks. We'll learn about these checks in the following chapters.
+The discrepancy is explained by normal model's poor representation of the null distribution in Figure \@ref(fig:MedConsNullSim-w-normal). As noted earlier, the null distribution from the simulations is not very smooth, and the distribution itself is slightly skewed. That's the bad news. The good news is that we can foresee these problems using some simple checks. We'll learn about these checks in the following chapters.
 
 In Section \@ref(CLTsection) we noted that the two common requirements to apply the Central Limit Theorem are (1) the observations in the sample must be independent, and (2) the sample must be sufficiently large. The guidelines for this particular situation -- which we will learn in Section \@ref(single-prop) -- would have alerted us that the normal model was a poor approximation.
 
@@ -2678,12 +2684,38 @@ We are 95% confident that implanting a stent in a stroke patient's brain increas
 
 As with hypothesis tests, confidence intervals are imperfect. About 1-in-20 properly constructed 95% confidence intervals will fail to capture the parameter of interest. Figure \@ref(fig:95PercentConfidenceInterval) shows 25 confidence intervals for a proportion that were constructed from simulations where the true proportion was $p = 0.3$. However, 1 of these 25 confidence intervals happened not to include the true value.
 
-\begin{figure}[hht]
-  \centering
-  \includegraphics[width=0.9\textwidth]{02/figures/95PercentConfidenceInterval/95PercentConfidenceInterval}
-  \caption{Twenty-five samples of size $n=300$ were simulated when $p = 0.30$. For each sample, a confidence interval was created to try to capture the true proportion $p$. However, 1 of these 25 intervals did not capture $p = 0.30$.}
-  \label{95PercentConfidenceInterval}
-\end{figure}
+
+```{r 95PercentConfidenceInterval, fig.cap="Twenty-five samples of size $n=300$ were simulated when $p = 0.30$. For each sample, a confidence interval was created to try to capture the true proportion $p$. However, 1 of these 25 intervals did not capture $p = 0.30$.", warning=FALSE, fig.width=10}
+
+set.seed(4747)
+num.sim <- 25
+n       <- 300
+p       <- 0.3
+p.hat   <- rbinom(num.sim, n, p) / n
+SE      <- sqrt(p.hat * (1 - p.hat) / n)
+
+
+par(mar=c(2, 1, 1, 1), mgp=c(2.7, 0.9, 0))
+xR <- p + 4*c(-1, 1)*max(SE)
+yR <- c(0, 25)
+plot(xR, yR, type='n', xlab='',
+     ylab='', axes=FALSE)
+abline(v=p, lty=2, col=COL[6])
+axis(1, at=p + c(-0.05, 0, 0.05),
+     c("0.25", "p = 0.30", "0.35"), cex.axis=1.15)
+for(i in 1:num.sim){
+	ci <- p.hat[i] + 2 * c(-1, 1) * SE[i]
+	if(abs(p.hat[i] - p) > 2 * SE[i]){
+		col <- COL[4]
+		points(p.hat[i], i, cex=1.4, col=col)
+	} else {
+		col <- COL[1]
+	}
+	points(p.hat[i], i, pch=20, cex=1.2, col=col)
+	lines(ci, rep(i, 2), col=col)
+}
+
+```
 
 ```{block2, type="guidedpractice", echo=TRUE}
 In Figure \@ref(fig:95PercentConfidenceInterval), one interval does not contain the true proportion, $p = 0.3$. Does this imply that there was a problem with the simulations run?^[No. Just as some observations occur more than 1.96 standard deviations from the mean, some point estimates will be more than 1.96 standard errors from the parameter. A confidence interval only provides a plausible range of values for a parameter. While we might say other values are implausible based on the data, this does not mean they are impossible.]
@@ -2718,13 +2750,56 @@ To create a 99% confidence interval, change 1.96 in the 95% confidence interval 
 %\Comment{I don't know where the equation number above gets referenced. Might drop the equation number.}
 -->
 
-\begin{figure}[ht]
-\centering
-\includegraphics[width=\textwidth]{02/figures/choosingZForCI/choosingZForCI}
-\caption{The area between -$z^{\star}$ and $z^{\star}$ increases as $|z^{\star}|$ becomes larger. If the confidence level is 99%, we choose $z^{\star}$ such that 99% of the normal curve is between -$z^{\star}$ and $z^{\star}$, which corresponds to 0.5% in the lower tail and 0.5% in the upper tail: $z^{\star}=2.58$.}
-\label{choosingZForCI}
+
+```{block2, type="todo", echo = TRUE}
+The area between -$z^{\star}$ and $z^{\star}$ increases as $|z^{\star}|$ becomes larger. If the confidence level is 99%, we choose $z^{\star}$ such that 99% of the normal curve is between -$z^{\star}$ and $z^{\star}$, which corresponds to 0.5% in the lower tail and 0.5% in the upper tail: $z^{\star}=2.58$.
+
+maybe double backslashes?
+```
+
+
+```{r choosingZForCI, fig.cap="The area between -$z^{\\star}$ and $z^{\\star}$ increases as $|z^{\\star}|$ becomes larger. If the confidence level is 99%, we choose $z^{\\star}$ such that 99% of the normal curve is between -$z^{\\star}$ and $z^{\\star}$, which corresponds to 0.5% in the lower tail and 0.5% in the upper tail: $z^{\\star}=2.58$.", warning=FALSE, fig.width=10}
+
+par(mar=c(3.3,1,.5,1), mgp=c(2.1,0.6,0))
+X <- rev(seq(-4, 4, 0.025))
+Y <- dt(X, 10) # makes better visual
+plot(X, Y, type='l', xlab='standard deviations from the mean', ylab='', axes=FALSE, xlim=3.3*c(-1,1), ylim=c(0, 0.59), col=COL[6])
+axis(1, at=-3:3) #at=c(-4, -2, 0, 2, 4))
+abline(h=0) #, col='#00000088')
+yMax <- 0.41
+X <- seq(-4, 4, 0.025)
+Y <- dt(X, 10) # makes better visual
+lines(X, Y, col=COL[6])
+
+these <- (X < 2.58 & X > -2.58)
+x <- c(-2.58, X[these], 2.58)
+y <- c(0, dt(X[these], 10), 0)
+polygon(x, y, col=COL[1,3], border='#00000000')
+these <- (X < 1.96 & X > -1.96)
+x <- c(-1.96, X[these], 1.96)
+y <- c(0, dt(X[these], 10), 0)
+polygon(x, y, col=COL[1], border='#00000000')
+
+#x <- 1.96*c(-1,1,1,-1)
+#y <- c(1,1,1.38,1.38)*yMax/3 
+#polygon(x, y, border='#FFFFFF55', col='#FFFFFF77', lwd=7)
+lines(1.96*c(-1,1), rep(yMax,2), lwd=2)
+lines(rep(-1.96,2), c(0,yMax), lty=2, col=COL[6])
+lines(rep( 1.96,2), c(0,yMax), lty=2, col=COL[6])
+text(0, yMax, '95%, extends -1.96 to 1.96', pos=3)
+
+yMax <- 0.53
+#x <- 2.58*c(-1,1,1,-1)
+#y <- c(1,1,1.19,1.19)*2*yMax/3 
+#polygon(x, y, border='#FFFFFF55', col='#FFFFFF77', lwd=7)
+lines(2.58*c(-1,1), rep(yMax,2), lwd=2)
+lines(rep(-2.58,2), c(0,yMax), lty=2, col='#00000055')
+lines(rep( 2.58,2), c(0,yMax), lty=2, col='#00000055')
+text(0, yMax, '99%, extends -2.58 to 2.58', pos=3)
+
+```
+
 \index{confidence interval!confidence level|)}
-\end{figure}
 
 The normal approximation is crucial to the precision of these confidence intervals. Future chapters provides detailed discussions about when the normal model can safely be applied to a variety of situations. When the normal model is not a good fit, we will use alternative distributions that better characterize the sampling distribution.
 
