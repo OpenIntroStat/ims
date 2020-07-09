@@ -2458,14 +2458,78 @@ The way we determine the standard error varies from one situation to the next. H
 
 In Section \@ref(caseStudyOpportunityCost) we were introduced to the opportunity cost study, which found that students became thriftier when they were reminded that not spending money now means the money can be spent on other things in the future. Let's re-analyze the data in the context of the normal distribution and compare the results.
 
-Figure \@ref(fig:OpportunityCostDiffs_w_normal) summarizes the null distribution as determined using the randomization method. The best fitting normal distribution for the null distribution has a mean of 0. We can calculate the standard error of this distribution by borrowing a formula that we will become familiar with in Section \@ref(diff-two-prop), but for now let's just take the value $SE = 0.078$ as a given. Recall that the point estimate of the difference was 0.20, as shown in the plot. Next, we'll use the normal distribution approach to compute the two-tailed p-value.
+Figure \@ref(fig:OpportunityCostDiffs-w-normal) summarizes the null distribution as determined using the randomization method. The best fitting normal distribution for the null distribution has a mean of 0. We can calculate the standard error of this distribution by borrowing a formula that we will become familiar with in Section \@ref(diff-two-prop), but for now let's just take the value $SE = 0.078$ as a given. Recall that the point estimate of the difference was 0.20, as shown in the plot. Next, we'll use the normal distribution approach to compute the two-tailed p-value.
 
 \begin{figure}
 \centering
-\includegraphics[width=0.85\textwidth]{02/figures/OpportunityCost/OpportunityCostDiffs_w_normal}
+\includegraphics[width=0.85\textwidth]{02/figures/OpportunityCost/OpportunityCostDiffs-w-normal}
 \caption{Null distribution of differences with an overlaid normal curve for the opportunity cost study. 10,000 simulations were run for this figure.}
-\label{OpportunityCostDiffs_w_normal}
+\label{OpportunityCostDiffs-w-normal}
 \end{figure}
+
+
+```{r OpportunityCostDiffs-w-normal, fig.cap="Null distribution of differences with an overlaid normal curve for the opportunity cost study. 10,000 simulations were run for this figure.", warning=FALSE, fig.width=10}
+
+source("helpers/helper-dotplot.R")   # source helper
+group   <- c(rep('control', 75), rep('treatment', 75))
+outcome <- c(rep(c('buy DVD', 'do not buy DVD'), c(56, 19)),
+             rep(c('buy DVD', 'do not buy DVD'), c(41, 34)))
+
+nsim  = 10000
+n     = length(group)
+group = group
+var1  = outcome
+success = "do not buy DVD"
+sim   = matrix(NA, nrow = n, ncol = nsim)
+n1    = n2 = 75
+
+Statistic <- function(var1, group){	
+  t1 <- var1 == success & group == levels(as.factor(group))[1]
+  t2 <- var1 == success & group == levels(as.factor(group))[2]
+  sum(t1)/n1 - sum(t2)/n2 
+}
+
+for(i in 1:nsim){
+  sim[,i] = sample(group, n, replace = FALSE)
+}
+
+sim_dist = apply(sim, 2, Statistic, var1 = outcome)
+diffs    = sim_dist
+pval     = sum(diffs >= 0.29) / nsim
+values  <- table(sim_dist)
+
+xlab <- paste0("Simulated difference in proportions ",
+               "of students who do not buy the DVD")
+
+X <- c()
+Y <- c()
+udiffs <- sort(unique(diffs))
+for(i in 1:length(udiffs)){
+  x   <- udiffs[i]
+  rec <- sum(sim_dist == x)
+  X   <- append(X, rep(x, rec))
+  Y   <- append(Y, 1:rec)
+}
+
+bin.width <- diff(udiffs)[1]
+breaks <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
+diffs.tmp <- diffs[diffs > 0.19]
+
+histPlot(diffs, breaks = breaks, axes = FALSE, col = COL[2],
+         xlab = "", ylab = "Proportion of simulated scenarios                ")
+axis(1)
+x0 <- seq(-.5, .5, length.out = 1000)
+y0 <- dnorm(x0, 0, 0.078)
+lines(x0, 250 * y0)
+lines(c(0.2, 0.2), c(0, 300), lty = 3, lwd = 3)
+text(0.2, 300, "observed\ndifference", pos = 3)
+par(las = 0)
+mtext(paste0("Simulated difference in proportions ",
+             "of students who do not buy the DVD"), 1, 2.5)
+```
+
+
+
 
 As we learned in Section \@ref(normalDist), it is helpful to draw and shade a picture of the normal distribution so we know precisely what we want to calculate. Here we want to find the area of the two tails representing the p-value.
 \begin{center}
