@@ -1189,10 +1189,9 @@ By sampling with replacement from the dataset (a process called **bootstrapping*
 terms_chp_5 <- c(terms_chp_5, "bootstrapping")
 ```
 
-Each client can be simulated using a deck of cards. 
-Take three red cards, 59 black cards, and mix them up. 
-If the cards are well-shuffled, drawing the top card is one way of simulating the chance a patient has a complication if the true rate is 0.048: if the card is red, we say the patient had a complication, and if it is black then we say they did not have a complication. 
-If we repeat this process 62 times (starting with all 62 cards each time) and compute the proportion of simulated patients with complications, $\hat{p}_{bs}$, then this "bootstrap" proportion represents a single simulated proportion from the "resample from the sample" approach.
+Each client can be simulated using a (hypothetical) 62-sided die.
+The die has 3 red sides and 59 black sides.  For each roll, the rate of complication is 0.048 (= 3/62): if the die roll is red, we say the patient had a complication, and if it is black then we say they did not have a complication. 
+If we roll the die 62 times and compute the proportion of simulated patients with complications, $\hat{p}_{bs}$, then this "bootstrap" proportion represents a single simulated proportion from the "resample from the sample" approach.
 
 ```{block2, type="guidedpractice", echo=TRUE}
 In a simulation of 62 patients, about how many would we expect to have had a complication?^[About 5% of the patients (6.2 on average) in the simulation will have a complication, though we will see a little variation from one simulation to the next.]
@@ -1201,16 +1200,37 @@ In a simulation of 62 patients, about how many would we expect to have had a com
 We conducted such a simulation. There were 5 simulated cases with a complication and 57 simulated cases without a complication: $\hat{p}_{bs} = 5/62 = 0.081$.
 
 One simulation isn't enough to get a sense of the variability from one bootstrap proportion to another bootstrap proportion, so we repeated the simulation 10,000 times using a computer. 
-Figure \@ref(fig:MedConsNullSim) shows the distribution from these 10,000 simulations. The bootstrapped proportions vary from about zero to 11.3%. The variability in the bootstrapped proportions leads us to believe that the true probability of complication is somewhere between 0 and 11.3%.
+Figure \@ref(fig:MedConsBSSim) shows the distribution from these 10,000 simulations. The bootstrapped proportions vary from about zero to 11.3%. The variability in the bootstrapped proportions leads us to believe that the true probability of complication is somewhere between 0 and 11.3%.
 <!--The simulated proportions that are less than or equal to $\hat{p}=0.048$ are shaded.
 There were 1222 simulated sample proportions with $\hat{p}_{bs} \leq 0.048$, which represents a fraction 0.1222 of our simulations:
 -->
 
-```{r}
-bsprops = rbinom(10000, size=62, prob=(3/62))/62
-hist(bsprops)
-quantile(bsprops, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
+```{r MedConsBSSim, fig.cap="The original medical consultant data is bootstrapped 10,000 times.  Each simulation creates a sample where the probability of being correct is $\\hat{p} = 3/62$. The bootstrap 2.5 percentile proportion is 0 and the 97.5 percentile is 0.113.  The result is that we are confident that, in the larger population, the true proportion of people who can guess correctly is between 0% and 11.3%.", warning=FALSE, fig.width=10}
+bsprops <- rbinom(10000, size=62, prob=(3/62))/62
+bsq <- quantile(bsprops, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
+
+bsprops_up <- bsprops[bsprops >= bsq[7]]
+bsprops_low <- bsprops[bsprops <= bsq[2]]
+
+uprops <- sort(unique(bsprops))
+bin.width <- diff(uprops)[1]
+breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
+
+histPlot(bsprops, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
+     xlab = "", ylab="")
+histPlot(bsprops_up, breaks = breaks, col = COL[1], add = TRUE)
+histPlot(bsprops_low, breaks = breaks, col = COL[1], add = TRUE)
+axis(1)
+#axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
+lines(c(bsq[7], bsq[7]), c(0, 600), lty = 3, lwd = 3)
+lines(c(bsq[2], bsq[2]), c(0, 600), lty = 3, lwd = 3)
+text(bsq[7], 600, "97.5 percentile", pos = 3)
+text(bsq[2], 600, "2.5 percentile", pos = 3)
+par(las = 0)
+mtext("Bootstrapped values of the proportion of surgical complications", 1, 2.5)
+
 ```
+
 <!--
 \begin{align*}
 \text{left tail }
@@ -1224,9 +1244,9 @@ However, this is not our p-value! Remember that we are conducting a two-sided te
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.83\textwidth]{02/figures/MedicalConsultant/MedConsNullSim}
+\includegraphics[width=0.83\textwidth]{02/figures/MedicalConsultant/MedConsBSSim}
 \caption{The null distribution for $\hat{p}$, created from 10,000 simulated studies. The left tail contains 12.22% of the simulations. We double this value to get the p-value.}
-\label{MedConsNullSim}
+\label{MedConsBSSim}
 \end{figure}
 
 ```{block2, type="guidedpractice", echo=TRUE}
@@ -1271,7 +1291,7 @@ From the perspective of the null hypothesis, we might wonder, how likely is it t
 That is, what's the chance we would happen to see such a small fraction if $H_0$ were true and the true correct-guess rate is 0.50?
 -->
 
-To answer the question, we will again use a simulation. To simulate 120 games, we again use cards (or a computer!) so that 120 listeners are simulated with the probability of guessing set at 3 out of 120 (e.g., three red cards and 117 black cards). 
+To answer the question, we will again use a simulation. To simulate 120 games, this time we use a (hypothetical) 120-sided die to simulate the 120 listeners.  The die has 3 black sides and 117 red sides which simulates the probability of guessing set at 3 out of 120.
 
 <!--
 To simulate 120 games under the null hypothesis where $p = 0.50$, we could flip a coin 120 times. 
@@ -1279,25 +1299,46 @@ Each time the coin came up heads, this could represent the listener guessing cor
 -->
 
 
-For example, we can simulate 5 tapper-listener pairs by bulling 5 cards from the deck of 3 red and 117 black cards:
+For example, we can simulate 5 tapper-listener pairs by rolling a 120-sided die with 3 red sides and 117 black sides.
 
 | B | B | B | R | B |
 |:-----:|:-----:|:-----:|:-------:|:-----:|
 | Wrong | Wrong | Wrong | Correct | Wrong |
 
 
-After pulling 120 cards (with replacement), we got 2 red for $\hat{p}_{bs} = 0.0167$. As we did with the randomization technique, seeing what would happen with one simulation isn't enough. In order to evaluate whether our originally observed proportion of 0.025 is unusual or not, we should generate more simulations. Here we've repeated this simulation ten times:
+After rolling the die 120 times, we got 2 red for $\hat{p}_{bs} = 0.0167$. As we did with the randomization technique, seeing what would happen with one simulation isn't enough. In order to evaluate whether our originally observed proportion of 0.025 is unusual or not, we should generate more simulations. Here we've repeated the entire simulation ten times:
 \begin{align*}
 0.0417 \quad 0.0250 \quad 0.0250 \quad 0.0083 \quad
 0.0500 \quad 0.0333 \quad 0.0250 \quad 0.000 \quad
 0.0083 \quad 0.000
 \end{align*} <!-- % round(rbinom(10, 120, 0.5) / 120, 3) -->
-As before, we'll run a total of 10,000 simulations using a computer. As seen in Figure \@ref(fig:), the range of 95% of the resampled $\hat{p}_{bs}$ is 0.000 to 0.0583. That is, we expect that between 0% and 5.83% of people are truly able to guess the tapper's tune.
+As before, we'll run a total of 10,000 simulations using a computer. As seen in Figure \@ref(fig:tappers-bs-sim), the range of 95% of the resampled $\hat{p}_{bs}$ is 0.000 to 0.0583. That is, we expect that between 0% and 5.83% of people are truly able to guess the tapper's tune.
 
-```{r}
-bsprops2 = rbinom(10000, size=120, prob=(3/120))/120
-hist(bsprops2)
-quantile(bsprops2, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
+```{r tappers-bs-sim, fig.cap="The original listener-tapper data is bootstrapped 10,000 times.  Each simulation creates a sample where the probability of being correct is $\\hat{p} = 3/120$. The 2.5 percentile proportion is 0 and the 97.5 percentile is 0.0583.  The result is that we are confident that, in the larger population, the true proportion of people who can guess correctly is between 0% and 5.83%.", warning=FALSE, fig.width=10}
+
+bsprops2 <- rbinom(10000, size=120, prob=(3/120))/120
+bsq2 <- quantile(bsprops2, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
+
+bsprops_up <- bsprops2[bsprops2 >= bsq2[7]]
+bsprops_low <- bsprops2[bsprops2 <= bsq2[2]]
+
+uprops <- sort(unique(bsprops2))
+bin.width <- diff(uprops)[1]
+breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
+
+histPlot(bsprops2, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
+     xlab = "", ylab="")
+histPlot(bsprops_up, breaks = breaks, col = COL[1], add = TRUE)
+histPlot(bsprops_low, breaks = breaks, col = COL[1], add = TRUE)
+axis(1)
+#axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
+lines(c(bsq2[7], bsq2[7]), c(0, 600), lty = 3, lwd = 3)
+lines(c(bsq2[2], bsq2[2]), c(0, 600), lty = 3, lwd = 3)
+text(bsq2[7], 600, "97.5 percentile", pos = 3)
+text(bsq2[2], 600, "2.5 percentile", pos = 3)
+par(las = 0)
+mtext("Bootstrapped values of the proportion of listeners who guessed correctly", 1, 2.5)
+
 ```
 
 <!--
@@ -1342,9 +1383,8 @@ If we want to be very certain we capture the population parameter, should we use
 #### Constructing a bootstrap confidence interval {-}
 
 As we saw above, **bootstrap sample** is a sample of the original sample. In the case of the medical complications data, we proceed as follows:
-1. Randomly sample one observation from the 62 patients (represented with black and red cards).
-2. Randomly sample a second observation from the 62 patients. Because we sample with replacement, there is a 1-in-62 chance that this second observation will be the same one sampled in the first
-step!
+1. Randomly sample one observation from the 62 patients (roll a single 62-sided die with red and black sides).
+2. Randomly sample a second observation from the 62 patients. Because we sample with replacement (i.e., roll the die again), there is a 1-in-62 chance that this second observation will be the same one sampled in the first step!
 ...
 62. Randomly sample a 62nd observation from the 62 patients.
 
@@ -1874,14 +1914,18 @@ lines(X, Y)
 abline(h=0)
 ```
 
-We can use the normal model to find percentiles. A **normal probability table**, which lists Z scores and corresponding percentiles, can be used to identify a percentile based on the Z score (and vice versa). Statistical software can also be used.
+We can use the normal model to find percentiles or probabilties. A **normal probability table**, which lists Z scores and corresponding percentiles, can be used to identify a percentile based on the Z score (and vice versa). Statistical software can also be used.
 
 ```{r include=FALSE}
 terms_chp_5 <- c(terms_chp_5, "normal probability table")
 ```
 
-A normal probability table is given in Appendix \@ref(normalProbabilityTable) and abbreviated in Table \@ref(tab:zTableShort). We use this table to identify the percentile corresponding to any particular Z score. For instance, the percentile of $Z=0.43$ is shown in row $0.4$ and column $0.03$ in Table \@ref(tab:zTableShort): 0.6664, or the $66.64^{th}$ percentile. Generally, we round $Z$ to two decimals, identify the proper row in the normal probability table up through the first decimal, and then determine the column representing the second decimal value. The intersection of this row and column is the percentile of the observation.
+A normal probability table is given in Appendix \@ref(normalProbabilityTable), but normal probabilities are most commonly found using statistical software which we will show here using the software R. We use the software to identify the percentile corresponding to any particular Z score. For instance, the percentile of $Z=0.43$ is 0.6664, or the $66.64^{th}$ percentile. The `pnorm()` function is available in default R and will provide the percentile associated with any cutoff on a normal curve.  The `normTail()` function is available in the openIntro R package and will draw the associated curve if it is helpful.
 
+```{r}
+pnorm(0.43, m = 0, s = 1)
+normTail(0.43, m = 0, s = 1)
+```
 
 ```{r normalTails, fig.cap="The area to the left of $Z$ represents the percentile of the observation.", warning=FALSE, fig.width=10}
 
@@ -1990,6 +2034,7 @@ We look up the percentile of $Z=0.43$ in a normal probability table, which yield
 \end{center}
 The probability Shannon scores at least 1630 on the SAT is 0.3336.
 ```
+
 
 ```{block2, type="tipbox", echo=TRUE}
 **always draw a picture first, and find the Z score second.**
@@ -2582,9 +2627,14 @@ text(0.05, 1200, "Observed\nvalue", pos = 3, cex = 0.8)
 
 
 We'll again begin by creating a picture. Here a normal distribution centered at 0.10 with a standard error of 0.038.
-\begin{center}
-\includegraphics[width=0.5\textwidth]{02/figures/MedicalConsultant/MedConsNullSim_normal_only}
-\end{center}
+
+```{r MedConsNullSim-normal-only, fig.cap="", warning=FALSE, fig.width=10}
+normTail(0.1, 0.038, 0.048, 0.152, col = COL[1], xAxisIncr = 2, axes = FALSE)
+a <- c(0.02, 0.1, 0.18)
+axis(1, a, format(a))
+```
+
+
 Next, we can calculate the Z score using the observed complication rate, $\hat{p} = 0.048$ along with the mean and standard deviation of the normal model. Here again, we use the standard error for the standard deviation.
 \begin{align*}
 Z = \frac{\hat{p} - p_0}{SE_{\hat{p}}} = \frac{0.048 - 0.10}{0.038} = -1.37
