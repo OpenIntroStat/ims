@@ -20,17 +20,16 @@ knitr::opts_chunk$set(
 
 # packages ---------------------------------------------------------------------
 
-#install_github("openintrostats/openintro")
-library(knitr)
-library(ggmosaic)
-library(skimr)
-library(kableExtra)
-library(janitor)
-library(openintro)
-library(tidyverse)
-library(scales)
-library(infer)
-library(patchwork)
+suppressMessages(library(knitr))
+suppressMessages(library(ggmosaic))
+suppressMessages(library(skimr))
+suppressMessages(library(kableExtra))
+suppressMessages(library(janitor))
+suppressMessages(library(openintro))
+suppressMessages(library(tidyverse))
+suppressMessages(library(scales))
+suppressMessages(library(infer))
+suppressMessages(library(patchwork))
 
 # dplyr options ----------------------------------------------------------------
 
