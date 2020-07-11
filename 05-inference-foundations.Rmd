@@ -1189,10 +1189,9 @@ By sampling with replacement from the dataset (a process called **bootstrapping*
 terms_chp_5 <- c(terms_chp_5, "bootstrapping")
 ```
 
-Each client can be simulated using a deck of cards. 
-Take three red cards, 59 black cards, and mix them up. 
-If the cards are well-shuffled, drawing the top card is one way of simulating the chance a patient has a complication if the true rate is 0.048: if the card is red, we say the patient had a complication, and if it is black then we say they did not have a complication. 
-If we repeat this process 62 times (starting with all 62 cards each time) and compute the proportion of simulated patients with complications, $\hat{p}_{bs}$, then this "bootstrap" proportion represents a single simulated proportion from the "resample from the sample" approach.
+Each client can be simulated using a (hypothetical) 62-sided die.
+The die has 3 red sides and 59 black sides.  For each roll, the rate of complication is 0.048 (= 3/62): if the die roll is red, we say the patient had a complication, and if it is black then we say they did not have a complication. 
+If we roll the die 62 times and compute the proportion of simulated patients with complications, $\hat{p}_{bs}$, then this "bootstrap" proportion represents a single simulated proportion from the "resample from the sample" approach.
 
 ```{block2, type="guidedpractice", echo=TRUE}
 In a simulation of 62 patients, about how many would we expect to have had a complication?^[About 5% of the patients (6.2 on average) in the simulation will have a complication, though we will see a little variation from one simulation to the next.]
@@ -1201,16 +1200,37 @@ In a simulation of 62 patients, about how many would we expect to have had a com
 We conducted such a simulation. There were 5 simulated cases with a complication and 57 simulated cases without a complication: $\hat{p}_{bs} = 5/62 = 0.081$.
 
 One simulation isn't enough to get a sense of the variability from one bootstrap proportion to another bootstrap proportion, so we repeated the simulation 10,000 times using a computer. 
-Figure \@ref(fig:MedConsNullSim) shows the distribution from these 10,000 simulations. The bootstrapped proportions vary from about zero to 11.3%. The variability in the bootstrapped proportions leads us to believe that the true probability of complication is somewhere between 0 and 11.3%.
+Figure \@ref(fig:MedConsBSSim) shows the distribution from these 10,000 simulations. The bootstrapped proportions vary from about zero to 11.3%. The variability in the bootstrapped proportions leads us to believe that the true probability of complication is somewhere between 0 and 11.3%.
 <!--The simulated proportions that are less than or equal to $\hat{p}=0.048$ are shaded.
 There were 1222 simulated sample proportions with $\hat{p}_{bs} \leq 0.048$, which represents a fraction 0.1222 of our simulations:
 -->
 
-```{r}
-bsprops = rbinom(10000, size=62, prob=(3/62))/62
-hist(bsprops)
-quantile(bsprops, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
+```{r MedConsBSSim, fig.cap="The original medical consultant data is bootstrapped 10,000 times.  Each simulation creates a sample where the probability of being correct is $\\hat{p} = 3/62$. The bootstrap 2.5 percentile proportion is 0 and the 97.5 percentile is 0.113.  The result is that we are confident that, in the larger population, the true proportion of people who can guess correctly is between 0% and 11.3%.", warning=FALSE, fig.width=10}
+bsprops <- rbinom(10000, size=62, prob=(3/62))/62
+bsq <- quantile(bsprops, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
+
+bsprops_up <- bsprops[bsprops >= bsq[7]]
+bsprops_low <- bsprops[bsprops <= bsq[2]]
+
+uprops <- sort(unique(bsprops))
+bin.width <- diff(uprops)[1]
+breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
+
+histPlot(bsprops, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
+     xlab = "", ylab="")
+histPlot(bsprops_up, breaks = breaks, col = COL[1], add = TRUE)
+histPlot(bsprops_low, breaks = breaks, col = COL[1], add = TRUE)
+axis(1)
+#axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
+lines(c(bsq[7], bsq[7]), c(0, 600), lty = 3, lwd = 3)
+lines(c(bsq[2], bsq[2]), c(0, 600), lty = 3, lwd = 3)
+text(bsq[7], 600, "97.5 percentile", pos = 3)
+text(bsq[2], 600, "2.5 percentile", pos = 3)
+par(las = 0)
+mtext("Bootstrapped values of the proportion of surgical complications", 1, 2.5)
+
 ```
+
 <!--
 \begin{align*}
 \text{left tail }
@@ -1224,9 +1244,9 @@ However, this is not our p-value! Remember that we are conducting a two-sided te
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.83\textwidth]{02/figures/MedicalConsultant/MedConsNullSim}
+\includegraphics[width=0.83\textwidth]{02/figures/MedicalConsultant/MedConsBSSim}
 \caption{The null distribution for $\hat{p}$, created from 10,000 simulated studies. The left tail contains 12.22% of the simulations. We double this value to get the p-value.}
-\label{MedConsNullSim}
+\label{MedConsBSSim}
 \end{figure}
 
 ```{block2, type="guidedpractice", echo=TRUE}
@@ -1271,7 +1291,7 @@ From the perspective of the null hypothesis, we might wonder, how likely is it t
 That is, what's the chance we would happen to see such a small fraction if $H_0$ were true and the true correct-guess rate is 0.50?
 -->
 
-To answer the question, we will again use a simulation. To simulate 120 games, we again use cards (or a computer!) so that 120 listeners are simulated with the probability of guessing set at 3 out of 120 (e.g., three red cards and 117 black cards). 
+To answer the question, we will again use a simulation. To simulate 120 games, this time we use a (hypothetical) 120-sided die to simulate the 120 listeners.  The die has 3 black sides and 117 red sides which simulates the probability of guessing set at 3 out of 120.
 
 <!--
 To simulate 120 games under the null hypothesis where $p = 0.50$, we could flip a coin 120 times. 
@@ -1279,25 +1299,46 @@ Each time the coin came up heads, this could represent the listener guessing cor
 -->
 
 
-For example, we can simulate 5 tapper-listener pairs by bulling 5 cards from the deck of 3 red and 117 black cards:
+For example, we can simulate 5 tapper-listener pairs by rolling a 120-sided die with 3 red sides and 117 black sides.
 
 | B | B | B | R | B |
 |:-----:|:-----:|:-----:|:-------:|:-----:|
 | Wrong | Wrong | Wrong | Correct | Wrong |
 
 
-After pulling 120 cards (with replacement), we got 2 red for $\hat{p}_{bs} = 0.0167$. As we did with the randomization technique, seeing what would happen with one simulation isn't enough. In order to evaluate whether our originally observed proportion of 0.025 is unusual or not, we should generate more simulations. Here we've repeated this simulation ten times:
+After rolling the die 120 times, we got 2 red for $\hat{p}_{bs} = 0.0167$. As we did with the randomization technique, seeing what would happen with one simulation isn't enough. In order to evaluate whether our originally observed proportion of 0.025 is unusual or not, we should generate more simulations. Here we've repeated the entire simulation ten times:
 \begin{align*}
 0.0417 \quad 0.0250 \quad 0.0250 \quad 0.0083 \quad
 0.0500 \quad 0.0333 \quad 0.0250 \quad 0.000 \quad
 0.0083 \quad 0.000
 \end{align*} <!-- % round(rbinom(10, 120, 0.5) / 120, 3) -->
-As before, we'll run a total of 10,000 simulations using a computer. As seen in Figure \@ref(fig:), the range of 95% of the resampled $\hat{p}_{bs}$ is 0.000 to 0.0583. That is, we expect that between 0% and 5.83% of people are truly able to guess the tapper's tune.
+As before, we'll run a total of 10,000 simulations using a computer. As seen in Figure \@ref(fig:tappers-bs-sim), the range of 95% of the resampled $\hat{p}_{bs}$ is 0.000 to 0.0583. That is, we expect that between 0% and 5.83% of people are truly able to guess the tapper's tune.
 
-```{r}
-bsprops2 = rbinom(10000, size=120, prob=(3/120))/120
-hist(bsprops2)
-quantile(bsprops2, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
+```{r tappers-bs-sim, fig.cap="The original listener-tapper data is bootstrapped 10,000 times.  Each simulation creates a sample where the probability of being correct is $\\hat{p} = 3/120$. The 2.5 percentile proportion is 0 and the 97.5 percentile is 0.0583.  The result is that we are confident that, in the larger population, the true proportion of people who can guess correctly is between 0% and 5.83%.", warning=FALSE, fig.width=10}
+
+bsprops2 <- rbinom(10000, size=120, prob=(3/120))/120
+bsq2 <- quantile(bsprops2, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
+
+bsprops_up <- bsprops2[bsprops2 >= bsq2[7]]
+bsprops_low <- bsprops2[bsprops2 <= bsq2[2]]
+
+uprops <- sort(unique(bsprops2))
+bin.width <- diff(uprops)[1]
+breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
+
+histPlot(bsprops2, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
+     xlab = "", ylab="")
+histPlot(bsprops_up, breaks = breaks, col = COL[1], add = TRUE)
+histPlot(bsprops_low, breaks = breaks, col = COL[1], add = TRUE)
+axis(1)
+#axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
+lines(c(bsq2[7], bsq2[7]), c(0, 600), lty = 3, lwd = 3)
+lines(c(bsq2[2], bsq2[2]), c(0, 600), lty = 3, lwd = 3)
+text(bsq2[7], 600, "97.5 percentile", pos = 3)
+text(bsq2[2], 600, "2.5 percentile", pos = 3)
+par(las = 0)
+mtext("Bootstrapped values of the proportion of listeners who guessed correctly", 1, 2.5)
+
 ```
 
 <!--
@@ -1342,9 +1383,8 @@ If we want to be very certain we capture the population parameter, should we use
 #### Constructing a bootstrap confidence interval {-}
 
 As we saw above, **bootstrap sample** is a sample of the original sample. In the case of the medical complications data, we proceed as follows:
-1. Randomly sample one observation from the 62 patients (represented with black and red cards).
-2. Randomly sample a second observation from the 62 patients. Because we sample with replacement, there is a 1-in-62 chance that this second observation will be the same one sampled in the first
-step!
+1. Randomly sample one observation from the 62 patients (roll a single 62-sided die with red and black sides).
+2. Randomly sample a second observation from the 62 patients. Because we sample with replacement (i.e., roll the die again), there is a 1-in-62 chance that this second observation will be the same one sampled in the first step!
 ...
 62. Randomly sample a 62nd observation from the 62 patients.
 
@@ -1874,14 +1914,18 @@ lines(X, Y)
 abline(h=0)
 ```
 
-We can use the normal model to find percentiles. A **normal probability table**, which lists Z scores and corresponding percentiles, can be used to identify a percentile based on the Z score (and vice versa). Statistical software can also be used.
+We can use the normal model to find percentiles or probabilties. A **normal probability table**, which lists Z scores and corresponding percentiles, can be used to identify a percentile based on the Z score (and vice versa). Statistical software can also be used.
 
 ```{r include=FALSE}
 terms_chp_5 <- c(terms_chp_5, "normal probability table")
 ```
 
-A normal probability table is given in Appendix \@ref(normalProbabilityTable) and abbreviated in Table \@ref(tab:zTableShort). We use this table to identify the percentile corresponding to any particular Z score. For instance, the percentile of $Z=0.43$ is shown in row $0.4$ and column $0.03$ in Table \@ref(tab:zTableShort): 0.6664, or the $66.64^{th}$ percentile. Generally, we round $Z$ to two decimals, identify the proper row in the normal probability table up through the first decimal, and then determine the column representing the second decimal value. The intersection of this row and column is the percentile of the observation.
+A normal probability table is given in Appendix \@ref(normalProbabilityTable), but normal probabilities are most commonly found using statistical software which we will show here using the software R. We use the software to identify the percentile corresponding to any particular Z score. For instance, the percentile of $Z=0.43$ is 0.6664, or the $66.64^{th}$ percentile. The `pnorm()` function is available in default R and will provide the percentile associated with any cutoff on a normal curve.  The `normTail()` function is available in the openIntro R package and will draw the associated curve if it is helpful.
 
+```{r}
+pnorm(0.43, m = 0, s = 1)
+normTail(0.43, m = 0, s = 1)
+```
 
 ```{r normalTails, fig.cap="The area to the left of $Z$ represents the percentile of the observation.", warning=FALSE, fig.width=10}
 
@@ -1990,6 +2034,7 @@ We look up the percentile of $Z=0.43$ in a normal probability table, which yield
 \end{center}
 The probability Shannon scores at least 1630 on the SAT is 0.3336.
 ```
+
 
 ```{block2, type="tipbox", echo=TRUE}
 **always draw a picture first, and find the Z score second.**
@@ -2171,6 +2216,7 @@ It is possible for a normal random variable to fall 4, 5, or even more standard 
 SAT scores closely follow the normal model with mean $\mu = 1500$ and standard deviation $\sigma = 300$. (a) About what percent of test takers score 900 to 2100? (b) What percent score between 1500 and 2100?^[(a) 900 and 2100 represent two standard deviations above and below the mean, which means about 95% of test takers will score between 900 and 2100. (b) Since the normal model is symmetric, then half of the test takers from part (a) ($\frac{95\%}{2} = 47.5\%$ of all test takers) will score 900 to 1500 while 47.5% score between 1500 and 2100.]
 ```
 
+<!--
 #### Evaluating the normal approximation {-}
 
 Many processes can be well approximated by the normal distribution. We have already seen two good examples: SAT scores and the heights of US adult males. While using a normal model can be extremely convenient and helpful, it is important to remember normality is always an approximation. Testing the appropriateness of the normal assumption is a key step in many data analyses.
@@ -2367,11 +2413,6 @@ Determine which data sets represented in Figure \@ref(fig:normalQuantileExer) pl
 ```
 
 
-```{block2, type="todo", echo = TRUE}
-Four normal probability plots for Guided Practice @ref(normalQuantileExercise).
-```
-
-
 ```{r normalQuantileExer, fig.cap="Four normal probability plots for the Guided Practice.", warning=FALSE, fig.width=10}
 
 obs1 <- c(94.26, 79.54, 68.06, 63.96, 68.19, 89.73, 85.41, 76.29, 87.96, 87.32, 77.23, 58.01, 82.76, 80.17, 111.07, 88.07, 68.12, 87.58, 78.14, 39.64, 54.84, 84.88, 77.49, 91.56, 112.59, 97.78, 92.86, 100.78, 88.17, 71.69, 86.64, 80.79, 64.77, 103.2, 84.88, 69.51, 60.65, 68.41, 80.48, 71.39, 84.21, 87.66, 78.76, 74.04, 101.89, 89.83, 74.83, 84.47, 77.82, 88.07, 79.19, 58.31, 96.49, 4.27, 81.02, 80.36, 69.74, 77.78, 78.58, 62.12, 116.55, 83.32, 103.85, 90.29, 86.96, 71.35, 119.21, 82.68, 63.13, 109.77, 30.63, 93.48, 97.25, 56.43, 94.07, 74.97, 105.69, 76.5, 89.74, 47.85, 92.37, 128.92, 70.12, 74.07, 92.88, 81.49, 69.54, 70.66, 88.6, 92.74, 103.38, 109.85, 83.35, 94.64, 74.3, 93.15, 62.33, 72.77, 75.63, 91.18)
@@ -2436,7 +2477,7 @@ axis(1, cex.axis=1.1)
 axis(2, at=seq(5,15,5), cex.axis=1.1)
 ```
 
-
+-->
 
 ### Mathematical model case study (HT) {#ApplyingTheNormalModel}
 
@@ -2462,19 +2503,80 @@ The way we determine the standard error varies from one situation to the next. H
 
 In Section \@ref(caseStudyOpportunityCost) we were introduced to the opportunity cost study, which found that students became thriftier when they were reminded that not spending money now means the money can be spent on other things in the future. Let's re-analyze the data in the context of the normal distribution and compare the results.
 
-Figure \@ref(fig:OpportunityCostDiffs_w_normal) summarizes the null distribution as determined using the randomization method. The best fitting normal distribution for the null distribution has a mean of 0. We can calculate the standard error of this distribution by borrowing a formula that we will become familiar with in Section \@ref(diff-two-prop), but for now let's just take the value $SE = 0.078$ as a given. Recall that the point estimate of the difference was 0.20, as shown in the plot. Next, we'll use the normal distribution approach to compute the two-tailed p-value.
+Figure \@ref(fig:OpportunityCostDiffs-w-normal) summarizes the null distribution as determined using the randomization method. The best fitting normal distribution for the null distribution has a mean of 0. We can calculate the standard error of this distribution by borrowing a formula that we will become familiar with in Section \@ref(diff-two-prop), but for now let's just take the value $SE = 0.078$ as a given. Recall that the point estimate of the difference was 0.20, as shown in the plot. Next, we'll use the normal distribution approach to compute the two-tailed p-value.
 
-\begin{figure}
-\centering
-\includegraphics[width=0.85\textwidth]{02/figures/OpportunityCost/OpportunityCostDiffs_w_normal}
-\caption{Null distribution of differences with an overlaid normal curve for the opportunity cost study. 10,000 simulations were run for this figure.}
-\label{OpportunityCostDiffs_w_normal}
-\end{figure}
+
+```{r OpportunityCostDiffs-w-normal, fig.cap="Null distribution of differences with an overlaid normal curve for the opportunity cost study. 10,000 simulations were run for this figure.", warning=FALSE, fig.width=10}
+
+source("helpers/helper-dotplot.R")   # source helper
+group   <- c(rep('control', 75), rep('treatment', 75))
+outcome <- c(rep(c('buy DVD', 'do not buy DVD'), c(56, 19)),
+             rep(c('buy DVD', 'do not buy DVD'), c(41, 34)))
+
+nsim  = 10000
+n     = length(group)
+group = group
+var1  = outcome
+success = "do not buy DVD"
+sim   = matrix(NA, nrow = n, ncol = nsim)
+n1    = n2 = 75
+
+Statistic <- function(var1, group){	
+  t1 <- var1 == success & group == levels(as.factor(group))[1]
+  t2 <- var1 == success & group == levels(as.factor(group))[2]
+  sum(t1)/n1 - sum(t2)/n2 
+}
+
+for(i in 1:nsim){
+  sim[,i] = sample(group, n, replace = FALSE)
+}
+
+sim_dist = apply(sim, 2, Statistic, var1 = outcome)
+diffs    = sim_dist
+pval     = sum(diffs >= 0.29) / nsim
+values  <- table(sim_dist)
+
+xlab <- paste0("Simulated difference in proportions ",
+               "of students who do not buy the DVD")
+
+X <- c()
+Y <- c()
+udiffs <- sort(unique(diffs))
+for(i in 1:length(udiffs)){
+  x   <- udiffs[i]
+  rec <- sum(sim_dist == x)
+  X   <- append(X, rep(x, rec))
+  Y   <- append(Y, 1:rec)
+}
+
+bin.width <- diff(udiffs)[1]
+breaks <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
+diffs.tmp <- diffs[diffs > 0.19]
+
+histPlot(diffs, breaks = breaks, axes = FALSE, col = COL[2],
+         xlab = "", ylab = "Proportion of simulated scenarios                ")
+axis(1)
+x0 <- seq(-.5, .5, length.out = 1000)
+y0 <- dnorm(x0, 0, 0.078)
+lines(x0, 250 * y0)
+lines(c(0.2, 0.2), c(0, 300), lty = 3, lwd = 3)
+text(0.2, 300, "observed\ndifference", pos = 3)
+par(las = 0)
+mtext(paste0("Simulated difference in proportions ",
+             "of students who do not buy the DVD"), 1, 2.5)
+```
+
+
+
 
 As we learned in Section \@ref(normalDist), it is helpful to draw and shade a picture of the normal distribution so we know precisely what we want to calculate. Here we want to find the area of the two tails representing the p-value.
-\begin{center}
-\includegraphics[width=0.6\textwidth]{02/figures/OpportunityCost/OpportunityCostDiffs_normal_only}
-\end{center}
+
+
+```{r OpportunityCostDiffs_normal_only, fig.cap="", warning=FALSE, fig.width=10}
+normTail(0, 0.078, -0.2, 0.2, col = COL[1])
+```
+
+
 Next, we can calculate the Z score using the observed difference, 0.20, and the two model parameters. The standard error, $SE = 0.078$, is the equivalent of the model's standard deviation.
 \begin{align*}
 Z = \frac{\text{observed difference} - 0}{SE} = \frac{0.20 - 0}{0.078} = 2.56
@@ -2497,7 +2599,7 @@ We have confirmed that the randomization approach we used earlier and the normal
 
 #### Normal model application: medical consultant {-}
 
-In Section \@ref(sec-med-consult) we learned about a medical consultant who reported that only 3 of her 62 clients who underwent a liver transplant had complications, which is less than the more common complication rate of 0.10. As in the other case studies, we identified a suitable null distribution using a simulation approach, as shown in Figure \@ref(fig:MedConsNullSim_w_normal). Here we have added the best-fitting normal curve to the figure, which has a mean of 0.10. Borrowing a formula that we'll encounter in Chapter \@ref(inference-cat), the standard error of this distribution was also computed: $SE = 0.038$.
+In Section \@ref(sec-med-consult) we learned about a medical consultant who reported that only 3 of her 62 clients who underwent a liver transplant had complications, which is less than the more common complication rate of 0.10. As in the other case studies, we identified a suitable null distribution using a simulation approach, as shown in Figure \@ref(fig:MedConsNullSim-w-normal). Here we have added the best-fitting normal curve to the figure, which has a mean of 0.10. Borrowing a formula that we'll encounter in Chapter \@ref(inference-cat), the standard error of this distribution was also computed: $SE = 0.038$.
 
 <!--
 %\begin{align*}
@@ -2508,24 +2610,38 @@ In Section \@ref(sec-med-consult) we learned about a medical consultant who repo
 
 In the previous analysis, we obtained a p-value of 0.2444, and we will try to reproduce that p-value using the normal distribution approach. However, before we begin, we want to point out a simple detail that is easy to overlook: the null distribution we earlier generated is slightly skewed, and the distribution isn't that smooth. In fact, the normal distribution only sort-of fits this model. We'll discuss this discrepancy more in a moment.
 
-\begin{figure}
-\centering
-\includegraphics[width=0.75\textwidth]{02/figures/MedicalConsultant/MedConsNullSim_w_normal}
-\caption{The null distribution for $\hat{p}$, created from 10,000 simulated studies, along with the best-fitting normal model.}
-\label{MedConsNullSim_w_normal}
-\end{figure}
+
+```{r MedConsNullSim-w-normal, fig.cap="The null distribution for $\hat{p}$, created from 10,000 simulated studies, along with the best-fitting normal model.", warning=FALSE, fig.width=10}
+pHat <- rbinom(10^4, 62, 0.1)/62
+M    <- max(pHat)*62
+
+histPlot(pHat, breaks=(-1:(2*M)+0.75)/2/62, xlab=expression(hat(p)[sim]*"    "), col=COL[2], ylab="", axes = FALSE)
+axis(1)
+x0 <- seq(-0.1, .5, length.out = 1000)
+y0 <- dnorm(x0, 0.1, 0.038)
+lines(x0, 150 * y0)
+lines(c(0.05, 0.05), c(0, 1200), lty = 2, lwd = 2)
+text(0.05, 1200, "Observed\nvalue", pos = 3, cex = 0.8)
+
+```
+
 
 We'll again begin by creating a picture. Here a normal distribution centered at 0.10 with a standard error of 0.038.
-\begin{center}
-\includegraphics[width=0.5\textwidth]{02/figures/MedicalConsultant/MedConsNullSim_normal_only}
-\end{center}
+
+```{r MedConsNullSim-normal-only, fig.cap="", warning=FALSE, fig.width=10}
+normTail(0.1, 0.038, 0.048, 0.152, col = COL[1], xAxisIncr = 2, axes = FALSE)
+a <- c(0.02, 0.1, 0.18)
+axis(1, a, format(a))
+```
+
+
 Next, we can calculate the Z score using the observed complication rate, $\hat{p} = 0.048$ along with the mean and standard deviation of the normal model. Here again, we use the standard error for the standard deviation.
 \begin{align*}
 Z = \frac{\hat{p} - p_0}{SE_{\hat{p}}} = \frac{0.048 - 0.10}{0.038} = -1.37
 \end{align*}
 Identifying $Z = -1.37$ in the normal probability table or using statistical software, we can determine that the left tail area is 0.0853. Doubling this value yields the total area in the two tails: about 0.17. This is the estimated p-value for the hypothesis test. However, there's a problem: this is very different than the earlier p-value we computed: 0.2444.
 
-The discrepancy is explained by normal model's poor representation of the null distribution in Figure \@ref(fig:MedConsNullSim_w_normal). As noted earlier, the null distribution from the simulations is not very smooth, and the distribution itself is slightly skewed. That's the bad news. The good news is that we can foresee these problems using some simple checks. We'll learn about these checks in the following chapters.
+The discrepancy is explained by normal model's poor representation of the null distribution in Figure \@ref(fig:MedConsNullSim-w-normal). As noted earlier, the null distribution from the simulations is not very smooth, and the distribution itself is slightly skewed. That's the bad news. The good news is that we can foresee these problems using some simple checks. We'll learn about these checks in the following chapters.
 
 In Section \@ref(CLTsection) we noted that the two common requirements to apply the Central Limit Theorem are (1) the observations in the sample must be independent, and (2) the sample must be sufficiently large. The guidelines for this particular situation -- which we will learn in Section \@ref(single-prop) -- would have alerted us that the normal model was a poor approximation.
 
@@ -2618,12 +2734,38 @@ We are 95% confident that implanting a stent in a stroke patient's brain increas
 
 As with hypothesis tests, confidence intervals are imperfect. About 1-in-20 properly constructed 95% confidence intervals will fail to capture the parameter of interest. Figure \@ref(fig:95PercentConfidenceInterval) shows 25 confidence intervals for a proportion that were constructed from simulations where the true proportion was $p = 0.3$. However, 1 of these 25 confidence intervals happened not to include the true value.
 
-\begin{figure}[hht]
-  \centering
-  \includegraphics[width=0.9\textwidth]{02/figures/95PercentConfidenceInterval/95PercentConfidenceInterval}
-  \caption{Twenty-five samples of size $n=300$ were simulated when $p = 0.30$. For each sample, a confidence interval was created to try to capture the true proportion $p$. However, 1 of these 25 intervals did not capture $p = 0.30$.}
-  \label{95PercentConfidenceInterval}
-\end{figure}
+
+```{r 95PercentConfidenceInterval, fig.cap="Twenty-five samples of size $n=300$ were simulated when $p = 0.30$. For each sample, a confidence interval was created to try to capture the true proportion $p$. However, 1 of these 25 intervals did not capture $p = 0.30$.", warning=FALSE, fig.width=10}
+
+set.seed(4747)
+num.sim <- 25
+n       <- 300
+p       <- 0.3
+p.hat   <- rbinom(num.sim, n, p) / n
+SE      <- sqrt(p.hat * (1 - p.hat) / n)
+
+
+par(mar=c(2, 1, 1, 1), mgp=c(2.7, 0.9, 0))
+xR <- p + 4*c(-1, 1)*max(SE)
+yR <- c(0, 25)
+plot(xR, yR, type='n', xlab='',
+     ylab='', axes=FALSE)
+abline(v=p, lty=2, col=COL[6])
+axis(1, at=p + c(-0.05, 0, 0.05),
+     c("0.25", "p = 0.30", "0.35"), cex.axis=1.15)
+for(i in 1:num.sim){
+	ci <- p.hat[i] + 2 * c(-1, 1) * SE[i]
+	if(abs(p.hat[i] - p) > 2 * SE[i]){
+		col <- COL[4]
+		points(p.hat[i], i, cex=1.4, col=col)
+	} else {
+		col <- COL[1]
+	}
+	points(p.hat[i], i, pch=20, cex=1.2, col=col)
+	lines(ci, rep(i, 2), col=col)
+}
+
+```
 
 ```{block2, type="guidedpractice", echo=TRUE}
 In Figure \@ref(fig:95PercentConfidenceInterval), one interval does not contain the true proportion, $p = 0.3$. Does this imply that there was a problem with the simulations run?^[No. Just as some observations occur more than 1.96 standard deviations from the mean, some point estimates will be more than 1.96 standard errors from the parameter. A confidence interval only provides a plausible range of values for a parameter. While we might say other values are implausible based on the data, this does not mean they are impossible.]
@@ -2658,13 +2800,56 @@ To create a 99% confidence interval, change 1.96 in the 95% confidence interval 
 %\Comment{I don't know where the equation number above gets referenced. Might drop the equation number.}
 -->
 
-\begin{figure}[ht]
-\centering
-\includegraphics[width=\textwidth]{02/figures/choosingZForCI/choosingZForCI}
-\caption{The area between -$z^{\star}$ and $z^{\star}$ increases as $|z^{\star}|$ becomes larger. If the confidence level is 99%, we choose $z^{\star}$ such that 99% of the normal curve is between -$z^{\star}$ and $z^{\star}$, which corresponds to 0.5% in the lower tail and 0.5% in the upper tail: $z^{\star}=2.58$.}
-\label{choosingZForCI}
+
+```{block2, type="todo", echo = TRUE}
+The area between -$z^{\star}$ and $z^{\star}$ increases as $|z^{\star}|$ becomes larger. If the confidence level is 99%, we choose $z^{\star}$ such that 99% of the normal curve is between -$z^{\star}$ and $z^{\star}$, which corresponds to 0.5% in the lower tail and 0.5% in the upper tail: $z^{\star}=2.58$.
+
+maybe double backslashes?
+```
+
+
+```{r choosingZForCI, fig.cap="The area between -$z^{\\star}$ and $z^{\\star}$ increases as $|z^{\\star}|$ becomes larger. If the confidence level is 99%, we choose $z^{\\star}$ such that 99% of the normal curve is between -$z^{\\star}$ and $z^{\\star}$, which corresponds to 0.5% in the lower tail and 0.5% in the upper tail: $z^{\\star}=2.58$.", warning=FALSE, fig.width=10}
+
+par(mar=c(3.3,1,.5,1), mgp=c(2.1,0.6,0))
+X <- rev(seq(-4, 4, 0.025))
+Y <- dt(X, 10) # makes better visual
+plot(X, Y, type='l', xlab='standard deviations from the mean', ylab='', axes=FALSE, xlim=3.3*c(-1,1), ylim=c(0, 0.59), col=COL[6])
+axis(1, at=-3:3) #at=c(-4, -2, 0, 2, 4))
+abline(h=0) #, col='#00000088')
+yMax <- 0.41
+X <- seq(-4, 4, 0.025)
+Y <- dt(X, 10) # makes better visual
+lines(X, Y, col=COL[6])
+
+these <- (X < 2.58 & X > -2.58)
+x <- c(-2.58, X[these], 2.58)
+y <- c(0, dt(X[these], 10), 0)
+polygon(x, y, col=COL[1,3], border='#00000000')
+these <- (X < 1.96 & X > -1.96)
+x <- c(-1.96, X[these], 1.96)
+y <- c(0, dt(X[these], 10), 0)
+polygon(x, y, col=COL[1], border='#00000000')
+
+#x <- 1.96*c(-1,1,1,-1)
+#y <- c(1,1,1.38,1.38)*yMax/3 
+#polygon(x, y, border='#FFFFFF55', col='#FFFFFF77', lwd=7)
+lines(1.96*c(-1,1), rep(yMax,2), lwd=2)
+lines(rep(-1.96,2), c(0,yMax), lty=2, col=COL[6])
+lines(rep( 1.96,2), c(0,yMax), lty=2, col=COL[6])
+text(0, yMax, '95%, extends -1.96 to 1.96', pos=3)
+
+yMax <- 0.53
+#x <- 2.58*c(-1,1,1,-1)
+#y <- c(1,1,1.19,1.19)*2*yMax/3 
+#polygon(x, y, border='#FFFFFF55', col='#FFFFFF77', lwd=7)
+lines(2.58*c(-1,1), rep(yMax,2), lwd=2)
+lines(rep(-2.58,2), c(0,yMax), lty=2, col='#00000055')
+lines(rep( 2.58,2), c(0,yMax), lty=2, col='#00000055')
+text(0, yMax, '99%, extends -2.58 to 2.58', pos=3)
+
+```
+
 \index{confidence interval!confidence level|)}
-\end{figure}
 
 The normal approximation is crucial to the precision of these confidence intervals. Future chapters provides detailed discussions about when the normal model can safely be applied to a variety of situations. When the normal model is not a good fit, we will use alternative distributions that better characterize the sampling distribution.
 

@@ -7,6 +7,7 @@ options(digits = 3)
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
+  message = FALSE,
   #cache = TRUE,
   echo = FALSE, # hide code unless otherwise noted in chunk options
   out.width = "70%",
