@@ -34,7 +34,7 @@ Dot plots show the exact value of each observation.
 This is useful for small data sets, but they can become hard to read with larger samples. 
 Rather than showing the value of each observation, think of the value as belonging to a *bin*. 
 For example, in the \data{email50} data set, we create a table of counts for the number of cases with character counts between 0 and 5,000, then the number of cases between 5,000 and 10,000, and so on. 
-Observations that fall on the boundary of a bin (e.g. 5,000) are allocated to the lower bin. 
+Observations that fall on the boundary of a bin (e.g., 5,000) are allocated to the lower bin. 
 This tabulation is shown in Table \@ref(tab:binnedNumCharTable). 
 These binned counts are plotted as bars in Figure \@ref(fig:email50NumCharHist) into what is called a \index{histogram}histogram, which resembles the stacked dot plot shown in Figure \@ref(fig:emailCharactersDotPlotStacked).
 
@@ -142,7 +142,7 @@ $s$\\\footnotesize sample standard deviation]{\raggedright\vspace{-10mm}
 $s$\\\footnotesize sample standard deviation
 }\index{s@$s$}-->
 The standard deviation of the number of characters in an email is about 13.13 thousand. 
-A subscript of $_x$ may be added to the variance and standard deviation, i.e. $s_x^2$ and $s_x^{}$, as a reminder that these are the variance and standard deviation of the observations represented by $x_1^{}$, $x_2^{}$, ..., $x_n^{}$.
+A subscript of $_x$ may be added to the variance and standard deviation, i.e., $s_x^2$ and $s_x^{}$, as a reminder that these are the variance and standard deviation of the observations represented by $x_1^{}$, $x_2^{}$, ..., $x_n^{}$.
 The $_{x}$ subscript is usually omitted when it is clear which data the variance or standard deviation is referencing.
 
 \begin{termBox}{\tBoxTitle{Variance and standard deviation}
@@ -210,7 +210,7 @@ If the data are ordered from smallest to largest, the \index{median} is the obse
 The second step in building a box plot is drawing a rectangle to represent the middle 50% of the data. 
 The total length of the box, shown vertically in Figure \@ref(fig:boxPlotLayoutNumVar), is called the \index{interquartile range}interquartile range (\hiddenterm{IQR}IQR, for short). 
 It, like the standard deviation, is a measure of \indexthis{variability}{variability}variability in data. 
-The more variable the data, the larger the standard deviation and IQR. The two boundaries of the box are called the \index{first quartile}first quartile \index{quartile!first quartile} (the $25^{th}$ \hiddenterm{percentile}percentile, i.e. 25% of the data fall below this value) and the \index{third quartile}third quartile \index{quartile!third quartile} (the $75^{th}$ percentile), and these are often labeled $Q_1$ \index{Q$_1$} and $Q_3$\index{Q$_3$}, respectively.
+The more variable the data, the larger the standard deviation and IQR. The two boundaries of the box are called the \index{first quartile}first quartile \index{quartile!first quartile} (the $25^{th}$ \hiddenterm{percentile}percentile, i.e., 25% of the data fall below this value) and the \index{third quartile}third quartile \index{quartile!third quartile} (the $75^{th}$ percentile), and these are often labeled $Q_1$ \index{Q$_1$} and $Q_3$\index{Q$_3$}, respectively.
 
 \begin{termBox}{\tBoxTitle{Interquartile range (IQR)}
 The IQR\index{interquartile range} is the length of the box in a box plot. 
@@ -480,7 +480,7 @@ A table that summarizes data for two categorical variables in this way is called
 Each value in the table represents the number of times a particular combination of variable outcomes occurred. 
 For example, the value 149 corresponds to the number of emails in the data set that are spam *and* had no number listed in the email. 
 Row and column totals are also included. 
-The \index{row totals}row totals \index{contingency table!row totals} provide the total counts across each row (e.g. $149 + 168 + 50 = 367$), and \index{column totals}column totals \index{contingency table!column totals} are total counts down each column.
+The \index{row totals}row totals \index{contingency table!row totals} provide the total counts across each row (e.g., $149 + 168 + 50 = 367$), and \index{column totals}column totals \index{contingency table!column totals} are total counts down each column.
 
 A table for a single variable is called a \index{frequency table}frequency table. 
 Table \@ref(tab:emailNumberTable) is a frequency table for the `number` variable. 
@@ -512,7 +512,7 @@ table(email[,c("number")]) %>%
 ```
 
 A bar plot is a common way to display a single categorical variable. 
-The left panel of Figure \@ref(fig:emailNumberBarPlot) shows a \index{bar plot}bar plot for the `number` variable. In the right panel, the counts are converted into proportions (e.g. $549/3921=0.140$ for `none`).
+The left panel of Figure \@ref(fig:emailNumberBarPlot) shows a \index{bar plot}bar plot for the `number` variable. In the right panel, the counts are converted into proportions (e.g., $549/3921=0.140$ for `none`).
 
 
 ```{r emailNumberBarPlot, fig.cap = 'Two bar plots of `number`. The left panel shows the counts, and the right panel shows the proportions in each group.', out.width='100%'}
@@ -523,7 +523,7 @@ include_graphics(c("01/figures/emailNumberBarPlot/emailNumberBarPlot.png"))
 
 Table \@ref(tab:rowPropSpamNumber) shows the row proportions for Table \@ref(tab:emailSpamNumberTableTotals). 
 The \indexsub{row proportions}{contingency table!row proportions}row proportions are computed as the counts divided by their row totals. 
-The value 149 at the intersection of `spam` and `none` is replaced by $149/367=0.406$, i.e. 149 divided by its row total, 367. 
+The value 149 at the intersection of `spam` and `none` is replaced by $149/367=0.406$, i.e., 149 divided by its row total, 367. 
 So what does 0.406 represent? 
 It corresponds to the proportion of spam emails in the sample that do not have any numbers.
 
@@ -580,7 +580,7 @@ By noting specific characteristics of an email, a data scientist may be able to 
 One of those characteristics is whether the email contains no numbers, small numbers, or big numbers. 
 Another characteristic is whether or not an email has any HTML content. 
 A contingency table for the `spam` and `format` variables from the \data{email} data set are shown in Table \@ref(tab:emailSpamHTMLTableTotals). 
-Recall that an HTML email is an email with the capacity for special formatting, e.g. bold text. 
+Recall that an HTML email is an email with the capacity for special formatting, e.g., bold text. 
 In Table \@ref(tab:emailSpamHTMLTableTotals), which would be more helpful to someone hoping to classify email as spam or regular email: row or column proportions?
 
 --- 
