@@ -416,22 +416,156 @@ Like the mean, the population values for variance and standard deviation have sp
 The Greek letter $\sigma$ is pronounced *sigma*, listen to the pronunciation [here](https://youtu.be/PStgY5AcEIw?t=72).
 ```
 
-```{r}
+```{r sdRuleForIntRate, fig.cap = "For the `interest_rate` variable, 34 of the 50 loans (68%) had interest rates within 1 standard deviation of the mean, and 48 of the 50 loans (96%) had rates within 2 standard deviations. Usually about 70% of the data are within 1 standard deviation of the mean and 95% within 2 standard deviations, though this is far from a hard rule."}
+box_sd1 <- data.frame(
+  x = c(loan50_interest_rate_mean - loan50_interest_rate_sd,
+        loan50_interest_rate_mean - loan50_interest_rate_sd,
+        loan50_interest_rate_mean + loan50_interest_rate_sd,
+        loan50_interest_rate_mean + loan50_interest_rate_sd),
+  y = c(0, 17, 17, 0)
+)
 
-#box_sd1 <- data.frame(x = loan50_interest_rate_mean - )
+box_sd2 <- data.frame(
+  x = c(loan50_interest_rate_mean - 2*loan50_interest_rate_sd,
+        loan50_interest_rate_mean - 2*loan50_interest_rate_sd,
+        loan50_interest_rate_mean + 2*loan50_interest_rate_sd,
+        loan50_interest_rate_mean + 2*loan50_interest_rate_sd),
+  y = c(0, 17, 17, 0)
+)
+
+box_sd3 <- data.frame(
+  x = c(loan50_interest_rate_mean - 3*loan50_interest_rate_sd,
+        loan50_interest_rate_mean - 3*loan50_interest_rate_sd,
+        loan50_interest_rate_mean + 3*loan50_interest_rate_sd,
+        loan50_interest_rate_mean + 3*loan50_interest_rate_sd),
+  y = c(0, 17, 17, 0)
+)
 
 ggplot(loan50, aes(x = interest_rate)) +
-  geom_dotplot(COL = COL["blue", "full"]) +
-  labs(y = NULL, x = "Interest rate") +
-  scale_x_continuous(labels = label_percent(scale = 1)) +
-  theme(axis.title.y = element_blank(),
+  labs(x = "Interest rate", y = "Frequency") +
+  geom_histogram(breaks = seq(5, 27.5, 2.5), fill = COL["blue", "full"]) +
+  scale_x_continuous(breaks = seq(-5, 25, 5), labels = label_percent(scale = 1, accuracy = 1)) +
+  geom_polygon(data = box_sd1, aes(x = x, y = y), fill = COL["gray", "full"], alpha = 0.3) +
+  geom_polygon(data = box_sd2, aes(x = x, y = y), fill = COL["gray", "full"], alpha = 0.3) +
+  geom_polygon(data = box_sd3, aes(x = x, y = y), fill = COL["gray", "full"], alpha = 0.3)
+```
+
+```{r severalDiffDistWithSdOf1, fig.cap = "Three very different population distributions with the same mean (0) and standard deviation (1)."}
+x1 <- c(rep(-0.975, 1000), rep(0.975, 1000))
+x1 <- (x1-mean(x1))/sd(x1)
+x2 <- rnorm(2000)
+x2 <- (x2-mean(x2))/sd(x2)
+x3 <- qchisq(seq(0.26, 0.8, 0.0005), 4)
+x3 <- (x3-mean(x3))/sd(x3)
+
+dists_mean0_sd1 <- tibble(
+  x = c(x1, x2, x3),
+  group = c(rep("A", length(x1)), rep("B", length(x2)), rep("C", length(x3)))
+)
+
+ggplot(dists_mean0_sd1, aes(x = x)) +
+  geom_histogram(binwidth = 1, fill = COL["blue", "full"]) +
+  facet_grid(group ~ ., scales = "free_y") +
+  theme(# remove y axis
+        axis.title.y = element_blank(),
         axis.text.y  = element_blank(),
-        axis.ticks.y = element_blank()) +
-  geom_polygon(
-    data = data.frame(x = c(loan50_interest_rate_mean - 0.01, loan50_interest_rate_mean + 0.01, loan50_interest_rate_mean), 
-                      y = c(-0.1, -0.1, 0)),
-    aes(x = x, y = y),
-    fill = COL["red", "full"]
-  )
+        axis.ticks.y = element_blank(),
+        # strip facet labels
+        strip.background = element_blank(),
+        strip.text.y = element_blank()) +
+  scale_x_continuous(breaks = seq(-3, 3, 1)) +
+  labs(x = NULL) +
+  geom_polygon(data = data.frame(x = c(-1, -1, 1, 1), y = c(0, 1000, 1000, 0)), 
+               aes(x = x, y = y), fill = COL["gray", "full"], alpha = 0.3) +
+  geom_polygon(data = data.frame(x = c(-2, -2, 2, 2), y = c(0, 1000, 1000, 0)), 
+               aes(x = x, y = y), fill = COL["gray", "full"], alpha = 0.3) +
+  geom_polygon(data = data.frame(x = c(-3, -3, 3, 3), y = c(0, 1000, 1000, 0)), 
+               aes(x = x, y = y), fill = COL["gray", "full"], alpha = 0.3)
+```
+
+```{block2, type="guidedpractice", echo=TRUE}
+A good description of the shape of a distribution should include modality and whether the distribution is symmetric or skewed to one side.
+Using Figure \@ref(fig:severalDiffDistWithSdOf1) as an example, explain why such a description is important.^[Figure \@ref(fig:severalDiffDistWithSdOf1) shows three distributions that look quite different, but all have the same mean, variance, and standard deviation. Using modality, we can distinguish between the first plot (bimodal) and the last two (unimodal). Using skewness, we can distinguish between the last plot (right skewed) and the first two. While a picture, like a histogram, tells a more complete story, we can use modality and shape (symmetry/skew) to characterize basic information about a distribution.]
+```
+
+```{block2, type="example"}
+Describe the distribution of the `interest_rate` variable using the histogram in Figure \@ref(fig:loan50IntRateHist). 
+The description should incorporate the center, variability, and shape of the distribution, and it should also be placed in context. 
+Also note any especially unusual cases.
+---
+The distribution of interest rates is unimodal and skewed to the high end. Many of the rates fall near the mean at 11.57%, and most fall within one standard deviation (5.05%) of the mean. 
+There are a few exceptionally large interest rates in the sample that are above 20%.
+```
+
+In practice, the variance and standard deviation are sometimes used as a means to an end, where the "end" is being able to accurately estimate the uncertainty associated with a sample statistic.
+For example, in Chapter \@ref(inference-foundations) the standard deviation is used in calculations that help us understand how much a sample mean varies from one sample to the next.
+
+### Box plots, quartiles, and the median
+
+A **box plot** summarizes a data set using five statistics while also plotting unusual observations.
+Figure \@ref(fig:loan_int_rate_box_plot_layout) provides a vertical dot plot alongside a box plot of the `interest_rate` variable from the `loan50` data set.
+
+```{r loan_int_rate_box_plot_layout}
+d <- loan50$interest_rate
+
+par(mar = c(0, 4, 0, 1), mgp = c(2.8, 0.55, 0))
+boxPlot(d,
+        ylab = 'Interest Rate',
+        xlim = c(0.3, 3),
+        axes = FALSE,
+        ylim = range(d) + sd(d) * c(-1,1) * 0.2)
+AxisInPercent(2, c(0, pretty(d)))
+
+arrows(2, min(d) + 1, 1.35, min(d), length = 0.08)
+text(2, min(d) + 1, 'lower whisker', pos = 4)
+
+arrows(2, quantile(d, 0.25) + sd(d) / 7,
+       1.35, quantile(d, 0.25),
+       length = 0.08)
+text(2, quantile(d, 0.25) + sd(d)/6.5,
+     expression(Q[1]~~'(first quartile)'), pos = 4)
+
+m <- median(d)
+arrows(2, m + sd(d) / 5, 1.35, m, length = 0.08)
+text(2,m + sd(d) / 4.7, 'median', pos = 4)
+
+q <- quantile(d, 0.75)
+arrows(2, q + sd(d) / 4, 1.35, q, length = 0.08)
+text(2, q + sd(d) / 3.8,
+     expression(Q[3]~~'(third quartile)'), pos = 4)
+
+arrows(2, rev(sort(d))[3] - sd(d) / 4,
+       1.35, rev(sort(d))[3], length = 0.08)
+text(2, rev(sort(d))[3] - sd(d) / 3.8,
+     'upper whisker', pos = 4)
+
+y <- quantile(d, 0.75) + 1.5 * IQR(d)
+arrows(2, y - 0.1 * sd(d),
+       1.35, y, length = 0.08)
+lines(c(0.72, 1.28), rep(y, 2),
+      lty = 3, col = '#00000066')
+text(2, y - 0.1 * sd(d),
+     'max whisker reach', pos = 4)
+
+m <- rev(tail(sort(d), 5))
+s <- m[1] - 0.3 * sd(m)
+arrows(2, s, 1.1, m[1] - 0.2, length = 0.08)
+arrows(2, s, 1.1, m[2] + 0.3, length = 0.08)
+text(2, s, 'suspected outliers', pos = 4)
+
+pt.jitter <- 0.05
+nco <- 50
+cutoffs <- seq(0.9 * min(d), max(d), length.out = nco)
+for (i in 2:nco) {
+  these <- which(cutoffs[i - 1] < d & d <= cutoffs[i])
+  lt <- length(these)
+  if (lt == 0) {
+    next
+  }
+  x <- pt.jitter * (1:lt)
+  x <- x - mean(x)
+  points(rep(0.4, lt) + x, d[these],
+      col = rep(COL[1, 3], 25), pch = 19)
+}
 ```
 
