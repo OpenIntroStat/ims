@@ -95,17 +95,17 @@ terms_chp_2 <- c(terms_chp_2, "dot plot")
 ```
 
 ```{r loan-int-rate-dotplot, fig.cap="A dot plot of `interest_rate` for the `loan50` dataset. The rates have been rounded to the nearest percent in this plot, and the distribution's mean is shown as a red triangle."}
-mean_interest_rate <- mean(loan50$interest_rate) / 100
+loan50_interest_rate_mean <- mean(loan50$interest_rate)
 
-ggplot(loan50, aes(x = interest_rate/100)) +
+ggplot(loan50, aes(x = interest_rate)) +
   geom_dotplot(fill = COL["blue", "full"], color = COL["blue", "full"]) +
   labs(x = "Interest rate") +
-  scale_x_continuous(labels = percent_format()) +
+  scale_x_continuous(labels = label_percent(scale = 1)) +
   theme(axis.title.y = element_blank(),
         axis.text.y  = element_blank(),
         axis.ticks.y = element_blank()) +
   geom_polygon(
-    data = data.frame(x = c(mean_interest_rate - 0.01, mean_interest_rate + 0.01, mean_interest_rate), 
+    data = data.frame(x = c(loan50_interest_rate_mean - 1, loan50_interest_rate_mean + 1, loan50_interest_rate_mean), 
                       y = c(-0.1, -0.1, 0)),
     aes(x = x, y = y),
     fill = COL["red", "full"]
@@ -119,12 +119,8 @@ To compute the mean interest rate, we add up all the interest rates and divide b
 terms_chp_2 <- c(terms_chp_2, "mean", "average", "distribution")
 ```
 
-```{r}
-loan50_mean_intrest_rate <- mean(loan50$interest_rate)
-```
-
 The sample mean is often labeled $\bar{x}$.
-The letter $x$ is being used as a generic placeholder for the variable of interest and the bar over the $x$ communicates we're looking at the average interest rate, which for these 50 loans is `r round(loan50_mean_intrest_rate, 2)`%.
+The letter $x$ is being used as a generic placeholder for the variable of interest and the bar over the $x$ communicates we're looking at the average interest rate, which for these 50 loans is `r round(loan50_interest_rate_mean, 2)`%.
 It's useful to think of the mean as the balancing point of the distribution, and it's shown as a triangle in Figure \@ref(fig:loan-int-rate-dotplot).
 
 ```{block2, type="onebox", echo=TRUE}
@@ -158,7 +154,7 @@ The average interest rate across all loans in the population can be estimated us
 
 ---
   
-The sample mean, `r round(loan50_mean_intrest_rate, 2)`, provides a rough estimate of $\mu_x$. While it is not perfect, this is our single best guess **point estimate**\index{point estimate} of the average interest rate of all the loans in the population under study. In Chapter \@ref(inference-foundations) and beyond, we will develop tools to characterize the accuracy of point estimates, like the sample mean. As you might have guessed, point estimates based on larger samples tend to be more accurate than those based on smaller samples.
+The sample mean, `r round(loan50_interest_rate_mean, 2)`, provides a rough estimate of $\mu_x$. While it is not perfect, this is our single best guess **point estimate**\index{point estimate} of the average interest rate of all the loans in the population under study. In Chapter \@ref(inference-foundations) and beyond, we will develop tools to characterize the accuracy of point estimates, like the sample mean. As you might have guessed, point estimates based on larger samples tend to be more accurate than those based on smaller samples.
 ```
 
 ```{r include=FALSE}
@@ -215,10 +211,227 @@ If we completed these steps with the \data{county} data, we would find that the 
 Had we computed the *simple* mean of per capita income across counties, the result would have been just $26,093!
 
 This example used what is called a **weighted mean**.
-For more information on this topic, check out the following online supplement regarding [weighted means](https://www.openintro.org/go/?id=stat_extra_weighted_mean).
+For more information on this topic, check out the following online supplement regarding [weighted means](openintro.org/d?file=stat_wtd_mean).
 ```
 
 
 ```{r include=FALSE}
 terms_chp_2 <- c(terms_chp_2, "weighted mean")
 ```
+
+### Histograms and shape {#histograms}
+
+Dot plots show the exact value for each observation.
+This is useful for small data sets, but they can become hard to read with larger samples. 
+Rather than showing the value of each observation, we prefer to think of the value as belonging to a *bin*.
+For example, in the `loan50` data set, we created a table of counts for the number of loans with interest rates between 5.0% and 7.5%, then the number of loans with rates between 7.5% and 10.0%, and so on.
+Observations that fall on the boundary of a bin (e.g. 10.00%) are allocated to the lower bin.
+This tabulation is shown in Table \@ref(tab:binnedIntRateAmountTable).
+These binned counts are plotted as bars in Figure \@ref(fig:loan50IntRateHist) into what is called a **histogram**, which resembles a more heavily binned version of the stacked dot plot shown in Figure \@ref(fig:loan-int-rate-dotplot).
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "histogram")
+```
+
+```{r binnedIntRateAmountTable}
+loan50 %>%
+  mutate(interest_rate_cat = cut(interest_rate, breaks = seq(5, 27.5, 2.5))) %>%
+  count(interest_rate_cat, name = "Count") %>%
+  separate(interest_rate_cat, into = c("lower", "upper"), sep = ",") %>%
+  mutate(
+    lower = str_remove(lower, "\\("),
+    upper = str_remove(upper, "]"),
+    lower = paste0(lower, "%"),
+    upper = paste0(upper, "%")
+  ) %>%
+  unite("Interest rate", lower:upper, sep = " - ") %>%
+  pivot_wider(names_from = `Interest rate`, values_from = Count) %>%
+  bind_cols(tibble("Interest rate" = "Count"), .) %>%
+  kable(align = "lccccccccc", caption = "Counts for the binned `interest_rate` data.")
+```
+
+```{r loan50IntRateHist, fig.cap = "A histogram of `interest_rate`. This distribution is strongly skewed to the right."}
+ggplot(loan50, aes(x = interest_rate)) +
+  geom_histogram(breaks = seq(5, 27.5, 2.5), fill = COL["blue", "full"]) +
+  labs(x = "Interest rate", y = "Frequency") +
+  scale_x_continuous(breaks = seq(5, 25, 5), labels = label_percent(scale = 1, accuracy = 1))
+```
+
+Histograms provide a view of the **data density**.
+Higher bars represent where the data are relatively more common. 
+For instance, there are many more loans with rates between 5% and 10% than loans with rates between 20% and 25% in the data set.
+The bars make it easy to see how the density of the data changes relative to the interest rate.
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "data density")
+```
+
+Histograms are especially convenient for understanding the shape of the data distribution.
+Figure \@ref(fig:loan50IntRateHist) suggests that most loans have rates under 15\%, while only a handful of loans have rates above 20%.
+When data trail off to the right in this way and has a longer right **tail**, the shape is said to be **right skewed**^[Other ways to describe data that are right skewed:
+skewed to the right, skewed to the high end, or skewed to the positive end.]
+
+Data sets with the reverse characteristic -- a long, thinner tail to the left -- are said to be **left skewed**.
+We also say that such a distribution has a long left tail.
+Data sets that show roughly equal trailing off in both directions are called **symmetric**.
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "tail", "right skewed", "left skewed", "symmetric")
+```
+
+```{block2, type="onebox"}
+When data trail off in one direction, the distribution has a **long tail**.
+If a distribution has a long left tail, it is left skewed.
+If a distribution has a long right tail, it is right skewed.
+```
+
+```{block2, type="guidedpractice"}
+Besides the mean (since it was labeled), what can you see in the dot plot in Figure \@ref(fig:loan-int-rate-dotplot) that you cannot see in the histogram in Figure \@ref(fig:loan50IntRateHist)?^[The interest rates for individual loans.]
+```
+
+In addition to looking at whether a distribution is skewed or symmetric, histograms can be used to identify modes.
+A **mode** is represented by a prominent peak in the distribution.
+There is only one prominent peak in the histogram of `interest_rate`.
+
+A definition of *mode* sometimes taught in math classes is the value with the most occurrences in the data set.
+However, for many real-world data sets, it is common to have *no* observations with the same value in a data set, making this definition impractical in data analysis.
+
+Figure \@ref(fig:singleBiMultiModalPlots) shows histograms that
+have one, two, or three prominent peaks.
+Such distributions are called **unimodal**, **bimodal**, and **multimodal**, respectively.
+Any distribution with more than 2~prominent peaks is called multimodal.
+Notice that there was one prominent peak in the unimodal distribution with a second less prominent peak that was not counted since it only differs from its neighboring bins by a few observations.
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "unimodal", "bimodal", "multimodal")
+```
+
+```{r singleBiMultiModalPlots, fig.cap = "Counting only prominent peaks, the distributions are (left to right) unimodal, bimodal, and multimodal. Note that the left plot is unimodal because we are counting prominent peaks, not just any peak.", fig.asp=0.33, out.width = "90%", warning=FALSE}
+df_modes <- tibble(
+  uni   = rchisq(65, 6),
+  bi    = c(rchisq(25, 5.8), rnorm(40, 20, 2)),
+  multi =  c(rchisq(25, 3), rnorm(25, 15), rnorm(15, 25, 1.5))
+)
+
+p_uni   <- ggplot(df_modes, aes(x = uni)) + 
+  geom_histogram(binwidth = 2, fill = COL["blue", "full"]) +
+  labs(x = NULL, y = NULL) +
+  ylim(0, 23) +
+  xlim(0, 30)
+p_bi    <- ggplot(df_modes, aes(x = bi)) + 
+  geom_histogram(binwidth = 2, fill = COL["blue", "full"]) +
+  labs(x = NULL, y = NULL) +
+  ylim(0, 23) +
+  xlim(0, 30)
+p_multi <- ggplot(df_modes, aes(x = multi)) + 
+  geom_histogram(binwidth = 2, fill = COL["blue", "full"]) +
+  labs(x = NULL, y = NULL) +
+  ylim(0, 23) +
+  xlim(0, 30)
+
+p_uni + p_bi + p_multi
+```
+
+```{block2, type="example", echo=TRUE}
+Figure \@ref(loan50IntRateHist) reveals only one prominent mode in the interest rate. Is the distribution unimodal, bimodal, or multimodal?^[Unimodal Remember that *uni* stands for 1 (think *uni*cycles). Similarly, *bi* stands for 2 (think *bi*cycles). We are hoping a *multi*cycle will be invented to complete this analogy.]
+```
+
+```{block2, type="guidedpractice", echo=TRUE}
+Height measurements of young students and adult teachers at a K-3 elementary school were taken.
+How many modes would you expect in this height data set?^[There might be two height groups visible in the data set: one of the students and one of the adults. That is, the data are probably bimodal.].
+```
+
+Looking for modes isn't about finding a clear and correct answer about the number of modes in a distribution, which is why *prominent*\index{prominent} is not rigorously defined in this book. 
+The most important part of this examination is to better understand your data.
+
+### Variance and standard deviation (#variance-sd)
+
+The mean was introduced as a method to describe the center of a data set, and **variability**\index{variability} in the data is also important.
+Here, we introduce two measures of variability: the variance and the standard deviation.
+Both of these are very useful in data analysis, even though their formulas are a bit tedious to calculate by hand.
+The standard deviation is the easier of the two to comprehend, and it roughly describes how far away the typical observation is from the mean.
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "variability")
+```
+
+We call the distance of an observation from its mean its **deviation**. Below are the deviations for the $1^{st}$, $2^{nd}$, $3^{rd}$, and $50^{th}$ observations in the `interest_rate` variable:
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "deviation")
+```
+
+```{r include=FALSE}
+loan50_interest_rate_deviation <- round(loan50$interest_rate - loan50_interest_rate_mean, 2)
+loan50_interest_rate_deviation_squared <- round(loan50_interest_rate_deviation^2, 2)
+loan50_interest_rate_var <- var(loan50$interest_rate)
+loan50_interest_rate_sd <- sd(loan50$interest_rate)
+```
+
+\[ x_1 - \bar{x} = `r round(loan50$interest_rate[1], 2)` - `r round(loan50_interest_rate_mean, 2)` = `r loan50_interest_rate_deviation[1]` \]
+\[ x_2 - \bar{x} = `r round(loan50$interest_rate[2], 2)` - `r round(loan50_interest_rate_mean, 2)` = `r loan50_interest_rate_deviation[2]` \]
+\[ x_3 - \bar{x} = `r round(loan50$interest_rate[3], 2)` - `r round(loan50_interest_rate_mean, 2)` = `r loan50_interest_rate_deviation[3]` \]
+\[ \vdots \]
+\[ x_{50} - \bar{x} = `r round(loan50$interest_rate[50], 2)` - `r round(loan50_interest_rate_mean, 2)` = `r loan50_interest_rate_deviation[50]` \]
+
+If we square these deviations and then take an average, the result is equal to the sample **variance**, denoted by $s^2$:
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "variance")
+```
+
+\[ s^2 = \frac{(`r loan50_interest_rate_deviation[1]`)^2 + (`r loan50_interest_rate_deviation[2]`)^2 + (`r loan50_interest_rate_deviation[3]`)^2 + \cdots + (`r loan50_interest_rate_deviation[50]`)^2}{50 - 1} = \frac{`r loan50_interest_rate_deviation_squared[1]` + `r loan50_interest_rate_deviation_squared[2]` + \cdots + `r loan50_interest_rate_deviation_squared[50]`}{49} = `r round(loan50_interest_rate_var, 2)` \]
+
+We divide by $n - 1$, rather than dividing by $n$, when computing a sample's variance; there's some mathematical nuance here, but the end result is that doing this makes this statistic slightly more reliable and useful.
+
+Notice that squaring the deviations does two things.
+First, it makes large values relatively much larger.
+Second, it gets rid of any negative signs.
+
+The **standard deviation** is defined as the square root of the variance:
+
+\[ s = \sqrt{`r round(loan50_interest_rate_var, 2)`} = `r round(loan50_interest_rate_sd, 2)` \]
+
+While often omitted, a subscript of $_x$ may be added to the variance and standard deviation,
+i.e. $s_x^2$ and $s_x^{}$, if it is useful as a reminder that these are the variance and standard deviation of the observations represented by $x_1$, $x_2$, ..., $x_n$.
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "standard deviation")
+```
+
+```{block2, type="onebox", echo=TRUE}
+**Variance and standard deviation.**
+The variance is the average squared distance from the mean.
+The standard deviation is the square root of the variance.
+The standard deviation is useful when considering how far the data are distributed from the mean.
+
+The standard deviation represents the typical deviation of observations from the mean.
+Usually about 70% of the data will be within one standard deviation of the mean and about 95\% will be within two standard deviations.
+However, these percentages are not strict rules.
+```
+
+Like the mean, the population values for variance and standard deviation have special symbols: $\sigma^2$ for the variance and $\sigma$ for the standard deviation.
+
+```{block2, type="pronunciation", echo=TRUE}
+The Greek letter $\sigma$ is pronounced *sigma*, listen to the pronunciation [here](https://youtu.be/PStgY5AcEIw?t=72).
+```
+
+```{r}
+
+#box_sd1 <- data.frame(x = loan50_interest_rate_mean - )
+
+ggplot(loan50, aes(x = interest_rate)) +
+  geom_dotplot(COL = COL["blue", "full"]) +
+  labs(y = NULL, x = "Interest rate") +
+  scale_x_continuous(labels = label_percent(scale = 1)) +
+  theme(axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) +
+  geom_polygon(
+    data = data.frame(x = c(loan50_interest_rate_mean - 0.01, loan50_interest_rate_mean + 0.01, loan50_interest_rate_mean), 
+                      y = c(-0.1, -0.1, 0)),
+    aes(x = x, y = y),
+    fill = COL["red", "full"]
+  )
+```
+
