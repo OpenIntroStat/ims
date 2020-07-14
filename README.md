@@ -1,20 +1,22 @@
-[![Netlify Status](https://api.netlify.com/api/v1/badges/2afbdb92-43e5-415b-b3dd-61a4d9168b0f/deploy-status)](https://app.netlify.com/sites/isrs2/deploys)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/2afbdb92-43e5-415b-b3dd-61a4d9168b0f/deploy-status)](https://app.netlify.com/sites/openintro-ims/deploys)
 
-# Introduction to Statistics with Randomization and Simulation
+# Introduction to Modern Statistics
 
 **THIS IS A WORK IN PROGRESS!!!**
 
-## Where did the 1st edition files go?
+## Where did Intoduction to Statistics with Randomization and Simulation go?
 
-We're currently working on 2nd edition of OpenIntro - Introduction to Statistics with Randomization and Simulation. If you're looking for the source files for the 1st edition of the book, please download the zipped release [here](https://github.com/OpenIntroStat/randomization-and-simulation/releases).
+As we're working on the 2nd edition of this book, we realized that we weren't too enamored by the name, and decided to rename the book to "Introduction to Modern Statistics" to better reflect the content covered in the book, which features simulation-based inference but also many non-inference topics!
 
-## What's planned for the 2nd edition?
+If you're looking for the source files for the 1st edition of OpenIntro - Introduction to Statistics with Randomization and Simulation, please download the zipped release [here](https://github.com/OpenIntroStat/randomization-and-simulation/releases).
+
+## What's planned for Introduction to Modern Statistics?
 
 Some restructuring, some reordering, and some new content with better treatment of randomization and simulation throughout the book.
 
 Tentative outline:
 
-### [Chp 1. Introduction to data](https://isrs2.netlify.app/intro-to-data.html)
+### [Chp 1. Introduction to data](https://openintro-ims.netlify.app/intro-to-data.html)
 
 *Planned draft completion date: 13 June 2020* :heavy_check_mark:
 
