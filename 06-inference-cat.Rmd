@@ -5,9 +5,6 @@ The content in this chapter is currently just placeholder. We will remove this b
 ```
 
 
-```{r include=FALSE}
-terms_chp_6 <- c("")
-```
 
 ## Inference for a single proportion {#single-prop}
 
@@ -18,6 +15,11 @@ and hypothesis tests.
 In this section, we'll do a review of these topics
 and also how to choose an appropriate sample size
 when collecting data for single proportion contexts.
+
+Note that there is only one variable being measured in a study which focuses on one proportion. 
+For each observational unit, the single variable is measured as either a success or failure (e.g., "surgical complication" vs. "no surgical complication"). 
+Because the nature of the research question at hand focuses on only a single variable, there is not a way to randomize the variable across a different (explanatory) variable. 
+For this reason, we will not use randomization as an analysis tool when focusing on a single proportion.  Instead, we will apply bootstrapping techniques to test a given hypothesis, and we will also revisit the associated mathematical models.
 
 ### One proportion: bootstrap under $H_0$ {#one-prop-null-boot}
 
@@ -67,9 +69,14 @@ The p-value is computed based on the null distribution, which is the distributio
 
 We want to identify the sampling distribution of the test statistic ($\hat{p}$) if the null hypothesis was true. In other words, we want to see how the sample proportion changes due to chance alone. Then we plan to use this information to decide whether there is enough evidence to reject the null hypothesis.
 
-Under the null hypothesis, 10% of liver donors have complications during or after surgery. Suppose this rate was really no different for the consultant's clients. If this was the case, we could *simulate* 62 clients to get a sample proportion for the complication rate from the null distribution.
+Under the null hypothesis, 10% of liver donors have complications during or after surgery. Suppose this rate was really no different for the consultant's clients. If this was the case, we could *simulate* 62 clients to get a sample proportion for the complication rate from the null distribution.  Simulating observations using a hypothesized null parameter value is often called a **parametric bootstrap simulation**\index{parametric bootstrap}.
 
-Each client can be simulated using a single 10-sided die with one red side and nine black sides. Rolling the die once is one way of simulating the chance a patient has a complication *if the true complication rate is 10%* for the data. If we roll it 62 times and compute the proportion of patients with complications in the simulation, $\hat{p}_{sim}$, then this sample proportion is exactly a sample from the null distribution.
+
+```{r include=FALSE}
+terms_chp_6 <- c("parametric bootstrap")
+```
+
+Each client can be simulated using a single 10-sided die with one red side and nine black sides. Rolling the die once is one way of simulating the chance a patient has a complication *if the true complication rate is 10%* for the data. If we roll the die 62 times and compute the proportion of patients with complications in the simulation, $\hat{p}_{sim}$, then this sample proportion is exactly a sample from the null distribution.
 
 An undergraduate student was paid $2 to complete this simulation. There were 5 simulated cases with a complication and 57 simulated cases without a complication, i.e., $\hat{p}_{sim} = 5/62 = 0.081$.
 
@@ -120,12 +127,14 @@ Does the conclusion in the previous Guided Practice imply there is no real assoc
 
 
 ```{block2, type="onebox", echo = TRUE}
+**Null distribution of $\hat{p}$ with bootstrap simulation**
+  
 The p-value is always derived by analyzing the null distribution of the test statistic. The normal model poorly approximates the null distribution for $\hat{p}$ when the success-failure condition is not satisfied. As a substitute, we can generate the null distribution using simulated sample proportions ($\hat{p}_{sim}$) and use this distribution to compute the tail area, i.e., the p-value.
 ```
 
 We continue to use the same rule as before when computing the p-value for a two-sided test: double the single tail area, which remains a reasonable approach even when the sampling distribution is asymmetric. However, this can result in p-values larger than 1 when the point estimate is very near the mean in the null distribution; in such cases, we write that the p-value is 1. Also, very large p-values computed in this way (e.g., 0.85), may also be slightly inflated.
 
-The previous Guided Practice said the p-value is *estimated*. It is not exact because the simulated null distribution itself is not exact, only a close approximation. However, we can generate an exact null distribution and p-value using the binomial model which is not covered in this text.
+The previous Guided Practice said the p-value is *estimated*. It is not exact because the simulated null distribution itself is not exact, only a close approximation. However, we can generate an exact null distribution and p-value using the binomial model which is not covered in the Appendix, Section \@ref(probability).
 
 <!--
 #### Generating the exact null distribution and p-value  {-} {#exactNullDistributionUsingBinomialModel}
@@ -170,7 +179,7 @@ large.
 
 ```{block2, type = "onebox", echo = TRUE}
 **Sampling distribution of
-    $\pmb{\hat{\MakeLowercase{p}}}$}**  
+    $\hat{p}$**  
 
   The sampling distribution for $\hat{p}$ based on
   a sample of size $n$ from a population with a true
@@ -338,22 +347,21 @@ Construct a 95% confidence interval for $p$,
 ```
 
 ```{block2, type = "onebox", echo = TRUE}
-**Constructing a confidence interval for a proportion**
-  There are three steps to constructing a confidence
+**Constructing a confidence interval for a single proportion**
+
+There are three steps to constructing a confidence
   interval for $p$.
-  \begin{itemize}
-  \setlength{\itemsep}{0mm}
-  \item Check independence and the success-failure condition
+
+1. Check independence and the success-failure condition
       using $\hat{p}$.
       If the conditions are met, the sampling distribution
       of $\hat{p}$ may be well-approximated by the normal model.
-  \item Construct the standard error using $\hat{p}$
+2. Construct the standard error using $\hat{p}$
       in place of $p$ in the standard error formula.
-  \item Apply the general confidence interval formula.
-  \end{itemize}
+3. Apply the general confidence interval formula.
 ```
 
-\noindent%
+
 For additional one-proportion confidence interval examples,
 see Section \@ref(ConfidenceIntervals).
 
@@ -684,11 +692,709 @@ of error of 0.04 with 95% confidence?^[We complete the same computations as befo
 
 ## Inference for the difference of two proportions {#diff-two-prop}
 
+
+We would like to extend the methods from
+Section \@ref(single-prop)
+to apply confidence intervals and hypothesis tests
+to differences in population proportions that come from two groups:
+\mbox{$p_1 - p_2$}.
+%We consider three examples.
+%In the first, we compare the utility of a blood thinner
+%for heart attack patients.
+%In the second application, we examine the efficacy of
+%mammograms in reducing deaths from breast cancer.
+%In the last example, a quadcopter company weighs whether
+%to switch to a higher quality manufacturer of rotor blades.
+
+In our investigations, we'll identify a reasonable
+point estimate of $p_1 - p_2$ based on the sample,
+and you may have already guessed its form:
+$\hat{p}_1 - \hat{p}_2$.
+\index{point estimate!difference of proportions}%
+Then we'll look at the inferential analysis in three different ways: using a randomization test, applying bootstrapping for interval estimates, and, if
+we verify that the point estimate
+can be modeled using a normal distribution,
+we compute the estimate's standard error, and
+we apply our mathematical framework.
+
+```{r include=FALSE}
+terms_chp_6 <- c(terms_chp_6, "point estimate")
+```
+
 ### Two proportions: randomization test
+
+malaria example?
+
+We already did the randomization structure.  one quick example here then an outline which represents the structure of the test (?).
 
 ### Two proportions: bootstrap
 
 ### Two proportions: mathematical model 
+
+#### Sampling distribution of the difference of two proportions {-}
+
+Like with $\hat{p}$, the difference of two sample
+proportions $\hat{p}_1 - \hat{p}_2$ can be modeled
+using a normal distribution when certain conditions
+are met.
+First, we require a broader independence condition,
+and secondly,
+the success-failure condition must be met by both groups.
+
+```{block2, type = "onebox", echo = TRUE}
+**Conditions for the sampling distribution of $\hat{p}_1 -\hat{p}_2$ to be normal**
+  
+The difference $\hat{p}_1 - \hat{p}_2$ can be modeled
+  using a normal distribution when
+
+1. Independence, extended.  
+    The data are independent within and between
+    the two groups.
+    Generally this is satisfied if the data come
+    from two independent random samples
+    or if the data come from a randomized experiment.
+2. *Success-failure condition.*
+    The success-failure condition holds for both
+    groups, where we check successes and failures
+    in each group separately.
+
+    
+  When these conditions are satisfied,
+  the standard error of $\hat{p}_1 - \hat{p}_2$ is
+
+  \begin{eqnarray*}
+  SE = \sqrt{\frac{p_1(1-p_1)}{n_1} + \frac{p_2(1-p_2)}{n_2}}
+  \end{eqnarray*}
+  where $p_1$ and $p_2$ represent the population proportions,
+  and $n_1$ and $n_2$ represent the sample sizes.
+```
+
+\index{standard error (SE)!difference in proportions}
+
+```{block2, type = "todo", echo = TRUE}
+SE reference above?
+    \label{seForDiffOfProp}
+```
+
+```{r include=FALSE}
+terms_chp_6 <- c(terms_chp_6, "standard error for difference in proportions")
+```
+
+
+
+#### Confidence intervals for $p_1 - p_2$ {-}
+
+<!--
+{Confidence intervals for $\pmb{p_1 - p_2}$}
+-->
+
+\index{data!CPR and blood thinner|(}
+
+We can apply the generic confidence interval formula
+for a difference of two proportions,
+where we use $\hat{p}_1 - \hat{p}_2$ as the point
+estimate and substitute the $SE$ formula:
+\begin{align*}
+&\text{point estimate} \ \pm\  z^{\star} \times SE
+&&\to
+&&\hat{p}_1 - \hat{p}_2 \ \pm\ 
+    z^{\star} \times
+   \sqrt{\frac{p_1(1-p_1)}{n_1} + \frac{p_2(1-p_2)}{n_2}}
+\end{align*}
+We can also follow the same
+Prepare, Check, Calculate, Conclude steps for
+computing a confidence interval
+or completing a hypothesis test.
+The details change a little,
+but the general approach remain the same.
+Think about these steps when you apply statistical methods.
+
+```{block2, type = "onebox", echo = TRUE}
+**Confidence interval for a difference of two proportions**
+  Once you've determined a confidence interval for the
+  difference of two proportions would be helpful for an
+  application, there are four steps to constructing the interval:
+
+* **Prepare.**
+      Identify the sample proportions and sample sizes
+      for each of the two groups,
+      determine what confidence level you wish to use.
+* **Check.**
+      Verify the conditions to ensure each sample
+      proportion is nearly normal.
+      The success-failure condition should be checked
+      for each group.
+* **Calculate.**
+      If the conditions hold, compute $SE$,
+      find $z^{\star}$, and construct the interval.
+* **Conclude.**
+      Interpret the confidence interval in the context
+      of the problem.
+```
+
+
+```{block2, type = "example", echo = TRUE}
+We consider an experiment for patients
+    who underwent cardiopulmonary resuscitation (CPR)
+    for a heart attack and were
+    subsequently admitted to a
+    hospital.
+    These patients were randomly divided into a treatment
+    group where they received a blood thinner or the control
+    group where they did not receive a blood thinner.
+    The outcome variable of interest was whether the
+    patients survived for at least 24 hours.
+    The results are shown in
+    Figure \@ref(tab:resultsForCPRStudyInSmallSampleSection).
+    Check whether we can model the difference in
+    sample proportions using the normal distribution.
+
+---
+      
+  We first check for independence:
+  since this is a randomized experiment,
+  this condition is satisfied.
+  
+  Next, we check the success-failure condition for
+  each group.
+  We have at least 10 successes and 10 failures in
+  each experiment arm (11, 14, 39, 26),
+  so this condition is also satisfied.
+
+  With both conditions satisfied,
+  the difference in sample proportions can be
+  reasonably modeled using a normal distribution
+  for these data.
+```
+
+```{r resultsForCPRStudyInSmallSampleSection}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3,
+ "Control", "11", "39", "50",
+ "Treatment", "14", "26", "40",
+ "Total", "25", "65", "90"
+)
+
+temptbl %>%
+ kable(caption = "Results for the CPR study.
+    Patients in the treatment group were given
+    a blood thinner, and patients in the control
+    group were not.", 
+    col.names = c("", "Survived", "Died", "Total")) %>%
+ kable_styling()
+```
+
+```{block2, type = "example", echo = TRUE}
+    Create and interpret a 90% confidence interval of the
+    difference for the survival rates in the CPR study.
+
+---
+      
+  We'll use $p_t$ for the survival
+  rate in the treatment group and $p_c$ for the control
+  group:
+  \begin{align*}
+  \hat{p}_{t} - \hat{p}_{c}
+    = \frac{14}{40} - \frac{11}{50}
+    = 0.35 - 0.22
+    = 0.13
+  \end{align*}
+  We use the standard error formula previously provided.
+  As with the one-sample proportion case,
+  we use the sample estimates of each proportion
+  in the formula in the confidence interval context:
+  \begin{align*}
+  SE \approx \sqrt{\frac{0.35 (1 - 0.35)}{40} +
+      \frac{0.22 (1 - 0.22)}{50}}
+    = 0.095
+  \end{align*}
+  For a 90% confidence interval, we use $z^{\star} = 1.65$:
+  \begin{align*}
+  \text{point estimate} \ \pm\ z^{\star} \times SE
+    \quad \to \quad 0.13 \ \pm\ 1.65 \times  0.095
+    \quad \to \quad (-0.027, 0.287)
+  \end{align*}
+  We are 90% confident that blood thinners have
+  a difference of -2.7% to +28.7% percentage point
+  impact on survival rate for patients who are like
+  those in the study.
+  Because 0% is contained in the interval,
+  we do not have enough information to say
+  whether blood thinners help or harm
+  heart attack patients who have been admitted after
+  they have undergone CPR.
+```
+
+\index{data!CPR and blood thinner|)}
+
+
+
+```{block2, type = "guidedpractice", echo = TRUE}
+A 5-year experiment
+was conducted to evaluate the effectiveness
+of fish oils on reducing cardiovascular events,
+where each subject was randomized into one of two
+treatment groups.
+We'll consider heart attack outcomes in the patients listed in the table below:
+
+Create a 95% confidence interval for the effect of fish oils
+on heart attacks for patients who are well-represented by
+those in the study.
+Also interpret the interval in the context of the
+study.^[Because the patients were randomized,
+  the subjects are independent, both within and between
+  the two groups.
+  The success-failure condition is also met for both
+  groups as all counts are at least 10.
+  This satisfies the conditions necessary to model
+  the difference in proportions using a normal distribution.
+
+  Compute the sample proportions
+  ($\hat{p}_{\text{fish oil}} = 0.0112$,
+    $\hat{p}_{\text{placebo}} = 0.0155$),
+  point estimate of the difference ($0.0112 - 0.0155 = -0.0043$),
+  and standard error
+  ($SE = \sqrt{\frac{0.0112 \times 0.9888}{12933} +
+      \frac{0.0155 \times 0.9845}{12938}}
+    = 0.00145$).
+  Next, plug the values into the general formula for
+  a confidence interval, where we'll use a 95%
+  confidence level with $z^{\star} = 1.96$:
+  \begin{align*}
+  -0.0043 \pm 1.96 \times 0.00145
+      \quad \to \quad
+      (-0.0071, -0.0015)
+  \end{align*}
+  We are 95% confident that fish oils decreases
+  heart attacks by
+  0.15 to 0.71 percentage points
+  (off of a baseline of about 1.55%)
+  over a 5-year period for subjects who are similar
+  to those in the study.
+  Because the interval is entirely below 0,
+  the data provide strong evidence
+  that fish oil supplements reduce heart attacks
+  in patients like those in the study.]
+```
+
+```{r}
+fish_oil_18[[3]] %>% 
+  data.frame() %>%
+  mutate(group = c("fish oil", "placebo")) %>%
+  mutate(total = myocardioal_infarction + no_event) %>%
+  column_to_rownames(var = "group") %>%
+ kable(caption = "Results for the study on n-3 fatty acid supplement and related health benefits.", 
+    col.names = c( "heart attack", "no event", "Total"),
+    row.names = TRUE) %>%
+ kable_styling()
+```
+
+#### Hypothesis tests for the difference of two proportions {-}
+
+\index{data!mammography|(}
+\index{data!breast cancer|(}
+
+A mammogram is an X-ray procedure used to check for
+breast cancer.
+Whether mammograms should be used is part of a
+controversial discussion, and it's the topic of our
+next example where we learn about 2-proportion
+hypothesis tests when $H_0$ is $p_1 - p_2 = 0$
+(or equivalently, $p_1 = p_2$).
+
+A 30-year study was conducted with nearly 90,000 female participants. During a 5-year screening period, each woman was randomized to one of two groups: in the first group, women received regular mammograms to screen for breast cancer, and in the second group, women received regular non-mammogram breast cancer exams. No intervention was made during the following 25 years of the study, and we'll consider death resulting from breast cancer over the full 30-year period. Results from the study are summarized in Figure \@ref(tab:mammogramStudySummaryTable).
+
+If mammograms are much more effective than non-mammogram breast cancer exams, then we would expect to see additional deaths from breast cancer in the control group. On the other hand, if mammograms are not as effective as regular breast cancer exams, we would expect to see an increase in breast cancer deaths in the mammogram group.
+
+
+```{r mammogramStudySummaryTable}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2,
+ "Mammogram", "500", "44,425",
+ "Control", "505", "44,405"
+)
+
+temptbl %>%
+ kable(caption = "Summary results for breast cancer study.", 
+    col.names = c( "", "Yes", "No")) %>%
+ add_header_above( c("", "Death from breast cancer?" = 2)) %>%
+ kable_styling()
+```
+
+
+```{block2, type = "guidedpractice", echo = TRUE}
+Is this study an experiment or an observational study?^[This is an experiment. Patients were randomized
+    to receive mammograms or a standard breast cancer exam.
+    We will be able to make causal conclusions based on this study.]
+```
+
+
+```{block2, type = "guidedpractice", echo = TRUE}
+Set up hypotheses to test whether there was a difference
+in breast cancer deaths in the mammogram and control groups.^[$H_0$: the breast cancer death rate for patients
+    screened using mammograms is the same as the breast cancer
+    death rate for patients in the control,
+    $p_{mgm} - p_{ctrl} = 0$.  
+    $H_A$: the breast cancer death rate for patients screened
+    using mammograms is different than the breast cancer death
+    rate for patients in the control,
+    $p_{mgm} - p_{ctrl} \neq 0$.]
+```
+
+Using the previous example,
+we will check the conditions for using a normal distribution to
+analyze the results of the study.
+The details are very similar to that of confidence intervals.
+However, when the null hypothesis is that $p_1 - p_2 = 0$,
+we use a special proportion called the
+**pooled proportion**\index{pooled proportion} to check the success-failure condition:
+\begin{align*}
+\hat{p}_{\textit{pooled}}
+    &= \frac
+        {\text{\# of patients who died from breast cancer in the
+            entire study}}
+        {\text{\# of patients in the entire study}} \\
+	&= \frac{500 + 505}{500 + \text{44,425} + 505 + \text{44,405}} \\
+	&= 0.0112
+\end{align*}
+This proportion is an estimate of the breast cancer death rate
+across the entire study, and it's our best estimate of the
+proportions $p_{mgm}$ and $p_{ctrl}$
+*if the null hypothesis is true that $p_{mgm} = p_{ctrl}$*.
+We will also use this pooled proportion when computing
+the standard error.
+
+```{r include=FALSE}
+terms_chp_6 <- c(terms_chp_6, "pooled proportion")
+```
+
+```{block2, type = "example", echo = TRUE}
+Is it reasonable to model the difference
+    in proportions using a normal distribution in this
+    study?
+  
+---
+      
+  Because the patients are randomized, they can be treated
+  as independent, both within and between groups.
+  We also must check the success-failure condition for each group.
+  Under the null hypothesis, the proportions $p_{mgm}$
+  and $p_{ctrl}$ are equal, so we check the success-failure
+  condition with our best estimate of these values under $H_0$,
+  the \hiddenterm{pooled proportion} from the two samples,
+  $\hat{p}_{\textit{pooled}} = 0.0112$:
+  \begin{align*}
+  \hat{p}_{\textit{pooled}} \times n_{mgm}
+      &= 0.0112 \times \text{44,925} = 503
+    & (1 - \hat{p}_{\textit{pooled}}) \times n_{mgm}
+      &= 0.9888 \times \text{44,925} = \text{44,422} \\
+  \hat{p}_{\textit{pooled}} \times n_{ctrl}
+      &= 0.0112 \times \text{44,910} = 503
+    & (1 - \hat{p}_{\textit{pooled}}) \times n_{ctrl}
+      &= 0.9888 \times \text{44,910} = \text{44,407}
+  \end{align*}
+  The success-failure condition is satisfied since
+  all values are at least 10.
+  With both conditions satisfied, we can safely model
+  the difference in proportions using a normal
+  distribution.
+```
+
+```{block2, type = "onebox", echo = TRUE}
+**Use the pooled proportion when $\pmb{H_0}$ is $\pmb{\MakeLowercase{p_1 - p_2 = 0}}$**
+  
+  When the null hypothesis is that the proportions are equal,
+  use the pooled proportion ($\hat{p}_{\textit{pooled}}$)
+  to verify the
+  success-failure condition and estimate the standard error:
+  \begin{eqnarray*}
+  \hat{p}_{\textit{pooled}}
+    = \frac{\text{number of ``successes''}}
+      {\text{number of cases}}
+    = \frac{\hat{p}_1 n_1 + \hat{p}_2 n_2}{n_1 + n_2}
+  \end{eqnarray*}
+  Here $\hat{p}_1 n_1$ represents the number of successes in
+  sample 1 since
+  \begin{eqnarray*}
+  \hat{p}_1
+    = \frac{\text{number of successes in sample 1}}{n_1}
+  \end{eqnarray*}
+  Similarly, $\hat{p}_2 n_2$ represents the number
+  of successes in sample 2.
+```
+
+In the previous example,
+the pooled proportion was used to check the success-failure
+condition.
+
+```{block, type = "todo", echo = TRUE}
+I don't think the malaria example is in the book yet...
+^[For an example of a two-proportion
+  hypothesis test that does not require the
+  success-failure condition to be met, see
+  Section \ref{caseStudyMalariaVaccine}.]
+```
+
+In the next example, we see the second place where the pooled
+proportion comes into play: the standard error calculation.
+
+
+```{block2, type = "example", echo = TRUE}
+Compute the point estimate of the difference
+    in breast cancer death rates in the two groups,
+    and use the pooled proportion
+    $\hat{p}_{\textit{pooled}} = 0.0112$ to calculate
+    the standard error.
+    
+---
+      
+  The point estimate of the difference in breast cancer death
+  rates is
+  \begin{align*}
+  \hat{p}_{mgm} - \hat{p}_{ctrl}
+    &= \frac{500}{500 + 44,425} - \frac{505}{505 + 44,405} \\
+    &= 0.01113 - 0.01125 \\
+    &= -0.00012
+  \end{align*}
+  The breast cancer death rate in the mammogram group
+  was 0.012% less than in the control group.
+  Next, the standard error is calculated
+  \emph{using the pooled proportion}, $\hat{p}_{\textit{pooled}}$:
+\begin{align*}
+SE = \sqrt{
+      \frac{\hat{p}_{\textit{pooled}}(1-\hat{p}_{\textit{pooled}})}
+          {n_{mgm}}
+      + \frac{\hat{p}_{\textit{pooled}}(1-\hat{p}_{\textit{pooled}})}
+          {n_{ctrl}}
+    }
+	= 0.00070
+\end{align*}
+```
+
+```{block2, type = "example", echo = TRUE}
+Using the point estimate $\hat{p}_{mgm} - \hat{p}_{ctrl} = -0.00012$ and standard error $SE = 0.00070$, calculate a p-value for the hypothesis test and write a conclusion.
+
+---
+  
+Just like in past tests, we first compute a test statistic and draw a picture:
+\begin{align*}
+Z = \frac{\text{point estimate} - \text{null value}}{SE}
+	= \frac{-0.00012 - 0}{0.00070}
+	= -0.17
+\end{align*}
+
+The lower tail area is 0.4325, which we double to get the p-value: 0.8650. Because this p-value is larger than 0.05, we do not reject the null hypothesis. That is, the difference in breast cancer death rates is reasonably explained by chance, and we do not observe benefits or harm from mammograms relative to a regular breast exam.
+```
+
+```{r echo=FALSE}
+normTail(L = -0.17, U = 0.17,
+        col = COL[1],
+        axes = FALSE,
+        xlim = c(-3.2, 3.2))
+at <- c(-10, -2, 0, 2, 10)
+labels <- c(0, -0.0014, 0, 0.0014, 0)
+axis(1, at, labels, cex.axis = 0.9)
+```
+
+Can we conclude that mammograms have no benefits or harm?
+Here are a few considerations to keep in mind when reviewing
+the mammogram study as well as any other medical study:
+
+
+* We do not accept the null hypothesis, which means
+    we don't have sufficient evidence to conclude that
+    mammograms reduce or increase breast cancer deaths.
+* If mammograms are helpful or harmful, the data
+    suggest the effect isn't very large.
+* Are mammograms more or less expensive than
+    a non-mammogram breast exam?
+    If one option is much more expensive than the
+    other and doesn't offer clear benefits,
+    then we should lean towards the less expensive
+    option.
+* The study's authors also found that mammograms
+    led to overdiagnosis of breast cancer,
+    which means some breast cancers were found
+    (or thought to be found) but that these cancers
+    would not cause symptoms during patients' lifetimes.
+    That is, something else would kill the patient
+    before breast cancer symptoms appeared.
+    This means some patients may have been treated
+    for breast cancer unnecessarily, and this
+    treatment is another cost to consider.
+    It is also important to recognize that
+    overdiagnosis can cause unnecessary physical
+    or emotional harm to patients.
+
+These considerations highlight the complexity around medical care and treatment recommendations. Experts and medical boards who study medical treatments use considerations like those above to provide their best recommendation based on the current evidence.
+
+\index{data!breast cancer|)}
+\index{data!mammography|)}
+
+```{block2, type = "onebox", echo=TRUE}
+**Hypothesis testing when ${H_0}$ is $p_1 - p_2 = 0$**
+  
+  Once you've determined a hypothesis test for the difference
+  of two proportions is the correct procedure, there are four
+  steps to completing the test:
+
+* **Prepare.**
+      Identify the parameter of interest,
+      list out hypotheses,
+      identify the significance level,
+      and compute summary statistics for each group.
+* **Check.**
+      Verify the conditions to ensure
+      $\hat{p}_1 - \hat{p}_2$ is nearly normal under $H_0$.
+      When the null hypothesis is that the difference is 0,
+      use a pooled proportion to check the success-failure
+      condition for each group.
+* **Calculate.**
+      If the conditions hold, compute the standard
+      error, again using the pooled proportion,
+      compute the Z-score, and identify the p-value.
+* **Conclude.**
+      Evaluate the hypothesis test by comparing the p-value
+      to $\alpha$, and provide a conclusion in the context
+      of the problem.
+```
+
+
+<!--
+\subsection{More on 2-proportion hypothesis tests (special topic)}
+
+When we conduct a 2-proportion hypothesis test,
+usually $H_0$ is $p_1 - p_2 = 0$. However, there are rare
+situations where we want to check for some difference in
+$p_1$ and $p_2$ that is some value other than 0.
+For example, maybe we care about checking a null hypothesis
+where $p_1 - p_2 = 0.1$. %\footnote{We can
+%  also encounter a similar situation with a difference of
+%  two means, though no such example is given in
+%  Chapter \ref{inferenceForNumericalData} since the methods
+%  remain exactly the same in the context of sample means.
+%  On the other hand, the success-failure condition and the
+%  calculation of the standard error vary slightly in different
+%  proportion contexts.}
+In contexts like these, we generally use $\hat{p}_1$ and
+$\hat{p}_2$ to check the success-failure condition and
+construct the standard error.
+
+\begin{exercisewrap}
+\begin{nexercise}
+\label{carWheelBladeManufacturer}%
+A quadcopter company is considering a new manufacturer
+for rotor blades.
+The new manufacturer would be more expensive,
+but they claim
+their higher-quality blades are more reliable,
+with 3% more blades passing inspection than their
+competitor.
+Set up appropriate hypotheses for the test.\footnotemark
+\end{nexercise}
+\end{exercisewrap}
+\footnotetext{$H_0$: The higher-quality blades will pass
+  inspection 3% more frequently than the standard-quality blades.
+  $p_{highQ} - p_{standard} = 0.03$.
+  $H_A$: The higher-quality blades will pass inspection
+  some amount different than 3% more often than the
+  standard-quality blades.
+  $p_{highQ} - p_{standard} \neq 0.03$.}
+
+\setlength{\captionwidth}{85mm}
+
+\begin{figure}[h]
+\centering
+\Figures{0.6}{quadcopter}{quadcopter_david_j}
+\caption{A Phantom quadcopter.\vspace{-1mm} \\
+   -----------------------------\vspace{-2mm}\\
+   {\footnotesize Photo by David J
+   (\oiRedirect{textbook-quadcopter_david_j}
+       {http://flic.kr/p/oiWLNu}).
+   \oiRedirect{textbook-CC_BY_2}{CC-BY 2.0 license.}
+   This photo has been cropped and a border has been added.}}
+\label{quadcopter_david_j}
+\end{figure}
+
+\setlength{\captionwidth}{\mycaptionwidth}
+
+\D{\newpage}
+
+%\Add{In Guided Practice \ref{qualityCtrlEngHypothesisEval}, the null difference is 0.03. However, in the vast majority of applications for differences in means or proportions, the null difference is 0. While the details for a difference of means does not change if the null difference is zero or non-zero, that is not the case for a difference in proportions. As we'll see in Section \ref{}, a hypothesis test for a difference in proportions where the null value is 0 requires additional care.}
+
+\begin{examplewrap}
+\begin{nexample}{The quality control engineer from
+    Guided Practice \ref{carWheelBladeManufacturer}
+    collects a sample of blades, examining 1000 blades
+    from each company, and she finds that 899 blades pass
+    inspection from the current supplier and 958 pass
+    inspection from the prospective supplier.
+    Using these data, evaluate the hypotheses from
+    Guided Practice \ref{carWheelBladeManufacturer}
+    with a significance level of 5%.}
+  \label{qualityCtrlEngHypothesisEval}%
+  First, we check the conditions.
+  The sample is not necessarily random, so to proceed
+  we must assume the blades are all independent;
+  for this sample we will suppose this assumption
+  is reasonable, but the engineer would be more knowledgeable
+  as to whether this assumption is appropriate.
+  The success-failure condition also holds for each sample.
+  Thus, the difference in sample proportions,
+  $0.958 - 0.899 = 0.059$, can be said to come from a nearly
+  normal distribution.
+
+  The standard error is computed using the two sample
+  proportions since we do not use a pooled proportion
+  for this context:
+  \begin{align*}
+  SE
+    = \sqrt{\frac{0.958(1-0.958)}{1000} +
+        \frac{0.899(1-0.899)}{1000}}
+    = 0.0114
+  \end{align*}
+  In this hypothesis test, because the null is that
+  $p_1 - p_2 = 0.03$, the sample proportions were used
+  for the standard error calculation rather than a pooled
+  proportion.
+
+  Next, we compute the test statistic and use it to find the
+  p-value, which is depicted in
+  Figure \ref{bladesTwoSampleHTPValueQC}.
+  \begin{align*}
+  Z = \frac{\text{point estimate} - \text{null value}}{SE}
+    = \frac{0.059 - 0.03}{0.0114} = 2.54
+  \end{align*}
+  Using a standard normal distribution for this test statistic,
+  we identify the right tail area as 0.006,
+  and we double it to get the p-value: 0.012.
+  We reject the null hypothesis because 0.012 is less than 0.05.
+  Since we observed a larger-than-3% increase in blades
+  that pass inspection, we have statistically significant
+  evidence that the higher-quality blades pass inspection
+  \emph{more than} 3% as often as the currently used blades,
+  exceeding the company's claims.
+\end{nexample}
+\end{examplewrap}
+
+\begin{figure}[h]
+  \centering
+  \Figure{0.45}{bladesTwoSampleHTPValueQC}
+  \caption{Distribution of the test statistic if the null
+      hypothesis was true.
+      The p-value is represented by the shaded areas.}
+  \label{bladesTwoSampleHTPValueQC}
+\end{figure}
+
+
+-->
+
+
+
+
+
+
+
 
 <!--
 ## Testing for goodness of fit using chi-square (special topic, include simulation version)
@@ -696,6 +1402,11 @@ of error of 0.04 with 95% confidence?^[We complete the same computations as befo
 
 
 ## Testing for independence in two-way tables
+
+Note that with two-way tables, there is not an obvious single parameter of interest. 
+Instead, research questions usually foucs on how the proportions of the response variable changes (or not) across the different levels of the explanatory variable. 
+Because there is not a population parameter to estimate, bootstrapping to find the standard error of the estimate is not meaningful.
+As such, for two-way tables, we will focus on the randomization test and corresponding mathematical approximation (and not bootstrapping).
 
 ### Two-way table: randomization test
 
