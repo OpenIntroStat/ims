@@ -365,6 +365,125 @@ There are three steps to constructing a confidence
 For additional one-proportion confidence interval examples,
 see Section \@ref(ConfidenceIntervals).
 
+#### Changing the confidence level {-}
+
+\index{confidence interval!confidence level|(}
+
+Suppose we want to consider confidence intervals where the confidence level is somewhat higher than 95%: perhaps we would like a confidence level of 99%. Think back to the analogy about trying to catch a fish: if we want to be more sure that we will catch the fish, we should use a wider net. To create a 99% confidence level, we must also widen our 95% interval. On the other hand, if we want an interval with lower confidence, such as 90%, we could make our original 95% interval slightly slimmer.
+
+The 95% confidence interval structure provides guidance in how to make intervals with new confidence levels. Below is a general 95% confidence interval for a point estimate that comes from a nearly normal distribution:
+\begin{eqnarray}
+\text{point estimate}\ \pm\ 1.96\times SE
+\end{eqnarray}
+There are three components to this interval: the point estimate, "1.96", and the standard error. The choice of $1.96\times SE$ was based on capturing 95% of the data since the estimate is within 1.96 standard errors of the true value about 95% of the time. The choice of 1.96 corresponds to a 95% confidence level. 
+
+```{block2, type="guidedpractice", echo=TRUE}
+If $X$ is a normally distributed random variable, how often will $X$ be within 2.58 standard deviations of the mean?^[This is equivalent to asking how often the $Z$ score will be larger than -2.58 but less than 2.58. (For a picture, see Figure \@ref(fig:choosingZForCI).) To determine this probability, look up -2.58 and 2.58 in the normal probability table (0.0049 and 0.9951). Thus, there is a $0.9951-0.0049 \approx 0.99$ probability that the unobserved random variable $X$ will be within 2.58 standard deviations of the mean.]
+```
+
+To create a 99% confidence interval, change 1.96 in the 95% confidence interval formula to be $2.58$. The previous Guided Practice highlights that 99% of the time a normal random variable will be within 2.58 standard deviations of its mean. This approach -- using the Z scores in the normal model to compute confidence levels -- is appropriate when the point estimate is associated with a normal distribution and we can properly compute the standard error. Thus, the formula for a 99% confidence interval is
+
+\begin{eqnarray}
+\text{point estimate}\ \pm\ 2.58\times SE
+\label{99PercCIForMean}
+\label{99PercCIForNormalPointEstimate}
+\end{eqnarray}
+
+<!--
+%\Comment{I don't know where the equation number above gets referenced. Might drop the equation number.}
+-->
+
+
+```{block2, type="todo", echo = TRUE}
+The area between -$z^{\star}$ and $z^{\star}$ increases as $|z^{\star}|$ becomes larger. If the confidence level is 99%, we choose $z^{\star}$ such that 99% of the normal curve is between -$z^{\star}$ and $z^{\star}$, which corresponds to 0.5% in the lower tail and 0.5% in the upper tail: $z^{\star}=2.58$.
+
+maybe double backslashes?
+```
+
+
+```{r choosingZForCI, fig.cap="The area between -$z^{\\star}$ and $z^{\\star}$ increases as $|z^{\\star}|$ becomes larger. If the confidence level is 99%, we choose $z^{\\star}$ such that 99% of the normal curve is between -$z^{\\star}$ and $z^{\\star}$, which corresponds to 0.5% in the lower tail and 0.5% in the upper tail: $z^{\\star}=2.58$.", warning=FALSE, fig.width=10}
+
+par(mar=c(3.3,1,.5,1), mgp=c(2.1,0.6,0))
+X <- rev(seq(-4, 4, 0.025))
+Y <- dt(X, 10) # makes better visual
+plot(X, Y, type='l', xlab='standard deviations from the mean', ylab='', axes=FALSE, xlim=3.3*c(-1,1), ylim=c(0, 0.59), col=COL[6])
+axis(1, at=-3:3) #at=c(-4, -2, 0, 2, 4))
+abline(h=0) #, col='#00000088')
+yMax <- 0.41
+X <- seq(-4, 4, 0.025)
+Y <- dt(X, 10) # makes better visual
+lines(X, Y, col=COL[6])
+
+these <- (X < 2.58 & X > -2.58)
+x <- c(-2.58, X[these], 2.58)
+y <- c(0, dt(X[these], 10), 0)
+polygon(x, y, col=COL[1,3], border='#00000000')
+these <- (X < 1.96 & X > -1.96)
+x <- c(-1.96, X[these], 1.96)
+y <- c(0, dt(X[these], 10), 0)
+polygon(x, y, col=COL[1], border='#00000000')
+
+#x <- 1.96*c(-1,1,1,-1)
+#y <- c(1,1,1.38,1.38)*yMax/3 
+#polygon(x, y, border='#FFFFFF55', col='#FFFFFF77', lwd=7)
+lines(1.96*c(-1,1), rep(yMax,2), lwd=2)
+lines(rep(-1.96,2), c(0,yMax), lty=2, col=COL[6])
+lines(rep( 1.96,2), c(0,yMax), lty=2, col=COL[6])
+text(0, yMax, '95%, extends -1.96 to 1.96', pos=3)
+
+yMax <- 0.53
+#x <- 2.58*c(-1,1,1,-1)
+#y <- c(1,1,1.19,1.19)*2*yMax/3 
+#polygon(x, y, border='#FFFFFF55', col='#FFFFFF77', lwd=7)
+lines(2.58*c(-1,1), rep(yMax,2), lwd=2)
+lines(rep(-2.58,2), c(0,yMax), lty=2, col='#00000055')
+lines(rep( 2.58,2), c(0,yMax), lty=2, col='#00000055')
+text(0, yMax, '99%, extends -2.58 to 2.58', pos=3)
+
+```
+
+\index{confidence interval!confidence level|)}
+
+The normal approximation is crucial to the precision of these confidence intervals. Future chapters provides detailed discussions about when the normal model can safely be applied to a variety of situations. When the normal model is not a good fit, we will use alternative distributions that better characterize the sampling distribution.
+
+
+
+```{block2, type="guidedpractice", echo=TRUE}
+Create a 99% confidence interval for the impact of the stent on the risk of stroke using the data from Section \@ref(basic-stents-strokes). The point estimate is 0.090, and the standard error is $SE = 0.028$. It has been verified for you that the point estimate can reasonably be modeled by a normal distribution.^[Since the necessary conditions for applying the normal model have already been checked for us, we can go straight to the construction of the confidence interval: $\text{point estimate}\ \pm\ 2.58 \times SE \rightarrow (0.018, 0.162)$. We are 99% confident that implanting a stent in the brain of a patient who is at risk of stroke increases the risk of stroke within 30 days by a rate of 0.018 to 0.162 (assuming the patients are representative of the population).]
+```
+
+
+
+```{block2, type="onebox", echo=TRUE}
+**Confidence interval for any confidence level.**
+
+If the point estimate follows the normal model with standard error $SE$, then a confidence interval for the population parameter is
+\begin{eqnarray*}
+\text{point estimate}\ \pm\ z^{\star} \times SE
+\end{eqnarray*}
+where $z^{\star}$ corresponds to the confidence level selected.
+```
+
+Figure \@ref(fig:choosingZForCI) provides a picture of how to identify $z^{\star}$ based on a confidence level. We select $z^{\star}$ so that the area between -$z^{\star}$ and $z^{\star}$ in the normal model corresponds to the confidence level. 
+
+
+
+```{block2, type="onebox", echo=TRUE}
+**Margin of error.**
+
+In a confidence interval, $z^{\star}\times SE$ is called the **margin of error**\index{margin of error}.
+```
+
+
+
+```{r include=FALSE}
+terms_chp_5 <- c(terms_chp_5, "margin of error")
+```
+
+
+```{block2, type="guidedpractice", echo=TRUE}
+Previously, we found that implanting a stent in the brain of a patient at risk for a stroke *increased* the risk of a stroke. The study estimated a 9% increase in the number of patients who had a stroke, and the standard error of this estimate was about $SE = 2.8%$. Compute a 90% confidence interval for the effect.^[We must find $z^{\star}$ such that 90% of the distribution falls between -$z^{\star}$ and $z^{\star}$ in the standard normal model, $N(\mu=0, \sigma=1)$. We can look up -$z^{\star}$ in the normal probability table by looking for a lower tail of 5% (the other 5% is in the upper tail), thus $z^{\star}=1.65$. The 90% confidence interval can then be computed as $\text{point estimate}\ \pm\ 1.65\times SE \to (4.4\%, 13.6\%)$. (Note: the conditions for normality had earlier been confirmed for us.) That is, we are 90% confident that implanting a stent in a stroke patient's brain increased the risk of stroke within 30 days by 4.4% to 13.6%.]
+```
 
 #### Hypothesis testing for a proportion {-}
 
@@ -726,6 +845,364 @@ terms_chp_6 <- c(terms_chp_6, "point estimate")
 malaria example?
 
 We already did the randomization structure.  one quick example here then an outline which represents the structure of the test (?).
+
+#### Decision errors {-}
+
+\index{hypothesis testing!decision errors|(}
+
+Hypothesis tests are not flawless. Just think of the court system: innocent people are sometimes wrongly convicted and the guilty sometimes walk free. 
+Similarly, data can point to the wrong conclusion. 
+However, what distinguishes statistical hypothesis tests from a court system is that our framework allows us to quantify and control how often the data lead us to the incorrect conclusion.
+
+There are two competing hypotheses: the null and the alternative. 
+In a hypothesis test, we make a statement about which one might be true, but we might choose incorrectly. There are four possible scenarios in a hypothesis test, which are summarized in Table \@ref(tab:fourHTScenarios).
+
+
+```{r fourHTScenarios}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3,
+ "", "$H_0$ true", "okay", "Type 1 Error",
+ "**Truth**", "$H_A$ true", "Type 2 Error", "okay"
+)
+
+temptbl %>%
+ kable(caption = "Four different scenarios for hypothesis tests.", 
+    col.names = c("", "", "", "")) %>%
+ add_header_above( c("", "", "**Test conclusion**" = 2)) %>%
+ kable_styling()
+```
+
+
+A **Type 1 Error**\index{Type 1 Error} is rejecting the null hypothesis when $H_0$ is actually true. 
+Since we rejected the null hypothesis in the gender discrimination and opportunity cost studies, it is possible that we made a Type 1 Error in one or both of those studies. 
+A **Type 2 Error**\index{Type 2 Error} is failing to reject the null hypothesis when the alternative is actually true.
+
+```{r include=FALSE}
+terms_chp_5 <- c(terms_chp_5, "Type 1 Error", "Type 2 Error")
+```
+
+
+```{block2, type="example", echo=TRUE}
+In a US court, the defendant is either innocent ($H_0$) or guilty ($H_A$). 
+What does a Type 1 Error represent in this context? 
+What does a Type 2 Error represent? 
+Table \@ref(tab:fourHTScenarios) may be useful.
+
+---
+ 
+If the court makes a Type 1 Error, this means the defendant is innocent ($H_0$ true) but wrongly convicted. 
+A Type 2 Error means the court failed to reject $H_0$ (i.e., failed to convict the person) when she was in fact guilty ($H_A$ true).
+```
+
+
+```{block2, type="guidedpractice", echo=TRUE}
+Consider the opportunity cost study where we concluded students were less likely to make a DVD purchase if they were reminded that money not spent now could be spent later. What would a Type 1 Error represent in this context?^[Making a Type 1 Error in this context would mean that reminding students that money not spent now can be spent later does not affect their buying habits, despite the strong evidence (the data suggesting otherwise) found in the experiment. Notice that this does *not* necessarily mean something was wrong with the data or that we made a computational mistake. Sometimes data simply point us to the wrong conclusion, which is why scientific studies are often repeated to check initial findings.]
+```
+
+
+```{block2, type="example", echo=TRUE}
+How could we reduce the Type 1 Error rate in US courts? 
+What influence would this have on the Type 2 Error rate?
+
+---
+ 
+To lower the Type 1 Error rate, we might raise our standard for conviction from "beyond a reasonable doubt" to "beyond a conceivable doubt" so fewer people would be wrongly convicted. However, this would also make it more difficult to convict the people who are actually guilty, so we would make more Type 2 Errors.
+```
+
+
+```{block2, type="guidedpractice", echo=TRUE}
+How could we reduce the Type 2 Error rate in US courts? 
+What influence would this have on the Type 1 Error rate?^[To lower the Type 2 Error rate, we want to convict more guilty people. We could lower the standards for conviction from "beyond a reasonable doubt" to "beyond a little doubt". Lowering the bar for guilt will also result in more wrongful convictions, raising the Type 1 Error rate.]
+```
+
+
+\index{hypothesis testing!decision errors|)}
+
+The example and guided practice above provide an important lesson: if we reduce how often we make one type of error, we generally make more of the other type.
+
+<!--
+%Hypothesis testing is built around rejecting or failing to reject the null hypothesis. That is, we do not reject $H_0$ unless the data provide strong evidence against it. But what precisely does \emph{strong evidence} mean? As a general rule of thumb, for those cases where the null hypothesis is actually true, we do not want to incorrectly reject $H_0$ more than 5% of the time. This corresponds to our default significance level of $\alpha = 0.05$, which we use as a comparison with the p-value. In the next section, we discuss the appropriateness of different significance levels.
+-->
+
+#### Choosing a significance level {-}
+
+\index{hypothesis testing!significance level|(}
+\index{significance level|(}
+
+Choosing a significance level for a test is important in many contexts, and the traditional level is 0.05. 
+However, it is sometimes helpful to adjust the significance level based on the application. 
+We may select a level that is smaller or larger than 0.05 depending on the consequences of any conclusions reached from the test.
+
+If making a Type 1 Error is dangerous or especially costly, we should choose a small significance level (e.g., 0.01 or 0.001). 
+Under this scenario, we want to be very cautious about rejecting the null hypothesis, so we demand very strong evidence favoring the alternative $H_A$ before we would reject $H_0$.
+
+If a Type 2 Error is relatively more dangerous or much more costly than a Type 1 Error, then we should choose a higher significance level (e.g., 0.10). 
+Here we want to be cautious about failing to reject $H_0$ when the null is actually false.
+
+
+```{block2, type="tipbox", echo=TRUE}
+**Significance levels should reflect consequences of errors.**
+
+The significance level selected for a test should reflect the real-world consequences associated with making a Type 1 or Type 2 Error.
+```
+
+#### Introducing two-sided hypotheses {-}
+
+<!--
+%_________________
+%\section[Case study: CPR and blood thinner (randomization)]{Case study: blood thinner and CPR\\(randomization)}
+-->
+
+\index{hypothesis testing!two tails|(}
+
+So far we have explored whether women were discriminated against and whether a simple trick could make students a little thriftier. 
+In these two case studies, we've actually ignored some possibilities:
+
+* What if *men* are actually discriminated against?
+* What if the money trick actually makes students *spend more*?
+
+These possibilities weren't considered in our hypotheses or analyses. 
+This may have seemed natural since the data pointed in the directions in which we framed the problems. However, there are two dangers if we ignore possibilities that disagree with our data or that conflict with our world view:
+
+1. Framing an alternative hypothesis simply to match the direction that the data point will generally inflate the Type 1 Error rate. After all the work we've done (and will continue to do) to rigorously control the error rates in hypothesis tests, careless construction of the alternative hypotheses can disrupt that hard work. We'll explore this topic further in Section \@ref(HypothesisTesting).
+
+2. If we only use alternative hypotheses that agree with our worldview, then we're going to be subjecting ourselves to **confirmation bias**\index{confirmation bias}, which means we are looking for data that supports our ideas. That's not very scientific, and we can do better!
+
+
+The previous hypotheses we've seen are called **one-sided hypothesis tests**\index{one-sided hypothesis test} because they only explored one direction of possibilities. 
+Such hypotheses are appropriate when we are exclusively interested in the single direction, but usually we want to consider all possibilities. 
+To do so, let's learn about **two-sided hypothesis tests**\index{two-sided hypothesis test} in the context of a new study that examines the impact of using blood thinners on patients who have undergone CPR.
+
+
+```{r include=FALSE}
+terms_chp_5 <- c(terms_chp_5, "confirmation bias", "one-sided hypothesis test", "two-sided hypothesis test")
+```
+
+\index{data!CPR and blood thinner|(}
+
+Cardiopulmonary resuscitation (CPR) is a procedure used on individuals suffering a heart attack when other emergency resources are unavailable. 
+This procedure is helpful in providing some blood circulation to keep a person alive, but CPR chest compressions can also cause internal injuries. Internal bleeding and other injuries that can result from CPR complicate additional treatment efforts. 
+For instance, blood thinners may be used to help release a clot that is causing the heart attack once a patient arrives in the hospital. However, blood thinners negatively affect internal injuries.
+
+Here we consider an experiment with patients who underwent CPR for a heart attack and were subsequently admitted to a hospital.^[B$\ddot{\text{o}}$ttiger et al. "Efficacy and safety of thrombolytic therapy after initially unsuccessful cardiopulmonary resuscitation: a prospective clinical trial." The Lancet, 2001.] 
+Each patient was randomly assigned to either receive a blood thinner (treatment group) or not receive a blood thinner (control group). 
+The outcome variable of interest was whether the patient survived for at least 24 hours.
+
+<!--
+% The way p_c and p_t are described make it sound like we are only considering the samples
+-->
+
+
+```{block2, type="example", echo=TRUE}
+Form hypotheses for this study in plain and statistical language. 
+Let $p_c$ represent the true survival rate of people who do not receive a blood thinner (corresponding to the control group) and $p_t$ represent the survival rate for people receiving a blood thinner (corresponding to the treatment group).
+
+---
+ 
+We want to understand whether blood thinners are helpful or harmful. 
+We'll consider both of these possibilities using a two-sided hypothesis test.
+
+* $H_0$: Blood thinners do not have an overall survival effect, i.e., the survival proportions are the same in each group. $p_t - p_c = 0$.
+
+* $H_A$: Blood thinners have an impact on survival, either positive or negative, but not zero. $p_t - p_c \neq 0$.
+```
+
+There were 50 patients in the experiment who did not receive a blood thinner and 40 patients who did. 
+The study results are shown in Table \@ref(tab:resultsForCPRStudyInSmallSampleSection).
+
+```{r resultsForCPRStudyInSmallSampleSection}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3, 
+ "Control", "11", "39", "50",
+ "Treatment", "14", "26","40",
+ "Total", "25", "65", "90"
+)
+
+temptbl %>%
+ kable(caption = "Results for the CPR study. Patients in the treatment group were given a blood thinner, and patients in the control group were not",
+    col.names = c("", "Survived", "Died", "Total")) %>%
+ kable_styling() 
+```
+
+```{block2, type="guidedpractice", echo=TRUE}
+What is the observed survival rate in the control group? 
+And in the treatment group? 
+Also, provide a point estimate of the difference in survival proportions of the two groups: $\hat{p}_t - \hat{p}_c$.^[Observed control survival rate: $p_c = \frac{11}{50} = 0.22$. 
+Treatment survival rate: $p_t = \frac{14}{40} = 0.35$. 
+Observed difference: $\hat{p}_t - \hat{p}_c = 0.35 - 0.22 = 0.13$.]
+```
+
+According to the point estimate, for patients who have undergone CPR outside of the hospital, an additional 13% of these patients survive when they are treated with blood thinners. 
+However, we wonder if this difference could be easily explainable by chance.
+
+As we did in our past two studies this chapter, we will simulate what type of differences we might see from chance alone under the null hypothesis. 
+By randomly assigning "simulated treatment" and "simulated control" stickers to the patients' files, we get a new grouping. 
+If we repeat this simulation 10,000 times, we can build a **null distribution**\index{null distribution} of the differences shown in Figure \@ref(fig:CPR-study-right-tail).
+
+
+```{r include=FALSE}
+terms_chp_5 <- c(terms_chp_5, "null distribution")
+```
+
+```{block2, type="todo", echo=TRUE}
+can we put LaTeX in a figure caption?
+
+"Null distribution of the point estimate, $\hat{p}_t - \hat{p}_c$. The shaded right tail shows observations that are at least as large as the observed difference, 0.13."
+```
+
+```{r CPR-study-right-tail, fig.cap="Null distribution of the point estimate for the difference in proportions. The shaded right tail shows observations that are at least as large as the observed difference, 0.13.", warning=FALSE, fig.width=10}
+
+tr <- rep(1:2, c(50, 40))
+su <- c(rep(c("s", "d"), c(11, 39)), rep(c("s", "d"), c(14, 26)))
+
+N <- 10^5
+d <- rep(NA, N)
+for(i in 1:N){
+	trf  <- sample(tr)
+	p1   <- sum(su[trf == 1] == "s") / 50
+	p2   <- sum(su[trf == 2] == "s") / 40
+	d[i] <- p2 - p1
+}
+#sum((d) > 0.1299) / N
+
+udiffs    <- sort(unique(d))
+bin.width <- diff(udiffs)[1]
+breaks    <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
+
+hist(d, breaks = breaks, col=COL[7,3], main="", xlab="Differences under the null hypothesis", ylab="", axes=FALSE)
+axis(1)
+axis(2, at=(0:3)*N/20, labels=c(0, NA, NA, 3)/20)
+hist(d[d > 0.1299], breaks = breaks, col=COL[1], add=TRUE)
+abline(h=0)
+lines(rep(0.13, 2), c(0, 3)*N/25, lty=3, lwd=1.7)
+text(0.13, 3*N/25, "0.13", pos=3, cex=0.7)
+
+```
+
+The right tail area is about 0.13. (Note: it is only a coincidence that we also have $\hat{p}_t - \hat{p}_c=0.13$.) 
+However, contrary to how we calculated the p-value in previous studies, the p-value of this test is not 0.13!
+
+The p-value is defined as the chance we observe a result at least as favorable to the alternative hypothesis as the result (i.e., the difference) we observe. 
+In this case, any differences less than or equal to -0.13 would also provide equally strong evidence favoring the alternative hypothesis as a difference of 0.13. 
+A difference of -0.13 would correspond to 13% higher survival rate in the control group than the treatment group. 
+In Figure \@ref(fig:CPR-study-p-value) we've also shaded these differences in the left tail of the distribution. 
+These two shaded tails provide a visual representation of the p-value for a two-sided test.
+
+<!--
+%There is something different in this study than in the past studies: in this study, we are particularly interested in whether blood thinners increase \emph{or} decrease the risk of death in patients who undergo CPR before arriving at the hospital.\footnote{Realistically, we probably are interested in either direction in the past studies as well, and so we should have used the approach we now discuss in this section. However, for simplicity and the sake of not introducing too many concepts at once, we skipped over these details in earlier sections.} For example, there are chance differences of $\hat{p}_t - \hat{p}_c = -0.14$, that would have been stronger evidence against the null hypothesis as our observed difference of +0.13. Likewise, anything less than or equal -0.13 would provide as much evidence against the null hypothesis as +0.13, and for this reason, we must count both tails towards the p-value, as shown in Figure \ref{CPR-study-p-value}.
+-->
+
+```{block2, type="todo", echo=TRUE}
+can we put LaTeX in a figure caption?
+
+"Null distribution of the point estimate, $\hat{p}_t - \hat{p}_c$. All values that are at least as extreme as +0.13 but in either direction away from 0 are shaded."
+```
+
+```{r CPR-study-p-value, fig.cap="Null distribution of the point estimate for the difference in proportions. All values that are at least as extreme as +0.13 but in either direction away from 0 are shaded.", warning=FALSE, fig.width=10}
+
+hist(d, breaks = breaks, col=COL[7,3], main="", xlab="Differences under the null hypothesis", ylab="", axes=FALSE)
+axis(1)
+axis(2, at=(0:3)*N/20, labels=c(0, NA, NA, 3)/20)
+hist(d[d > 0.1299], breaks = breaks, col=COL[1], add=TRUE)
+abline(h=0)
+hist(d[d < -0.1299], breaks = breaks, col=COL[1], add=TRUE)
+abline(h=0)
+lines(rep(0.13, 2), c(0, 3)*N/25, lty=3, lwd=1.7)
+text(0.13, 3*N/25, "0.13", pos=3, cex=0.7)
+```
+
+
+For a two-sided test, take the single tail (in this case, 0.13) and double it to get the p-value: 0.26. 
+Since this p-value is larger than 0.05, we do not reject the null hypothesis. 
+That is, we do not find statistically significant evidence that the blood thinner has any influence on survival of patients who undergo CPR prior to arriving at the hospital. 
+
+<!--%Once again, we can discuss the causal conclusion since this is an experiment.
+-->
+
+\index{data!CPR and blood thinner|)}
+
+```{block2, type="onebox", echo=TRUE}
+**Default to a two-sided test.**
+
+We want to be rigorous and keep an open mind when we analyze data and evidence. 
+Use a one-sided hypothesis test only if you truly have interest in only one direction.
+```
+
+```{block2, type="onebox", echo=TRUE}
+**Computing a p-value for a two-sided test.**
+
+First compute the p-value for one tail of the distribution, then double that value to get the two-sided p-value. 
+That's it!
+```
+
+#### Controlling the Type 1 Error rate {-}
+
+It is never okay to change two-sided tests to one-sided tests after observing the data. 
+We explore the consequences of ignoring this advice in the next example.
+
+```{block2, type="example", echo=TRUE}
+Using $\alpha=0.05$, we show that freely switching from two-sided tests to one-sided tests will lead us to make twice as many Type 1 Errors as intended.
+
+---
+ 
+Suppose we are interested in finding any difference from 0. 
+We've created a smooth-looking **null distribution** representing differences due to chance in Figure \@ref{fig:type1ErrorDoublingExampleFigure}.
+
+Suppose the sample difference was larger than 0. 
+Then if we can flip to a one-sided test, we would use $H_A$: difference $> 0$. 
+Now if we obtain any observation in the upper 5% of the distribution, we would reject $H_0$ since the p-value would just be a the single tail. 
+Thus, if the null hypothesis is true, we incorrectly reject the null hypothesis about 5% of the time when the sample mean is above the null value, as shown in Figure \@ref(fig:type1ErrorDoublingExampleFigure).
+
+Suppose the sample difference was smaller than 0. 
+Then if we change to a one-sided test, we would use $H_A$: difference $< 0$. 
+If the observed difference falls in the lower 5% of the figure, we would reject $H_0$. 
+That is, if the null hypothesis is true, then we would observe this situation about 5% of the time.
+
+By examining these two scenarios, we can determine that we will make a Type 1 Error $5\%+5\%=10\%$ of the time if we are allowed to swap to the "best" one-sided test for the data. 
+This is twice the error rate we prescribed with our significance level: $\alpha=0.05$ (!).
+```
+
+
+```{block2, type="todo", echo=TRUE}
+
+"The shaded regions represent areas where we would reject $H_0$ under the bad practices considered in when $\alpha = 0.05$."
+```
+
+```{r type1ErrorDoublingExampleFigure, fig.cap="The shaded regions represent areas where we would reject H0 under the bad practices considered in when alpha = 0.05.", warning=FALSE, fig.width=10}
+par(las=1, mar=c(2,0,0.5,0), mgp=c(3,0.9,0))
+X <- seq(-4,4,0.01)
+Y <- dnorm(X)
+plot(X, Y, type='l', axes=F, xlim=c(-3.4,3.4))
+axis(1, at=c(-5, 0, 5), label=expression(0, 0, 0), cex.axis=1.2)
+these <- which(X >= 1.65)
+polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
+these <- which(X <= -1.65)
+polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
+
+arrows(-2,0.17, -1.9, 0.08, length=0.07, col=COL[1], lwd=1.5)
+text(-1.92, 0.21, '5%', cex=1.2, col=COL[1])
+arrows(2,0.17, 1.9, 0.08, length=0.07, col=COL[1], lwd=1.5)
+text(2.08, 0.21, '5%', cex=1.2, col=COL[1])
+
+lines(X, Y, lwd=1.5)
+abline(h=0)
+```
+
+```{block2, type = "cautionbox", echo = TRUE}
+** Hypothesis tests should be set up *before* seeing the data.**
+
+After observing data, it is tempting to turn a two-sided test into a one-sided test. 
+Avoid this temptation. 
+Hypotheses should be set up *before* observing the data.
+```
+
+<!--
+%\Comment{Should we scrap this subsection and example and just leave the caution box? Downside: weakens item 1 near the start of Section \ref{IntroducingTwoSidedHypotheses}.}
+-->
+
+\index{hypothesis testing!two tails|)}
+
+
 
 ### Two proportions: bootstrap
 
