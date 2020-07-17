@@ -10,7 +10,8 @@ Focusing now on Statistical Inference for **categorical data**, we will revisit 
 The three data structures we detail are one binary variable, summarized using a single proportion; two binary variables, summarized using a difference of two proportions; and two categorical variables, summarized using a two-way table. 
 When appropriate, each of the data structures will be analyzed using the three methods from Chapter \@ref(inference-foundations): randomization test, bootstrapping, and mathematical models.
 
-As we build on the inferential ideas, we will visit new foundational concepts in statistical inference like error rates in hypothesis testing and choosing the confidence level for a confidence interval.
+As we build on the inferential ideas, we will visit new foundational concepts in statistical inference. 
+For example, we will cover the conditions for when a normal model is appropriate; the two different error rates in hypothesis testing; and choosing the confidence level for a confidence interval.
 ```
 
 
@@ -58,23 +59,28 @@ While it is not possible to assess this causal claim, it is still possible to te
 
 
 ```{block2, type="guidedpractice", echo=TRUE}
-Write out hypotheses in both plain and statistical language to test for the association between the consultant's work and the true complication rate, $p$, for this consultant's clients.^[H_0$: There is no association between the consultant's contributions and the clients' complication rate. In statistical language, $p=0.10$. $H_A$: Patients who work with the consultant tend to have a complication rate lower than 10%, i.e., $p<0.10$.]
+Write out hypotheses in both plain and statistical language to test for the association between the consultant's work and the true complication rate, $p$, for the consultant's clients.^[$H_0$: There is no association between the consultant's contributions and the clients' complication rate. In statistical language, $p=0.10$. 
+$H_A$: Patients who work with the consultant tend to have a complication rate lower than 10%, i.e., $p<0.10$.]
 ```
 
 
-The uncertainty associated with the sample proportion should not be modeled using the normal distribution. However, we would still like to assess the hypotheses from Guided Practice \ref{hypForAssessingConsultantWorkInLiverTransplants} in absence of the normal framework. To do so, we need to evaluate the possibility of a sample value ($\hat{p}$) this far below the null value, $p_0=0.10$. This possibility is usually measured with a p-value.
+Because, as it turns out, the conditions of working with the normal distribution are not met (see Section \@ref(one-prop-norm)), the uncertainty associated with the sample proportion should not be modeled using the normal distribution. However, we would still like to assess the hypotheses from the previous Guided Practice in absence of the normal framework. To do so, we need to evaluate the possibility of a sample value ($\hat{p}$) as far below the null value, $p_0=0.10$ as what was observed. The devaition of the sample value from the hypothesized parameter is usually quantified with a p-value.
 
-The p-value is computed based on the null distribution, which is the distribution of the test statistic if the null hypothesis is true. Supposing the null hypothesis is true, we can compute the p-value by identifying the chance of observing a test statistic that favors the alternative hypothesis at least as strongly as the observed test statistic. This can be done using simulation.
+The p-value is computed based on the null distribution, which is the distribution of the test statistic if the null hypothesis is true. Supposing the null hypothesis is true, we can compute the p-value by identifying the chance of observing a test statistic that favors the alternative hypothesis at least as strongly as the observed test statistic. Here we will use a bootstrap simulation to measure the p-value.
 
 #### Generating the null distribution and p-value by bootstrap simulation {-}
 
 We want to identify the sampling distribution of the test statistic ($\hat{p}$) if the null hypothesis was true. In other words, we want to see how the sample proportion changes due to chance alone. Then we plan to use this information to decide whether there is enough evidence to reject the null hypothesis.
 
-Under the null hypothesis, 10% of liver donors have complications during or after surgery. Suppose this rate was really no different for the consultant's clients. If this was the case, we could *simulate* 62 clients to get a sample proportion for the complication rate from the null distribution.  Simulating observations using a hypothesized null parameter value is often called a **parametric bootstrap simulation**\index{parametric bootstrap}.
+Under the null hypothesis, 10% of liver donors have complications during or after surgery. Suppose this rate was really no different for the consultant's clients (for *all* the consultant's clients, not just the 62 previously measured). If this was the case, we could *simulate* 62 clients to get a sample proportion for the complication rate from the null distribution.  Simulating observations using a hypothesized null parameter value is often called a **parametric bootstrap simulation**\index{parametric bootstrap}.
 
 
 ```{r include=FALSE}
 terms_chp_6 <- c(terms_chp_6, "parametric bootstrap")
+```
+
+```{block2, type = "todo", echo = TRUE}
+need a new physical object.size
 ```
 
 Each client can be simulated using a single 10-sided die with one red side and nine black sides. Rolling the die once is one way of simulating the chance a patient has a complication *if the true complication rate is 10%* for the data. If we roll the die 62 times and compute the proportion of patients with complications in the simulation, $\hat{p}_{sim}$, then this sample proportion is exactly a sample from the null distribution.
@@ -91,9 +97,9 @@ No. To assess the hypotheses, we need to see a distribution of many $\hat{p}_{si
 
 One simulation isn't enough to get a sense of the null distribution; many simulation studies are needed. Roughly 10,000 seems sufficient. However, paying someone to simulate 10,000 studies by hand is a waste of time and money. Instead, simulations are typically programmed into a computer, which is much more efficient.
 
-Figure \@ref(nullDistForPHatIfLiverTransplantConsultantIsNotHelpful) shows the results of 10,000 simulated studies. The proportions that are equal to or less than $\hat{p}=0.048$ are shaded. The shaded areas represent sample proportions under the null distribution that provide at least as much evidence as $\hat{p}$ favoring the alternative hypothesis. There were 1222 simulated sample proportions with $\hat{p}_{sim} \leq 0.048$. We use these to construct the null distribution's left-tail area and find the p-value:
+Figure \@ref(fig:nullDistForPHatIfLiverTransplantConsultantIsNotHelpful) shows the results of 10,000 simulated studies. The proportions that are equal to or less than $\hat{p}=0.048$ are shaded. The shaded areas represent sample proportions under the null distribution that provide at least as much evidence as $\hat{p}$ favoring the alternative hypothesis. There were 1222 simulated sample proportions with $\hat{p}_{sim} \leq 0.048$. We use these to construct the null distribution's left-tail area and find the p-value:
 \begin{align}
-\text{left tail }\label{estOfPValueBasedOnSimulatedNullForSingleProportion}
+\text{left tail area }\label{estOfPValueBasedOnSimulatedNullForSingleProportion}
 	&= \frac{\text{Number of observed simulations with }\hat{p}_{sim}\leq\text{ 0.048}}{10000}
 \end{align}
 Of the 10,000 simulated $\hat{p}_{sim}$, 1222 were equal to or smaller than $\hat{p}$. Since the hypothesis test is one-sided, the estimated p-value is equal to this tail area: 0.1222.
@@ -130,12 +136,11 @@ Does the conclusion in the previous Guided Practice imply there is no real assoc
 ```{block2, type="onebox", echo = TRUE}
 **Null distribution of $\hat{p}$ with bootstrap simulation**
   
-The p-value is always derived by analyzing the null distribution of the test statistic. The normal model poorly approximates the null distribution for $\hat{p}$ when the success-failure condition is not satisfied. As a substitute, we can generate the null distribution using simulated sample proportions and use this distribution to compute the tail area, i.e., the p-value.
+Regardless of the statistial method chosen, the p-value is always derived by analyzing the null distribution of the test statistic. The normal model poorly approximates the null distribution for $\hat{p}$ when the success-failure condition is not satisfied. As a substitute, we can generate the null distribution using simulated sample proportions and use this distribution to compute the tail area, i.e., the p-value.
 ```
 
-We continue to use the same rule as before when computing the p-value for a two-sided test: double the single tail area, which remains a reasonable approach even when the sampling distribution is asymmetric. However, this can result in p-values larger than 1 when the point estimate is very near the mean in the null distribution; in such cases, we write that the p-value is 1. Also, very large p-values computed in this way (e.g., 0.85), may also be slightly inflated.
 
-The previous Guided Practice said the p-value is *estimated*. It is not exact because the simulated null distribution itself is not exact, only a close approximation. However, we can generate an exact null distribution and p-value using the binomial model which is not covered in the Appendix, Section \@ref(probability).
+In the previous Guided Practice, the p-value is *estimated*. It is not exact because the simulated null distribution itself is not exact, only a close approximation. However, we can generate an exact null distribution and p-value using the binomial model which is covered in the Appendix, Section \@ref(probability).
 
 <!--
 #### Generating the exact null distribution and p-value  {-} {#exactNullDistributionUsingBinomialModel}
@@ -169,14 +174,15 @@ If it were plotted, the exact null distribution would look almost identical to t
 -->
 
 
-### One proprotion: mathematical model
+### One proprotion: mathematical model {#one-prop-norm}
 
 #### Identifying when the sample proportion is nearly normal {-}
 
-A sample proportion $\hat{p}$ can be modeled using
-a normal distribution when the sample observations
+In Section \@ref(normalDist), we introduced the normal distribution and showed how it can be used as a mathematical model to describe the variability of a statistic.
+There are conditions under which a sample proportion $\hat{p}$ is well modeled using a normal distribution.
+When the sample observations
 are independent and the sample size is sufficiently
-large.
+large, the normal model will describe the variability quite well; when the observations violate the conditions, the normal model can be inaccurate
 
 ```{block2, type = "onebox", echo = TRUE}
 **Sampling distribution of
@@ -195,13 +201,11 @@ large.
 
   When these conditions are met, then the sampling
   distribution of $\hat{p}$ is nearly normal with mean
-  $p$ and standard error of $\hat{p}$ as
-
-  $SE = \sqrt{\frac{\ p(1-p)\ }{n}}$.
+  $p$ and standard error of $\hat{p}$ as $SE = \sqrt{\frac{\ p(1-p)\ }{n}}$.
 ```
 
 \index{success-failure condition}
-\index{standard error (SE)!single proportion}%
+\index{standard error (SE)!single proportion}
   
 ```{r include=FALSE}
 terms_chp_6 <- c(terms_chp_6, "success-failure condition", "standard error of single proportion")
@@ -221,9 +225,8 @@ The independence condition is a more nuanced requirement.
 When it isn't met, it is important to understand how and why
 it isn't met.
 For example, if we took a cluster sample
-(see Section \@ref(samp-methods)),
-suitable statistical methods are available but would
-be beyond the scope of even most second or third courses
+(see Section \@ref(samp-methods)), the observations wouldn't be independent. 
+However, suitable statistical methods are available for analyzing the data, but they are beyond the scope of even most second or third courses
 in statistics.
 On the other hand, we'd be stretched to find any method
 that we could confidently apply to correct the inherent biases
@@ -254,8 +257,18 @@ and when $\hat{p}$ can be modeled using a
 normal distribution, the confidence interval
 for $p$ takes the form
 \begin{align*}
-\hat{p} \pm z^{\star} \times SE
+\hat{p} \pm z^{\star} \times SE.
 \end{align*}
+
+We have seen $\hat{p}$ to be the sample proportion.  The value $z^{\star}$ determines the confidence level (previously set to be 1.96) and will be discussed in detail in the examples following.  The value of the standard error, $SE$, changes depending on the statistic of interest.
+
+```{block2, type = "onebox", echo = TRUE}
+**Standard Error of one proportion, $\hat{p}$**
+  
+The variability of a single proportion, $\hat{p}$ is well described by:
+  
+$$SE(\hat{p}) = \sqrt{\frac{p(1-p)}{n}}$$
+```
 
 \index{data!Payday regulation poll|(}
 
@@ -1136,6 +1149,11 @@ Since it turns out that we care about a finding in either direction, we should r
 The p-value for the two-sided test is double that of the one-sided test, here the simulated p-value would be 0.2444.
 ```
 
+
+Generally, to find a two-sided p-value we double the single tail area, which remains a reasonable approach even when the sampling distribution is asymmetric.
+However, the approach can result in p-values larger than 1 when the point estimate is very near the mean in the null distribution; in such cases, we write that the p-value is 1. 
+Also, very large p-values computed in this way (e.g., 0.85), may also be slightly inflated. 
+Typically, we do not worry too much about the precision of very large p-values because they lead to the same analysis conclusion, even if the value is slightly off.
 
 #### Controlling the Type 1 Error rate {-}
 
