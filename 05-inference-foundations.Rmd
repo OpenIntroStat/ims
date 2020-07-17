@@ -56,7 +56,7 @@ Using the methods provided in this chapter, we will be able to draw conclusions 
 
 
 The first type of variability we will explore comes from experiments where the explanatory variable (or treatment) is randomly assigned to the observational units.
-As you learned in Chapter \@ref(intro-to-data), a **randomized experiment** is done to assess whether or not one variable (the **explanatory** variable) causes a second variable (the **response** variable). 
+As you learned in Chapter \@ref(intro-to-data), a **randomized experiment** is done to assess whether or not one variable (the **explanatory** variable) causes changes in a second variable (the **response** variable). 
 Every dataset has some variability in it, so to decide whether the variability in the data is due to (1) the causal mechanism (the randomized explanatory variable in the experiment) or instead (2) natural variability inherent to the data, we set up a sham randomized experiment as a comparison. 
 That is, we assume that each observational unit would have gotten the exact same response value regardless of the treatment level. 
 By reassigning the treatments many many times, we can compare the actual experiment to the sham experiment. If the actual experiment has more extreme results than any of the sham experiments, we are led to believe that it is the explanatory variable which is causing the result and not inherent data variability. 
@@ -83,7 +83,7 @@ The files given to the participants were identical, except that half of them ind
 These files were randomly assigned to the subjects.
 
 ```{block2, type="guidedpractice", echo=TRUE}
-Is this an observational study or an experiment? How does the type of study impact what can be inferred from the results?^[The study is an experiment, as subjects were randomly assigned a male file or a female file. Since this is an experiment, the results can be used to evaluate a causal relationship between gender of a candidate and the promotion decision.]
+Is this an observational study or an experiment? How does the type of study impact what can be inferred from the results?^[The study is an experiment, as subjects were randomly assigned a "male" file or a "female" file (remember, all the files were actually identical in content). Since this is an experiment, the results can be used to evaluate a causal relationship between gender of a candidate and the promotion decision.]
 ```
 
 For each supervisor we recorded the gender associated with the assigned file and the promotion decision. 
@@ -168,23 +168,25 @@ If this is the case, and the data support $H_A$, then we will reject the notion 
 
 Table \@ref(tab:discriminationResults) shows that 35 bank supervisors recommended promotion and 13 did not. 
 Now, suppose the bankers' decisions were independent of gender. 
-Then, if we conducted the experiment again with a different random assignment of files, differences in promotion rates would be based only on random fluctuation. 
-We can actually perform this **randomization**, which simulates what would have happened if the bankers' decisions had been independent of gender but we had distributed the files differently.^[The test procedure we employ in this section is often referred to as a **permutation test**\index{permutation test}.]
+Then, if we conducted the experiment again with a different random assignment of gender to the files, differences in promotion rates would be based only on random fluctuation. 
+We can actually perform this **randomization**, which simulates what would have happened if the bankers' decisions had been independent of gender but we had distributed the file genders differently.^[The test procedure we employ in this section is sometimes referred to as a **permutation test**\index{permutation test}.]
 
 ```{r include=FALSE}
 terms_chp_5 <- c(terms_chp_5, "permutation test")
 ```
 
-In this **simulation**\index{simulation}, we thoroughly shuffle 48 personnel files, 24 labeled `male` and 24 labeled `female`, and deal these files into two stacks. 
-We will deal 35 files into the first stack, which will represent the 35 supervisors who recommended promotion. 
-The second stack will have 13 files, and it will represent the 13 supervisors who recommended against promotion. Then, as we did with the original data, we tabulate the results and determine the fraction of `male` and `female` who were promoted.
+In this **simulation**\index{simulation}, we thoroughly shuffle 48 personnel files, 35 labeled `promoted` and 13 labeled `not promoted`, and we deal these files into two stacks. 
+Note that by keeping 35 promoted and 13 not promoted, we are assuming that 35 of the bank managers would have promoted the individual whose content is contained in the file (**independent** of gender).
+We will deal 24 files into the first stack, which will represent the 24 "female" files.
+The second stack will also have 24 files, and it will represent the 24 "male" files. 
+Then, as we did with the original data, we tabulate the results and determine the fraction of `male` and `female` who were promoted.
 
 ```{r include=FALSE}
 terms_chp_5 <- c(terms_chp_5, "simulation")
 ```
 
-Since the randomization of files in this simulation is independent of the promotion decisions, any difference in the two fractions is entirely due to chance. 
-Table \@ref(tab:discriminationRand1) show the results of such a simulation.
+Since the randomization of files in this simulation is independent of the promotion decisions, any difference in the two promotion rates is entirely due to chance. 
+Table \@ref(tab:discriminationRand1) show the results of one such simulation.
 
 
 ```{r discriminationRand1}
@@ -196,7 +198,7 @@ temptbl <- tribble(
 )
 
 temptbl %>%
- kable(caption = "Simulation results, where any difference in promotion rates between `male` and `female` is purely due to chance.",
+ kable(caption = "Simulation results, where the difference in promotion rates between `male` and `female` is purely due to chance.",
     col.names = c("", "", "promoted", "not promoted", "Total")) %>%
  kable_styling() %>%
  add_header_above(c(" ", " ", "`decision`" = 2, " "))
@@ -218,19 +220,12 @@ And so on until we repeat the simulation enough times that we have a good idea o
 Figure \@ref(fig:discRandDotPlot) shows a plot of the differences found from 100 simulations, where each dot represents a simulated difference between the proportions of male and female files recommended for promotion.
 
 
-```{block2, type="todo", echo = TRUE}
-
-caption?
-
-A stacked dot plot of differences from 100 simulations produced under the null hypothesis, $H_0$, where `gender_simulated` and `decision` are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study, and are shown as solid dots.
-  
-```
-
-```{r discRandDotPlot, fig.cap="A stacked dot plot of differences from 100 simulations produced under the null hypothesis, H0, where `gender_simulated` and `decision` are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study, and are shown as solid dots.", warning=FALSE, fig.width=10}
+```{r discRandDotPlot, fig.cap="A stacked dot plot of differences from 100 simulations produced under the null hypothesis, $H_0$, where `gender_simulated` and `decision` are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study, and are shown as solid red dots.", warning=FALSE, fig.width=10}
 
 gender <- c(rep('male', 24), rep('female', 24))
 outcome <- c(rep(c('promoted', 'not promoted'), c(21, 3)), rep(c('promoted', 'not promoted'), c(14, 10)))
 
+set.seed(40)
 nsim = 100
 n   = length(gender)
 group = gender
@@ -274,7 +269,7 @@ y   <- 1 + 1 * sin(theta)
 points(X[X > 0.25], Y[X > 0.25], lwd=3, col = COL[4], cex=0.4)
 ```
 
-Note that the distribution of these simulated differences is centered around 0. 
+Note that the distribution of these simulated differences in proportions is centered around 0. 
 Because we simulated differences in a way that made no distinction between men and women, this makes sense: we should expect differences from chance alone to fall around zero with some random fluctuation for each simulation.
 
 ```{block2, type="example", echo=TRUE}
@@ -294,7 +289,7 @@ The difference of 29.2% is a rare event if there really is no impact from listin
 
 > $H_A$: **Alternative hypothesis**. Gender has an effect on promotion decision, and what we observed was actually due to equally qualified women being discriminated against in promotion decisions, which explains the large difference of 29.2%.
 
-When we conduct formal studies, we reject a skeptical position if the data strongly conflict with that position.^[This reasoning does not generally extend to anecdotal observations. 
+When we conduct formal studies, we reject a null position (the idea that the data are a result of chance only) if the data strongly conflict with that null position.^[This reasoning does not generally extend to anecdotal observations. 
 Each of us observes incredibly rare events every day, events we could not possibly hope to predict. 
 However, in the non-rigorous setting of anecdotal evidence, almost anything may appear to be a rare event, so the idea of looking for rare events in day-to-day activities is treacherous. 
 For example, we might look at the lottery: there was only a 1 in 176 million chance that the Mega Millions numbers for the largest jackpot in history (March 30, 2012) would be (2, 4, 23, 38, 46) with a Mega ball of (23), but nonetheless those numbers came up! 
@@ -302,7 +297,7 @@ However, no matter what numbers had turned up, they would have had the same incr
 That is, *any set of numbers we could have observed would ultimately be incredibly rare*. 
 This type of situation is typical of our daily lives: each possible event in itself seems incredibly rare, but if we consider every alternative, those outcomes are also incredibly rare. 
 We should be cautious not to misinterpret such anecdotal evidence.]
-In our analysis, we determined that there was only a $\approx$ 2% probability of obtaining a sample where $\geq$ 29.2% more males than females get promoted by chance alone, so we conclude the data provide strong evidence of gender discrimination against women by the supervisors. 
+In our analysis, we determined that there was only a $\approx$ 2% probability of obtaining a sample where $\geq$ 29.2% more males than females get promoted by chance alone, so we conclude that the data provide strong evidence of gender discrimination against women by the supervisors. 
 In this case, we reject the null hypothesis in favor of the alternative.
 
 \index{data!discrimination|)}
@@ -316,11 +311,11 @@ Before getting into the nuances of hypothesis testing, let's work through anothe
 ### Randomization case study: opportunity cost {#caseStudyOpportunityCost}
 
 How rational and consistent is the behavior of the typical American college student? 
-In this section, we'll explore whether college student consumers always consider an obvious fact: money not spent now can be spent later.
+In this section, we'll explore whether college student consumers always consider the following: money not spent now can be spent later.
 
 In particular, we are interested in whether reminding students about this well-known fact about money causes them to be a little thriftier. 
 A skeptic might think that such a reminder would have no impact. 
-We can summarize these two perspectives using the null and alternative hypothesis framework.
+We can summarize the two different perspectives using the null and alternative hypothesis framework.
 
 > $H_0$: **Null hypothesis**. Reminding students that they can save money for later purchases will not have any impact on students' spending decisions.
 
@@ -376,7 +371,7 @@ temptbl %>%
 ```
 
 <!--
-%150 participants were asked whether they would buy a DVD under a particular circumstance. Participants in the control group were given two options, and participants in the treatment group were given the same options, except in the \emph{not buy} option they were reminded that not spending the money meant the money could be used for a later purchase. This table summarizes the results from the study.}
+%150 participants were asked whether they would buy a DVD under a particular circumstance. Participants in the control group were given two options, and participants in the treatment group were given the same options, except in the *not buy* option they were reminded that not spending the money meant the money could be used for a later purchase. This table summarizes the results from the study.}
 -->
 
 It might be a little easier to review the results using row proportions, specifically considering the proportion of participants in each group who said they would buy or not buy the DVD. 
@@ -443,7 +438,7 @@ Just like with the gender discrimination study, we can perform a statistical ana
 Using the same randomization technique from the last section, let's see what happens when we simulate the experiment under the scenario where there is no effect from the treatment.
 
 While we would in reality do this simulation on a computer, it might be useful to think about how we would go about carrying out the simulation without a computer. 
-We start with 150 index cards and label each card to indicate the distribution of our response variable: decision.  
+We start with 150 index cards and label each card to indicate the distribution of our response variable: `decision`. 
 That is, 53 cards will be labeled "not buy DVD" to represent the 53 students who opted not to buy, and 97 will be labeled "buy DVD" for the other 97 students. 
 Then we shuffle these cards thoroughly and divide them into two stacks of size 75, representing the simulated treatment and control groups. 
 Any observed difference between the proportions of "not buy DVD" cards (what we earlier defined as *success*) can be attributed entirely to chance.
@@ -461,7 +456,7 @@ Since the simulated groups are of equal size, we would expect $53 / 2 = 26.5$, i
 %We'll take the students and randomize them into two new groups, simulated-control and simulated-treatment groups, and then we'll look at the difference in the two groups. 
 -->
 
-The results of a randomization from chance alone is shown in Table \@ref(tab:OpportunityCostTableSimulated). 
+The results of a single randomization from chance alone is shown in Table \@ref(tab:OpportunityCostTableSimulated). 
 From this table, we can compute a difference that occurred from chance alone:
 \begin{align*}
 \hat{p}_{trmt, simulated} - \hat{p}_{ctrl, simulated}
@@ -497,13 +492,10 @@ And again: -0.173.
 We'll do this 1,000 times. The results are summarized in a dot plot in Figure \@ref(fig:OpportunityCostDiffsDotPlot), where each point represents a simulation. 
 Since there are so many points, it is more convenient to summarize the results in a histogram such as the one in Figure \@ref(fig:OpportunityCostDiffs), where the height of each histogram bar represents the fraction of observations in that group.
 
-```{block2, type="todo", echo = TRUE}
-A stacked dot plot of 1,000 chance differences produced under the null hypothesis, $H_0$. Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study.
-```
 
-```{r OpportunityCostDiffsDotPlot, fig.cap="A stacked dot plot of 1,000 chance differences produced under the null hypothesis, H0. Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study.", warning=FALSE, fig.width=10}
+```{r OpportunityCostDiffsDotPlot, fig.cap="A stacked dot plot of 1,000 chance differences produced under the null hypothesis, $H_0$. Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study.", warning=FALSE, fig.width=10}
 
-
+set.seed(41)
 DotPlotRegularized <- function(x,
                          width = 5,
                                col = "#569BBD",
@@ -556,7 +548,7 @@ for(i in 1:nsim){
 
 sim_dist = apply(sim, 2, Statistic, var1 = outcome)
 diffs    = sim_dist
-pval     = sum(diffs >= 0.29) / nsim
+pval     = sum(diffs >= 0.2) / nsim
 values  <- table(sim_dist)
 
 xlab <- paste0("Simulated difference in proportions ",
@@ -565,14 +557,12 @@ xlab <- paste0("Simulated difference in proportions ",
 DotPlotRegularized(diffs, xlab = xlab, ylab = "", cex = 2)
 text(0.2, 5, "observed\ndifference", pos = 3)
 lines(rep(0.2, 2), c(0, 5), lty = 2, col = COL[6])
+
+sum(diffs >=0.2)
 ```
 
-```{block2, type="todo", echo=TRUE}
 
-"A histogram of 1,000 chance differences produced under the null hypothesis, $H_0$. Histograms like this one are a more convenient representation of data or results when there are a large number of observations."
-```
-
-```{r OpportunityCostDiffs, fig.cap="A histogram of 1,000 chance differences produced under the null hypothesis, H0. Histograms like this one are a more convenient representation of data or results when there are a large number of observations.", warning=FALSE, fig.width=10}
+```{r OpportunityCostDiffs, fig.cap="A histogram of 1,000 chance differences produced under the null hypothesis, $H_0$. Histograms like this one are a more convenient representation of data or results when there are a large number of observations.", warning=FALSE, fig.width=10}
 
 X <- c()
 Y <- c()
@@ -613,7 +603,7 @@ Notice that we are able to make a causal statement for this study since the stud
 
 In the last two sections, we utilized a **hypothesis test**\index{hypothesis test}, which is a formal technique for evaluating two competing possibilities. 
 In each scenario, we described a **null hypothesis**\index{null hypothesis}, which represented either a skeptical perspective or a perspective of no difference. 
-We also laid out an **alternative hypothesis**\index{alternative hypothesis}, which represented a new perspective such as the possibility that there has been a change or that there is a treatment effect in an experiment.
+We also laid out an **alternative hypothesis**\index{alternative hypothesis}, which represented a new perspective such as the possibility that there has been a change or that there is a treatment effect in an experiment.  The alternative hypothesis is usually the reason the scientists set out to do the research in the first place.
 
 
 ```{r include=FALSE}
@@ -636,7 +626,7 @@ The hallmarks of hypothesis testing are also found in the US court system.
 
 
 ```{block2, type="example", echo=TRUE}
-A US court considers two possible claims about a defendant: she is either innocent or guilty. If we set these claims up in a hypothesis framework, which would be the null hypothesis and which the alternative?
+A US court considers two possible claims about a defendant: they are either innocent or guilty. If we set these claims up in a hypothesis framework, which would be the null hypothesis and which the alternative?
 
 ---
  
@@ -656,7 +646,7 @@ Failing to find strong evidence for the alternative hypothesis is not equivalent
 #### p-value and statistical significance {-}
 
 In Section \@ref(caseStudyGenderDiscrimination) we encountered a study from the 1970's that explored whether there was strong evidence that women were less likely to be promoted than men. 
-The research question -- are females discriminated against in promotion decisions made by male managers? -- was framed in the context of hypotheses:
+The research question -- are females discriminated against in promotion decisions? -- was framed in the context of hypotheses:
 
 
 > $H_0$: Gender has no effect on promotion decisions.
@@ -678,7 +668,7 @@ The 2-in-100 chance is what we call a **p-value**, which is a probability quanti
 ```{block2, type="onebox", echo=TRUE}
 **p-value.**
 
-The **p-value**\index{hypothesis testing!p-value|textbf} is the probability of observing data at least as favorable to the alternative hypothesis as our current data set, if the null hypothesis were true. 
+The **p-value**\index{hypothesis testing!p-value|textbf} is the probability of observing data at least as favorable to the alternative hypothesis as our current dataset, if the null hypothesis were true. 
 We typically use a summary statistic of the data, such as a difference in proportions, to help compute the p-value and evaluate the hypotheses. 
 This summary value that is used to compute the p-value is often called the **test statistic**\index{test statistic}.
 ```
@@ -705,7 +695,7 @@ Using a significance level of $\alpha = 0.05$ in the discrimination study, we ca
 ```{block2, type="onebox", echo=TRUE}
 **Statistical significance.**
 
-We say that the data provide **statistically significant**\index{hypothesis testing!statistically significant|textbf} evidence against the null hypothesis if the p-value is less than some reference value, usually $\alpha=0.05$.
+We say that the data provide **statistically significant**\index{hypothesis testing!statistically significant|textbf} evidence against the null hypothesis if the p-value is less than some reference value, often $\alpha=0.05$.
 ```
 
 <!--
@@ -716,7 +706,7 @@ We say that the data provide **statistically significant**\index{hypothesis test
 
 
 ```{block2, type="example", echo=TRUE}
-In the opportunity cost study in Section \@ref(caseStudyOpportunityCost), we analyzed an experiment where study participants were 20% less likely to continue with a DVD purchase if they were reminded that the money, if not spent on the DVD, could be used for other purchases in the future. 
+In the opportunity cost study in Section \@ref(caseStudyOpportunityCost), we analyzed an experiment where study participants had a 20% drop in likelihood of continuing with a DVD purchase if they were reminded that the money, if not spent on the DVD, could be used for other purchases in the future. 
 We determined that such a large difference would only occur about 1-in-150 times if the reminder actually had no influence on student decision-making. 
 What is the p-value in this study? Was the result statistically significant?
  
@@ -741,7 +731,7 @@ We've made a video to help clarify *why 0.05*:
 </center>
 <br>
 Sometimes it's also a good idea to deviate from the standard. 
-We'll discuss when to choose a threshold different than 0.05 in Section \@ref(HypothesisTesting).
+We'll discuss when to choose a threshold different than 0.05 in Section \@ref(two-prop-errors).
 ```
 
 
@@ -781,14 +771,13 @@ In this section, we explore the situation where we focus on a single proportion,
 Bootstrapping is best suited for modeling studies where the data have been generated through random sampling from a population.
 
 Sometime the mathematical theory for how an estimate varies is well-known; this is the case for the sample proportion as seen in Section \@ref(inf-math). 
-However, some statistics don't have simple theory for how they vary, and bootstrapping provides a computational approach for providing interval estimates for almost any parameter. 
+However, some statistics don't have simple theory for how they vary, and bootstrapping provides a computational approach for providing interval estimates for almost any population parameter (we will revisit bootstrapping in Chapters \@ref(inference-cat), \@ref(inference-num), and \@ref(inference-reg) so you'll get plenty of practice as well as exposure to bootstrapping in many different data settings). 
 
-If the goal is to produce a range of possible values, than in an ideal world, we would sample data from the population again and recompute the sample proportion. 
+If the goal is to produce a range of possible values for a population value, then in an ideal world, we would sample data from the population again and recompute the sample proportion. 
 Then we could do it again. 
 And again. 
 And so on until we have a good sense of the variability of our original estimate. 
-This is an ideal world where sampling data is free or extremely cheap. 
-It is almost never the case that taking repeated samples from a population is possible. 
+The ideal world where sampling data is free or extremely cheap is almost never the case, and taking repeated samples from a population is usually impossible. 
 So, instead of using a "resample from the population" approach, bootstrapping uses a "resample from the sample" approach.
 
 
@@ -805,6 +794,7 @@ She claims this is strong evidence that her work meaningfully contributes to red
 
 ```{block2, type="example", echo=TRUE}
 We will let $p$ represent the true complication rate for liver donors working with this consultant. 
+(The "true" complication rate will be referred to as the **parameter**.)  
 Estimate $p$ using the data, and label this value $\hat{p}$.
 
 ---
@@ -817,7 +807,7 @@ Is it possible to assess the consultant's claim using the data?
 
 ---
 
-No. The claim is that there is a causal connection, but the data are observational. 
+No. The claim is that there is a causal connection, but the data are observational, so we must be on the lookout for confounding varaibles. 
 For example, maybe patients who can afford a medical consultant can afford better medical care, which can also lead to a lower complication rate.
 
 While it is not possible to assess the causal claim, it is still possible to understand the consultant's true rate of complications.
@@ -839,7 +829,7 @@ $$\hat{p} = 3 / 62 = 0.048\qquad\text{is used to estimate}\qquad p$$
 
 <!--
 %\begin{termBox}{\tBoxTitle{Point estimates vs parameter}\index{point estimate}\index{parameter}
-%Point estimates are calculated based on a sample. For example, the \emph{observed} complication rate for the medical consultant's patients is $\hat{p} = 0.048$. This point estimate is our best guess at the probability $p$ a randomly selected client of hers has a complication. This probability is the parameter and its precise value is never known. However, we can estimate it using the point estimate $\hat{p}$.}
+%Point estimates are calculated based on a sample. For example, the *observed* complication rate for the medical consultant's patients is $\hat{p} = 0.048$. This point estimate is our best guess at the probability $p$ a randomly selected client of hers has a complication. This probability is the parameter and its precise value is never known. However, we can estimate it using the point estimate $\hat{p}$.}
 %\end{termBox}
 
 
@@ -864,6 +854,10 @@ By sampling with replacement from the dataset (a process called **bootstrapping*
 terms_chp_5 <- c(terms_chp_5, "bootstrapping")
 ```
 
+```{block2, type = "todo", echo= TRUE}
+need a new physical object!
+```
+
 Each client can be simulated using a (hypothetical) 62-sided die.
 The die has 3 red sides and 59 black sides. 
 For each roll, the rate of complication is 0.048 (= 3/62): if the die roll is red, we say the patient had a complication, and if it is black then we say they did not have a complication. 
@@ -874,17 +868,17 @@ In a simulation of 62 patients, about how many would we expect to have had a com
 ```
 
 We conducted such a simulation. 
-There were 5 simulated cases with a complication and 57 simulated cases without a complication: $\hat{p}_{bs} = 5/62 = 0.081$.
+Out of the simulated cases, there were 5 with a complication and 57 without a complication: $\hat{p}_{bs} = 5/62 = 0.081$.
 
 One simulation isn't enough to get a sense of the variability from one bootstrap proportion to another bootstrap proportion, so we repeated the simulation 10,000 times using a computer. 
-Figure \@ref(fig:MedConsBSSim) shows the distribution from these 10,000 simulations. 
+Figure \@ref(fig:MedConsBSSim) shows the distribution from the 10,000 bootstrap simulations. 
 The bootstrapped proportions vary from about zero to 11.3%. 
-The variability in the bootstrapped proportions leads us to believe that the true probability of complication is somewhere between 0 and 11.3%.
+The variability in the bootstrapped proportions leads us to believe that the true probability of complication (the parameter, $p$) is somewhere between 0 and 11.3%.
 <!--The simulated proportions that are less than or equal to $\hat{p}=0.048$ are shaded.
 There were 1222 simulated sample proportions with $\hat{p}_{bs} \leq 0.048$, which represents a fraction 0.1222 of our simulations:
 -->
 
-```{r MedConsBSSim, fig.cap="The original medical consultant data is bootstrapped 10,000 times. Each simulation creates a sample where the probability of being correct is $\\hat{p} = 3/62$. The bootstrap 2.5 percentile proportion is 0 and the 97.5 percentile is 0.113. The result is that we are confident that, in the larger population, the true proportion of people who can guess correctly is between 0% and 11.3%.", warning=FALSE, fig.width=10}
+```{r MedConsBSSim, fig.cap="The original medical consultant data is bootstrapped 10,000 times. Each simulation creates a sample from the original data where the probability of a complication is $\\hat{p} = 3/62$. The bootstrap 2.5 percentile proportion is 0 and the 97.5 percentile is 0.113. The result is: we are confident that, in the population, the true probability of a complication is between 0% and 11.3%.", warning=FALSE, fig.width=10}
 bsprops <- rbinom(10000, size=62, prob=(3/62))/62
 bsq <- quantile(bsprops, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
 
@@ -939,7 +933,7 @@ Explain.
 
 ---
 
-No. Because the interval overlaps 10%, it might be that the consultant's work is associated with a lower risk of complciations, or it might be that the consulant's work is associated with a higher risk of complications! Additionally, as previously mentioned, because this is an observational study, even if an association can be measured, there is no evidence that the consultant's work is the cause of the complication rate (being higher or lower). 
+No. Because the interval overlaps 10%, it might be that the consultant's work is associated with a lower risk of complciations, or it might be that the consulant's work is associated with a higher risk (i.e., greater than 10%) of complications! Additionally, as previously mentioned, because this is an observational study, even if an association can be measured, there is no evidence that the consultant's work is the cause of the complication rate (being higher or lower). 
 ```
 
 <!--
@@ -973,6 +967,10 @@ From the perspective of the null hypothesis, we might wonder, how likely is it t
 That is, what's the chance we would happen to see such a small fraction if $H_0$ were true and the true correct-guess rate is 0.50?
 -->
 
+```{block2, type = "todo", echo= TRUE}
+need a new physical object!
+```
+
 To answer the question, we will again use a simulation. 
 To simulate 120 games, this time we use a (hypothetical) 120-sided die to simulate the 120 listeners. 
 The die has 3 black sides and 117 red sides which simulates the probability of guessing set at 3 out of 120.
@@ -1003,7 +1001,7 @@ As before, we'll run a total of 10,000 simulations using a computer.
 As seen in Figure \@ref(fig:tappers-bs-sim), the range of 95% of the resampled $\hat{p}_{bs}$ is 0.000 to 0.0583. 
 That is, we expect that between 0% and 5.83% of people are truly able to guess the tapper's tune.
 
-```{r tappers-bs-sim, fig.cap="The original listener-tapper data is bootstrapped 10,000 times. Each simulation creates a sample where the probability of being correct is $\\hat{p} = 3/120$. The 2.5 percentile proportion is 0 and the 97.5 percentile is 0.0583. The result is that we are confident that, in the larger population, the true proportion of people who can guess correctly is between 0% and 5.83%.", warning=FALSE, fig.width=10}
+```{r tappers-bs-sim, fig.cap="The original listener-tapper data is bootstrapped 10,000 times. Each simulation creates a sample where the probability of being correct is $\\hat{p} = 3/120$. The 2.5 percentile proportion is 0 and the 97.5 percentile is 0.0583. The result is that we are confident that, in the population, the true percent of people who can guess correctly is between 0% and 5.83%.", warning=FALSE, fig.width=10}
 
 bsprops2 <- rbinom(10000, size=120, prob=(3/120))/120
 bsq2 <- quantile(bsprops2, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
@@ -1065,7 +1063,7 @@ In addition to supplying a point estimate of a parameter, a next logical step wo
 #### Capturing the population parameter {-}
 
 A plausible range of values for the population parameter is called a **confidence interval**. 
-Using only a point estimate is like fishing in a murky lake with a spear, and using a confidence interval is like fishing with a net. 
+Using only a single point estimate is like fishing in a murky lake with a spear, and using a confidence interval is like fishing with a net. 
 We can throw a spear where we saw a fish, but we will probably miss. 
 On the other hand, if we toss a net in that area, we have a good chance of catching the fish.
 
@@ -1079,8 +1077,12 @@ If we want to be very certain we capture the population parameter, should we use
 #### Constructing a bootstrap confidence interval {-}
 
 
-As we saw above, **bootstrap sample**\index{bootstrap sample} is a sample of the original sample. 
+As we saw above, a **bootstrap sample**\index{bootstrap sample} is a sample of the original sample. 
 In the case of the medical complications data, we proceed as follows:
+
+```{block2, type = "todo", echo= TRUE}
+need a new physical object!
+```
 
 1. Randomly sample one observation from the 62 patients (roll a single 62-sided die with red and black sides).
 2. Randomly sample a second observation from the 62 patients. Because we sample with replacement (i.e., roll the die again), there is a 1-in-62 chance that this second observation will be the same one sampled in the first step!
@@ -1092,7 +1094,7 @@ terms_chp_5 <- c(terms_chp_5, "bootstrap sample")
 ```
 
 Bootstrap sampling is also called sampling with replacement. 
-A bootstrap sample behaves similarly to how an actual sample would behave, and we compute the point estimate of interest (here, compute $\hat{p}_{bs}$. 
+A bootstrap sample behaves similarly to how an actual sample would behave, and we compute the point estimate of interest (here, compute $\hat{p}_{bs}$). 
 
 Due to theory that is beyond this text, we know that the bootstrap proportions $\hat{p}_{bs}$ vary around $\hat{p}$ in a similar way to how different sample (i.e., different datasets which would produce different $\hat{p}$ values) proportions vary around the true parameter $p$. 
 Therefore, an interval estimate for $p$ can be produced using the $\hat{p}_{bs}$ values themselves.
@@ -1105,6 +1107,8 @@ The 95% bootstrap confidence interval for the parameter $p$ can be obtained dire
 ($\hat{p}_{bs, 0.025}$, $\hat{p}_{bs, 0.975}$)
 </center>
 ```
+
+In Section \@ref(one-prop-null-boot) we will discuss different percentages for the confidence interval (e.g., 90% confidence interval or 99% confidence interval).  Section \@ref(one-prop-null-boot) also provides a longer discussion on what "95% confidence" actually means.
 
 ### Bootstrap confidence interval box/flow chart
 
@@ -1131,7 +1135,7 @@ In the case of the opportunity cost study, which originally had just 1,000 simul
 ```
 
 
-```{r FourCaseStudies, fig.cap="The null distribution for each of the four case studies presented previously.", warning=FALSE, fig.width=10}
+```{r FourCaseStudies, fig.cap="The null distribution for each of the four case studies presented previously in this Chapter.", warning=FALSE, fig.width=10}
 
 number.of.simulations <- 10000
 m.fact <- number.of.simulations / 1e3
@@ -1180,20 +1184,18 @@ text(0, 20 * m.fact, cex = 2, "Opportunity Cost")
 
 
 
-# _____ CPR / Blood Thinner _____ #
+# _____ Gender Discrimination_____ #
 set.seed(1)
-tr <- rep(1:2, c(50, 40))
-su <- c(rep(c("s", "d"), c(11, 39)),
-        rep(c("s", "d"), c(14, 26)))
+gender <- c(rep('male', 24), rep('female', 24))
+outcome <- c(rep(c('promoted', 'not promoted'), c(21, 3)), rep(c('promoted', 'not promoted'), c(14, 10)))
 N <- number.of.simulations * 10
 d <- rep(NA, N)
 for(i in 1:N){
-	trf  <- sample(tr)
-	p1   <- sum(su[trf == 1] == "s") / 50
-	p2   <- sum(su[trf == 2] == "s") / 40
+	gends  <- sample(gender)
+	p1   <- sum(outcome[gends == "male"] == "promoted") / 24
+	p2   <- sum(outcome[gends == "female"] == "promoted") / 24
 	d[i] <- p2 - p1
 }
-#sum((d) > 0.1299) / N
 udiffs    <- sort(unique(d))
 bin.width <- diff(udiffs)[1]
 breaks    <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
@@ -1203,7 +1205,7 @@ axis(1)
 rect(-0.07, 153 * m.fact, 0.07, 347 * m.fact,
      col = rgb(1,1,1,0.65), border = rgb(0,0,0,0))
 text(0, 250 * m.fact, cex = 2,
-     paste0("CPR "))
+     paste0("Gender Discrimination"))
 
 
 
@@ -1256,7 +1258,7 @@ This is not a coincidence, but rather, is guaranteed by mathematical theory.
 ```{block2, type="onebox", echo=TRUE}
 **Central Limit Theorem for proportions.**\index{Central Limit Theorem}
 
-If we look at a proportion (or difference in proportions) and the scenario satisfies certain conditions, then the sample proportion (or difference in proportions) will appear to follow a bell-shaped curve called the *normal distribution*.\index{Central Limit Theorem}\index{Central Limit Theorem!proportion}\index{Central Limit Theorem!difference in proportions}.
+If we look at a proportion (or difference in proportions) and the scenario satisfies certain conditions, then the sample proportion (or difference in proportions) will appear to follow a bell-shaped curve called the *normal distribution*.\index{Central Limit Theorem}\index{Central Limit Theorem!proportion}\index{Central Limit Theorem!difference in proportions}
 ```
 
 ```{r include=FALSE}
@@ -1265,7 +1267,7 @@ terms_chp_5 <- c(terms_chp_5, "Central Limit Theorem")
 
 An example of a perfect normal distribution is shown in Figure \@ref(fig:simpleNormal). 
 Imagine laying a normal curve over each of the four null distributions in Figure \@ref(fig:FourCaseStudies). 
-While the mean and standard deviation may change for each plot, the general shape remains roughly intact.
+While the mean (center) and standard deviation (width or spread) may change for each plot, the general shape remains roughly intact.
 
 
 ```{r simpleNormal, fig.cap="A normal curve.", warning=FALSE, fig.width=10}
@@ -1276,7 +1278,7 @@ plot(X, Y, type='l', axes=F, xlim=c(-4,4), lwd=2, col=COL[5])
 abline(h=-0.002, col=COL[5])
 ```
 
-Mathematical theory guarantees that a sample proportion or a difference in sample proportions will follow something that resembles a normal distribution when certain conditions are met. 
+Mathematical theory guarantees that if repeated samples are taken a sample proportion or a difference in sample proportions will follow something that resembles a normal distribution when certain conditions are met. (Note: we typically only take **one** sample, but the mathematical model lets us know what to expect if we *had* taken repeated samples.)
 These conditions fall into two categories:
 
 > Observations in the sample are independent. Independence is guaranteed when we take a random sample from a population. It can also be guaranteed if we randomly divide individuals into treatment and control groups.
@@ -1287,20 +1289,20 @@ These conditions fall into two categories:
 So far we've had no need for the normal distribution. 
 We've been able to answer our questions somewhat easily using simulation techniques. However, soon this will change. 
 Simulating data can be non-trivial. 
-For example, some scenarios that we will encounter in Chapters \@ref(cor-reg) and \@ref(mult-reg) would require complex simulations. 
-Instead, the normal distribution and other distributions like it offer a general framework that applies to a very large number of settings.
+For example, some of the scenarios encountered in Chapters \@ref(cor-reg) and \@ref(mult-reg) would require complex simulations in order to make inferential conclusions. 
+Instead, the normal distribution and other distributions like it offer a general framework for statistical inference that applies to a very large number of settings.
 
 
 #### Examples of future settings we will consider {-}
 
-Below we introduce three new settings where the normal distribution will be useful but constructing suitable simulations can be difficult.
+Below we introduce three new settings where the normal distribution will be useful, and constructing suitable simulations can be difficult.
 
 ```{block2, type="example", echo=TRUE}
 The opportunity cost study determined that students are thriftier if they are reminded that saving money now means they can spend the money later. The study's point estimate for the estimated impact was 20%, meaning 20% fewer students would move forward with a DVD purchase in the study scenario. However, as we've learned, point estimates aren't perfect -- they only provide an approximation of the truth.
 
 ---
 
-It would be useful if we could provide a *range of plausible values* for the impact, more formally known as a **confidence interval**. It is often difficult to construct a reliable confidence interval in many situations using simulations.^[The percentile bootstrap method has been put forward as an alternative. However, simulations show that this method is consistently less robust than than the normal distribution. For more information, visit [openintro.org/bootstrap](http://openintro.org/bootstrap).] However, doing so is reasonably straightforward using the normal distribution. We'll tackle this topic in Section \@ref(ConfidenceIntervals).
+It would be useful if we could provide a *range of plausible values* for the impact, more formally known as a **confidence interval**. It is often difficult to construct a reliable confidence interval in many situations using simulations.^[The percentile bootstrap method has been introduced in Section \@ref(ConfidenceIntervals).  We will revisit bootstrap intervals in Section \@ref(two-prop-boot-ci).] However, doing so is reasonably straightforward using the normal distribution. 
 ```
 
 ```{block2, type="example", echo=TRUE}
@@ -1311,10 +1313,6 @@ Book prices were collected for 73 courses at UCLA in Spring 2010. Data were coll
 Here again we can apply the normal distribution, this time in the context of numerical data. We'll explore this example and construct such a hypothesis test in Section \@ref(paired-data).
 ```
 
-```{block2, type="todo", echo=TRUE}
-
-"Histogram of the difference in price for each book sampled. These data are strongly skewed.\index{skew!example: strong}\textA{\vspace{-3mm}}"
-```
 
 
 ```{r diffInTextbookPricesS10-CLTsection, fig.cap="Histogram of the difference in price for each book sampled. These data are strongly skewed.", warning=FALSE, fig.width=10, message = FALSE}
@@ -1328,12 +1326,14 @@ axis(1,cex.axis=0.87, tck=-0.03)
 axis(2, at=seq(0, 30, 10), cex.axis=0.87, tck=-0.02)
 ```
 
+\index{skew!example: strong}\textA{\vspace{-3mm}}
+
 ```{block2, type="example", echo=TRUE}
 Elmhurst College in Illinois released anonymized data for family income and financial support provided by the school for Elmhurst's first-year students in 2011. Figure \@ref(fig:elmhurstScatterWLSROnly-CLTsection) shows a *regression line* fit to a scatterplot of a sample of the data. One question we will ask is, do the data show a real trend, or is the trend we observe reasonably explained by chance?
 
 ---
 
-In Chapter \@ref(cor-reg) we learned how to apply least squares regression to quantify the trend and quantify whether or not that trend can be explained by chance alone. For this case study, we could again use the normal distribution to help us answer this question.
+In Chapter \@ref(cor-reg) we learned how to apply least squares regression to quantify the trend.  In Chapter \@ref(inference-reg) we will focus on whether or not that trend can be explained by chance alone. For this case study, we could again use the normal distribution to help us answer this question.
 ```
 
 
@@ -1384,7 +1384,7 @@ abline(g, lwd=2)
 These examples highlight the value of the normal distribution approach. 
 However, before we can apply the normal distribution to statistical inference, it is necessary to become familiar with the mechanics of the normal distribution. 
 In Section \@ref(normalDist) we discuss characteristics of the normal distribution, explore examples of data that follow a normal distribution, and learn a new plotting technique that is useful for evaluating whether a data set roughly follows the normal distribution. 
-In Sections \@ref(ApplyingTheNormalModel) and \@ref(ConfidenceIntervals), we apply this new knowledge in the context of hypothesis tests and confidence intervals.
+In Section \@ref(ApplyingTheNormalModel), we apply the new knowledge in the context of hypothesis tests and confidence intervals.
 
 
 ### Normal Distribution {#normalDist}
@@ -1394,8 +1394,8 @@ In Sections \@ref(ApplyingTheNormalModel) and \@ref(ConfidenceIntervals), we app
 
 Among all the distributions we see in statistics, one is overwhelmingly the most common. 
 The symmetric, unimodal, bell curve is ubiquitous throughout statistics. 
-It is so common that people often know it as the **normal curve**\index{normal curve}, **normal model**\index{normal model}, or **normal distribution**\index{normal distribution}.^[It is also introduced as the Gaussian distribution after Frederic Gauss, the first person to formalize its mathematical expression.] 
-Under certain conditions, sample proportions, sample means, and differences can be modeled using the normal distribution. 
+It is so common that people know it as a variety of names including the **normal curve**\index{normal curve}, **normal model**\index{normal model}, or **normal distribution**\index{normal distribution}.^[It is also introduced as the Gaussian distribution after Frederic Gauss, the first person to formalize its mathematical expression.] 
+Under certain conditions, sample proportions, sample means, and sample differences can be modeled using the normal distribution. 
 Additionally, some variables such as SAT scores and heights of US adult males closely follow the normal distribution.
 
 
@@ -1412,18 +1412,18 @@ Thus the normal distribution, while not perfect for any single problem, is very 
 We will use it in data exploration and to solve important problems in statistics.
 ```
 
-In this section, we will discuss the normal distribution in the context of data to (1) become familiar with normal distribution techniques and (2) learn how to evaluate whether data are nearly normal. 
-In Sections \@ref(ApplyingTheNormalModel)-\@ref(ConfidenceIntervals) and beyond, we'll move our discussion to focus on applying the normal distribution and other related distributions to model point estimates for hypothesis tests and for constructing confidence intervals.
+In this section, we will discuss the normal distribution in the context of data to become familiar with normal distribution techniques. 
+In the following sections and beyond, we'll move our discussion to focus on applying the normal distribution and other related distributions to model point estimates for hypothesis tests and for constructing confidence intervals.
 
 #### Normal distribution model {-}
 
 
 The normal distribution always describes a symmetric, unimodal, bell-shaped curve. 
-However, these curves can look different depending on the details of the model. 
+However, normal curves can look different depending on the details of the model. 
 Specifically, the normal model can be adjusted using two parameters: mean and standard deviation. 
 As you can probably guess, changing the mean shifts the bell curve to the left or right, while changing the standard deviation stretches or constricts the curve. 
-Figure \@ref(fig:twoSampleNormals) shows the normal distribution with mean $0$ and standard deviation $1$  which is commonly referred to as the **standard normal distribution**\index{standard normal distribution}. 
-In the left panel and the normal distributions with mean $19$ and standard deviation $4$ in the right panel. Figure \@ref(fig:twoSampleNormalsStacked) shows these distributions on the same axis.
+Figure \@ref(fig:twoSampleNormals) shows the normal distribution with mean $0$ and standard deviation $1$  (which is commonly referred to as the **standard normal distribution**\index{standard normal distribution}) on top.
+A normal distributions with mean $19$ and standard deviation $4$ is shown on the bottom. Figure \@ref(fig:twoSampleNormalsStacked) shows the same two normal distributions on the same axis.
 
 
 
@@ -1471,7 +1471,7 @@ still can't figure out references
 The normal models shown in Figure \ref{twoSampleNormals} but plotted together and on the same scale.
 ```
 
-```{r twoSampleNormalsStacked, fig.cap="The normal models shown iabove but now plotted together and on the same scale.", warning=FALSE, fig.width=10}
+```{r twoSampleNormalsStacked, fig.cap="The two normal models shown above and now plotted together on the same scale.", warning=FALSE, fig.width=10}
 
 # curve 1
 X <- seq(-4,4,0.01)
@@ -1508,7 +1508,7 @@ Write down the short-hand for a normal distribution with (a) mean 5 and standard
 
 #### Standardizing with Z scores {-}
 
-```{block2, type="example", echo=TRUE}
+```{block2, type="guidedpractice", echo=TRUE}
 Table \@ref(tab:satACTstats) shows the mean and standard deviation for total scores on the SAT and ACT. The distribution of SAT and ACT scores are both nearly normal. Suppose Ann scored 1800 on her SAT and Tom scored 24 on his ACT. Who performed better?^[We use the standard deviation as a guide. Ann is 1 standard deviation above average on the SAT: $1500 + 300=1800$. Tom is 0.6 standard deviations above the mean on the ACT: $21+0.6\times 5=24$. In Figure \@ref(fig:satActNormals), we can see that Ann tends to do better with respect to everyone else than Tom did, so her score was better.]
 ```
 
@@ -1561,7 +1561,7 @@ text(m+3, dnorm(m+3,m,s)*1.05, 'Tom', pos=4, col=COL[1])
 ```
 
 
-The previous example used a standardization technique called a Z score, a method most commonly employed for nearly normal observations but that may be used with any distribution. The **Z score**\index{Z score}\marginpar[\raggedright\vspace{-3mm}
+The solution to the previous example relies on a standardization technique called a Z score, a method most commonly employed for nearly normal observations (but that may be used with any distribution). The **Z score**\index{Z score}\marginpar[\raggedright\vspace{-3mm}
 
 
 $Z$\vspace{1mm}\\\footnotesize Z score, the\\standardized\\observation]{\raggedright\vspace{-3mm}
@@ -1616,11 +1616,11 @@ One observation $x_1$ is said to be more unusual than another observation $x_2$ 
 This technique is especially insightful when a distribution is symmetric.
 
 ```{block2, type="guidedpractice", echo=TRUE}
-Which of the observations in the previous guided practice is more *unusual*?^[Because the *absolute value* of Z score for the second observation is larger than that of the first, the second observation has a more unusual head length.]
+Which of the two brushtail possum observations in the previous guided practice is more *unusual*?^[Because the *absolute value* of Z score for the second observation is larger than that of the first, the second observation has a more unusual head length.]
 ```
 
 
-#### Normal probability table {-}
+#### Normal probability calculations {-}
 
 ```{block2, type="example", echo=TRUE}
 Ann from the SAT Guided Practice earned a score of 1800 on her SAT with a corresponding $Z=1$. She would like to know what percentile she falls in among all SAT test-takers.
@@ -1669,11 +1669,12 @@ The `pnorm()` function is available in default R and will provide the percentile
 The `normTail()` function is available in the openintro R package and will draw the associated curve if it is helpful.
 
 
-```{r}
+```{r echo = TRUE}
 pnorm(0.43, m = 0, s = 1)
-normTail(0.43, m = 0, s = 1)
+openintro::normTail(0.43, m = 0, s = 1)
 ```
 
+<!--
 ```{r normalTails, fig.cap="The area to the left of $Z$ represents the percentile of the observation.", warning=FALSE, fig.width=10}
 
 X <- seq(-4,4,0.01)
@@ -1695,6 +1696,8 @@ lines(c(0,0), dnorm(0)*c(0.01,0.99), col=COL[6], lty=3, lwd=1.5)
 lines(X, Y)
 abline(h=0)
 ```
+-->
+
 
 <!--
 \begin{table}
@@ -1752,8 +1755,14 @@ $Z$ & 0.00 & 0.01 & 0.02 & \highlightT{0.03} & \highlightO{0.04} & 0.05 & 0.06 &
 
 
 We can also find the Z score associated with a percentile. 
-For example, to identify Z for the $80^{th}$ percentile, we look for the value closest to 0.8000 in the middle portion of the table: 0.7995. 
-We determine the Z score for the $80^{th}$ percentile by combining the row and column Z values: 0.84.
+For example, to identify Z for the $80^{th}$ percentile, we use `qnorm()` which identifies the **quantile** for a given percentage.  The quantile represents the cutoff value.  (To remember the function `qnorm()` as providing a cutoff, notice that both `qnorm()` and "cutoff" start with the sound "kuh".  To remember the `pnorm()` function as providing a probability from a given cutoff, notice that both `pnorm()` and probability start with the sound "puh".) 
+We determine the Z score for the $80^{th}$ percentile using `qnorm()`: 0.84.
+
+```{r echo = TRUE}
+qnorm(0.80, m = 0, s = 1)
+openintro::normTail(0.84162, m = 0, s = 1)
+```
+
 
 ```{block2, type="guidedpractice", echo=TRUE}
 Determine the proportion of SAT test takers who scored better than Ann on the SAT.^[If 84% had lower scores than Ann, the number of people who had better scores must be 16%. (Generally ties are ignored when the normal model, or any other continuous distribution, is used.)]
@@ -1765,23 +1774,80 @@ Determine the proportion of SAT test takers who scored better than Ann on the SA
 Cumulative SAT scores are approximated well by a normal model, $N(\mu=1500, \sigma=300)$.
 
 ```{block2, type="example", echo=TRUE}
-Shannon is a randomly selected SAT taker, and nothing is known about Shannon's SAT aptitude. What is the probability Shannon scores at least 1630 on her SATs?
+Shannon is a randomly selected SAT taker, and nothing is known about Shannon's SAT aptitude. What is the probability that Shannon scores at least 1630 on her SATs?
 
 ---
 
-First, always draw and label a picture of the normal distribution. (Drawings need not be exact to be useful.) We are interested in the chance she scores above 1630, so we shade this upper tail:
-\begin{center}
-\includegraphics[height=0.9in]{02/figures/satAbove1630/satAbove1630}
-\end{center}
+First, always draw and label a picture of the normal distribution. (Drawings need not be exact to be useful.) We are interested in the chance she scores above 1630, so we shade the upper tail.  See the normal curve below.
+
+
 The picture shows the mean and the values at 2 standard deviations above and below the mean. The simplest way to find the shaded area under the curve makes use of the Z score of the cutoff value. With $\mu=1500$, $\sigma=300$, and the cutoff value $x=1630$, the Z score is computed as
 \begin{eqnarray*}
 Z = \frac{x - \mu}{\sigma} = \frac{1630 - 1500}{300} = \frac{130}{300} = 0.43
 \end{eqnarray*}
-We look up the percentile of $Z=0.43$ in a normal probability table, which yields 0.6664. However, the percentile describes those who had a Z score \emph{lower} than 0.43. To find the area \emph{above} $Z=0.43$, we compute one minus the area of the lower tail:
-\begin{center}
-\includegraphics[height=0.8in]{02/figures/subtractingArea/subtractingArea}
-\end{center}
+We use software to find the percentile of $Z=0.43$, which yields 0.6664. However, the percentile describes those who had a Z score *lower* than 0.43. To find the area *above* $Z=0.43$, we compute one minus the area of the lower tail, as seen below.
+
 The probability Shannon scores at least 1630 on the SAT is 0.3336.
+```
+
+```{r satAbove1630, fig.cap="", warning=FALSE, fig.width=10}
+
+X <- seq(-4,4,0.01)
+Y <- dnorm(X)
+plot(X, Y, type='l', axes=F, xlim=c(-3.4,3.4))
+axis(1, at=c(-2,0,2), label=(1500+c(-2,0,2)*300), cex.axis=0.8)
+these <- which(X >= 0.43)
+polygon(c(X[these[1]], X[these],4), c(0,Y[these],0), col=COL[1])
+#arrows(-0.1, 0.4*dnorm(0),(1600-1500)/300, dnorm(0)*.4, length=0.065)
+#text(0.1, .4*dnorm(0), '1630', pos=2, cex=0.8)
+
+#arrows(1.3,0.28, 0.43, 0.28, length=0.07)
+#text(1.3, 0.28, 'X=1630\nZ=0.43', pos=4, cex=0.7)
+
+lines(X, Y)
+abline(h=0)
+```
+
+
+```{r subtractingArea, fig.cap="", warning=FALSE, fig.width=10}
+
+par(las=1, mar=c(0,0,0,0), mgp=c(3,-0.2,0), mfrow=c(1,1))
+X <- seq(-3.2,3.2,0.01)
+Y <- dnorm(X)
+
+plot(X, Y, type='l', axes=F, xlim=c(-3.4,16+3.4), ylim=c(0, 0.652))
+lines(X, rep(0,length(X)))
+these <- which(X <= 8)
+polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
+lines(X, Y)
+#abline(h=0)
+lines(c(0,0), dnorm(0)*c(0.01,0.99), col=COL[6], lty=3)
+
+lines(c(3,8-3), c(0.2,0.2), lwd=3)
+text(0, 0.58, format(c(1, 0.0001), scientific=FALSE)[1], cex=2)
+
+
+lines(X+8, Y, type='l', xlim=c(-3.4,3.4))
+lines(X+8, rep(0,length(X)))
+these <- which(X <= 0.43)
+polygon(c(X[these[1]], X[these],X[rev(these)[1]])+8, c(0,Y[these],0), col=COL[1])
+lines(X+8, Y)
+lines(c(0,0), dnorm(0)*c(0.01,0.99), col=COL[6], lty=3)
+
+lines(8+c(3,8-3), c(0.23,0.23), lwd=3)
+lines(8+c(3,8-3), c(0.17,0.17), lwd=3)
+lines(c(3.72, 4.28), rep(0.58, 2), lwd=2)
+text(8, 0.58, format(0.6664, scientific=FALSE)[1], cex=2)
+
+lines(X+8+8, Y, type='l', xlim=c(-3.4,3.4))
+lines(X+8+8, rep(0,length(X)))
+these <- which(X > 0.43)
+polygon(c(X[these[1]], X[these],X[rev(these)[1]])+8+8, c(0,Y[these],0), col=COL[1])
+lines(X+8+8, Y)
+lines(c(0,0), dnorm(0)*c(0.01,0.99), col=COL[6], lty=3)
+text(12, 0.58, '=', cex=2)
+text(16, 0.58, format(0.3336, scientific=FALSE)[1], cex=2)
+
 ```
 
 
@@ -1799,15 +1865,17 @@ After drawing a figure to represent the situation, identify the Z score for the 
 If the probability of Shannon scoring at least 1630 is 0.3336, then what is the probability she scores less than 1630? Draw the normal curve representing this exercise, shading the lower region instead of the upper one.^[We found the probability to be 0.6664. A picture for this exercise is represented by the shaded area below "0.6664".]
 ```
 
+```{block2, type = "todo", echo = TRUE}
+the example and guided practice below both have figures in them.  How do we put figures in footnotes?
+```
+
 ```{block2, type="example", echo=TRUE}
 Edward earned a 1400 on his SAT. What is his percentile?
 
 ---
  
 First, a picture is needed. Edward's percentile is the proportion of people who do not get as high as a 1400. These are the scores to the left of 1400.
-\begin{center}
-\includegraphics[height=20mm]{02/figures/satBelow1400/satBelow1400}
-\end{center}
+
 Identifying the mean $\mu=1500$, the standard deviation $\sigma=300$, and the cutoff for the tail area $x=1400$ makes it easy to compute the Z score:
 \begin{eqnarray*}
 Z = \frac{x - \mu}{\sigma} = \frac{1400 - 1500}{300} = -0.33
@@ -1815,8 +1883,16 @@ Z = \frac{x - \mu}{\sigma} = \frac{1400 - 1500}{300} = -0.33
 Using the normal probability table, identify the row of $-0.3$ and column of $0.03$, which corresponds to the probability $0.3707$. Edward is at the $37^{th}$ percentile.
 ```
 
+
+```{r satBelow1400, fig.cap="", warning=FALSE, fig.width=10}
+
+normTail(1500, 300, 1400, axes = FALSE, col = COL[1])
+axis(1, at = c(900, 1500, 2100))
+```
+
+
 ```{block2, type="guidedpractice", echo=TRUE}
-Use the results of the previous example to compute the proportion of SAT takers who did better than Edward. Also draw a new picture.^[If Edward did better than 37% of SAT takers, then about 63% must have done better than him. \\
+Use the results of the previous example to compute the proportion of SAT takers who did better than Edward. Also draw a new picture.^[If Edward did better than 37% of SAT takers, then about 63% must have done better than him. 
 \includegraphics[height=14mm]{02/figures/satBelow1400/satAbove1400}]
 ```
 
@@ -1846,10 +1922,8 @@ Erik's height is at the $40^{th}$ percentile. How tall is he?
 
 ---
 
-As always, first draw the picture.\vspace{-1mm}
-\begin{center}
-\includegraphics[height=22mm]{02/figures/height40Perc/height40Perc}\vspace{-1mm}
-\end{center}
+As always, first draw the picture (see below).
+
 In this case, the lower tail probability is known (0.40), which can be shaded on the diagram. We want to find the observation that corresponds to this value. As a first step in this direction, we determine the Z score associated with the $40^{th}$ percentile.
 
 Because the percentile is below 50%, we know $Z$ will be negative. Looking in the negative part of the normal probability table, we search for the probability *inside* the table closest to 0.4000. We find that 0.4000 falls in row $-0.2$ and between columns $0.05$ and $0.06$. Since it falls closer to $0.05$, we take this one: $Z=-0.25$.
@@ -1861,21 +1935,61 @@ Knowing $Z_{Erik}=-0.25$ and the population parameters $\mu=70$ and $\sigma=3.3$
 Solving for $x_{Erik}$ yields the height 69.18 inches. That is, Erik is about 5'9'' (this is notation for 5-feet, 9-inches).
 ```
 
+```{r echo = TRUE}
+qnorm(0.4, m = 0, s = 1)
+```
+
+```{r height40Perc, fig.cap="", warning=FALSE, fig.width=10}
+X <- seq(-4,4,0.01)
+Y <- dnorm(X)
+plot(X, Y, type='l', axes=F, xlim=c(-3.1,3.1))
+axis(1, at=c(-2,0,2), label=round(70+3.3*c(-2,0,2),2), cex.axis=0.8)
+these <- which(X <= -0.25)
+polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
+
+#arrows(1.3,0.28, 0.43, 0.28, length=0.07)
+text(-2, 0.24, '  40%\n(0.40)', cex=0.8, col=COL[1])
+
+lines(X, Y)
+abline(h=0)
+```
+
+
 ```{block2, type="example", echo=TRUE}
 What is the adult male height at the $82^{nd}$ percentile?
  
 ---
  
-Again, we draw the figure first.\vspace{-3mm}
-\begin{center}
-\includegraphics[height=20mm]{02/figures/height82Perc/height82Perc}\vspace{-2mm}
-\end{center}
-Next, we want to find the Z score at the $82^{nd}$ percentile, which will be a positive value. Looking in the Z table, we find $Z$ falls in row $0.9$ and the nearest column is $0.02$, i.e., $Z=0.92$. Finally, the height $x$ is found using the Z score formula with the known mean $\mu$, standard deviation $\sigma$, and Z score $Z=0.92$:
+Again, we draw the figure first (see below).
+
+Next, we want to find the Z score at the $82^{nd}$ percentile, which will be a positive value. Using `qnorm()`, the $82^{nd}$ percentile corresponds to $Z=0.92$. Finally, the height $x$ is found using the Z score formula with the known mean $\mu$, standard deviation $\sigma$, and Z score $Z=0.92$:
 \begin{eqnarray*}
 0.92 = Z = \frac{x-\mu}{\sigma} = \frac{x - 70}{3.3}
 \end{eqnarray*}
 This yields 73.04 inches or about 6'1'' as the height at the $82^{nd}$ percentile.
 ```
+
+```{r echo = TRUE}
+qnorm(0.82, m = 0, s = 1)
+```
+
+```{r height82Perc, fig.cap="", warning=FALSE, fig.width=10}
+X <- seq(-4,4,0.01)
+Y <- dnorm(X)
+plot(X, Y, type='l', axes=F, xlim=c(-3.4,3.4))
+axis(1, at=c(-2,0,2), label=round(70+3.3*c(-2,0,2),2), cex.axis=0.8)
+these <- which(X <= 0.92)
+polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
+
+text(-2, 0.23, '  82%\n(0.82)', cex=0.8, col=COL[1])
+
+arrows(2,0.22, 1.45, 0.07, length=0.07)
+text(2.1, 0.2, '  18%\n(0.18)', cex=0.8, pos=3)
+
+lines(X, Y)
+abline(h=0)
+```
+
 
 ```{block2, type="guidedpractice", echo=TRUE}
 (a) What is the $95^{th}$ percentile for SAT scores?   
@@ -1976,7 +2090,7 @@ What percent of adult males are between 5'5'' and 5'7''?^[5'5'' is 65 inches. 5'
 
 #### 68-95-99.7 rule {-}
 
-Here, we present a useful rule of thumb for the probability of falling within 1, 2, and 3 standard deviations of the mean in the normal distribution. This will be useful in a wide range of practical settings, especially when trying to make a quick estimate without a calculator or Z table.
+Here, we present a useful general rule for the probability of falling within 1, 2, and 3 standard deviations of the mean in the normal distribution. The rule will be useful in a wide range of practical settings, especially when trying to make a quick estimate without a calculator or Z table.
 
 
 ```{r er6895997, fig.cap="Probabilities for falling within 1, 2, and 3 standard deviations of the mean in a normal distribution.", warning=FALSE, fig.width=10}
@@ -2023,13 +2137,15 @@ abline(h=0, col='#AAAAAA')
 
 
 ```{block2, type="guidedpractice", echo=TRUE}
-Use the Z table to confirm that about 68%, 95%, and 99.7% of observations fall within 1, 2, and 3, standard deviations of the mean in the normal distribution, respectively. For instance, first find the area that falls between $Z=-1$ and $Z=1$, which should have an area of about 0.68. Similarly there should be an area of about 0.95 between $Z=-2$ and $Z=2$.^[First draw the pictures. To find the area between $Z=-1$ and $Z=1$, use the normal probability table to determine the areas below $Z=-1$ and above $Z=1$. Next verify the area between $Z=-1$ and $Z=1$ is about 0.68. Repeat this for $Z=-2$ to $Z=2$ and also for $Z=-3$ to $Z=3$.]
+Use `pnorm()` (or a  Z table) to confirm that about 68%, 95%, and 99.7% of observations fall within 1, 2, and 3, standard deviations of the mean in the normal distribution, respectively. For instance, first find the area that falls between $Z=-1$ and $Z=1$, which should have an area of about 0.68. Similarly there should be an area of about 0.95 between $Z=-2$ and $Z=2$.^[First draw the pictures. To find the area between $Z=-1$ and $Z=1$, use `pnorm()` or the normal probability table to determine the areas below $Z=-1$ and above $Z=1$. Next verify the area between $Z=-1$ and $Z=1$ is about 0.68. Repeat this for $Z=-2$ to $Z=2$ and also for $Z=-3$ to $Z=3$.]
 ```
 
 It is possible for a normal random variable to fall 4, 5, or even more standard deviations from the mean. However, these occurrences are very rare if the data are nearly normal. The probability of being further than 4 standard deviations from the mean is about 1-in-30,000. For 5 and 6 standard deviations, it is about 1-in-3.5 million and 1-in-1 billion, respectively.
 
 ```{block2, type="guidedpractice", echo=TRUE}
-SAT scores closely follow the normal model with mean $\mu = 1500$ and standard deviation $\sigma = 300$. (a) About what percent of test takers score 900 to 2100? (b) What percent score between 1500 and 2100?^[(a) 900 and 2100 represent two standard deviations above and below the mean, which means about 95% of test takers will score between 900 and 2100. (b) Since the normal model is symmetric, then half of the test takers from part (a) ($\frac{95\%}{2} = 47.5\%$ of all test takers) will score 900 to 1500 while 47.5% score between 1500 and 2100.]
+SAT scores closely follow the normal model with mean $\mu = 1500$ and standard deviation $\sigma = 300$.   
+(a) About what percent of test takers score 900 to 2100?  
+(b) What percent score between 1500 and 2100?^[(a) 900 and 2100 represent two standard deviations above and below the mean, which means about 95% of test takers will score between 900 and 2100. (b) Since the normal model is symmetric, then half of the test takers from part (a) ($\frac{95\%}{2} = 47.5\%$ of all test takers) will score 900 to 1500 while 47.5% score between 1500 and 2100.]
 ```
 
 <!--
@@ -2297,7 +2413,7 @@ axis(2, at=seq(5,15,5), cex.axis=1.1)
 
 ### Mathematical model case study (HT) {#ApplyingTheNormalModel}
 
-The approach for using the normal model in the context of inference is very similar to the practice of applying the model to individual observations that are nearly normal. We will replace null distributions we previously obtained using the randomization or simulation techniques and verify the results once again using the normal model. When the sample size is sufficiently large, this approximation generally provides us with the same conclusions.
+The approach for using the normal model in the context of inference is very similar to the practice of applying the model to individual observations that are nearly normal. We will replace null distributions we previously obtained using the randomization or simulation techniques and verify the results once again using the normal model. When the sample size is sufficiently large, the normal approximation generally provides us with the same conclusions as the simulation model.
 
 #### Standard error {-}
 
@@ -2352,7 +2468,7 @@ diffs    = sim_dist
 pval     = sum(diffs >= 0.29) / nsim
 values  <- table(sim_dist)
 
-xlab <- paste0("Simulated difference in proportions ",
+xlab <- paste0("When $H_0$ is true, simulated difference in proportions ",
                "of students who do not buy the DVD")
 
 X <- c()
@@ -2378,18 +2494,17 @@ lines(x0, 250 * y0)
 lines(c(0.2, 0.2), c(0, 300), lty = 3, lwd = 3)
 text(0.2, 300, "observed\ndifference", pos = 3)
 par(las = 0)
-mtext(paste0("Simulated difference in proportions ",
-             "of students who do not buy the DVD"), 1, 2.5)
+mtext(expression('When H'[0]*' is true, simulated difference in proportions of students who do not buy the DVD'), 1, 2.5)
 ```
 
 
 
 
-As we learned in Section \@ref(normalDist), it is helpful to draw and shade a picture of the normal distribution so we know precisely what we want to calculate. Here we want to find the area of the two tails representing the p-value.
+As we learned in Section \@ref(normalDist), it is helpful to draw and shade a picture of the normal distribution so we know precisely what we want to calculate. Here we want to find the area of the tail beyond 0.2, representing the p-value.
 
 
 ```{r OpportunityCostDiffs_normal_only, fig.cap="", warning=FALSE, fig.width=10}
-normTail(0, 0.078, -0.2, 0.2, col = COL[1])
+normTail(0, 0.078, -7, 0.2, col = COL[1])
 ```
 
 
@@ -2397,7 +2512,7 @@ Next, we can calculate the Z score using the observed difference, 0.20, and the 
 \begin{align*}
 Z = \frac{\text{observed difference} - 0}{SE} = \frac{0.20 - 0}{0.078} = 2.56
 \end{align*}
-We can either look up $Z = 2.56$ in the normal probability table or use statistical software to determine the right tail area: 0.0052, which is about the same as what we got for the right tail using the randomization approach (0.0065). Doubling this value yields the total area in the two tails and the p-value for the hypothesis test: 0.01. As before, since the p-value is less than 0.05, we conclude that the treatment did indeed impact students' spending.
+We can either use statistical software or look up $Z = 2.56$ in the normal probability table to determine the right tail area: 0.0052, which is about the same as what we got for the right tail using the randomization approach (0.006). Using this area as the p-value, we see that the p-value is less than 0.05, we conclude that the treatment did indeed impact students' spending.
 
 
 ```{block2, type="onebox", echo=TRUE}
@@ -2416,17 +2531,19 @@ We have confirmed that the randomization approach we used earlier and the normal
 #### Normal model application: medical consultant {-}
 
 In Section \@ref(sec-med-consult) we learned about a medical consultant who reported that only 3 of her 62 clients who underwent a liver transplant had complications, which is less than the more common complication rate of 0.10. 
-As in the other case studies, we identified a suitable null distribution using a simulation approach, as shown in Figure \@ref(fig:MedConsNullSim-w-normal). 
-Here we have added the best-fitting normal curve to the figure, which has a mean of 0.10. Borrowing a formula that we'll encounter in Chapter \@ref(inference-cat), the standard error of this distribution was also computed: $SE = 0.038$.
+In that work, we did not model a null scenario, but we will discuss a simulation method for a one proportion null distribution in Section \@ref(one-prop-null-boot), such a distribution is provided in Figure \@ref(fig:MedConsNullSim-w-normal). 
+We have added the best-fitting normal curve to the figure, which has a mean of 0.10. Borrowing a formula that we'll encounter in Chapter \@ref(inference-cat), the standard error of this distribution was also computed: $SE = 0.038$.
 
 <!--
 %\begin{align*}
 %SE = \sqrt{\frac{p_0 (1 - p_0)}{n}} = \sqrt{\frac{0.1 (1 - 0.1)}{62}} = 0.038
 %\end{align*}
 %where $p_0$ is the null value for the hypothesis test and $n$ is the sample size. (We'll discuss this formula in greater detail in next chapter.) 
+
+In the previous analysis, we obtained a p-value of 0.2444, and we will try to reproduce that p-value using the normal distribution approach. 
 -->
 
-In the previous analysis, we obtained a p-value of 0.2444, and we will try to reproduce that p-value using the normal distribution approach. However, before we begin, we want to point out a simple detail that is easy to overlook: the null distribution we earlier generated is slightly skewed, and the distribution isn't that smooth. In fact, the normal distribution only sort-of fits this model. We'll discuss this discrepancy more in a moment.
+Before we begin, we want to point out a simple detail that is easy to overlook: the null distribution we generated from the simulation is slightly skewed, and the histogram is not particularly smooth. In fact, the normal distribution only sort-of fits this model. 
 
 
 ```{r MedConsNullSim-w-normal, fig.cap="The null distribution for the sample proportion, created from 10,000 simulated studies, along with the best-fitting normal model.", warning=FALSE, fig.width=10}
@@ -2444,10 +2561,10 @@ text(0.05, 1200, "Observed\nvalue", pos = 3, cex = 0.8)
 ```
 
 
-We'll again begin by creating a picture. Here a normal distribution centered at 0.10 with a standard error of 0.038.
+As always, we'll draw a picture before finding the normal probabilities. Below is a normal distribution centered at 0.10 with a standard error of 0.038.
 
 ```{r MedConsNullSim-normal-only, fig.cap="", warning=FALSE, fig.width=10}
-normTail(0.1, 0.038, 0.048, 0.152, col = COL[1], xAxisIncr = 2, axes = FALSE)
+normTail(0.1, 0.038, 0.048, 7, col = COL[1], xAxisIncr = 2, axes = FALSE)
 a <- c(0.02, 0.1, 0.18)
 axis(1, a, format(a))
 ```
@@ -2457,9 +2574,7 @@ Next, we can calculate the Z score using the observed complication rate, $\hat{p
 \begin{align*}
 Z = \frac{\hat{p} - p_0}{SE_{\hat{p}}} = \frac{0.048 - 0.10}{0.038} = -1.37
 \end{align*}
-Identifying $Z = -1.37$ in the normal probability table or using statistical software, we can determine that the left tail area is 0.0853. 
-Doubling this value yields the total area in the two tails: about 0.17. 
-This is the estimated p-value for the hypothesis test. However, there's a problem: this is very different than the earlier p-value we computed: 0.2444.
+Identifying $Z = -1.37$ using statistical software or in the normal probability table, we can determine that the left tail area is 0.0853 which is the estimated p-value for the hypothesis test. There is a small problem:  the p-value of 0.0853 is slightly different from the simulation p-value or 0.1222 which will be calcuated in Section \@ref(one-prop-null-boot).
 
 The discrepancy is explained by normal model's poor representation of the null distribution in Figure \@ref(fig:MedConsNullSim-w-normal). 
 As noted earlier, the null distribution from the simulations is not very smooth, and the distribution itself is slightly skewed. 
@@ -2483,12 +2598,12 @@ Statistical techniques are like a carpenter's tools. When used responsibly, they
 
 #### Constructing a 95% confidence interval {-}
 
-A point estimate is our best guess for the value of the parameter, so it makes sense to build the confidence interval around that value. The standard error, which is a measure of the uncertainty associated with the point estimate, provides a guide for how large we should make the confidence interval.
+A point estimate is our best guess for the value of the parameter, so it makes sense to build the confidence interval around that value. The standard error, which is a measure of the uncertainty associated with the point estimate, provides a guide for how large we should make the confidence interval.  The 68-95-99.7 rule tells us that, in general, 95% of observations are within 2 standard errors of the mean.  Here, we use the value 1.96 to be slighly more precise.
 
 ```{block2, type="onebox", echo=TRUE}
 **Constructing a 95% confidence interval.**
 
-When the sampling distribution of a point estimate can reasonably be modeled as normal, the point estimate we observe will be within 1.96 standard errors of the true value of interest about 95% of the time. Thus, a **95% confidence interval**\index{95% confidence interval} for such a point estimate can be constructed:
+When the sampling distribution of a point estimate can reasonably be modeled as normal, the point estimate we observe will be within 1.96 standard errors of the true value of interest about 95% of the time. Thus, a **95% confidence interval** for such a point estimate can be constructed:
 
 \begin{align}
 \text{point estimate}\ \pm\ 1.96 \times SE
@@ -2496,6 +2611,8 @@ When the sampling distribution of a point estimate can reasonably be modeled as 
 \end{align}
 We can be **95% confident** this interval captures the true value.
 ```
+
+\index{95% confidence interval}
 
 ```{r include=FALSE}
 terms_chp_5 <- c(terms_chp_5, "95% confidence interval", "95% confident")
@@ -2524,7 +2641,7 @@ We are 95% confident that the DVD purchase rate resulting from the treatment is 
 % Correct SE: p1 <- 56 / 75; p2 <- 41 / 75; sqrt(p1 * (1 - p1) / 75 + p2 * (1 - p2) / 75)
 -->
 
-Previously we encountered an experiment that examined whether implanting a stent in the brain of a patient at risk for a stroke helps reduce the risk of a stroke. The results from the first 30 days of this study, which included 451 patients, are summarized in Table \@ref(tab:stentStudyResultsCIsection). These results are surprising! The point estimate suggests that patients who received stents may have a *higher* risk of stroke: $p_{trmt} - p_{ctrl} = 0.090$.
+Consider an experiment that examined whether implanting a stent in the brain of a patient at risk for a stroke helps reduce the risk of a stroke. The results from the first 30 days of this study, which included 451 patients, are summarized in Table \@ref(tab:stentStudyResultsCIsection). These results are surprising! The point estimate suggests that patients who received stents may have a *higher* risk of stroke: $p_{trmt} - p_{ctrl} = 0.090$.
 
 
 ```{r stentStudyResultsCIsection}
@@ -2555,7 +2672,7 @@ The conditions for applying the normal model have already been verified, so we c
 We are 95% confident that implanting a stent in a stroke patient's brain increased the risk of stroke within 30 days by a rate of 0.035 to 0.145. This confidence interval can also be used in a way analogous to a hypothesis test: since the interval does not contain 0, it means the data provide statistically significant evidence that the stent used in the study *increases* the risk of 
 ```
 
-As with hypothesis tests, confidence intervals are imperfect. About 1-in-20 properly constructed 95% confidence intervals will fail to capture the parameter of interest. Figure \@ref(fig:95PercentConfidenceInterval) shows 25 confidence intervals for a proportion that were constructed from simulations where the true proportion was $p = 0.3$. However, 1 of these 25 confidence intervals happened not to include the true value.
+As with hypothesis tests, confidence intervals are imperfect. About 1-in-20 properly constructed 95% confidence intervals will fail to capture the parameter of interest, simply due to natural variability in the observed data. Figure \@ref(fig:95PercentConfidenceInterval) shows 25 confidence intervals for a proportion that were constructed from simulations where the true proportion was $p = 0.3$. However, 1 of these 25 confidence intervals happened not to include the true value.  The interval which does not capture $p=0.3$ is not due to bad science.  Instead, it is due to natural variability, and we should *expect* some of our intervals to miss the parameter of interest.  Indeed, over a lifetime of creating 95% intervals, you should expect 5% of your reported intervals to miss the parameter of interest (unfortunately, you will not ever know which of your reported intervals captured the parameter and which missed the parameter).
 
 
 ```{r 95PercentConfidenceInterval, fig.cap="Twenty-five samples of size $n=300$ were simulated when $p = 0.30$. For each sample, a confidence interval was created to try to capture the true proportion $p$. However, 1 of these 25 intervals did not capture $p = 0.30$.", warning=FALSE, fig.width=10}
@@ -2606,7 +2723,7 @@ A careful eye might have observed the somewhat awkward language used to describe
 
 *Incorrect* language might try to describe the confidence interval as capturing the population parameter with a certain probability. This is one of the most common errors: while it might be useful to think of it as a probability, the confidence level only quantifies how plausible it is that the parameter is in the interval.
 
-Another especially important consideration of confidence intervals is that they *only try to capture the population parameter*. Our intervals say nothing about the confidence of capturing individual observations, a proportion of the observations, or about capturing point estimates. Confidence intervals only attempt to capture population parameters.
+Another especially important consideration of confidence intervals is that they *only try to capture the population parameter*. Our intervals say nothing about the confidence of capturing individual observations, a proportion of the observations, or about capturing point estimates. Confidence intervals provide an interval estimate for and attempt to capture population parameters.
 
 \index{confidence interval!interpretation|)}
 \index{confidence interval|)}
@@ -2623,25 +2740,27 @@ Math flow chart
 
 ## Chapter 5 review {#chp5-review}
 
-In Chapter 5, we have provided three different methods for statistical inference.  We will continue to build on the methods throughout the text, and by the end, you should have an understanding of their similarities and differences.  Meanwhile, it is important to note that the methods are designed to mimic variability with data, and we know that variability can come from different sources (e.g., random sampling vs. random allocaiton).  In Table \@ref(tab:summary3methods), we have summarized some of the ways the inferential procedures feature specific sources of variability.  We hope that you refer back to the table often as you dive more deeply into the ideas in future chapters.
+In Chapter 5, we have provided three different methods for statistical inference.  We will continue to build on the methods throughout the text, and by the end, you should have an understanding of their similarities and differences.  Meanwhile, it is important to note that the methods are designed to mimic variability with data, and we know that variability can come from different sources (e.g., random sampling vs. random allocation).  In Table \@ref(tab:summary3methods), we have summarized some of the ways the inferential procedures feature specific sources of variability.  We hope that you refer back to the table often as you dive more deeply into the ideas in future chapters.
 
 
 
 ```{r summary3methods}
 temptbl <- tribble(
  ~variable,    ~col1, ~col2, ~col3,
-"What does it do?",  "Shuffles the explanatory variable to mimic the natural variability  found in a randomized experiement.", "Resamples (with replacement) from the observed data to mimic the sampling variability found by collecting data.",  "Uses theory (primarily the Central Limit Theorem) to describe the hypothetical variability resulting from either repeated randomized experiments or random samples.",
+"What does it do?",  "Shuffles the explanatory variable to mimic the natural variability  found in a randomized experiment.", "Resamples (with replacement) from the observed data to mimic the sampling variability found by collecting data.",  "Uses theory (primarily the Central Limit Theorem) to describe the hypothetical variability resulting from either repeated randomized experiments or random samples.",
 
 "What is the random process described?", "randomized experiment", "random sampling",  "either / both",
 
 "Is there flexibility?", "Yes, can be used to describe random sampling in an observational model", "Yes, can be used to describe random allocation in an experiment", "Yes",
 
-"What is it best for?", "Hypothesis Testing (can be used for Confidence Intervals, but not covered in this text).", "Confidence Intervals (HT for one proportion covered in Chapter 6).", "Quick analyses through, for example, calculating a Z score."
+"What is it best for?", "Hypothesis Testing (can be used for Confidence Intervals, but not covered in this text).", "Confidence Intervals (HT for one proportion covered in Chapter 6).", "Quick analyses through, for example, calculating a Z score.",
+
+"What are the technical conditions?", "independence", "independence, big n", "independence, big n"
 )
 
   temptbl %>%
  kable(caption = "Summary and comparison of Randomization Tests, Bootstrapping, and Mathematical Models as inferential statistical methods.", 
-    col.names = c("", " Randomization Test ", "Bootstrapping", "Mathemtical Model")) %>%
+    col.names = c("", " Randomization Test ", "Bootstrapping", "Mathematical Model")) %>%
  kable_styling()
 ```
 
