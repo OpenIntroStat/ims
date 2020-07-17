@@ -467,7 +467,7 @@ Create a 99% confidence interval for the impact of the stent on the risk of stro
 
 
 ```{block2, type="onebox", echo=TRUE}
-**Confidence interval for any confidence level.**
+**Mathematical model confidence interval for any confidence level.**
 
 If the point estimate follows the normal model with standard error $SE$, then a confidence interval for the population parameter is
 \begin{eqnarray*}
@@ -548,7 +548,7 @@ and evaluate their debt payments?
 From a random sample of 826 borrowers,
 51% said they would support such
 a regulation.
-Is it reasonable to model $\hat{p} = 0.51$
+Is it reasonable use a normal distribution to model $\hat{p}$
 for a hypothesis test here?^[Independence holds since the poll
     is based on a random sample.
     The success-failure condition also holds,
@@ -562,7 +562,7 @@ for a hypothesis test here?^[Independence holds since the poll
 ```{block2, type = "example", echo = TRUE}
 Using the hypotheses and data from the previous
     Guided Practices,
-    evaluate whether the poll provides convincing evidence
+    evaluate whether the poll on lending regulations provides convincing evidence
     that a majority of payday loan borrowers support
     a new regulation that would
     require lenders to pull credit reports
@@ -596,7 +596,7 @@ Using the hypotheses and data from the previous
   The poll does not provide convincing evidence that
   a majority of payday loan borrowers support or oppose
   regulations around credit checks and evaluation of
-  debt payments.
+  debt payments.  In this situation, the conclusion is somewhat unsatisfactory because there is no conclusion.  That is, there is no resolution one way or the other about public opinion.  We cannot claim that exactly 50% of people support the regulation, but we cannot claim a majority in either direction.
 ```
 
   
@@ -609,7 +609,7 @@ normTail(0.5, 0.017, L = 0.49, U = 0.51, col = COL[1])
 -->
 
 ```{block2, type = "onebox", echo = TRUE}
-**Hypothesis test for a proportion**
+**Mathematical model hypothesis test for a proportion.**
   
 Set up hypotheses and verify the conditions using the null value, $p_0$, to ensure $\hat{p}$ is nearly normal under $H_0$. If the conditions hold, construct the standard error, again using $p_0$, and show the p-value in a drawing. Lastly, compute the p-value and evaluate the hypotheses.
 ```
@@ -636,7 +636,7 @@ change.
 
 When the success-failure condition isn't met
 for a hypothesis test, we can simulate the null distribution 
-of $\hat{p}$ using the null value, $p_0$, as seen in Section \@ref(one-prop-null-boot).
+of $\hat{p}$ using the null value, $p_0$, as seen in Section \@ref(one-prop-null-boot).  Unfortunately, methods for dealing with observations which are not independent are outside the scope of this book.
 
 
 #### Choosing a sample size when estimating a proportion {-}
@@ -648,12 +648,13 @@ terms_chp_6 <- c(terms_chp_6, "margin of error")
 ```
 
 When collecting data, we choose a sample size suitable
-for the purpose of the study.
-Often times this means choosing a sample size large
+for the purpose of the study. 
+You might agree that the following interval estimate would not be particularly useful: a 95% confidence interval for the proportion of liver transplants with complications is between 0 and 1.
+Often times "suitable for the study" means choosing a sample size large
 enough that the **margin of error**\index{margin of error} --
 which is the part we add and subtract from the point
 estimate in a confidence interval --
-is sufficiently small that the sample is useful.
+is sufficiently small that the result is useful.
 For example, our task might be to find a sample size
 $n$ so that the sample proportion is within $\pm 0.04$
 of the actual proportion in a 95% confidence interval.
@@ -717,6 +718,11 @@ When an estimate of the proportion is available, we use it in place of the worst
 
 
 \index{data!Tire failure rate|(}
+
+```{block2, type = "todo", echo = TRUE}
+not sure why the footnote didn't go into the footnote
+```
+
 
 ```{block2, type = "guidedpractice", echo = TRUE}
 A manager is about to oversee the mass
@@ -789,7 +795,7 @@ where we would conduct a new poll every month.
 Running such frequent polls is expensive, so we decide
 a wider margin of error of 5% for each individual survey
 would be acceptable.
-Based on the original sample of borrowers where
+Based on a previous sample of borrowers where
 70% supported some form of regulation,
 how big should our monthly sample be for a margin
 of error of 0.04 with 95% confidence?^[We complete the same computations as before,
@@ -823,12 +829,9 @@ of error of 0.04 with 95% confidence?^[We complete the same computations as befo
 
 ## Inference for the difference of two proportions {#diff-two-prop}
 
+We now extend the methods from Section \@ref(single-prop) to apply confidence intervals and hypothesis tests to differences in population proportions that come from two groups:$p_1 - p_2$.
 
-We would like to extend the methods from
-Section \@ref(single-prop)
-to apply confidence intervals and hypothesis tests
-to differences in population proportions that come from two groups:
-\mbox{$p_1 - p_2$}.
+<!--
 %We consider three examples.
 %In the first, we compare the utility of a blood thinner
 %for heart attack patients.
@@ -836,17 +839,18 @@ to differences in population proportions that come from two groups:
 %mammograms in reducing deaths from breast cancer.
 %In the last example, a quadcopter company weighs whether
 %to switch to a higher quality manufacturer of rotor blades.
+-->
 
 In our investigations, we'll identify a reasonable
 point estimate of $p_1 - p_2$ based on the sample,
 and you may have already guessed its form:
 $\hat{p}_1 - \hat{p}_2$.
-\index{point estimate!difference of proportions}%
+\index{point estimate!difference of proportions}
 Then we'll look at the inferential analysis in three different ways: using a randomization test, applying bootstrapping for interval estimates, and, if
 we verify that the point estimate
 can be modeled using a normal distribution,
 we compute the estimate's standard error, and
-we apply our mathematical framework.
+we apply the mathematical framework.
 
 ```{r include=FALSE}
 terms_chp_6 <- c(terms_chp_6, "point estimate")
@@ -854,9 +858,414 @@ terms_chp_6 <- c(terms_chp_6, "point estimate")
 
 ### Two proportions: randomization test {#two-prop-errors}
 
-malaria example?
 
-We already did the randomization structure.  one quick example here then an outline which represents the structure of the test (?).
+We consider a study on a new malaria vaccine
+called PfSPZ.
+In this study, volunteer patients were randomized
+into one of two experiment groups:
+14 patients received an experimental vaccine
+or 6 patients received a placebo vaccine.
+Nineteen weeks later, all 20 patients were exposed
+to a drug-sensitive malaria virus strain;
+the motivation of using a drug-sensitive strain
+of virus here is for ethical considerations,
+allowing any infections to be treated effectively.
+The results are summarized in
+Table \@ref(tab:malaria_vaccine_20_exp_summary),
+where 9 of the 14 treatment patients remained free
+of signs of infection while all of the 6 patients
+in the control group patients showed some baseline
+signs of infection.
+
+```{r malaria_vaccine_20_exp_summary}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3, ~col4, 
+ "", "vaccine", "5", "9", "14",
+ "`treatment`", "placebo", "6", "0","6",
+ "", "Total", "11", "9", "20"
+)
+
+temptbl %>%
+ kable(caption = "Summary results for the malaria vaccine experiment.",
+    col.names = c("", "", "infection", "no infection", "Total")) %>%
+ kable_styling() %>%
+ add_header_above(c(" ", " ", "`outcome`" = 2, " "))
+```
+
+\newcommand{\malariaAA}{5}
+\newcommand{\malariaAB}{9}
+\newcommand{\malariaAD}{14}
+\newcommand{\malariaBA}{6}
+\newcommand{\malariaBB}{0}
+\newcommand{\malariaBD}{6}
+\newcommand{\malariaDA}{11}
+\newcommand{\malariaDB}{9}
+\newcommand{\malariaDD}{20}
+\newcommand{\malariaVIR}{0.357}
+\newcommand{\malariaVIRPerc}{35.7\%}
+\newcommand{\malariaPIR}{1.000}
+\newcommand{\malariaPIRPerc}{100\%}
+\newcommand{\malariaIRDiff}{0.643}
+\newcommand{\malariaIRDiffPerc}{64.3\%}
+
+
+```{block2, type = "guidedpractice", echo = TRUE}
+Is this an observational study or an experiment?
+What implications does the study type have on what can
+be inferred from the results?^[The
+  study is an experiment, as patients were randomly
+  assigned an experiment group.
+  Since this is an experiment, the results can be used
+  to evaluate a causal relationship between the malaria
+  vaccine and whether patients showed signs
+  of an infection.]
+```
+
+In this study, a smaller proportion of patients
+who received the vaccine showed signs of an infection
+(35.7% versus 100%).
+However, the sample is very small,
+and it is unclear whether the difference provides
+*convincing evidence* that the vaccine is
+effective.
+
+<!--
+```{block, type = "example", echo = TRUE}
+Data scientists are sometimes called
+    upon to evaluate the strength of evidence.
+    When looking at the rates of infection for patients
+    in the two groups in this study,
+    what comes to mind as we try to determine whether
+    the data show convincing evidence of a real difference?
+
+---
+  The observed infection rates
+  (35.7% for the treatment group versus
+  100% for the control group)
+  suggest the vaccine may be effective.
+  However, we cannot be sure if the observed difference
+  represents the vaccine's efficacy or is just from
+  random chance.
+  Generally there is a little bit of fluctuation
+  in sample data, and we wouldn't expect the sample
+  proportions to be *exactly* equal,
+  even if the truth was that the infection rates
+  were independent of getting the vaccine.
+  Additionally, with such small samples,
+  perhaps it's common to observe such large differences
+  when we randomly split a group due to chance alone!
+```
+
+The previous malaria example
+is a reminder that the observed outcomes in the data
+sample may not perfectly reflect the true relationships
+between variables since there is \term{random noise}.
+While the observed difference in rates of infection
+is large, the sample size for the study is small,
+making it unclear if this observed difference represents
+efficacy of the vaccine or whether it is simply due to
+chance.
+We label these two competing claims, $H_0$ and $H_A$,
+which are spoken as ``H-nought'' and ``H-A'':
+\begin{itemize}
+\setlength{\itemsep}{0mm}
+\item[$H_0$:] \textbf{Independence model.}
+    The variables \var{treatment} and \var{outcome}
+    are independent.
+    They have no relationship, and the observed difference
+    between the proportion of patients who developed
+    an infection in the two groups, 64.3%,
+    was due to chance.
+\item[$H_A$:] \textbf{Alternative model.}
+    The variables are \emph{not} independent.
+    The difference in infection rates of
+    64.3%
+    was not due to chance,
+    and vaccine affected the rate of infection.
+\end{itemize}
+
+What would it mean if the independence model,
+which says the vaccine had no influence on the
+rate of infection, is true?
+It would mean 11 patients were going to
+develop an infection \emph{no matter which group
+they were randomized into},
+and 9 patients would not develop an infection
+\emph{no matter which group they were randomized
+into}.
+That is, if the vaccine did not affect the rate
+of infection, the difference in the infection rates
+was due to chance alone in how the patients were
+randomized.
+
+Now consider the alternative model:
+infection rates were influenced by whether a patient
+received the vaccine or not.
+If this was true, and especially if this influence
+was substantial, we would expect to see some difference
+in the infection rates of patients in the groups.
+
+We choose between these two competing claims
+by assessing if the data conflict so much with
+$H_0$ that the independence model cannot be deemed
+reasonable.
+If this is the case, and the data support $H_A$,
+then we will reject the notion of independence
+and conclude there was discrimination.
+
+
+\subsection{Simulating the study}
+\label{simulatingTheStudy}
+
+We're going to implement
+\termsub{simulations}{simulation},
+where we will pretend we know that the malaria
+vaccine being tested does \emph{not} work.
+Ultimately, we want to understand if the large
+difference we observed is common in these
+simulations.
+If it is common, then maybe the difference
+we observed was purely due to chance.
+If it is very uncommon, then the possibility
+that the vaccine was helpful seems more plausible.
+
+Table \@ref(tab:malaria_vaccine_20_exp_summary)
+shows that 11 patients developed infections and 9 did not.
+For our simulation, we will suppose the infections
+were independent of the vaccine and we were able to
+\emph{rewind} back to when the researchers randomized
+the patients in the study.
+If we happened to randomize the patients differently,
+we may get a different result in this hypothetical
+world where the vaccine doesn't influence the infection.
+Let's complete another \term{randomization} using
+a simulation.
+
+\D{\newpage}
+
+In this \term{simulation}, we take 20 notecards to
+represent the 20 patients, where we write down ``infection''
+on 11 cards and ``no infection'' on 9 cards.
+In this hypothetical world, we believe each patient
+that got an infection was going to get it regardless
+of which group they were in, so let's see what happens
+if we randomly assign the patients to the treatment
+and control groups again.
+We thoroughly shuffle the notecards and deal 14 into
+a \resp{vaccine} pile and 6 into a \resp{placebo} pile.
+Finally, we tabulate the results, which are shown in
+Figure \ref{malaria_vaccine_20_exp_summary_rand_1}.
+
+\begin{figure}[ht]
+\centering
+\begin{tabular}{l l cc rr}
+  & & \multicolumn{2}{c}{\var{outcome}} \\
+  \cline{3-4}
+  &  &  {infection} & {no infection} & Total & \hspace{3mm}  \\ 
+  \cline{2-5}
+  treatment & {vaccine} & 7 & 7 & 14 \\ 
+  (simulated) & {placebo} & 4 & 2 & 6 \\ 
+  \cline{2-5}
+  & Total & 11 & 9 & 20 \\
+  \cline{2-5}
+\end{tabular}
+\caption{Simulation results, where any difference
+    in infection rates is purely due to chance.}
+\label{malaria_vaccine_20_exp_summary_rand_1}
+\end{figure}
+
+\begin{exercisewrap}
+\begin{nexercise}
+\label{malaria_vaccine_20_exp_summary_rand_1_diff}
+What is the difference in infection rates between
+the two simulated groups in
+Figure \ref{malaria_vaccine_20_exp_summary_rand_1}?
+How does this compare to the observed
+64.3% difference
+in the actual data?\footnotemark{}
+\end{nexercise}
+\end{exercisewrap}
+\footnotetext{$4 / 6 - 7 / 14 = 0.167$
+  or about 16.7\% in favor of the vaccine.
+  This difference due to chance is much smaller than the
+  difference observed in the actual groups.}
+-->
+
+As we saw in Section \@ref(inf-rand), we can randomize the responses (`infection` or `no infection`) to the treatment conditions under the null hypothesis of independence and compute possible differences in proportions.
+<!--
+We computed one possible difference under the
+independence model in Guided
+Practice \ref{malaria_vaccine_20_exp_summary_rand_1_diff},
+which represents one difference due to chance.
+While in this first simulation, we physically dealt
+out notecards to represent the patients,
+it is more efficient to perform this simulation
+using a computer.
+Repeating the simulation on a computer, we get another
+difference due to chance:
+\begin{align*}
+\frac{2}{\malariaBD{}} - \frac{9}{\malariaAD{}} = -0.310
+\end{align*}
+And another:
+\begin{align*}
+\frac{3}{\malariaBD{}} - \frac{8}{\malariaAD{}} = -0.071
+\end{align*}
+And so on until we repeat the simulation enough times
+that we have a good idea of what represents the
+\emph{distribution of differences from chance alone}.
+-->
+
+Figure \@ref(fig:malaria_rand_dot_plot) shows a stacked plot
+of the differences found from 100 randomization simulations,
+where each dot represents a simulated difference between
+the infection rates (control rate minus treatment rate).
+
+```{r malaria_rand_dot_plot, fig.cap="A stacked dot plot of differences from 100 simulations produced under the independence model $H_0$, where in these simulations infections are unaffected by the vaccine. Two of the 100 simulations had a difference of at least 64.3%, the difference observed in the study.", warning=FALSE, fig.width=10}
+
+set.seed(47)
+
+exp_gp  <- rep(c("vaccine", "placebo"), c(14, 6))
+outcome <- c(rep(c('infection', 'no infection'), c(5, 9)),
+             rep(c('infection', 'no infection'), c(6, 0)))
+
+nsim    <- 100
+n       <- length(exp_gp)
+success <- "infection"
+
+SimulateTable <- function(exp_gp, outcome, ...) {
+  table(sample(exp_gp), outcome)
+}
+# SimulateTable(exp_gp, outcome)
+
+sim_tables <-
+    lapply(1:nsim, SimulateTable,
+        exp_gp = exp_gp,
+        outcome = outcome)
+result <- sim_tables %>%
+    lapply(function(x) {
+    	  x[1, 1] / sum(x[1, ]) - x[2, 1] / sum(x[2, ])
+    	}) %>%
+    	unlist()
+
+
+pval <- sum(result >= 0.64) / nsim
+values <- table(result)
+diffs <- unique(result)
+
+X <- c()
+Y <- c()
+for (i in 1:length(diffs)) {
+  x   <- diffs[i]
+  rec <- sum(result == x)
+  X   <- append(X, rep(x, rec))
+  Y   <- append(Y, 1:rec)
+}
+
+plot(X, Y,
+     xlim = range(diffs) + c(-1, 1) * sd(diffs) / 4,
+     xlab = "Difference in Infection Rates",
+     axes = FALSE,
+     ylim = c(0, max(Y)),
+     col = COL[1],
+     pch = 20)
+# at <- seq(-0.4, 0.4, 0.1)
+# labels <- c(-0.4, "", -0.2, "", 0, "", 0.2, "", 0.4)
+axis(1) #, at, labels)
+abline(h = 0)
+points(X[X > 0.64], Y[X > 0.64], lwd=3, col = COL[4], cex=0.4)
+```
+
+Note that the distribution of these simulated differences
+is centered around 0.
+We simulated the differences assuming that the independence
+model was true, and under this condition,
+we expect the difference to be near zero with some random
+fluctuation, where *near* is pretty generous in this
+case since the sample sizes are so small in this study.
+
+```{block2, type = "example", echo = TRUE}
+How often would you observe a difference
+    of at least 64.3% (0.643)
+    according to Figure \@ref(fig:malaria_rand_dot_plot)?
+    Often, sometimes, rarely, or never?
+---
+      
+  It appears that a difference of at least
+  64.3% due to chance alone would only
+  happen about 2% of the time according to
+  Figure \@fig(fig:malaria_rand_dot_plot).
+  Such a low probability indicates a rare event.
+```
+
+The difference of 64.3% being
+a rare event suggests two possible interpretations
+of the results of the study:
+
+> $H_0$ Independence model. The vaccine has no effect on infection rate, and we just happened to observe a difference that would only occur on a rare occasion.
+> $H_A$ Alternative model. The vaccine has an effect on infection rate, and the difference we observed was actually due to the vaccine being effective at combatting malaria, which explains the large difference of 64.3%.
+
+Based on the simulations, we have two options.
+(1) We conclude that the study results do not provide
+strong evidence against the independence model.
+That is, we do not have sufficiently strong evidence
+to conclude the vaccine had an effect in this
+clinical setting.
+(2) We conclude the evidence is sufficiently strong
+to reject $H_0$ and assert that the vaccine was useful.
+When we conduct formal studies, usually we reject the
+notion that we just happened to observe a rare
+event.\footnote{This reasoning does not generally extend
+    to anecdotal observations.
+    Each of us observes incredibly rare events every day,
+    events we could not possibly hope to predict.
+    However, in the non-rigorous setting of anecdotal
+    evidence, almost anything may appear to be a rare event,
+    so the idea of looking for rare events in day-to-day
+    activities is treacherous.
+    For example, we might look at the lottery:
+    there was only a 1 in 292 million chance that the
+    Powerball numbers for the largest jackpot in history
+    (January 13th, 2016) would be (04, 08, 19, 27, 34)
+    with a Powerball of (10),
+    but nonetheless those numbers came up!
+    However, no matter what numbers had turned up,
+    they would have had the same incredibly rare odds.
+    That is, \emph{any set of numbers we could have
+    observed would ultimately be incredibly rare}.
+    This type of situation is typical of our daily lives:
+    each possible event in itself seems incredibly rare,
+    but if we consider every alternative, those outcomes
+    are also incredibly rare.
+    We should be cautious not to misinterpret such
+    anecdotal evidence.}
+So in this case, we reject the independence model in favor
+of the alternative.
+That is, we are concluding the data provide strong evidence
+that the vaccine provides some protection against malaria
+in this clinical setting.
+
+\index{data!malaria vaccine|)}
+
+One field of statistics, statistical inference, is built
+on evaluating whether such differences are due to chance.
+In statistical inference, data scientists evaluate which
+model is most reasonable given the data.
+Errors do occur, just like rare events, and we might choose
+the wrong model.
+While we do not always choose correctly, statistical
+inference gives us tools to control and evaluate how
+often these errors occur.
+In Chapter \ref{foundationsForInference},
+we give a formal introduction to the problem of model
+selection.
+We spend the next two chapters building a foundation
+of probability and theory necessary to make that
+discussion rigorous.
+
+
+
+
+
 
 #### Decision errors {-}
 
@@ -872,7 +1281,7 @@ In a hypothesis test, we make a statement about which one might be true, but we 
 
 ```{r fourHTScenarios}
 temptbl <- tribble(
- ~variable,    ~col1, ~col2, ~col3,
+  ~variable,    ~col1, ~col2, ~col3,
  "", "$H_0$ true", "okay", "Type 1 Error",
  "**Truth**", "$H_A$ true", "Type 2 Error", "okay"
 )
@@ -1760,7 +2169,7 @@ These considerations highlight the complexity around medical care and treatment 
 
 <!--
 ```{block2, type = "onebox", echo=TRUE}
-**Hypothesis testing when ${H_0}$ is $p_1 - p_2 = 0$**
+**Hypothesis testing when ${H_0}$ is $p_1 - p_2 = 0$.**
   
   Once you've determined a hypothesis test for the difference
   of two proportions is the correct procedure, there are four
