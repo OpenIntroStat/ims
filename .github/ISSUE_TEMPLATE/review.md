@@ -10,7 +10,7 @@ Please use this template for providing chapter level feedback. For typos and gra
 
 Please feel free to keep comments brief. We would much prefer to follow up with you for clarification than have you spend time providing in depth suggestions for topics we have decided are outside of the scope of the book or edits that we think would change the style of the substantively.
 
-Finally, we would like to thank you for your feedback in the [Acknowledgement](https://isrs2.netlify.app/index.html#acknowledgements) section of the book. Please check the boxes for if/how you would like to be acknowledged.
+Finally, we would like to thank you for your feedback in the [Acknowledgement](https://openintro-ims.netlify.app/index.html#acknowledgements) section of the book. Please check the boxes for if/how you would like to be acknowledged.
 
 - [ ] Yes, acknowledge me in the book.
 - [ ] Use my name in the acknowledgement. (Name: ____)
