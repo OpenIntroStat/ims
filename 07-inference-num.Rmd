@@ -4,6 +4,39 @@
 The content in this chapter is currently just placeholder. We will remove this banner once the chapter content has been updated and ready for review.
 ```
 
+```{block2, chp2-intro, type="chapterintro", echo=TRUE}
+Focusing now on Statistical Inference for **numerical data**, again, we will revisit and expand upon the foundational aspects of hypothesis testing from Chapter \@ref(inference-foundations).
+
+The important data structure for this chapter is a numeric response variable (that is, the outcome is quantitative).
+The four data structures we detail are one numeric response variable, one numeric response variable which is a difference across a pair of observations, a numeric response variable broken down by a binary explanatory variable, and a numeric response variable broken down by an explanatory variable that has two or more levels.
+When appropriate, each of the data structures will be analyzed using the three methods from Chapter \@ref(inference-foundations): randomization test, bootstrapping, and mathematical models.
+
+As we build on the inferential ideas, we will visit new foundational concepts in statistical inference.  One key new idea rests in estimating how the sample mean varies from sample to sample; the resulting value is referred to as the standard error of the mean.  We will also introduce a new important mathematical model, the t-distribution (as the foundation for the t-test).  
+```
+
+```{r summary3methods-chp6}
+method_summary_table <- tribble(
+  ~variable,    ~col1, ~col2, ~col3,
+"What does it do?",  "Shuffles the explanatory variable to mimic the natural variability  found in a randomized experiment.", "Resamples (with replacement) from the observed data to mimic the sampling variability found by collecting data.",  "Uses theory (primarily the Central Limit Theorem) to describe the hypothetical variability resulting from either repeated randomized experiments or random samples.",
+
+"What is the random process described?", "randomized experiment", "random sampling",  "either / both",
+
+"Is there flexibility?", "Yes, can be used to describe random sampling in an observational model", "Yes, can be used to describe random allocation in an experiment", "Yes",
+
+"What is it best for?", "Hypothesis Testing (can be used for Confidence Intervals, but not covered in this text).", "Confidence Intervals (HT for one proportion covered in Chapter 6).", "Quick analyses through, for example, calculating a Z score.",
+
+"What physical object represents the simulation process?", "shuffling cards", "pulling balls from a bag", "NA",
+
+"What are the technical conditions?", "independence", "independence, big n", "independence, big n"
+)
+```
+
+
+```{r include=FALSE}
+terms_chp_7 <- c("numerical data")
+```
+
+
 ## One-sample means
 
 - Bootstrap (for means, medians)
@@ -21,13 +54,699 @@ The content in this chapter is currently just placeholder. We will remove this b
 - Bootstrap
 - t-distribution
 
-## Comparing many means with ANOVA (special topic, include simulation version)
+## Comparing many means with ANOVA (special topic, include simulation version) {#anovaAndRegrWithCategoricalVariables}
 
-- Randomization 
-- t-distribution
+
+\index{analysis of variance (ANOVA)|(}
+
+
+Sometimes we want to compare means across many groups.
+We might initially think to do pairwise comparisons.
+For example, if there were three groups, we might be tempted
+to compare the first mean with the second,
+then with the third,
+and then finally compare the second and third means for
+a total of three comparisons.
+However, this strategy can be treacherous.
+If we have many groups and do many comparisons,
+it is likely that we will eventually find a difference
+just by chance, even if there is no difference in the
+populations.
+Instead, we should apply a holistic test to check whether
+there is evidence that at least one pair groups are
+in fact different, and this is where **ANOVA** saves
+the day.
+
+```{r include=FALSE}
+terms_chp_7 <- c(terms_chp_7, "ANOVA", "analysis of variance")
+```
+
+#### Core ideas of ANOVA
+
+In this section, we will learn a new method called
+**analysis of variance (ANOVA)** and a new test
+statistic called $F$ (which we will introduce in our discussion of mathematical models).
+ANOVA uses a single hypothesis test to check whether
+the means across many groups are equal:
+
+* **$H_0$:** The mean outcome is the same across all groups. In statistical notation, $\mu_1 = \mu_2 = \cdots = \mu_k$ where $\mu_i$ represents the mean of the outcome for observations in category $i$.
+* **$H_A$:** At least one mean is different.
+
+Generally we must check three conditions on the data before performing ANOVA:  
+* the observations are independent within and across groups,  
+* the data within each group are nearly normal, and  
+* the variability across the groups is about equal.  
+
+When these three conditions are met, we may perform an ANOVA to determine whether the data provide strong evidence against the null hypothesis that all the $\mu_i$ are equal.
+
+```{block2, type = "example", echo = TRUE}
+College departments commonly run multiple
+    lectures of the same introductory course each semester
+    because of high demand.
+    Consider a statistics department that runs three lectures
+    of an introductory statistics course.
+    We might like to determine whether there are statistically
+    significant differences in first exam scores in these three
+    classes ($A$, $B$, and $C$).
+    Describe appropriate hypotheses to determine whether
+    there are any differences between the three classes.
+    
+---
+      
+  The hypotheses may be written in the following form:
+* **$H_0$:** The average score is identical in all lectures.
+      Any observed difference is due to chance.
+      Notationally, we write $\mu_A=\mu_B=\mu_C$.
+* **$H_A$:** The average score varies by class.
+      We would reject the null hypothesis in favor of the
+      alternative hypothesis if there were larger differences
+      among the class averages than what we might expect
+      from chance alone.
+```
+
+Strong evidence favoring the alternative hypothesis in ANOVA
+is described by unusually large differences among the group means.
+We will soon learn that assessing the variability of the group
+means relative to the variability among individual observations
+within each group is key to ANOVA's success.
+
+```{block2, type = "example", echo = TRUE}
+Examine Figure \@ref(fig:toyANOVA). Compare groups I, II, and III. 
+Can you visually determine if the differences in the group centers is due to chance or not? 
+  Now compare groups IV, V, and VI.
+Do these differences appear to be due to chance?
+
+---
+      
+  Any real difference in the means of groups I, II, and III
+  is difficult to discern, because the data within each group
+  are very volatile relative to any differences in the
+  average outcome.
+  On the other hand, it appears there are differences
+  in the centers of groups IV, V, and VI.
+  For instance, group V appears to have a higher mean than
+  that of the other two groups.
+  Investigating groups IV, V, and VI, we see the differences
+  in the groups' centers are noticeable because those
+  differences are large *relative to the variability
+  in the individual observations within each group*.
+```
+
+
+```{r toyANOVA, fig.cap="Side-by-side dot plot for the outcomes for six groups.", warning=FALSE, fig.width=10}
+ plot(toy_anova$outcome,
+     xlim = c(0.5, 6.5),
+     type = "n",
+     axes = FALSE,
+     xlab = "",
+     ylab = "Outcome")
+rect(-100, -100,
+     100, 100,
+     col = COL[7,3])
+abline(h = seq(-10, 10, 2), col = "#FFFFFF", lwd = 3)
+abline(h = seq(-10, 10, 1), col = "#FFFFFF", lwd = 0.8)
+these <- toy_anova$group %in% c("I", "II", "III")
+dotPlot(toy_anova$outcome[these], toy_anova$group[these],
+        vertical = TRUE,
+        at = 1:3,
+        add = TRUE,
+        col = COL[1, 3],
+        cex = 0.9, pch = 19)
+dotPlot(toy_anova$outcome[!these], toy_anova$group[!these],
+        vertical = TRUE,
+        at = 1:3 + 3,
+        add = TRUE,
+        col = COL[4, 3],
+        cex = 0.9,
+        pch = 19)
+abline(v = 3.5, col = COL[7], lwd = 5.5)
+abline(v = 3.5, col = "#AAAAAA", lwd = 3)
+abline(v = 3.5, col = "#333333", lwd = 0.8)
+axis(2)
+par(mgp = c(2, 0.45, 0.1))
+axis(1, at = 1:3, c("I", "II", "III"))
+axis(1, at = 4:6, c("IV", "V", "VI"))
+box()
+
+```
+
+#### Is batting performance related to player position in MLB? {-}
+
+\index{data!MLB batting|(}
+
+<!--
+\newcommand{\mlbdata}{\data{bat18}}
+\newcommand{\mlbN}{429}
+\newcommand{\mlbK}{3}
+\newcommand{\mlbMinAB}{100}
+\newcommand{\mlbDFA}{2}
+\newcommand{\mlbDFB}{426}
+\newcommand{\mlbF}{5.077}
+\newcommand{\mlbPvalue}{0.0066}
+-->
+
+We would like to discern whether there are real differences
+between the batting performance of baseball players according
+to their position:
+outfielder (`OF`), infielder (`IF`),
+%designated hitter (`DH`),
+and catcher (`C`).
+We will use a data set called `mlb_players_18`,
+which includes batting records of 429 Major League
+Baseball (MLB) players from the 2018 season who had
+at least 100 at bats.
+Six of the 429 cases represented in `mlb_players_18`
+are shown in Figure \@ref(tab:mlbBat18DataMatrix),
+and descriptions for each variable are provided
+in Figure \@ref(tab:mlbBat18Variables).
+The measure we will use for the player batting
+performance (the outcome variable) is on-base
+percentage (`OBP`).
+The on-base percentage roughly represents the fraction
+of the time a player successfully gets on base or hits
+a home run.
+
+
+```{r mlbBat18DataMatrix}
+mlb_players_18 %>%
+  arrange(name) %>% 
+  head(6) %>%
+   kable(caption = "Six cases from the `mlb_players_18` data matrix.") %>%
+ kable_styling()
+```
+  
+
+
+```{r mlbBat18Variables}
+temptbl <- tribble(
+ ~variable,    ~col1,
+"name" , "Player name",
+"team" , "The abbreviated name of the player's team",
+"position" , "The player's primary field position (OF, IF, C)" ,
+"AB" , "Number of opportunities at bat",
+"H" , "Number of hits",
+"HR" , "Number of home runs",
+"RBI" , "Number of runs batted in",
+"AVG" , "Batting average, which is equal to H/AB",
+"OBP" ,    "On-base percentage, which is roughly equal to the fraction of times a player gets on base or hits a home run"
+)
+
+temptbl %>%
+ kable(caption = "Variables and their descriptions for the mlb_players_18 data set.",
+    col.names = c( "variable", "description")) %>%
+ kable_styling() 
+```
+
+```{block2, type = "guidedpractice", echo = TRUE}
+The null hypothesis under consideration is the following:
+$\mu_{`OF`} = \mu_{`IF`} = %\mu_{`DH`} = 
+    \mu_{`C`}$.
+Write the null and corresponding alternative hypotheses
+in plain language.^[$H_0$: The average on-base percentage is equal
+  across the four positions.
+  $H_A$: The average on-base percentage varies across some
+  (or all) groups.]
+```
+
+```{block2, type = "example", echo = TRUE}
+The player positions have been divided
+    into three groups: outfield (`OF`), infield (`IF`),
+    and catcher (`C`).
+    What would be an appropriate point estimate of the on-base
+    percentage by outfielders, $\mu_{`OF`}$?
+  
+---
+      
+  A good estimate of the on-base percentage by outfielders would
+  be the sample average of `OBP` for just those players
+  whose position is outfield: $\bar{x}_{OF} = 0.320$.
+```
+
+
+
+### Comparison of many means: randomization test
+
+Figure \ref{mlbHRPerABSummaryTable} provides summary statistics for each group. A side-by-side box plot for the on-base percentage is shown in Figure \ref{mlbANOVABoxPlot}. Notice that the variability appears to be approximately constant across groups; nearly constant variance across groups is an important assumption that must be satisfied before we consider the ANOVA approach.
+
+
+```{r mlbHRPerABSummaryTable}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3,
+"Sample size ($n_i$)", 160 , 205 , 64,
+"Sample mean ($\\bar{x}_i$)" , 0.320 , 0.318 , 0.302,
+"Sample SD ($s_i$)" , 0.043 , 0.038 , 0.038
+)
+
+temptbl %>%
+ kable(caption = "Summary statistics of on-base percentage, split by player position.",
+    col.names = c( "", "OF", "IF", "C")) %>%
+ kable_styling() 
+```
+
+
+```{r mlbANOVABoxPlot, fig.cap="Side-by-side box plot of the on-base percentage for 429 players across four groups. There is one prominent outlier visible in the infield group, but with 154 observations in the infield group, this outlier is not a concern.", warning=FALSE, fig.width=10}
+
+d   <- subset(mlb_players_18, AB >= 100)
+d   <- subset(d, !position %in% c("P", "DH"))
+pos <- list(c("LF", "CF", "RF"), c("1B", "2B", "3B", "SS"), "DH", "C")
+POS <- c("OF", "IF", "DH", "C")
+
+for (i in 1:length(pos)) {
+  these <- which(d$position %in% pos[[i]])
+  #cat(length(these), "\n")
+  d$position[these] <- POS[i]
+}
+d <- select(d, name, team, position, AB, H, HR, RBI, AVG, OBP)
+d <- d[order(d$name, d$team), ]
+rownames(d) <- NULL
+
+
+mod <- lm(OBP ~ position, data = d)
+
+key <- POS[c(1, 2, 4)]
+boxPlot(d$OBP, d$position,
+        xlab = "",
+        ylab = "On-Base Percentage",
+        axes = FALSE,
+        pchCex = 1,
+        key = key,
+        col = COL[1, 3],
+        lcol = COL[1])
+mtext("Position", 1, 1.5)
+axis(1, 1:3, key)
+axis(2)
+```
+
+
+```{block2, type = "example", echo = TRUE}
+The largest difference between the sample means
+    is between the catcher and the outfielder positions.
+    Consider again the original hypotheses:
+
+* $H_0$: $\mu_{`OF`} = \mu_{`IF`} = \mu_{`C`}$
+
+* $H_A$: The average on-base percentage ($\mu_i$) varies
+        across some (or all) groups.
+
+    Why might it be inappropriate to run the test by simply
+    estimating whether the difference of $\mu_{`C`}$ and
+    $\mu_{`OF`}$ is statistically significant at a 0.05
+    significance level?
+
+---
+  The primary issue here is that we are inspecting the data
+  before picking the groups that will be compared.
+  It is inappropriate to examine all data by eye
+  (informal testing) and only afterwards decide which parts
+  to formally test.
+  This is called **data snooping** or **data fishing**.
+  Naturally, we would pick the groups with the large
+  differences for the formal test, and this would leading
+  to an inflation in the Type 1 Error rate.
+  To understand this better, let's consider a slightly
+  different problem.
+
+  Suppose we are to measure the aptitude for students in
+  20 classes in a large elementary school at the beginning
+  of the year.
+  In this school, all students are randomly assigned to
+  classrooms, so any differences we observe between the
+  classes at the start of the year are completely due
+  to chance.
+  However, with so many groups, we will probably observe
+  a few groups that look rather different from each other.
+  If we select only these classes that look so different
+  and then perform a formal test,
+  we will probably make the wrong conclusion that the
+  assignment wasn't random.
+  While we might only formally test differences
+  for a few pairs of classes, we informally evaluated
+  the other classes by eye before choosing the most extreme
+  cases for a comparison.
+```
+
+For additional information on the ideas expressed above, we recommend
+reading about the
+**prosecutor's fallacy**.^[See, for example,
+  [textbook-prosecutors_fallacy](andrewgelman.com/2007/05/18/the\_prosecutors.]
+
+```{r include=FALSE}
+terms_chp_7 <- c(terms_chp_7, "data snooping", "data fishing", "prosecutor's fallacy")
+```
+
+
+In the next section we will learn how to use the $F$ statistic
+and ANOVA to test whether observed differences in sample means
+could have happened just by chance even if there was no
+difference in the respective population means.
+
+
+#### Analysis of variance (ANOVA) {-}
+
+The method of analysis of variance in this context focuses
+on answering one question:
+is the variability in the sample means so large that it seems
+unlikely to be from chance alone?
+This question is different from earlier testing procedures
+since we will *simultaneously* consider many groups,
+and evaluate whether their sample means differ more than
+we would expect from natural variation.
+We call this variability the
+**mean square between groups ($MSG$)**,
+and it has an associated degrees of freedom,
+$df_{G} = k - 1$ when there are
+$k$ groups.
+The $MSG$ can be thought of as a scaled variance formula
+for means.
+If the null hypothesis is true, any variation in the sample
+means is due to chance and shouldn't be too large.
+Details of $MSG$ calculations are provided in the
+footnote.^[Let $\bar{x}$ represent the mean of
+  outcomes across all groups.
+  Then the mean square between groups is computed as
+  \begin{align*}
+  MSG
+    = \frac{1}{df_{G}}SSG
+    = \frac{1}{k-1}\sum_{i=1}^{k} n_{i}
+        \left(\bar{x}_{i} - \bar{x}\right)^2
+  \end{align*}
+  where $SSG$ is called the **sum of squares between groups**
+  and $n_{i}$ is the sample size of group $i$.]
+
+
+However, we typically use software for these computations.
+
+\index{degrees of freedom (df)!ANOVA}
+
+```{r include=FALSE}
+terms_chp_7 <- c(terms_chp_7, "mean square between groups (MSG)", "degrees of freedom", "sum of squares between groups (SSG)", "mean square error (MSE)", "sum of squares total (SST)", "sum of squared error (SSE)")
+```
+
+
+The mean square between the groups is, on its own, quite useless
+in a hypothesis test.
+We need a benchmark value for how much variability should
+be expected among the sample means if the null hypothesis is true.
+To this end, we compute a pooled variance estimate,
+often abbreviated as the **mean square error ($MSE$)**,
+which has an associated degrees of freedom value $df_E = n - k$.
+It is helpful to think of $MSE$ as a measure of the variability
+within the groups.
+Details of the computations of the $MSE$ and a link to an
+extra online section for ANOVA calculations are provided
+in the footnote^[Let $\bar{x}$ represent the mean
+  of outcomes across all groups.
+  Then the **sum of squares total ($SST$)** is computed as
+  \begin{align*}
+  SST = \sum_{i=1}^{n} \left(x_{i} - \bar{x}\right)^2
+  \end{align*}
+  where the sum is over all observations in the data set.
+  Then we compute the **sum of squared errors ($SSE$)**
+  in one of two equivalent ways:
+  \begin{align*}
+  SSE &= SST - SSG \\
+  	&= (n_1-1)s_1^2 + (n_2-1)s_2^2 + \cdots + (n_k-1)s_k^2
+  \end{align*}
+  where $s_i^2$ is the sample variance (square of the standard
+  deviation) of the residuals in group $i$.
+  Then the $MSE$ is the standardized form of $SSE$:
+  $MSE = \frac{1}{df_{E}}SSE$.
+  
+See [additional details on ANOVA calculations](www.openintro.org/d?file=stat\_extra\_anova\_calculations)]
+for interested readers.
+
+When the null hypothesis is true, any differences among the
+sample means are only due to chance, and the $MSG$ and $MSE$
+should be about equal.
+As a test statistic for ANOVA, we examine the fraction of $MSG$
+and $MSE$:
+\begin{align*}
+F = \frac{MSG}{MSE}
+\end{align*}
+The $MSG$ represents a measure of the between-group variability,
+and $MSE$ measures the variability within each of the groups.
+
+```{block2, type = "guidedpractice", echo = TRUE}
+For the baseball data, $MSG = 0.00803$ and $MSE=0.00158$.
+Identify the degrees of freedom associated with MSG and
+MSE and verify the $F$ statistic is approximately
+5.077.^[There are $k = 3$ groups,
+  so $df_{G} = k - 1 = 2$.
+  There are $n = n_1 + n_2 + n_3 = 429$ total observations,
+  so $df_{E} = n - k = 426$.
+  Then the $F$ statistic is computed as the ratio of $MSG$
+  and $MSE$:
+  $F
+    = \frac{MSG}{MSE}
+    = \frac{0.00803}{0.00158}
+    = 5.082
+    \approx 5.077$.
+  ($F = 5.077$ was computed by using values for $MSG$
+  and $MSE$ that were not rounded.)]
+```
+
+We can use the $F$ statistic to evaluate the hypotheses in
+what is called an F-test.
+A p-value can be computed from the $F$ statistic using
+an $F$ distribution, which has two associated parameters:
+$df_{1}$ and $df_{2}$.
+For the $F$ statistic in ANOVA,
+$df_{1} = df_{G}$ and $df_{2} = df_{E}$.
+An $F$ distribution with 2 and 426 degrees
+of freedom, corresponding to the $F$ statistic for the
+baseball hypothesis test, is shown in
+Figure \@ref(fig:fDist2And423Shaded).
+
+```{r include=FALSE}
+terms_chp_7 <- c(terms_chp_7, "F-test")
+```
+
+
+
+```{r fDist2And423Shaded, fig.cap="An $F$ distribution with $df_1=3$ and $df_2=323$.", warning=FALSE, fig.width=10}
+X <- seq(0, 8, len = 300)
+Y <- df(X, 2.00001, 423)
+
+plot(X, Y,
+     type = "l",
+     xlab = "F",
+     ylab = "",
+     axes = FALSE,
+     lwd = 1.5)
+lines(c(0, 8), rep(0, 2))
+axis(1)
+
+plot(X, Y,
+     type = "l",
+     xlab = "F",
+     ylab = "",
+     axes = FALSE)
+lines(c(0, 8), rep(0, 2))
+axis(1)
+temp <- which(X > 5.077)
+x    <- X[c(temp, rev(temp), temp[1])]
+y    <- c(Y[temp], rep(0, length(temp)), Y[temp[1]])
+polygon(x, y, col = COL[4], border = COL[4], lwd = 2)
+arrows(6.3, 0.3, 6.5, 0.05, length = 0.05)
+text(6.3, 0.3, "Small tail area", pos = 3)
+```
+
+#### Randomization p-value {-}
+
+```{block2, type = "todo", echo = TRUE}
+need a simulation method here where the data gets randomized, the F statistic is calculted, and the p-value is obtained from the histogram.
+```
+
+### Comparison of many means: mathematical model
+
+####  The ANOVA F-test {-}
+
+
+The larger the observed variability in the sample
+means ($MSG$) relative to the within-group observations ($MSE$),
+the larger $F$ will be and the stronger the evidence against
+the null hypothesis.
+Because larger values of $F$ represent stronger evidence against
+the null hypothesis, we use the upper tail of the distribution
+to compute a p-value.
+
+```{block2, type = "onebox", echo = TRUE}
+**The F statistic and the F-test.**
+  Analysis of variance (ANOVA) is used to test whether
+  the mean outcome differs across 2 or more groups.
+  ANOVA uses a test statistic $F$, which represents
+  a standardized ratio of variability in the sample means
+  relative to the variability within the groups.
+  If $H_0$ is true and the model conditions are satisfied,
+  the statistic $F$ follows an $F$ distribution with
+  parameters $df_{1} = k - 1$ and $df_{2} = n - k$.
+  The upper tail of the $F$ distribution is used to
+  represent the p-value.
+```
+
+```{block2, type = "example", echo = TRUE}
+The p-value corresponding to
+    the shaded area in
+    Figure \@ref(fig:fDist2And423Shaded)
+    is equal to about 0.0066.
+    Does this provide strong evidence against the
+    null hypothesis?
+      
+---
+      
+  The p-value is smaller than 0.05, indicating the evidence
+  is strong enough to reject the null hypothesis
+  at a significance level of 0.05.
+  That is, the data provide strong evidence that the average
+  on-base percentage varies by player's primary field position.
+```
+
+
+#### Reading an ANOVA table from software {-}
+
+The calculations required to perform an ANOVA by hand are
+tedious and prone to human error.
+For these reasons, it is common to use statistical software
+to calculate the $F$ statistic and p-value.
+
+An ANOVA can be summarized in a table very similar to that
+of a regression summary, which we saw in
+Chapters \@ref(cor-reg)
+and \@ref(mult-reg.
+Table \@ref(tab:anovaSummaryTableForOBPAgainstPosition)
+shows an ANOVA summary to test whether the mean of on-base
+percentage varies by player positions in the MLB.
+Many of these values should look familiar;
+in particular, the $F$-test statistic and p-value
+can be retrieved from the last two columns.
+
+
+```{r anovaSummaryTableForOBPAgainstPosition}
+d   <- subset(mlb_players_18, AB >= 100)
+d   <- subset(d, !position %in% c("P", "DH"))
+pos <- list(c("LF", "CF", "RF"), c("1B", "2B", "3B", "SS"), "DH", "C")
+POS <- c("OF", "IF", "DH", "C")
+
+for (i in 1:length(pos)) {
+  these <- which(d$position %in% pos[[i]])
+  #cat(length(these), "\n")
+  d$position[these] <- POS[i]
+}
+d <- select(d, name, team, position, AB, H, HR, RBI, AVG, OBP)
+d <- d[order(d$name, d$team), ]
+rownames(d) <- NULL
+mod <- lm(OBP ~ position, data = d)
+
+options(knitr.kable.NA = '')
+anova(mod) %>%
+ kable(digits = 4, 
+       caption = "ANOVA summary for testing whether the average on-base percentage differs across player positions.") %>% 
+  add_footnote("$s_{pooled} = 0.040$ on $df = 423$") %>%
+ kable_styling()
+```
+
+
+#### Graphical diagnostics for an ANOVA analysis {-}
+
+There are three conditions we must check for an ANOVA analysis:
+all observations must be independent,
+the data in each group must be nearly normal,
+and the variance within each group must be approximately equal.
+
+* **Independence.** If the data are a simple random sample,
+    this condition is satisfied.
+    For processes and experiments, carefully consider whether
+    the data may be independent (e.g. no pairing).
+    For example, in the MLB data, the data were not sampled.
+    However, there are not obvious reasons why independence
+    would not hold for most or all observations.
+
+* **Approximately normal.** As with one- and two-sample testing for means,
+    the normality assumption is especially important
+    when the sample size is quite small when it is
+    ironically difficult to check for non-normality.
+    A histogram of the observations from each group
+    is shown in Figure \@ref(fig:mlbANOVADiagNormalityGroups).
+    Since each of the groups we're considering have
+    relatively large sample sizes,
+    what we're looking for are major outliers.
+    None are apparent, so this conditions is reasonably met.
+    
+```{r mlbANOVADiagNormalityGroups, fig.cap = "Histograms of OBP for each field position.", warning=FALSE, fig.width=10}
+d   <- subset(mlb_players_18, AB >= 100)
+d   <- subset(d, !position %in% c("P", "DH"))
+pos <- list(c("LF", "CF", "RF"), c("1B", "2B", "3B", "SS"), "DH", "C")
+POS <- c("OF", "IF", "DH", "C")
+
+for (i in 1:length(pos)) {
+  these <- which(d$position %in% pos[[i]])
+  d$position[these] <- POS[i]
+}
+d <- select(d, name, team, position, AB, H, HR, RBI, AVG, OBP)
+d <- d[order(d$name, d$team), ]
+
+xlim <- range(d$OBP)
+at <- pretty(xlim, 3)
+breaks <- pretty(xlim, 15)
+HistOfOBP <- function(x, main) {
+  histPlot(x,
+      main = main,
+      xlim = xlim,
+      breaks = breaks,
+      xlab = "On-Base Percentage",
+      ylab = "Frequency",
+      col = COL[1],
+      axes = FALSE)
+  axis(1, at)
+  axis(2)
+}
+HistOfOBP(d$OBP[d$position == "OF"], "Outfielders")
+HistOfOBP(d$OBP[d$position == "IF"], "In-fielders")
+HistOfOBP(d$OBP[d$position == "C"], "Catchers")
+```
+
+* **Constant variance.** The last assumption is that the variance in the
+    groups is about equal from one group to the next.
+    This assumption can be checked by examining a
+    side-by-side box plot of the outcomes across the
+    groups, as in Figure \@ref(fig:mlbANOVABoxPlot).
+    In this case, the variability is similar in the
+    four groups but not identical.
+    We see in Table \@ref(tab:mlbHRPerABSummaryTable)
+    that the standard deviation doesn't vary much
+    from one group to the next.
+
+\index{data!MLB batting|)}
+
+```{block2, type = "onebox", echo = TRUE}
+**Diagnostics for an ANOVA analysis.**
+  
+  Independence is always important to an ANOVA analysis.
+  The normality condition is very important when the sample
+  sizes for each group are relatively small.
+  The constant variance condition is especially important
+  when the sample sizes differ between groups.
+```
+
+
+
+\index{analysis of variance (ANOVA)|)}
 
 
 ## Chapter 7 review {#chp7-review}
+
+
+```{block2, type = "todo", echo = TRUE}
+need to expand on the technical condition as the last row.  also, is it helpful for the rest of the table to be repeated?
+```
+
+```{r chp7summary}
+  method_summary_table %>%
+ kable(caption = "Summary and comparison of Randomization Tests, Bootstrapping, and Mathematical Models as inferential statistical methods.", 
+    col.names = c("", " Randomization Test ", "Bootstrapping", "Mathematical Model")) %>%
+ kable_styling()
+```
+
 
 ### Terms
 
@@ -39,3 +758,6 @@ However you should be able to easily spot them as **bolded text**.
 ```{r eval = FALSE}
 make_terms_table(terms_chp_7)
 ```
+
+
+
