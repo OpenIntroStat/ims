@@ -4,7 +4,37 @@
 The content in this chapter is currently just placeholder. We will remove this banner once the chapter content has been updated and is ready for review.
 ```
 
+```{block2, chp2-intro, type="chapterintro", echo=TRUE}
+Focusing now on Statistical Inference for **categorical data**, we will revisit many of the foundational aspects of hypothesis testing from Chapter \@ref(inference-foundations).
 
+The three data structures we detail are one binary variable, summarized using a single proportion; two binary variables, summarized using a difference of two proportions; and two categorical variables, summarized using a two-way table. 
+When appropriate, each of the data structures will be analyzed using the three methods from Chapter \@ref(inference-foundations): randomization test, bootstrapping, and mathematical models.
+
+As we build on the inferential ideas, we will visit new foundational concepts in statistical inference. 
+For example, we will cover the conditions for when a normal model is appropriate; the two different error rates in hypothesis testing; and choosing the confidence level for a confidence interval.
+```
+
+```{r summary3methods-chp6}
+method_summary_table <- tribble(
+ ~variable,    ~col1, ~col2, ~col3,
+"What does it do?",  "Shuffles the explanatory variable to mimic the natural variability  found in a randomized experiment.", "Resamples (with replacement) from the observed data to mimic the sampling variability found by collecting data.",  "Uses theory (primarily the Central Limit Theorem) to describe the hypothetical variability resulting from either repeated randomized experiments or random samples.",
+
+"What is the random process described?", "randomized experiment", "random sampling",  "either / both",
+
+"Is there flexibility?", "Yes, can be used to describe random sampling in an observational model", "Yes, can be used to describe random allocation in an experiment", "Yes",
+
+"What is it best for?", "Hypothesis Testing (can be used for Confidence Intervals, but not covered in this text).", "Confidence Intervals (HT for one proportion covered in Chapter 6).", "Quick analyses through, for example, calculating a Z score.",
+
+"What physical object represents the simulation process?", "shuffling cards", "pulling balls from a bag", "NA",
+
+"What are the technical conditions?", "independence", "independence, big n", "independence, big n"
+)
+```
+
+
+```{r include=FALSE}
+terms_chp_6 <- c("categorical data")
+```
 
 ## Inference for a single proportion {#single-prop}
 
@@ -23,9 +53,9 @@ For this reason, we will not use randomization as an analysis tool when focusing
 
 ### One proportion: bootstrap under $H_0$ {#one-prop-null-boot}
 
-The simulation concept is similar to the ideas used
+The bootstrap simulation concept when $H_0$ is true is similar to the ideas used
 in the case studies presented in
-Section \@ref(boot-ci).  Because we will be testing a hypothesized value of $p$ (referred to as $p_0$), the bootstrap simulation for hypothesis testing has a fantastic advantage that it can be used for any sample size (a huge benefit for small samples, a nice alternative for large samples).
+Section \@ref(boot-ci) where we bootstrapped without an assumption about $H_0$.  Because we will be testing a hypothesized value of $p$ (referred to as $p_0$), the bootstrap simulation for hypothesis testing has a fantastic advantage that it can be used for any sample size (a huge benefit for small samples, a nice alternative for large samples).
 
 We expand on the medical consultant example, see Section \@ref(sec-med-consult), where instead of finding an interval estimate for the true complication rate, we work to test a specific research claim.
 
@@ -44,36 +74,30 @@ While it is not possible to assess this causal claim, it is still possible to te
 ```
 
 
-```{block2, type="example", echo=TRUE}
-We're going to conduct a hypothesis test for this setting. 
-Should the test be one-sided or two-sided?
-
----
-
-The setting has been framed in the context of the consultant being helpful, but what if the consultant actually performed worse than the average? 
-Would we care? 
-More than ever! 
-Since we care about a finding in either direction, we should run a two-sided test.
-```
 
 ```{block2, type="guidedpractice", echo=TRUE}
-Write out hypotheses in both plain and statistical language to test for the association between the consultant's work and the true complication rate, $p$, for this consultant's clients.^[H_0$: There is no association between the consultant's contributions and the clients' complication rate. In statistical language, $p=0.10$. $H_A$: Patients who work with the consultant tend to have a complication rate lower than 10%, i.e., $p<0.10$.]
+Write out hypotheses in both plain and statistical language to test for the association between the consultant's work and the true complication rate, $p$, for the consultant's clients.^[$H_0$: There is no association between the consultant's contributions and the clients' complication rate. In statistical language, $p=0.10$. 
+$H_A$: Patients who work with the consultant tend to have a complication rate lower than 10%, i.e., $p<0.10$.]
 ```
 
 
-The uncertainty associated with the sample proportion should not be modeled using the normal distribution. However, we would still like to assess the hypotheses from Guided Practice \ref{hypForAssessingConsultantWorkInLiverTransplants} in absence of the normal framework. To do so, we need to evaluate the possibility of a sample value ($\hat{p}$) this far below the null value, $p_0=0.10$. This possibility is usually measured with a p-value.
+Because, as it turns out, the conditions of working with the normal distribution are not met (see Section \@ref(one-prop-norm)), the uncertainty associated with the sample proportion should not be modeled using the normal distribution. However, we would still like to assess the hypotheses from the previous Guided Practice in absence of the normal framework. To do so, we need to evaluate the possibility of a sample value ($\hat{p}$) as far below the null value, $p_0=0.10$ as what was observed. The deviation of the sample value from the hypothesized parameter is usually quantified with a p-value.
 
-The p-value is computed based on the null distribution, which is the distribution of the test statistic if the null hypothesis is true. Supposing the null hypothesis is true, we can compute the p-value by identifying the chance of observing a test statistic that favors the alternative hypothesis at least as strongly as the observed test statistic. This can be done using simulation.
+The p-value is computed based on the null distribution, which is the distribution of the test statistic if the null hypothesis is true. Supposing the null hypothesis is true, we can compute the p-value by identifying the chance of observing a test statistic that favors the alternative hypothesis at least as strongly as the observed test statistic. Here we will use a bootstrap simulation to measure the p-value.
 
 #### Generating the null distribution and p-value by bootstrap simulation {-}
 
 We want to identify the sampling distribution of the test statistic ($\hat{p}$) if the null hypothesis was true. In other words, we want to see how the sample proportion changes due to chance alone. Then we plan to use this information to decide whether there is enough evidence to reject the null hypothesis.
 
-Under the null hypothesis, 10% of liver donors have complications during or after surgery. Suppose this rate was really no different for the consultant's clients. If this was the case, we could *simulate* 62 clients to get a sample proportion for the complication rate from the null distribution.  Simulating observations using a hypothesized null parameter value is often called a **parametric bootstrap simulation**\index{parametric bootstrap}.
+Under the null hypothesis, 10% of liver donors have complications during or after surgery. Suppose this rate was really no different for the consultant's clients (for *all* the consultant's clients, not just the 62 previously measured). If this was the case, we could *simulate* 62 clients to get a sample proportion for the complication rate from the null distribution.  Simulating observations using a hypothesized null parameter value is often called a **parametric bootstrap simulation**\index{parametric bootstrap}.
 
 
 ```{r include=FALSE}
-terms_chp_6 <- c("parametric bootstrap")
+terms_chp_6 <- c(terms_chp_6, "parametric bootstrap")
+```
+
+```{block2, type = "todo", echo = TRUE}
+need a new physical object
 ```
 
 Each client can be simulated using a single 10-sided die with one red side and nine black sides. Rolling the die once is one way of simulating the chance a patient has a complication *if the true complication rate is 10%* for the data. If we roll the die 62 times and compute the proportion of patients with complications in the simulation, $\hat{p}_{sim}$, then this sample proportion is exactly a sample from the null distribution.
@@ -92,7 +116,7 @@ One simulation isn't enough to get a sense of the null distribution; many simula
 
 Figure \@ref(fig:nullDistForPHatIfLiverTransplantConsultantIsNotHelpful) shows the results of 10,000 simulated studies. The proportions that are equal to or less than $\hat{p}=0.048$ are shaded. The shaded areas represent sample proportions under the null distribution that provide at least as much evidence as $\hat{p}$ favoring the alternative hypothesis. There were 1222 simulated sample proportions with $\hat{p}_{sim} \leq 0.048$. We use these to construct the null distribution's left-tail area and find the p-value:
 \begin{align}
-\text{left tail }\label{estOfPValueBasedOnSimulatedNullForSingleProportion}
+\text{left tail area }\label{estOfPValueBasedOnSimulatedNullForSingleProportion}
 	&= \frac{\text{Number of observed simulations with }\hat{p}_{sim}\leq\text{ 0.048}}{10000}
 \end{align}
 Of the 10,000 simulated $\hat{p}_{sim}$, 1222 were equal to or smaller than $\hat{p}$. Since the hypothesis test is one-sided, the estimated p-value is equal to this tail area: 0.1222.
@@ -129,12 +153,13 @@ Does the conclusion in the previous Guided Practice imply there is no real assoc
 ```{block2, type="onebox", echo = TRUE}
 **Null distribution of $\hat{p}$ with bootstrap simulation**
   
-The p-value is always derived by analyzing the null distribution of the test statistic. The normal model poorly approximates the null distribution for $\hat{p}$ when the success-failure condition is not satisfied. As a substitute, we can generate the null distribution using simulated sample proportions ($\hat{p}_{sim}$) and use this distribution to compute the tail area, i.e., the p-value.
+Regardless of the statistial method chosen, the p-value is always derived by analyzing the null distribution of the test statistic. The normal model poorly approximates the null distribution for $\hat{p}$ when the success-failure condition is not satisfied. As a substitute, we can generate the null distribution using simulated sample proportions and use this distribution to compute the tail area, i.e., the p-value.
 ```
 
-We continue to use the same rule as before when computing the p-value for a two-sided test: double the single tail area, which remains a reasonable approach even when the sampling distribution is asymmetric. However, this can result in p-values larger than 1 when the point estimate is very near the mean in the null distribution; in such cases, we write that the p-value is 1. Also, very large p-values computed in this way (e.g., 0.85), may also be slightly inflated.
 
-The previous Guided Practice said the p-value is *estimated*. It is not exact because the simulated null distribution itself is not exact, only a close approximation. However, we can generate an exact null distribution and p-value using the binomial model which is not covered in the Appendix, Section \@ref(probability).
+In the previous Guided Practice, the p-value is *estimated*.
+It is not exact because the simulated null distribution itself is not exact, only a close approximation.
+An exact p-value can be generated using the binomial distribution, but that method will not be covered in this text.
 
 <!--
 #### Generating the exact null distribution and p-value  {-} {#exactNullDistributionUsingBinomialModel}
@@ -168,14 +193,15 @@ If it were plotted, the exact null distribution would look almost identical to t
 -->
 
 
-### One proprotion: mathematical model
+### One proportion: mathematical model {#one-prop-norm}
 
 #### Identifying when the sample proportion is nearly normal {-}
 
-A sample proportion $\hat{p}$ can be modeled using
-a normal distribution when the sample observations
+In Section \@ref(normalDist), we introduced the normal distribution and showed how it can be used as a mathematical model to describe the variability of a statistic.
+There are conditions under which a sample proportion $\hat{p}$ is well modeled using a normal distribution.
+When the sample observations
 are independent and the sample size is sufficiently
-large.
+large, the normal model will describe the variability quite well; when the observations violate the conditions, the normal model can be inaccurate
 
 ```{block2, type = "onebox", echo = TRUE}
 **Sampling distribution of
@@ -190,19 +216,18 @@ large.
 2. We expected to see at least 10 successes and
       10 failures in the sample, i.e., $np\geq10$ and
       $n(1-p)\geq10$.
-      This is called the \term{success-failure condition}.
+      This is called the **success-failure condition**.
 
   When these conditions are met, then the sampling
   distribution of $\hat{p}$ is nearly normal with mean
-  $p$ and standard error of $\hat{p}$ as
-
-  $SE = \sqrt{\frac{\ p(1-p)\ }{n}}$.
+  $p$ and standard error of $\hat{p}$ as $SE = \sqrt{\frac{\ p(1-p)\ }{n}}$.
 ```
 
-\index{standard error (SE)!single proportion}%
+\index{success-failure condition}
+\index{standard error (SE)!single proportion}
   
 ```{r include=FALSE}
-terms_chp_6 <- c(terms_chp_6, "standard error of single proportion")
+terms_chp_6 <- c(terms_chp_6, "success-failure condition", "standard error of single proportion")
 ```
 
 Typically we don't know the true proportion $p$,
@@ -219,9 +244,8 @@ The independence condition is a more nuanced requirement.
 When it isn't met, it is important to understand how and why
 it isn't met.
 For example, if we took a cluster sample
-(see Section \@ref(samp-methods)),
-suitable statistical methods are available but would
-be beyond the scope of even most second or third courses
+(see Section \@ref(samp-methods)), the observations wouldn't be independent. 
+However, suitable statistical methods are available for analyzing the data, but they are beyond the scope of even most second or third courses
 in statistics.
 On the other hand, we'd be stretched to find any method
 that we could confidently apply to correct the inherent biases
@@ -252,8 +276,18 @@ and when $\hat{p}$ can be modeled using a
 normal distribution, the confidence interval
 for $p$ takes the form
 \begin{align*}
-\hat{p} \pm z^{\star} \times SE
+\hat{p} \pm z^{\star} \times SE.
 \end{align*}
+
+We have seen $\hat{p}$ to be the sample proportion.  The value $z^{\star}$ determines the confidence level (previously set to be 1.96) and will be discussed in detail in the examples following.  The value of the standard error, $SE$, depends heavily on the sample size.
+
+```{block2, type = "onebox", echo = TRUE}
+**Standard Error of one proportion, $\hat{p}$**
+  
+When the conditions are met so that the distribution fo $\hat{p}$ is nearly normal, the **variability** of a single proportion, $\hat{p}$ is well described by:
+  
+$$SE(\hat{p}) = \sqrt{\frac{p(1-p)}{n}}$$
+```
 
 \index{data!Payday regulation poll|(}
 
@@ -365,6 +399,120 @@ There are three steps to constructing a confidence
 For additional one-proportion confidence interval examples,
 see Section \@ref(ConfidenceIntervals).
 
+#### Changing the confidence level {-}
+
+\index{confidence interval!confidence level|(}
+
+Suppose we want to consider confidence intervals where the confidence level is somewhat higher than 95%: perhaps we would like a confidence level of 99%. Think back to the analogy about trying to catch a fish: if we want to be more sure that we will catch the fish, we should use a wider net. To create a 99% confidence level, we must also widen our 95% interval. On the other hand, if we want an interval with lower confidence, such as 90%, we could make our original 95% interval slightly slimmer.
+
+The 95% confidence interval structure provides guidance in how to make intervals with new confidence levels. Below is a general 95% confidence interval for a point estimate that comes from a nearly normal distribution:
+\begin{eqnarray}
+\text{point estimate}\ \pm\ 1.96\times SE
+\end{eqnarray}
+There are three components to this interval: the point estimate, "1.96", and the standard error. The choice of $1.96\times SE$ was based on capturing 95% of the data since the estimate is within 1.96 standard errors of the true value about 95% of the time. The choice of 1.96 corresponds to a 95% confidence level. 
+
+```{block2, type="guidedpractice", echo=TRUE}
+If $X$ is a normally distributed random variable, how often will $X$ be within 2.58 standard deviations of the mean?^[This is equivalent to asking how often the $Z$ score will be larger than -2.58 but less than 2.58. (For a picture, see Figure \@ref(fig:choosingZForCI).) To determine this probability, look up -2.58 and 2.58 in the normal probability table (0.0049 and 0.9951). Thus, there is a $0.9951-0.0049 \approx 0.99$ probability that the unobserved random variable $X$ will be within 2.58 standard deviations of the mean.]
+```
+
+
+```{r choosingZForCI, fig.cap="The area between -$z^{\\star}$ and $z^{\\star}$ increases as $|z^{\\star}|$ becomes larger. If the confidence level is 99%, we choose $z^{\\star}$ such that 99% of the normal curve is between -$z^{\\star}$ and $z^{\\star}$, which corresponds to 0.5% in the lower tail and 0.5% in the upper tail: $z^{\\star}=2.58$.", warning=FALSE, fig.width=10}
+
+par(mar=c(3.3,1,.5,1), mgp=c(2.1,0.6,0))
+X <- rev(seq(-4, 4, 0.025))
+Y <- dt(X, 10) # makes better visual
+plot(X, Y, type='l', xlab='standard deviations from the mean', ylab='', axes=FALSE, xlim=3.3*c(-1,1), ylim=c(0, 0.59), col=COL[6])
+axis(1, at=-3:3) #at=c(-4, -2, 0, 2, 4))
+abline(h=0) #, col='#00000088')
+yMax <- 0.41
+X <- seq(-4, 4, 0.025)
+Y <- dt(X, 10) # makes better visual
+lines(X, Y, col=COL[6])
+
+these <- (X < 2.58 & X > -2.58)
+x <- c(-2.58, X[these], 2.58)
+y <- c(0, dt(X[these], 10), 0)
+polygon(x, y, col=COL[1,3], border='#00000000')
+these <- (X < 1.96 & X > -1.96)
+x <- c(-1.96, X[these], 1.96)
+y <- c(0, dt(X[these], 10), 0)
+polygon(x, y, col=COL[1], border='#00000000')
+
+#x <- 1.96*c(-1,1,1,-1)
+#y <- c(1,1,1.38,1.38)*yMax/3 
+#polygon(x, y, border='#FFFFFF55', col='#FFFFFF77', lwd=7)
+lines(1.96*c(-1,1), rep(yMax,2), lwd=2)
+lines(rep(-1.96,2), c(0,yMax), lty=2, col=COL[6])
+lines(rep( 1.96,2), c(0,yMax), lty=2, col=COL[6])
+text(0, yMax, '95%, extends -1.96 to 1.96', pos=3)
+
+yMax <- 0.53
+#x <- 2.58*c(-1,1,1,-1)
+#y <- c(1,1,1.19,1.19)*2*yMax/3 
+#polygon(x, y, border='#FFFFFF55', col='#FFFFFF77', lwd=7)
+lines(2.58*c(-1,1), rep(yMax,2), lwd=2)
+lines(rep(-2.58,2), c(0,yMax), lty=2, col='#00000055')
+lines(rep( 2.58,2), c(0,yMax), lty=2, col='#00000055')
+text(0, yMax, '99%, extends -2.58 to 2.58', pos=3)
+
+```
+
+\index{confidence interval!confidence level|)}
+
+
+To create a 99% confidence interval, change 1.96 in the 95% confidence interval formula to be $2.58$. The previous Guided Practice highlights that 99% of the time a normal random variable will be within 2.58 standard deviations of its mean. This approach -- using the Z scores in the normal model to compute confidence levels -- is appropriate when the point estimate is associated with a normal distribution and we can properly compute the standard error. Thus, the formula for a 99% confidence interval is:
+
+\begin{eqnarray*}
+\text{point estimate}\ \pm\ 2.58\times SE
+\end{eqnarray*}
+
+<!--
+label for previous equation?
+\label{99PercCIForMean}
+\label{99PercCIForNormalPointEstimate}
+
+%\Comment{I don't know where the equation number above gets referenced. Might drop the equation number.}
+-->
+
+The normal approximation is crucial to the precision of the $z^\star$ confidence intervals (in contrast to the bootstrap confidence intervals). When the normal model is not a good fit, we will use alternative distributions that better characterize the sampling distribution or we will use bootstrapping procedures.
+
+
+```{block2, type="guidedpractice", echo=TRUE}
+Create a 99% confidence interval for the impact of the stent on the risk of stroke using the data from Section \@ref(basic-stents-strokes). The point estimate is 0.090, and the standard error is $SE = 0.028$. It has been verified for you that the point estimate can reasonably be modeled by a normal distribution.^[Since the necessary conditions for applying the normal model have already been checked for us, we can go straight to the construction of the confidence interval: $\text{point estimate}\ \pm\ 2.58 \times SE \rightarrow (0.018, 0.162)$. We are 99% confident that implanting a stent in the brain of a patient who is at risk of stroke increases the risk of stroke within 30 days by a rate of 0.018 to 0.162 (assuming the patients are representative of the population).]
+```
+
+
+
+```{block2, type="onebox", echo=TRUE}
+**Mathematical model confidence interval for any confidence level.**
+
+If the point estimate follows the normal model with standard error $SE$, then a confidence interval for the population parameter is
+\begin{eqnarray*}
+\text{point estimate}\ \pm\ z^{\star} \times SE
+\end{eqnarray*}
+where $z^{\star}$ corresponds to the confidence level selected.
+```
+
+Figure \@ref(fig:choosingZForCI) provides a picture of how to identify $z^{\star}$ based on a confidence level. We select $z^{\star}$ so that the area between -$z^{\star}$ and $z^{\star}$ in the normal model corresponds to the confidence level. 
+
+
+
+```{block2, type="onebox", echo=TRUE}
+**Margin of error.**
+
+In a confidence interval, $z^{\star}\times SE$ is called the **margin of error**\index{margin of error}.
+```
+
+
+
+```{r include=FALSE}
+terms_chp_6 <- c(terms_chp_6, "margin of error")
+```
+
+
+```{block2, type="guidedpractice", echo=TRUE}
+Previously, we found that implanting a stent in the brain of a patient at risk for a stroke *increased* the risk of a stroke. The study estimated a 9% increase in the number of patients who had a stroke, and the standard error of this estimate was about $SE = 2.8%$. Compute a 90% confidence interval for the effect.^[We must find $z^{\star}$ such that 90% of the distribution falls between -$z^{\star}$ and $z^{\star}$ in the standard normal model, $N(\mu=0, \sigma=1)$. We can look up -$z^{\star}$ in the normal probability table by looking for a lower tail of 5% (the other 5% is in the upper tail), thus $z^{\star}=1.65$. The 90% confidence interval can then be computed as $\text{point estimate}\ \pm\ 1.65\times SE \to (4.4\%, 13.6\%)$. (Note: the conditions for normality had earlier been confirmed for us.) That is, we are 90% confident that implanting a stent in a stroke patient's brain increased the risk of stroke within 30 days by 4.4% to 13.6%.]
+```
 
 #### Hypothesis testing for a proportion {-}
 
@@ -417,7 +565,7 @@ and evaluate their debt payments?
 From a random sample of 826 borrowers,
 51% said they would support such
 a regulation.
-Is it reasonable to model $\hat{p} = 0.51$
+Is it reasonable use a normal distribution to model $\hat{p}$
 for a hypothesis test here?^[Independence holds since the poll
     is based on a random sample.
     The success-failure condition also holds,
@@ -431,7 +579,7 @@ for a hypothesis test here?^[Independence holds since the poll
 ```{block2, type = "example", echo = TRUE}
 Using the hypotheses and data from the previous
     Guided Practices,
-    evaluate whether the poll provides convincing evidence
+    evaluate whether the poll on lending regulations provides convincing evidence
     that a majority of payday loan borrowers support
     a new regulation that would
     require lenders to pull credit reports
@@ -465,7 +613,7 @@ Using the hypotheses and data from the previous
   The poll does not provide convincing evidence that
   a majority of payday loan borrowers support or oppose
   regulations around credit checks and evaluation of
-  debt payments.
+  debt payments.  In this situation, the conclusion is somewhat unsatisfactory because there is no conclusion.  That is, there is no resolution one way or the other about public opinion.  We cannot claim that exactly 50% of people support the regulation, but we cannot claim a majority in either direction.
 ```
 
   
@@ -478,7 +626,7 @@ normTail(0.5, 0.017, L = 0.49, U = 0.51, col = COL[1])
 -->
 
 ```{block2, type = "onebox", echo = TRUE}
-**Hypothesis test for a proportion**
+**Mathematical model hypothesis test for a proportion.**
   
 Set up hypotheses and verify the conditions using the null value, $p_0$, to ensure $\hat{p}$ is nearly normal under $H_0$. If the conditions hold, construct the standard error, again using $p_0$, and show the p-value in a drawing. Lastly, compute the p-value and evaluate the hypotheses.
 ```
@@ -505,7 +653,7 @@ change.
 
 When the success-failure condition isn't met
 for a hypothesis test, we can simulate the null distribution 
-of $\hat{p}$ using the null value, $p_0$, as seen in Section \@ref(one-prop-null-boot).
+of $\hat{p}$ using the null value, $p_0$, as seen in Section \@ref(one-prop-null-boot).  Unfortunately, methods for dealing with observations which are not independent are outside the scope of this book.
 
 
 #### Choosing a sample size when estimating a proportion {-}
@@ -517,12 +665,13 @@ terms_chp_6 <- c(terms_chp_6, "margin of error")
 ```
 
 When collecting data, we choose a sample size suitable
-for the purpose of the study.
-Often times this means choosing a sample size large
+for the purpose of the study. 
+You might agree that the following interval estimate would not be particularly useful: a 95% confidence interval for the proportion of liver transplants with complications is between 0 and 1.
+Often times "suitable for the study" means choosing a sample size large
 enough that the **margin of error**\index{margin of error} --
 which is the part we add and subtract from the point
 estimate in a confidence interval --
-is sufficiently small that the sample is useful.
+is sufficiently small that the result is useful.
 For example, our task might be to find a sample size
 $n$ so that the sample proportion is within $\pm 0.04$
 of the actual proportion in a 95% confidence interval.
@@ -586,6 +735,11 @@ When an estimate of the proportion is available, we use it in place of the worst
 
 
 \index{data!Tire failure rate|(}
+
+```{block2, type = "todo", echo = TRUE}
+not sure why the footnote didn't go into the footnote
+```
+
 
 ```{block2, type = "guidedpractice", echo = TRUE}
 A manager is about to oversee the mass
@@ -658,7 +812,7 @@ where we would conduct a new poll every month.
 Running such frequent polls is expensive, so we decide
 a wider margin of error of 5% for each individual survey
 would be acceptable.
-Based on the original sample of borrowers where
+Based on a previous sample of borrowers where
 70% supported some form of regulation,
 how big should our monthly sample be for a margin
 of error of 0.04 with 95% confidence?^[We complete the same computations as before,
@@ -692,12 +846,9 @@ of error of 0.04 with 95% confidence?^[We complete the same computations as befo
 
 ## Inference for the difference of two proportions {#diff-two-prop}
 
+We now extend the methods from Section \@ref(single-prop) to apply confidence intervals and hypothesis tests to differences in population proportions that come from two groups: $p_1 - p_2$.
 
-We would like to extend the methods from
-Section \@ref(single-prop)
-to apply confidence intervals and hypothesis tests
-to differences in population proportions that come from two groups:
-\mbox{$p_1 - p_2$}.
+<!--
 %We consider three examples.
 %In the first, we compare the utility of a blood thinner
 %for heart attack patients.
@@ -705,29 +856,796 @@ to differences in population proportions that come from two groups:
 %mammograms in reducing deaths from breast cancer.
 %In the last example, a quadcopter company weighs whether
 %to switch to a higher quality manufacturer of rotor blades.
+-->
 
 In our investigations, we'll identify a reasonable
 point estimate of $p_1 - p_2$ based on the sample,
 and you may have already guessed its form:
 $\hat{p}_1 - \hat{p}_2$.
-\index{point estimate!difference of proportions}%
+\index{point estimate!difference of proportions}
 Then we'll look at the inferential analysis in three different ways: using a randomization test, applying bootstrapping for interval estimates, and, if
 we verify that the point estimate
 can be modeled using a normal distribution,
 we compute the estimate's standard error, and
-we apply our mathematical framework.
+we apply the mathematical framework.
 
 ```{r include=FALSE}
 terms_chp_6 <- c(terms_chp_6, "point estimate")
 ```
 
-### Two proportions: randomization test
+### Two proportions: randomization test {#two-prop-errors}
 
-malaria example?
 
-We already did the randomization structure.  one quick example here then an outline which represents the structure of the test (?).
+We consider a study on a new malaria vaccine
+called PfSPZ.
+In this study, volunteer patients were randomized
+into one of two experiment groups:
+14 patients received an experimental vaccine
+or 6 patients received a placebo vaccine.
+Nineteen weeks later, all 20 patients were exposed
+to a drug-sensitive malaria virus strain;
+the motivation of using a drug-sensitive strain
+of virus here is for ethical considerations,
+allowing any infections to be treated effectively.
+The results are summarized in
+Table \@ref(tab:malaria-vaccine-20-exp-summary),
+where 9 of the 14 treatment patients remained free
+of signs of infection while all of the 6 patients
+in the control group patients showed some baseline
+signs of infection.
 
-### Two proportions: bootstrap
+```{r malaria-vaccine-20-exp-summary}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3, ~col4, 
+ "", "vaccine", "5", "9", "14",
+ "`treatment`", "placebo", "6", "0","6",
+ "", "Total", "11", "9", "20"
+)
+
+temptbl %>%
+ kable(caption = "Summary results for the malaria vaccine experiment.",
+    col.names = c("", "", "infection", "no infection", "Total")) %>%
+ kable_styling() %>%
+ add_header_above(c(" ", " ", "`outcome`" = 2, " "))
+```
+
+<!--
+\newcommand{\malariaAA}{5}
+\newcommand{\malariaAB}{9}
+\newcommand{\malariaAD}{14}
+\newcommand{\malariaBA}{6}
+\newcommand{\malariaBB}{0}
+\newcommand{\malariaBD}{6}
+\newcommand{\malariaDA}{11}
+\newcommand{\malariaDB}{9}
+\newcommand{\malariaDD}{20}
+\newcommand{\malariaVIR}{0.357}
+\newcommand{\malariaVIRPerc}{35.7\%}
+\newcommand{\malariaPIR}{1.000}
+\newcommand{\malariaPIRPerc}{100\%}
+\newcommand{\malariaIRDiff}{0.643}
+\newcommand{\malariaIRDiffPerc}{64.3\%}
+-->
+
+
+```{block2, type = "guidedpractice", echo = TRUE}
+Is this an observational study or an experiment?
+What implications does the study type have on what can
+be inferred from the results?^[The
+  study is an experiment, as patients were randomly
+  assigned an experiment group.
+  Since this is an experiment, the results can be used
+  to evaluate a causal relationship between the malaria
+  vaccine and whether patients showed signs
+  of an infection.]
+```
+
+In this study, a smaller proportion of patients
+who received the vaccine showed signs of an infection
+(35.7% versus 100%).
+However, the sample is very small,
+and it is unclear whether the difference provides
+*convincing evidence* that the vaccine is
+effective.
+
+<!--
+```{block, type = "example", echo = TRUE}
+Data scientists are sometimes called
+    upon to evaluate the strength of evidence.
+    When looking at the rates of infection for patients
+    in the two groups in this study,
+    what comes to mind as we try to determine whether
+    the data show convincing evidence of a real difference?
+
+---
+  The observed infection rates
+  (35.7% for the treatment group versus
+  100% for the control group)
+  suggest the vaccine may be effective.
+  However, we cannot be sure if the observed difference
+  represents the vaccine's efficacy or is just from
+  random chance.
+  Generally there is a little bit of fluctuation
+  in sample data, and we wouldn't expect the sample
+  proportions to be *exactly* equal,
+  even if the truth was that the infection rates
+  were independent of getting the vaccine.
+  Additionally, with such small samples,
+  perhaps it's common to observe such large differences
+  when we randomly split a group due to chance alone!
+```
+
+The previous malaria example
+is a reminder that the observed outcomes in the data
+sample may not perfectly reflect the true relationships
+between variables since there is \term{random noise}.
+While the observed difference in rates of infection
+is large, the sample size for the study is small,
+making it unclear if this observed difference represents
+efficacy of the vaccine or whether it is simply due to
+chance.
+We label these two competing claims, $H_0$ and $H_A$,
+which are spoken as ``H-nought'' and ``H-A'':
+\begin{itemize}
+\setlength{\itemsep}{0mm}
+\item[$H_0$:] \textbf{Independence model.}
+    The variables \var{treatment} and \var{outcome}
+    are independent.
+    They have no relationship, and the observed difference
+    between the proportion of patients who developed
+    an infection in the two groups, 64.3%,
+    was due to chance.
+\item[$H_A$:] \textbf{Alternative model.}
+    The variables are \emph{not} independent.
+    The difference in infection rates of
+    64.3%
+    was not due to chance,
+    and vaccine affected the rate of infection.
+\end{itemize}
+
+What would it mean if the independence model,
+which says the vaccine had no influence on the
+rate of infection, is true?
+It would mean 11 patients were going to
+develop an infection \emph{no matter which group
+they were randomized into},
+and 9 patients would not develop an infection
+\emph{no matter which group they were randomized
+into}.
+That is, if the vaccine did not affect the rate
+of infection, the difference in the infection rates
+was due to chance alone in how the patients were
+randomized.
+
+Now consider the alternative model:
+infection rates were influenced by whether a patient
+received the vaccine or not.
+If this was true, and especially if this influence
+was substantial, we would expect to see some difference
+in the infection rates of patients in the groups.
+
+We choose between these two competing claims
+by assessing if the data conflict so much with
+$H_0$ that the independence model cannot be deemed
+reasonable.
+If this is the case, and the data support $H_A$,
+then we will reject the notion of independence
+and conclude there was discrimination.
+
+
+\subsection{Simulating the study}
+\label{simulatingTheStudy}
+
+We're going to implement
+\termsub{simulations}{simulation},
+where we will pretend we know that the malaria
+vaccine being tested does \emph{not} work.
+Ultimately, we want to understand if the large
+difference we observed is common in these
+simulations.
+If it is common, then maybe the difference
+we observed was purely due to chance.
+If it is very uncommon, then the possibility
+that the vaccine was helpful seems more plausible.
+
+Table \@ref(tab:malaria-vaccine-20-exp-summary)
+shows that 11 patients developed infections and 9 did not.
+For our simulation, we will suppose the infections
+were independent of the vaccine and we were able to
+\emph{rewind} back to when the researchers randomized
+the patients in the study.
+If we happened to randomize the patients differently,
+we may get a different result in this hypothetical
+world where the vaccine doesn't influence the infection.
+Let's complete another \term{randomization} using
+a simulation.
+
+
+In this \term{simulation}, we take 20 notecards to
+represent the 20 patients, where we write down ``infection''
+on 11 cards and ``no infection'' on 9 cards.
+In this hypothetical world, we believe each patient
+that got an infection was going to get it regardless
+of which group they were in, so let's see what happens
+if we randomly assign the patients to the treatment
+and control groups again.
+We thoroughly shuffle the notecards and deal 14 into
+a \resp{vaccine} pile and 6 into a \resp{placebo} pile.
+Finally, we tabulate the results, which are shown in
+Figure \ref{malaria-vaccine-20-exp-summary_rand_1}.
+
+\begin{figure}[ht]
+\centering
+\begin{tabular}{l l cc rr}
+  & & \multicolumn{2}{c}{\var{outcome}} \\
+  \cline{3-4}
+  &  &  {infection} & {no infection} & Total & \hspace{3mm}  \\ 
+  \cline{2-5}
+  treatment & {vaccine} & 7 & 7 & 14 \\ 
+  (simulated) & {placebo} & 4 & 2 & 6 \\ 
+  \cline{2-5}
+  & Total & 11 & 9 & 20 \\
+  \cline{2-5}
+\end{tabular}
+\caption{Simulation results, where any difference
+    in infection rates is purely due to chance.}
+\label{malaria-vaccine-20-exp-summary_rand_1}
+\end{figure}
+
+\begin{exercisewrap}
+\begin{nexercise}
+\label{malaria-vaccine-20-exp-summary_rand_1_diff}
+What is the difference in infection rates between
+the two simulated groups in
+Figure \ref{malaria-vaccine-20-exp-summary_rand_1}?
+How does this compare to the observed
+64.3% difference
+in the actual data?\footnotemark{}
+\end{nexercise}
+\end{exercisewrap}
+\footnotetext{$4 / 6 - 7 / 14 = 0.167$
+  or about 16.7\% in favor of the vaccine.
+  This difference due to chance is much smaller than the
+  difference observed in the actual groups.}
+-->
+
+As we saw in Section \@ref(inf-rand), we can randomize the responses (`infection` or `no infection`) to the treatment conditions under the null hypothesis of independence and compute possible differences in proportions.
+<!--
+We computed one possible difference under the
+independence model in Guided
+Practice \ref{malaria-vaccine-20-exp-summary_rand_1_diff},
+which represents one difference due to chance.
+While in this first simulation, we physically dealt
+out notecards to represent the patients,
+it is more efficient to perform this simulation
+using a computer.
+Repeating the simulation on a computer, we get another
+difference due to chance:
+\begin{align*}
+\frac{2}{\malariaBD{}} - \frac{9}{\malariaAD{}} = -0.310
+\end{align*}
+And another:
+\begin{align*}
+\frac{3}{\malariaBD{}} - \frac{8}{\malariaAD{}} = -0.071
+\end{align*}
+And so on until we repeat the simulation enough times
+that we have a good idea of what represents the
+\emph{distribution of differences from chance alone}.
+-->
+
+Figure \@ref(fig:malaria-rand-dot-plot) shows a stacked plot
+of the differences found from 100 randomization simulations,
+where each dot represents a simulated difference between
+the infection rates (control rate minus treatment rate).
+
+```{r malaria-rand-dot-plot, fig.cap="A stacked dot plot of differences from 100 simulations produced under the independence model $H_0$, where in these simulations infections are unaffected by the vaccine. Two of the 100 simulations had a difference of at least 64.3%, the difference observed in the study.", warning=FALSE, fig.width=10}
+
+set.seed(47)
+
+exp_gp  <- rep(c("vaccine", "placebo"), c(14, 6))
+outcome <- c(rep(c('infection', 'no infection'), c(5, 9)),
+             rep(c('infection', 'no infection'), c(6, 0)))
+
+nsim    <- 100
+n       <- length(exp_gp)
+success <- "infection"
+
+SimulateTable <- function(exp_gp, outcome, ...) {
+  table(sample(exp_gp), outcome)
+}
+# SimulateTable(exp_gp, outcome)
+
+sim_tables <-
+    lapply(1:nsim, SimulateTable,
+        exp_gp = exp_gp,
+        outcome = outcome)
+result <- sim_tables %>%
+    lapply(function(x) {
+    	  x[1, 1] / sum(x[1, ]) - x[2, 1] / sum(x[2, ])
+    	}) %>%
+    	unlist()
+
+
+pval <- sum(result >= 0.64) / nsim
+values <- table(result)
+diffs <- unique(result)
+
+X <- c()
+Y <- c()
+for (i in 1:length(diffs)) {
+  x   <- diffs[i]
+  rec <- sum(result == x)
+  X   <- append(X, rep(x, rec))
+  Y   <- append(Y, 1:rec)
+}
+
+plot(X, Y,
+     xlim = range(diffs) + c(-1, 1) * sd(diffs) / 4,
+     xlab = "Difference in Infection Rates",
+     axes = FALSE,
+     ylim = c(0, max(Y)),
+     col = COL[1],
+     pch = 20)
+# at <- seq(-0.4, 0.4, 0.1)
+# labels <- c(-0.4, "", -0.2, "", 0, "", 0.2, "", 0.4)
+axis(1) #, at, labels)
+abline(h = 0)
+points(X[X > 0.64], Y[X > 0.64], lwd=3, col = COL[4], cex=0.4)
+```
+
+Note that the distribution of these simulated differences
+is centered around 0.
+We simulated the differences assuming that the independence
+model was true, and under this condition,
+we expect the difference to be near zero with some random
+fluctuation, where *near* is pretty generous in this
+case since the sample sizes are so small in this study.
+
+```{block2, type = "example", echo = TRUE}
+How often would you observe a difference
+    of at least 64.3% (0.643)
+    according to Figure \@ref(fig:malaria-rand-dot-plot)?
+    Often, sometimes, rarely, or never?
+      
+---
+      
+  It appears that a difference of at least
+  64.3% due to chance alone would only
+  happen about 2% of the time according to
+  Figure \@fig(fig:malaria-rand-dot-plot).
+  Such a low probability indicates a rare event.
+```
+
+The difference of 64.3% being
+a rare event suggests two possible interpretations
+of the results of the study:
+
+> $H_0$ Independence model. The vaccine has no effect on infection rate, and we just happened to observe a difference that would only occur on a rare occasion.
+> $H_A$ Alternative model. The vaccine has an effect on infection rate, and the difference we observed was actually due to the vaccine being effective at combatting malaria, which explains the large difference of 64.3%.
+
+Based on the simulations, we have two options:   
+
+1. We conclude that the study results do not provide
+strong evidence against the independence model.
+That is, we do not have sufficiently strong evidence
+to conclude the vaccine had an effect in this
+clinical setting.  
+
+2. We conclude the evidence is sufficiently strong
+to reject $H_0$ and assert that the vaccine was useful.
+When we conduct formal studies, usually we reject the
+notion that we just happened to observe a rare
+event.^[This reasoning does not generally extend
+    to anecdotal observations.
+    Each of us observes incredibly rare events every day,
+    events we could not possibly hope to predict.
+    However, in the non-rigorous setting of anecdotal
+    evidence, almost anything may appear to be a rare event,
+    so the idea of looking for rare events in day-to-day
+    activities is treacherous.
+    For example, we might look at the lottery:
+    there was only a 1 in 292 million chance that the
+    Powerball numbers for the largest jackpot in history
+    (January 13th, 2016) would be (04, 08, 19, 27, 34)
+    with a Powerball of (10),
+    but nonetheless those numbers came up!
+    However, no matter what numbers had turned up,
+    they would have had the same incredibly rare odds.
+    That is, *any set of numbers we could have
+    observed would ultimately be incredibly rare*.
+    This type of situation is typical of our daily lives:
+    each possible event in itself seems incredibly rare,
+    but if we consider every alternative, those outcomes
+    are also incredibly rare.
+    We should be cautious not to misinterpret such
+    anecdotal evidence.]
+In this case, we reject the independence model in favor
+of the alternative. 
+That is, we are concluding the data provide strong evidence
+that the vaccine provides some protection against malaria
+in this clinical setting.
+
+\index{data!malaria vaccine|)}
+
+Statistical inference, is built
+on evaluating whether such differences are due to chance.
+In statistical inference, data scientists evaluate which
+model is most reasonable given the data.
+Errors do occur, just like rare events, and we might choose
+the wrong model.
+While we do not always choose correctly, statistical
+inference gives us tools to control and evaluate how
+often these errors occur.
+
+
+#### Decision errors {-}
+
+\index{hypothesis testing!decision errors|(}
+
+Hypothesis tests are not flawless. Just think of the court system: innocent people are sometimes wrongly convicted and the guilty sometimes walk free. 
+Similarly, data can point to the wrong conclusion. 
+However, what distinguishes statistical hypothesis tests from a court system is that our framework allows us to quantify and control how often the data lead us to the incorrect conclusion.
+
+In a hypothesis test, there are two competing hypotheses: the null and the alternative. 
+We make a statement about which one might be true, but we might choose incorrectly. There are four possible scenarios in a hypothesis test, which are summarized in Table \@ref(tab:fourHTScenarios).
+
+
+```{r fourHTScenarios}
+temptbl <- tribble(
+  ~variable,    ~col1, ~col2, ~col3,
+ "", "$H_0$ true", "good decision", "Type 1 Error",
+ "**Truth**", "$H_A$ true", "Type 2 Error", "good decision"
+)
+
+temptbl %>%
+ kable(caption = "Four different scenarios for hypothesis tests.", 
+    col.names = c("", "", "", "")) %>%
+ add_header_above( c("", "", "**Test conclusion**" = 2)) %>%
+ kable_styling()
+```
+
+
+A **Type 1 Error**\index{Type 1 Error} is rejecting the null hypothesis when $H_0$ is actually true. 
+Since we rejected the null hypothesis in the gender discrimination and opportunity cost studies, it is possible that we made a Type 1 Error in one or both of those studies. 
+A **Type 2 Error**\index{Type 2 Error} is failing to reject the null hypothesis when the alternative is actually true.
+
+```{r include=FALSE}
+terms_chp_6 <- c(terms_chp_6, "Type 1 Error", "Type 2 Error")
+```
+
+
+```{block2, type="example", echo=TRUE}
+In a US court, the defendant is either innocent ($H_0$) or guilty ($H_A$). 
+What does a Type 1 Error represent in this context? 
+What does a Type 2 Error represent? 
+Table \@ref(tab:fourHTScenarios) may be useful.
+
+---
+ 
+If the court makes a Type 1 Error, this means the defendant is innocent ($H_0$ true) but wrongly convicted. 
+A Type 2 Error means the court failed to reject $H_0$ (i.e., failed to convict the person) when they were in fact guilty ($H_A$ true).
+```
+
+
+```{block2, type="guidedpractice", echo=TRUE}
+Consider the opportunity cost study where we concluded students were less likely to make a DVD purchase if they were reminded that money not spent now could be spent later. What would a Type 1 Error represent in this context?^[Making a Type 1 Error in this context would mean that reminding students that money not spent now can be spent later does not affect their buying habits, despite the strong evidence (the data suggesting otherwise) found in the experiment. Notice that this does *not* necessarily mean something was wrong with the data or that we made a computational mistake. Sometimes data simply point us to the wrong conclusion, which is why scientific studies are often repeated to check initial findings.]
+```
+
+
+```{block2, type="example", echo=TRUE}
+How could we reduce the Type 1 Error rate in US courts? 
+What influence would this have on the Type 2 Error rate?
+
+---
+ 
+To lower the Type 1 Error rate, we might raise our standard for conviction from "beyond a reasonable doubt" to "beyond a conceivable doubt" so fewer people would be wrongly convicted. However, this would also make it more difficult to convict the people who are actually guilty, so we would make more Type 2 Errors.
+```
+
+
+```{block2, type="guidedpractice", echo=TRUE}
+How could we reduce the Type 2 Error rate in US courts? 
+What influence would this have on the Type 1 Error rate?^[To lower the Type 2 Error rate, we want to convict more guilty people. We could lower the standards for conviction from "beyond a reasonable doubt" to "beyond a little doubt". Lowering the bar for guilt will also result in more wrongful convictions, raising the Type 1 Error rate.]
+```
+
+
+\index{hypothesis testing!decision errors|)}
+
+The example and guided practice above provide an important lesson: if we reduce how often we make one type of error, we generally make more of the other type.
+
+<!--
+%Hypothesis testing is built around rejecting or failing to reject the null hypothesis. That is, we do not reject $H_0$ unless the data provide strong evidence against it. But what precisely does *strong evidence* mean? As a general rule of thumb, for those cases where the null hypothesis is actually true, we do not want to incorrectly reject $H_0$ more than 5% of the time. This corresponds to our default significance level of $\alpha = 0.05$, which we use as a comparison with the p-value. In the next section, we discuss the appropriateness of different significance levels.
+-->
+
+#### Choosing a significance level {-}
+
+\index{hypothesis testing!significance level|(}
+\index{significance level|(}
+
+Choosing a significance level for a test is important in many contexts, and the traditional level is 0.05. 
+However, it is sometimes helpful to adjust the significance level based on the application. 
+We may select a level that is smaller or larger than 0.05 depending on the consequences of any conclusions reached from the test.
+
+If making a Type 1 Error is dangerous or especially costly, we should choose a small significance level (e.g., 0.01 or 0.001). 
+If we want to be very cautious about rejecting the null hypothesis, we demand very strong evidence favoring the alternative $H_A$ before we would reject $H_0$.
+
+If a Type 2 Error is relatively more dangerous or much more costly than a Type 1 Error, then we should choose a higher significance level (e.g., 0.10). 
+Here we want to be cautious about failing to reject $H_0$ when the null is actually false.
+
+
+```{block2, type="tipbox", echo=TRUE}
+**Significance levels should reflect consequences of errors.**
+
+The significance level selected for a test should reflect the real-world consequences associated with making a Type 1 or Type 2 Error.
+```
+
+#### Introducing two-sided hypotheses {-}
+
+<!--
+%_________________
+%\section[Case study: CPR and blood thinner (randomization)]{Case study: blood thinner and CPR\\(randomization)}
+-->
+
+\index{hypothesis testing!two tails|(}
+
+In Section \@ref(inf-rand) we explored whether women were discriminated against and whether a simple trick could make students a little thriftier. 
+In these two case studies, we've actually ignored some possibilities:
+
+* What if *men* are actually discriminated against?
+* What if the money trick actually makes students *spend more*?
+
+These possibilities weren't considered in our original hypotheses or analyses. 
+The disregard of the extra alternatives may have seemed natural since the data pointed in the directions in which we framed the problems. However, there are two dangers if we ignore possibilities that disagree with our data or that conflict with our world view:
+
+1. Framing an alternative hypothesis simply to match the direction that the data point will generally inflate the Type 1 Error rate. After all the work we've done (and will continue to do) to rigorously control the error rates in hypothesis tests, careless construction of the alternative hypotheses can disrupt that hard work. 
+
+2. If we only use alternative hypotheses that agree with our worldview, then we're going to be subjecting ourselves to **confirmation bias**\index{confirmation bias}, which means we are looking for data that supports our ideas. That's not very scientific, and we can do better!
+
+
+The original hypotheses we've seen are called **one-sided hypothesis tests**\index{one-sided hypothesis test} because they only explored one direction of possibilities. 
+Such hypotheses are appropriate when we are exclusively interested in the single direction, but usually we want to consider all possibilities. 
+To do so, let's learn about **two-sided hypothesis tests**\index{two-sided hypothesis test} in the context of a new study that examines the impact of using blood thinners on patients who have undergone CPR.
+
+
+```{r include=FALSE}
+terms_chp_6 <- c(terms_chp_6, "confirmation bias", "one-sided hypothesis test", "two-sided hypothesis test")
+```
+
+\index{data!CPR and blood thinner|(}
+
+Cardiopulmonary resuscitation (CPR) is a procedure used on individuals suffering a heart attack when other emergency resources are unavailable. 
+This procedure is helpful in providing some blood circulation to keep a person alive, but CPR chest compressions can also cause internal injuries. Internal bleeding and other injuries that can result from CPR complicate additional treatment efforts. 
+For instance, blood thinners may be used to help release a clot that is causing the heart attack once a patient arrives in the hospital. However, blood thinners negatively affect internal injuries.
+
+Here we consider an experiment with patients who underwent CPR for a heart attack and were subsequently admitted to a hospital.^[B$\ddot{\text{o}}$ttiger et al. "Efficacy and safety of thrombolytic therapy after initially unsuccessful cardiopulmonary resuscitation: a prospective clinical trial." The Lancet, 2001.] 
+Each patient was randomly assigned to either receive a blood thinner (treatment group) or not receive a blood thinner (control group). 
+The outcome variable of interest was whether the patient survived for at least 24 hours.
+
+<!--
+% The way p_c and p_t are described make it sound like we are only considering the samples
+-->
+
+
+```{block2, type="example", echo=TRUE}
+Form hypotheses for this study in plain and statistical language. 
+Let $p_c$ represent the true survival rate of people who do not receive a blood thinner (corresponding to the control group) and $p_t$ represent the survival rate for people receiving a blood thinner (corresponding to the treatment group).
+
+---
+ 
+We want to understand whether blood thinners are helpful or harmful. 
+We'll consider both of these possibilities using a two-sided hypothesis test.
+
+* $H_0$: Blood thinners do not have an overall survival effect, i.e., the survival proportions are the same in each group. $p_t - p_c = 0$.
+
+* $H_A$: Blood thinners have an impact on survival, either positive or negative, but not zero. $p_t - p_c \neq 0$.
+```
+
+There were 50 patients in the experiment who did not receive a blood thinner and 40 patients who did. 
+The study results are shown in Table \@ref(tab:resultsForCPRStudyInSmallSampleSection).
+
+```{r resultsForCPRStudyInSmallSampleSection}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3, 
+ "Control", "11", "39", "50",
+ "Treatment", "14", "26","40",
+ "Total", "25", "65", "90"
+)
+
+temptbl %>%
+ kable(caption = "Results for the CPR study. Patients in the treatment group were given a blood thinner, and patients in the control group were not",
+    col.names = c("", "Survived", "Died", "Total")) %>%
+ kable_styling() 
+```
+
+```{block2, type="guidedpractice", echo=TRUE}
+What is the observed survival rate in the control group? 
+And in the treatment group? 
+Also, provide a point estimate of the difference in survival proportions of the two groups: $\hat{p}_t - \hat{p}_c$.^[Observed control survival rate: $p_c = \frac{11}{50} = 0.22$. 
+Treatment survival rate: $p_t = \frac{14}{40} = 0.35$. 
+Observed difference: $\hat{p}_t - \hat{p}_c = 0.35 - 0.22 = 0.13$.]
+```
+
+According to the point estimate, for patients who have undergone CPR outside of the hospital, an additional 13% of these patients survive when they are treated with blood thinners. 
+However, we wonder if this difference could be easily explainable by chance.
+
+As we did in our past two studies this chapter, we will simulate what type of differences we might see from chance alone under the null hypothesis. 
+By randomly assigning "simulated treatment" and "simulated control" stickers to the patients' files, we get a new grouping. 
+If we repeat this simulation 10,000 times, we can build a **null distribution**\index{null distribution} of the differences shown in Figure \@ref(fig:CPR-study-right-tail).
+
+
+```{r include=FALSE}
+terms_chp_6 <- c(terms_chp_6, "null distribution")
+```
+
+
+```{r CPR-study-right-tail, fig.cap="Null distribution of the point estimate for the difference in proportions, $\\hat{p}_t - \\hat{p}_c$. The shaded right tail shows observations that are at least as large as the observed difference, 0.13.", warning=FALSE, fig.width=10}
+
+tr <- rep(1:2, c(50, 40))
+su <- c(rep(c("s", "d"), c(11, 39)), rep(c("s", "d"), c(14, 26)))
+
+N <- 10^5
+d <- rep(NA, N)
+for(i in 1:N){
+	trf  <- sample(tr)
+	p1   <- sum(su[trf == 1] == "s") / 50
+	p2   <- sum(su[trf == 2] == "s") / 40
+	d[i] <- p2 - p1
+}
+#sum((d) > 0.1299) / N
+
+udiffs    <- sort(unique(d))
+bin.width <- diff(udiffs)[1]
+breaks    <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
+
+hist(d, breaks = breaks, col=COL[7,3], main="", xlab="Differences under the null hypothesis", ylab="", axes=FALSE)
+axis(1)
+axis(2, at=(0:3)*N/20, labels=c(0, NA, NA, 3)/20)
+hist(d[d > 0.1299], breaks = breaks, col=COL[1], add=TRUE)
+abline(h=0)
+lines(rep(0.13, 2), c(0, 3)*N/25, lty=3, lwd=1.7)
+text(0.13, 3*N/25, "0.13", pos=3, cex=0.7)
+
+```
+
+The right tail area is about 0.13. (Note: it is only a coincidence that we also have $\hat{p}_t - \hat{p}_c=0.13$.) 
+However, contrary to how we calculated the p-value in previous studies, the p-value of this test is not 0.13!
+
+The p-value is defined as the chance we observe a result at least as favorable to the alternative hypothesis as the result (i.e., the difference) we observe. 
+In this case, any differences less than or equal to -0.13 would also provide equally strong evidence favoring the alternative hypothesis as a difference of 0.13. 
+A difference of -0.13 would correspond to 13% higher survival rate in the control group than the treatment group. 
+In Figure \@ref(fig:CPR-study-p-value) we've also shaded these differences in the left tail of the distribution. 
+These two shaded tails provide a visual representation of the p-value for a two-sided test.
+
+<!--
+%There is something different in this study than in the past studies: in this study, we are particularly interested in whether blood thinners increase *or* decrease the risk of death in patients who undergo CPR before arriving at the hospital.\footnote{Realistically, we probably are interested in either direction in the past studies as well, and so we should have used the approach we now discuss in this section. However, for simplicity and the sake of not introducing too many concepts at once, we skipped over these details in earlier sections.} For example, there are chance differences of $\hat{p}_t - \hat{p}_c = -0.14$, that would have been stronger evidence against the null hypothesis as our observed difference of +0.13. Likewise, anything less than or equal -0.13 would provide as much evidence against the null hypothesis as +0.13, and for this reason, we must count both tails towards the p-value, as shown in Figure \ref{CPR-study-p-value}.
+-->
+
+
+```{r CPR-study-p-value, fig.cap="Null distribution of the point estimate for the difference in proportions, $\\hat{p}_t - \\hat{p}_c$.. All values that are at least as extreme as +0.13 but in either direction away from 0 are shaded.", warning=FALSE, fig.width=10}
+
+hist(d, breaks = breaks, col=COL[7,3], main="", xlab="Differences under the null hypothesis", ylab="", axes=FALSE)
+axis(1)
+axis(2, at=(0:3)*N/20, labels=c(0, NA, NA, 3)/20)
+hist(d[d > 0.1299], breaks = breaks, col=COL[1], add=TRUE)
+abline(h=0)
+hist(d[d < -0.1299], breaks = breaks, col=COL[1], add=TRUE)
+abline(h=0)
+lines(rep(0.13, 2), c(0, 3)*N/25, lty=3, lwd=1.7)
+text(0.13, 3*N/25, "0.13", pos=3, cex=0.7)
+```
+
+
+For a two-sided test, take the single tail (in this case, 0.13) and double it to get the p-value: 0.26. 
+Since this p-value is larger than 0.05, we do not reject the null hypothesis. 
+That is, we do not find statistically significant evidence that the blood thinner has any influence on survival of patients who undergo CPR prior to arriving at the hospital. 
+
+<!--%Once again, we can discuss the causal conclusion since this is an experiment.
+-->
+
+\index{data!CPR and blood thinner|)}
+
+```{block2, type="onebox", echo=TRUE}
+**Default to a two-sided test.**
+
+We want to be rigorous and keep an open mind when we analyze data and evidence. 
+Use a one-sided hypothesis test only if you truly have interest in only one direction.
+```
+
+```{block2, type="onebox", echo=TRUE}
+**Computing a p-value for a two-sided test.**
+
+First compute the p-value for one tail of the distribution, then double that value to get the two-sided p-value. 
+That's it!
+```
+
+```{block2, type="example", echo=TRUE}
+Consider the situation of the medical consultant. 
+Now that you know about one-sided and two-sided tests, which type of test do you think is more appropriate?
+
+---
+
+The setting has been framed in the context of the consultant being helpful (which is what led us to a one-sided test originally), but what if the consultant actually performed *worse* than the average? 
+Would we care? 
+More than ever! 
+Since it turns out that we care about a finding in either direction, we should run a two-sided test. 
+The p-value for the two-sided test is double that of the one-sided test, here the simulated p-value would be 0.2444.
+```
+
+
+Generally, to find a two-sided p-value we double the single tail area, which remains a reasonable approach even when the sampling distribution is asymmetric.
+However, the approach can result in p-values larger than 1 when the point estimate is very near the mean in the null distribution; in such cases, we write that the p-value is 1. 
+Also, very large p-values computed in this way (e.g., 0.85), may also be slightly inflated. 
+Typically, we do not worry too much about the precision of very large p-values because they lead to the same analysis conclusion, even if the value is slightly off.
+
+#### Controlling the Type 1 Error rate {-}
+
+It is never okay to change two-sided tests to one-sided tests after observing the data. 
+We explore the consequences of ignoring this advice in the next example.
+
+```{block2, type="example", echo=TRUE}
+Using $\alpha=0.05$, we show that freely switching from two-sided tests to one-sided tests will lead us to make twice as many Type 1 Errors as intended.
+
+---
+ 
+Suppose we are interested in finding any difference from 0. 
+We've created a smooth-looking **null distribution** representing differences due to chance in Figure \@ref(fig:type1ErrorDoublingExampleFigure).
+
+Suppose the sample difference was larger than 0. 
+Then if we can flip to a one-sided test, we would use $H_A$: difference $> 0$. 
+Now if we obtain any observation in the upper 5% of the distribution, we would reject $H_0$ since the p-value would just be a the single tail. 
+Thus, if the null hypothesis is true, we incorrectly reject the null hypothesis about 5% of the time when the sample mean is above the null value, as shown in Figure \@ref(fig:type1ErrorDoublingExampleFigure).
+
+Suppose the sample difference was smaller than 0. 
+Then if we change to a one-sided test, we would use $H_A$: difference $< 0$. 
+If the observed difference falls in the lower 5% of the figure, we would reject $H_0$. 
+That is, if the null hypothesis is true, then we would observe this situation about 5% of the time.
+
+By examining these two scenarios, we can determine that we will make a Type 1 Error $5\%+5\%=10\%$ of the time if we are allowed to swap to the "best" one-sided test for the data. 
+This is twice the error rate we prescribed with our significance level: $\alpha=0.05$ (!).
+```
+
+
+
+```{r type1ErrorDoublingExampleFigure, fig.cap="The shaded regions represent areas where we would reject $H_0$ under the bad practices considered in when $\\alpha = 0.05$.", warning=FALSE, fig.width=10}
+par(las=1, mar=c(2,0,0.5,0), mgp=c(3,0.9,0))
+X <- seq(-4,4,0.01)
+Y <- dnorm(X)
+plot(X, Y, type='l', axes=F, xlim=c(-3.4,3.4))
+axis(1, at=c(-5, 0, 5), label=expression(0, 0, 0), cex.axis=1.2)
+these <- which(X >= 1.65)
+polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
+these <- which(X <= -1.65)
+polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
+
+arrows(-2,0.17, -1.9, 0.08, length=0.07, col=COL[1], lwd=1.5)
+text(-1.92, 0.21, '5%', cex=1.2, col=COL[1])
+arrows(2,0.17, 1.9, 0.08, length=0.07, col=COL[1], lwd=1.5)
+text(2.08, 0.21, '5%', cex=1.2, col=COL[1])
+
+lines(X, Y, lwd=1.5)
+abline(h=0)
+```
+
+```{block2, type = "cautionbox", echo = TRUE}
+**Hypothesis tests should be set up *before* seeing the data.**
+
+After observing data, it is tempting to turn a two-sided test into a one-sided test. 
+Avoid this temptation. 
+Hypotheses should be set up *before* observing the data.
+```
+
+<!--
+%\Comment{Should we scrap this subsection and example and just leave the caution box? Downside: weakens item 1 near the start of Section \@ref(IntroducingTwoSidedHypotheses).}
+-->
+
+\index{hypothesis testing!two tails|)}
+
+
+
+### Two proportions: bootstrap {#two-prop-boot-ci}
+
+The key will be to use two different bags to simulate from the original data.
+
+Use the CPR data.  After we find the CI (use percentile and SE methods), write the interval values down below in the math section that describes the genertic confidence interval method.  The data are provided in Table \@ref(tab:resultsForCPRStudyInSmallSampleSection).
 
 ### Two proportions: mathematical model 
 
@@ -742,17 +1660,13 @@ and secondly,
 the success-failure condition must be met by both groups.
 
 ```{block2, type = "onebox", echo = TRUE}
-**Conditions for the sampling distribution of $\hat{p}_1 -\hat{p}_2$ to be normal**
+**Conditions for the sampling distribution of $\hat{p}_1 -\hat{p}_2$ to be normal.**
   
 The difference $\hat{p}_1 - \hat{p}_2$ can be modeled
   using a normal distribution when
 
-1. Independence, extended.  
-    The data are independent within and between
-    the two groups.
-    Generally this is satisfied if the data come
-    from two independent random samples
-    or if the data come from a randomized experiment.
+1. *Independence*, extended.  The data are independent within and between
+    the two groups. Generally this is satisfied if the data come from two independent random samples or if the data come from a randomized experiment.
 2. *Success-failure condition.*
     The success-failure condition holds for both
     groups, where we check successes and failures
@@ -771,10 +1685,11 @@ The difference $\hat{p}_1 - \hat{p}_2$ can be modeled
 
 \index{standard error (SE)!difference in proportions}
 
-```{block2, type = "todo", echo = TRUE}
+<!--
 SE reference above?
     \label{seForDiffOfProp}
-```
+-->
+
 
 ```{r include=FALSE}
 terms_chp_6 <- c(terms_chp_6, "standard error for difference in proportions")
@@ -801,6 +1716,8 @@ estimate and substitute the $SE$ formula:
     z^{\star} \times
    \sqrt{\frac{p_1(1-p_1)}{n_1} + \frac{p_2(1-p_2)}{n_2}}
 \end{align*}
+
+<!--
 We can also follow the same
 Prepare, Check, Calculate, Conclude steps for
 computing a confidence interval
@@ -808,7 +1725,18 @@ or completing a hypothesis test.
 The details change a little,
 but the general approach remain the same.
 Think about these steps when you apply statistical methods.
+-->
 
+```{block2, type = "onebox", echo = TRUE}
+**Standard Error of the difference in two proportions, $\hat{p}_1 -\hat{p}_2$.**
+  
+When the conditions are met so that the distribution fo $\hat{p}$ is nearly normal, the **variability** of the difference in proportions, $\hat{p}_1 -\hat{p}_2$, is well described by:
+\begin{eqnarray*}
+  SE(\hat{p}_1 -\hat{p}_2) = \sqrt{\frac{p_1(1-p_1)}{n_1} + \frac{p_2(1-p_2)}{n_2}}
+  \end{eqnarray*}
+```
+
+<!--
 ```{block2, type = "onebox", echo = TRUE}
 **Confidence interval for a difference of two proportions**
   Once you've determined a confidence interval for the
@@ -831,10 +1759,12 @@ Think about these steps when you apply statistical methods.
       Interpret the confidence interval in the context
       of the problem.
 ```
+-->
+
 
 
 ```{block2, type = "example", echo = TRUE}
-We consider an experiment for patients
+We reconsider the experiment for patients
     who underwent cardiopulmonary resuscitation (CPR)
     for a heart attack and were
     subsequently admitted to a
@@ -845,7 +1775,7 @@ We consider an experiment for patients
     The outcome variable of interest was whether the
     patients survived for at least 24 hours.
     The results are shown in
-    Figure \@ref(tab:resultsForCPRStudyInSmallSampleSection).
+    Table \@ref(tab:resultsForCPRStudyInSmallSampleSection).
     Check whether we can model the difference in
     sample proportions using the normal distribution.
 
@@ -867,7 +1797,8 @@ We consider an experiment for patients
   for these data.
 ```
 
-```{r resultsForCPRStudyInSmallSampleSection}
+<!--
+```{r resultsForCPRStudyInSmallSampleSectionDup}
 temptbl <- tribble(
  ~variable,    ~col1, ~col2, ~col3,
  "Control", "11", "39", "50",
@@ -883,14 +1814,15 @@ temptbl %>%
     col.names = c("", "Survived", "Died", "Total")) %>%
  kable_styling()
 ```
+-->
 
 ```{block2, type = "example", echo = TRUE}
-    Create and interpret a 90% confidence interval of the
+Create and interpret a 90% confidence interval of the
     difference for the survival rates in the CPR study.
 
 ---
       
-  We'll use $p_t$ for the survival
+We'll use $p_t$ for the survival
   rate in the treatment group and $p_c$ for the control
   group:
   \begin{align*}
@@ -929,13 +1861,19 @@ temptbl %>%
 
 
 
+```{block2, type = "todo", echo = TRUE}
+not sure why the footnote in the guidedpractice below doesn't show up?
+
+should be right after: "Also interpret the interval in the context of the study."
+```
+
 ```{block2, type = "guidedpractice", echo = TRUE}
 A 5-year experiment
 was conducted to evaluate the effectiveness
 of fish oils on reducing cardiovascular events,
 where each subject was randomized into one of two
 treatment groups.
-We'll consider heart attack outcomes in the patients listed in the table below:
+We'll consider heart attack outcomes in the patients listed in Table \@ref(tab:fish-oil-data).
 
 Create a 95% confidence interval for the effect of fish oils
 on heart attacks for patients who are well-represented by
@@ -949,15 +1887,9 @@ study.^[Because the patients were randomized,
   This satisfies the conditions necessary to model
   the difference in proportions using a normal distribution.
 
-  Compute the sample proportions
-  ($\hat{p}_{\text{fish oil}} = 0.0112$,
-    $\hat{p}_{\text{placebo}} = 0.0155$),
-  point estimate of the difference ($0.0112 - 0.0155 = -0.0043$),
-  and standard error
-  ($SE = \sqrt{\frac{0.0112 \times 0.9888}{12933} +
-      \frac{0.0155 \times 0.9845}{12938}}
-    = 0.00145$).
-  Next, plug the values into the general formula for
+  Compute the sample proportions ($\hat{p}_{\text{fish oil}} = 0.0112$, $\hat{p}_{\text{placebo}} = 0.0155$), point estimate of the difference ($0.0112 - 0.0155 = -0.0043$), and standard error $SE = \sqrt{\frac{0.0112 \times 0.9888}{12933} + \frac{0.0155 \times 0.9845}{12938}} = 0.00145$. 
+
+Next, plug the values into the general formula for
   a confidence interval, where we'll use a 95%
   confidence level with $z^{\star} = 1.96$:
   \begin{align*}
@@ -971,13 +1903,13 @@ study.^[Because the patients were randomized,
   (off of a baseline of about 1.55%)
   over a 5-year period for subjects who are similar
   to those in the study.
-  Because the interval is entirely below 0,
+  Because the interval is entirely below 0, and the treatment was randomly assigned
   the data provide strong evidence
   that fish oil supplements reduce heart attacks
   in patients like those in the study.]
 ```
 
-```{r}
+```{r fish-oil-data}
 fish_oil_18[[3]] %>% 
   data.frame() %>%
   mutate(group = c("fish oil", "placebo")) %>%
@@ -1049,11 +1981,10 @@ However, when the null hypothesis is that $p_1 - p_2 = 0$,
 we use a special proportion called the
 **pooled proportion**\index{pooled proportion} to check the success-failure condition:
 \begin{align*}
-\hat{p}_{\textit{pooled}}
+\hat{p}_{\textit{pool}}
     &= \frac
-        {\text{\# of patients who died from breast cancer in the
-            entire study}}
-        {\text{\# of patients in the entire study}} \\
+        {\text{# of patients who died from breast cancer in the entire study}}
+        {\text{# of patients in the entire study}} \\
 	&= \frac{500 + 505}{500 + \text{44,425} + 505 + \text{44,405}} \\
 	&= 0.0112
 \end{align*}
@@ -1081,16 +2012,16 @@ Is it reasonable to model the difference
   Under the null hypothesis, the proportions $p_{mgm}$
   and $p_{ctrl}$ are equal, so we check the success-failure
   condition with our best estimate of these values under $H_0$,
-  the \hiddenterm{pooled proportion} from the two samples,
-  $\hat{p}_{\textit{pooled}} = 0.0112$:
+  the pooled proportion from the two samples,
+  $\hat{p}_{\textit{pool}} = 0.0112$:
   \begin{align*}
-  \hat{p}_{\textit{pooled}} \times n_{mgm}
+  \hat{p}_{\textit{pool}} \times n_{mgm}
       &= 0.0112 \times \text{44,925} = 503
-    & (1 - \hat{p}_{\textit{pooled}}) \times n_{mgm}
+    & (1 - \hat{p}_{\textit{pool}}) \times n_{mgm}
       &= 0.9888 \times \text{44,925} = \text{44,422} \\
-  \hat{p}_{\textit{pooled}} \times n_{ctrl}
+  \hat{p}_{\textit{pool}} \times n_{ctrl}
       &= 0.0112 \times \text{44,910} = 503
-    & (1 - \hat{p}_{\textit{pooled}}) \times n_{ctrl}
+    & (1 - \hat{p}_{\textit{pool}}) \times n_{ctrl}
       &= 0.9888 \times \text{44,910} = \text{44,407}
   \end{align*}
   The success-failure condition is satisfied since
@@ -1100,8 +2031,10 @@ Is it reasonable to model the difference
   distribution.
 ```
 
+
+
 ```{block2, type = "onebox", echo = TRUE}
-**Use the pooled proportion when $\pmb{H_0}$ is $\pmb{\MakeLowercase{p_1 - p_2 = 0}}$**
+**Use the pooled proportion when $H_0$ is $p_1 - p_2 = 0$.**
   
   When the null hypothesis is that the proportions are equal,
   use the pooled proportion ($\hat{p}_{\textit{pooled}}$)
@@ -1109,7 +2042,7 @@ Is it reasonable to model the difference
   success-failure condition and estimate the standard error:
   \begin{eqnarray*}
   \hat{p}_{\textit{pooled}}
-    = \frac{\text{number of ``successes''}}
+    = \frac{\text{number of ``successes"}}
       {\text{number of cases}}
     = \frac{\hat{p}_1 n_1 + \hat{p}_2 n_2}{n_1 + n_2}
   \end{eqnarray*}
@@ -1125,17 +2058,10 @@ Is it reasonable to model the difference
 
 In the previous example,
 the pooled proportion was used to check the success-failure
-condition.
-
-```{block, type = "todo", echo = TRUE}
-I don't think the malaria example is in the book yet...
-^[For an example of a two-proportion
+condition^[For an example of a two-proportion
   hypothesis test that does not require the
   success-failure condition to be met, see
-  Section \ref{caseStudyMalariaVaccine}.]
-```
-
-In the next example, we see the second place where the pooled
+  Section \@ref(two-prop-errors).].  In the next example, we see an additional place where the pooled
 proportion comes into play: the standard error calculation.
 
 
@@ -1143,7 +2069,7 @@ proportion comes into play: the standard error calculation.
 Compute the point estimate of the difference
     in breast cancer death rates in the two groups,
     and use the pooled proportion
-    $\hat{p}_{\textit{pooled}} = 0.0112$ to calculate
+    $\hat{p}_{\textit{pool}} = 0.0112$ to calculate
     the standard error.
     
 ---
@@ -1159,17 +2085,19 @@ Compute the point estimate of the difference
   The breast cancer death rate in the mammogram group
   was 0.012% less than in the control group.
   Next, the standard error is calculated
-  \emph{using the pooled proportion}, $\hat{p}_{\textit{pooled}}$:
+  \emph{using the pooled proportion}, $\hat{p}_{\textit{pool}}$:
 \begin{align*}
 SE = \sqrt{
-      \frac{\hat{p}_{\textit{pooled}}(1-\hat{p}_{\textit{pooled}})}
+      \frac{\hat{p}_{\textit{pool}}(1-\hat{p}_{\textit{pool}})}
           {n_{mgm}}
-      + \frac{\hat{p}_{\textit{pooled}}(1-\hat{p}_{\textit{pooled}})}
+      + \frac{\hat{p}_{\textit{pool}}(1-\hat{p}_{\textit{pool}})}
           {n_{ctrl}}
     }
 	= 0.00070
 \end{align*}
 ```
+
+
 
 ```{block2, type = "example", echo = TRUE}
 Using the point estimate $\hat{p}_{mgm} - \hat{p}_{ctrl} = -0.00012$ and standard error $SE = 0.00070$, calculate a p-value for the hypothesis test and write a conclusion.
@@ -1213,7 +2141,7 @@ the mammogram study as well as any other medical study:
     then we should lean towards the less expensive
     option.
 * The study's authors also found that mammograms
-    led to overdiagnosis of breast cancer,
+    led to over-diagnosis of breast cancer,
     which means some breast cancers were found
     (or thought to be found) but that these cancers
     would not cause symptoms during patients' lifetimes.
@@ -1223,7 +2151,7 @@ the mammogram study as well as any other medical study:
     for breast cancer unnecessarily, and this
     treatment is another cost to consider.
     It is also important to recognize that
-    overdiagnosis can cause unnecessary physical
+    over-diagnosis can cause unnecessary physical
     or emotional harm to patients.
 
 These considerations highlight the complexity around medical care and treatment recommendations. Experts and medical boards who study medical treatments use considerations like those above to provide their best recommendation based on the current evidence.
@@ -1231,8 +2159,9 @@ These considerations highlight the complexity around medical care and treatment 
 \index{data!breast cancer|)}
 \index{data!mammography|)}
 
+<!--
 ```{block2, type = "onebox", echo=TRUE}
-**Hypothesis testing when ${H_0}$ is $p_1 - p_2 = 0$**
+**Hypothesis testing when ${H_0}$ is $p_1 - p_2 = 0$.**
   
   Once you've determined a hypothesis test for the difference
   of two proportions is the correct procedure, there are four
@@ -1258,7 +2187,7 @@ These considerations highlight the complexity around medical care and treatment 
       to $\alpha$, and provide a conclusion in the context
       of the problem.
 ```
-
+-->
 
 <!--
 \subsection{More on 2-proportion hypothesis tests (special topic)}
@@ -1318,7 +2247,6 @@ Set up appropriate hypotheses for the test.\footnotemark
 
 \setlength{\captionwidth}{\mycaptionwidth}
 
-\D{\newpage}
 
 %\Add{In Guided Practice \ref{qualityCtrlEngHypothesisEval}, the null difference is 0.03. However, in the vast majority of applications for differences in means or proportions, the null difference is 0. While the details for a difference of means does not change if the null difference is zero or non-zero, that is not the case for a difference in proportions. As we'll see in Section \ref{}, a hypothesis test for a difference in proportions where the null value is 0 requires additional care.}
 
@@ -1385,14 +2313,7 @@ Set up appropriate hypotheses for the test.\footnotemark
       The p-value is represented by the shaded areas.}
   \label{bladesTwoSampleHTPValueQC}
 \end{figure}
-
-
 -->
-
-
-
-
-
 
 
 
@@ -1404,16 +2325,548 @@ Set up appropriate hypotheses for the test.\footnotemark
 ## Testing for independence in two-way tables
 
 Note that with two-way tables, there is not an obvious single parameter of interest. 
-Instead, research questions usually foucs on how the proportions of the response variable changes (or not) across the different levels of the explanatory variable. 
+Instead, research questions usually focus on how the proportions of the response variable changes (or not) across the different levels of the explanatory variable. 
 Because there is not a population parameter to estimate, bootstrapping to find the standard error of the estimate is not meaningful.
 As such, for two-way tables, we will focus on the randomization test and corresponding mathematical approximation (and not bootstrapping).
 
 ### Two-way table: randomization test
 
+\index{data!iPod|(}
+
+<!--
+\newcommand{\iPodAA}{2}
+\newcommand{\iPodAB}{23}
+\newcommand{\iPodAC}{36}
+\newcommand{\iPodAD}{61}
+\newcommand{\iPodAFraction}{0.2785}
+\newcommand{\iPodAExpected}{20.33}
+\newcommand{\iPodBA}{71}
+\newcommand{\iPodBB}{50}
+\newcommand{\iPodBC}{37}
+\newcommand{\iPodBD}{158}
+\newcommand{\iPodBFraction}{0.7215}
+\newcommand{\iPodBExpected}{52.67}
+\newcommand{\iPodDA}{73}
+\newcommand{\iPodDB}{73}
+\newcommand{\iPodDC}{73}
+\newcommand{\iPodDD}{219}
+\newcommand{\iPodN}{\iPodDD}
+-->
+
+We all buy used products --
+cars, computers, textbooks, and so on --
+and we sometimes assume the sellers of those products
+will be forthright about any underlying problems with
+what they're selling.
+This is not something we should take for granted.
+Researchers recruited 219 participants in a study where they
+would sell a used iPod^[For readers not as old as
+  the authors, an iPod is basically an iPhone without
+  any cellular service, assuming it was one of the later
+  generations. Earlier generations were more basic.]
+that was known to have frozen twice in the past.
+The participants were incentivized to get as much money
+as they could for the iPod since they would receive a 5%
+cut of the sale on top of $10 for participating.
+The researchers wanted to understand what types of questions
+would elicit the seller to disclose the freezing issue.
+
+Unbeknownst to the participants who were the sellers
+in the study,
+the buyers were collaborating with the researchers
+to evaluate the influence of different questions
+on the likelihood of getting the sellers to disclose
+the past issues with the iPod.
+The scripted buyers started with
+"Okay, I guess I'm supposed to go first.
+  So you've had the iPod for 2 years ..."
+and ended with one of three questions:
+
+* General: What can you tell me about it?  
+* Positive Assumption: It doesn't have any problems, does it?  
+* Negative Assumption: What problems does it have?
+
+The question is the treatment given to the sellers,
+and the response is whether the question prompted them
+to disclose the freezing issue with the iPod.
+The results are shown in Table \@ref(tab:ipod-ask-data-summary),
+and the data suggest that asking the,
+*What problems does it have?*,
+was the most effective at getting the seller to disclose
+the past freezing issues.
+However, you should also be asking yourself:
+could we see these results due to chance alone,
+or is this in fact evidence that some questions
+are more effective for getting at the truth?
+
+
+```{r ipod-ask-data-summary}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3, ~col4,
+ "Disclose Problem", "2", "23", "36", "61",
+ "Hide Problem", "71", "50", "37", "158",
+ "Total", "73", "73", "73", "219"
+)
+
+temptbl %>%
+ kable(caption = "Summary of the iPod study, where a question was
+  posed to the study participant who acted.", 
+    col.names = c( "", "General", "Positive Assumptions", "Negative Assumptions", "Total")) %>%
+ kable_styling()
+```
+
+<!--
+```{block2, type = "onebox", echo = TRUE}
+**Differences of one-way tables vs two-way tables.**
+  
+  A one-way table describes counts for each outcome in a single
+  variable.
+  A two-way table describes counts for *combinations*
+  of outcomes for two variables.
+  When we consider a two-way table, we often would like to know,
+  are these variables related in any way?
+  That is, are they dependent (versus independent)?
+```
+-->
+
+The hypothesis test for the iPod experiment is really about
+assessing whether there is statistically significant evidence
+that there was a difference in the success rates that each question had on getting the participant
+to disclose the problem with the iPod.
+In other words, the goal is to check whether the buyer's
+question was independent of whether the seller disclosed
+a problem.
+
+
+#### Expected counts in two-way tables {-}
+
+While we would not expect the number of disclosures to be exactly the same across the three groups, the rate of disclosure seems substantially different across the three groups.
+In order to investigate whether the differences in rates is due to natural variability or due to a treatment effect (i.e., the question causing the differences), we need to compute estimated counts for each cell in a two-way table.
+
+```{block2, type = "example", echo = TRUE}
+From the experiment,
+    we can compute the proportion of all sellers who disclosed
+    the freezing problem as $61/219 = 0.2785$.
+    If there really is no difference among the questions
+    and 27.85% of sellers were going to disclose the freezing
+    problem no matter the question that was put to them,
+    how many of the 73 people in the `General`
+    group would we have expected to disclose the freezing
+    problem?
+
+---
+      
+We would predict that $0.2785 \times 73 = 20.33$
+  sellers would disclose the problem.
+  Obviously we observed fewer than this, though it is not
+  yet clear if that is due to chance variation or whether
+  that is because the questions vary in how effective they
+  are at getting to the truth.
+```
+
+```{block2, type = "guidedpractice", echo = TRUE}
+
+If the questions were actually equally effective,
+meaning about 27.85% of respondents would disclose the
+freezing issue regardless of what question they were asked,
+about how many sellers would we expect to \emph{hide} the
+freezing problem from the Positive Assumption
+group?^[We would expect
+    $(1 - 0.2785) \times 73 = 52.67$.
+    It is okay that this result,
+    like the result from Example \ref{iPodExComputeExpAA},
+    is a fraction.]
+```
+
+We can compute the expected number of sellers who we would
+expect to disclose or hide the freezing issue for all groups,
+if the questions had no impact on what they disclosed,
+using the same strategies employed in the previous Example and Guided Practice to computed expected counts.
+These expected counts were used to construct Table \@ref(tab:ipod-ask-data-summary-expected),
+which is the same as Table \@ref(tab:ipod-ask-data-summary),
+except now the expected counts have been added in parentheses.
+
+
+```{r ipod-ask-data-summary-expected}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col1b, ~col2, ~col2b, ~col3, ~col3b, ~col4,
+ "Disclose Problem", "2", "(20.33)", "23", "(20.33)", "36", "(20.33)", "61",
+ "Hide Problem", "71", "(52.67)", "50", "(52.67)", "37", "(52.67)", "158",
+ "Total", "73", "", "73", "", "73", "", "219"
+)
+
+temptbl %>%
+ kable(caption = "The observed counts and the (expected counts).", 
+    col.names = c( "", "", "", "", "", "", "", "")) %>%
+  column_spec(3, color = COL[1,1], italic = TRUE) %>%
+  column_spec(5, color = COL[1,1], italic = TRUE) %>%
+  column_spec(7, color = COL[1,1], italic = TRUE) %>%
+   add_header_above(c(" ", "General" =2, "Positive Assumptions" = 2, "Negative Assumptions" = 2, "Total")) %>%
+ kable_styling()
+```
+
+
+The examples and exercises above provided some help
+in computing expected counts.
+In general, expected counts for a two-way table may
+be computed using the row totals, column totals,
+and the table total.
+For instance, if there was no difference between the groups,
+then about 27.85% of each column should be in the first row:
+
+\begin{align*}
+0.2785\times (\text{column 1 total}) &= 20.33 \\
+0.2785\times (\text{column 2 total}) &= 20.33 \\
+0.2785\times (\text{column 3 total}) &= 20.33
+\end{align*}
+Looking back to how 0.2785 was computed --
+as the fraction of sellers who disclosed the freezing issue
+($158/219$) --
+these three expected counts could have been computed as
+\begin{align*}
+\left(\frac{\text{row 1 total}}{\text{table total}}\right)
+    \text{(column 1 total)} &= 20.33 \\
+\left(\frac{\text{row 1 total}}{\text{table total}}\right)
+    \text{(column 2 total)} &= 20.33 \\
+\left(\frac{\text{row 1 total}}{\text{table total}}\right)
+    \text{(column 3 total)} &= 20.33
+\end{align*}
+This leads us to a general formula for computing expected
+counts in a two-way table when we would like to test whether
+there is strong evidence of an association between the column
+variable and row variable.
+
+
+```{block2, type = "onebox", echo = TRUE}
+**Computing expected counts in a two-way table.**
+
+To identify the expected count for the $i^{th}$ row
+  and $j^{th}$ column, compute
+  \begin{align*}
+  \text{Expected Count}_{\text{row }i,\text{ col }j}
+    = \frac{(\text{row $i$ total}) \times
+        (\text{column $j$ total})}{\text{table total}}
+  \end{align*}
+```
+
+
+#### The chi-square statistic for two-way tables {-}
+
+The chi-square test statistic for a two-way table is found
+by comparing the observed and expected counts for each cell in the table.
+For each table count, compute:
+
+\begin{align*}
+&\text{General formula} &&
+    \frac{(\text{observed count } - \text{expected count})^2}
+        {\text{expected count}} \\
+&\text{Row 1, Col 1} &&
+    \frac{(2 - 20.33)^2}{20.33} = 16.53 \\
+&\text{Row 1, Col 2} &&
+    \frac{(23 - 20.33)^2}{20.33} = 0.35 \\
+& \hspace{9mm}\vdots &&
+    \hspace{13mm}\vdots \\
+&\text{Row 2, Col 3} &&
+    \frac{(37 - 52.67)^2}{52.67} = 4.66
+\end{align*}
+Adding the computed value for each cell gives the chi-square test statistic $X^2$:
+\begin{align*}
+X^2 = 16.53 + 0.35 + \dots + 4.66 = 40.13
+\end{align*}
+
+
+#### Randomization distribution of the chi-square statisic {-}
+
+Is 40.13 a big number?  That is, does it indicate that the observed and expected values are really different?  Or is 40.13 a value of the statistic that we'd expect to see just due to natural variability?  Previously, we applied the randomization test to the setting where the research question investigated a difference in proportions.  The same idea of shuffling the data under the null hypothesis can be used in the setting of the two-way table.
+
+Assuming that the individuals would disclose or hide the problems **regardless** of the question they are given (i.e., that the null hypothesis is true), we can randomize the data by reassigning the 61 disclosed problems and 158 hidden problems to the three groups at random.  Table \@ref(tab:ipod-ask-data-summary-rand) shows a possible randomization of the observed data under the condition that the null hypothesis is true (in contrast to the original observed data in Table \@ref(tab:ipod-ask-data-summary)).
+
+
+```{r ipod-ask-data-summary-rand}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3, ~col4,
+ "Disclose Problem", "15", "26", "20", "61",
+ "Hide Problem", "58", "47", "53", "158",
+ "Total", "73", "73", "73", "219"
+)
+
+temptbl %>%
+ kable(caption = "Randomized allocation of the data to the question posed in the iPod study.", 
+    col.names = c( "", "General", "Positive Assumptions", "Negative Assumptions", "Total")) %>%
+ kable_styling()
+```
+
+As before, the randomized data is used to find a single value for the test statistic (here a chi-squared statistic). 
+The chi-square statistic for the randomized two-way table is found
+by comparing the observed and expected counts for each cell in the *randomized* table.
+For each cell, compute:
+
+\begin{align*}
+&\text{General formula} &&
+    \frac{(\text{observed count } - \text{expected count})^2}
+        {\text{expected count}} \\
+&\text{Row 1, Col 1} &&
+    \frac{(15 - 20.33)^2}{20.33} = 1.399 \\
+&\text{Row 1, Col 2} &&
+    \frac{(26 - 20.33)^2}{20.33} = 1.579 \\
+& \hspace{9mm}\vdots &&
+    \hspace{13mm}\vdots \\
+&\text{Row 2, Col 3} &&
+    \frac{(53 - 52.67)^2}{52.67} = 0.002
+\end{align*}
+Adding the computed value for each cell gives the chi-square test statistic $X^2$:
+\begin{align*}
+X^2 = 1.399 + 1.579 + \dots + 0.002 = 4.136
+\end{align*}
+
+```{r eval = FALSE, echo = FALSE}
+
+prob <- c(rep("disclose", 2), rep("hide", 71), rep("disclose", 23), rep("hide", 50),rep("disclose", 36), rep("hide", 37))
+ques <- c(rep("general", 73), rep("positive", 73), rep("negative", 73))
+
+table(prob, ques)
+
+set.seed(4747)
+rand.ipod <- table(prob, sample(ques))
+
+chisq.test(rand.ipod, correct = FALSE)$expected
+(chisq.test(rand.ipod, correct = FALSE)$resid)^2
+
+chisq.test(rand.ipod, correct = FALSE)$stat
+```
+
+As before, one randomization will not be sufficient for understanding if the observed data are particularly different from the expected chi-square statistics when $H_0$ is true.  To investigate whether 40.13 is large enough to indicate the the observed and expected counts are significantly different, we need to understand what values of the chi-squared statistic would happen just due to change.  Figure \@ref(fig:ipodRandDotPlot) plots 1000 chi-squared statistics generated under the null hypothesis.  We can see that the observed value is so far from the null statistics that the simulated p-value is zero.  That is, the probability of seeing the observed statistic when the null hypothesis is true is virtually zero.  In this case we can conclude that the decision of whether or not to disclose the iPod's problem is changed by the question asked.  (We use the causal language of "changed" because the study was an experiment.)  Note that with a chi-squared test, we only know that the two variables (here: `question` and `disclosure`) are related (i.e., not independent).  We are not able to claim which type of question causes which type of disclosure.
+
+
+```{r ipodRandDotPlot, fig.cap="A stacked dot plot of chi-square statisics from 1000 simulations produced under the null hypothesis, $H_0$, where the question is independent of the disclosure. None of the 1000 simulations had a chi-square value of at least 40.13, the chi-square value observed in the study.  Indeed, none of the simulated chi-squared statistics came anywhere close to the observed statistic!", warning=FALSE, fig.width=10}
+
+disclosure <- c(rep("disclose", 2), rep("hide", 71), rep("disclose", 23), rep("hide", 50),rep("disclose", 36), rep("hide", 37))
+ques <- c(rep("general", 73), rep("positive", 73), rep("negative", 73))
+
+
+set.seed(40)
+nsim = 1000
+n   = length(disclosure)
+group = disclosure
+var1 = ques
+sim  = matrix(NA, nrow = n, ncol = nsim)
+
+statistic <- function(var1, disclosure){	
+  chisq.test(table(disclosure, var1))$stat
+}
+
+for(i in 1:nsim){
+	sim[,i] = sample(ques, n, replace = FALSE)
+}
+
+sim_dist = apply(sim, 2, statistic, var1 = ques)
+chis  = sim_dist
+pval   = sum(chis >= 40.1) / nsim
+values <- table(sim_dist)
+
+
+X <- c()
+Y <- c()
+for(i in 1:length(chis)){
+	x  <- chis[i]
+	rec <- sum(sim_dist == x)
+	X  <- append(X, rep(x, rec))
+	Y  <- append(Y, 1:rec)
+}
+
+
+plot(X, Y, xlim=c(0,40), xlab = "Chi-squared statistics for iPod study when $H_0$ (that the question and disclosure are independent) is true.", axes = FALSE, ylim=c(0,max(Y)), col=COL[1], cex=0.8, pch=1, lwd=1.5)
+axis(1, at = seq(0, 40, 2.5), labels = c(0,"",5,"",10,"",15,"",20,"",25,"",30,"", 35, "", 40))
+theta <- seq(0, 2*pi, length.out = 500)
+points(X[X >= 40.1], Y[X >= 40.1], lwd=3, col = COL[4], cex=0.4)
+```
+
+
 ### Two-way table: mathematical model
 
+#### The chi-square test for two-way tables {-}
 
-## Chapter review
+As it turns out, the chi-squared test statistic follows a chi-square distribution when the null hypothesis is true. 
+For two way tables, the degrees of freedom is equal to:
+\begin{align*}
+df = \text{(number of rows minus 1)}\times \text{(number of columns minus 1)}
+\end{align*}
+In our example, the degrees of freedom parameter is
+\begin{align*}
+df = (2-1)\times (3-1) = 2
+\end{align*}
+
+To bring it back to the example, if the null hypothesis is true
+(i.e., the questions had no impact on the sellers in
+    the experiment),
+then the test statistic $X^2 = 40.13$ closely follows
+a chi-square distribution with 2 degrees of freedom.
+Using this information, we can compute the p-value for
+the test, which is depicted in
+Figure \@ref(fig:iPodChiSqTail).
+
+```{block2, type = "onebox", echo = TRUE}
+**Computing degrees of freedom for a two-way table.**
+  When applying the chi-square test to a two-way table,
+  we use
+  \begin{align*}
+  df = (R-1)\times (C-1)
+  \end{align*}
+  where $R$ is the number of rows in the table
+  and $C$ is the number of columns.
+```
+
+
+```{r iPodChiSqTail, fig.cap="Visualization of the p-value for $X^2 = 40.13$ when $df = 2$.", warning=FALSE, fig.width=10}
+
+x = 40.13
+
+ChiSquareTail(x, 2,
+              c(0, 50),
+              col = COL[1])
+text(x, 0, "Tail area (1 / 500 million)\nis too small to see", pos = 3)
+lines(c(x, 1000 * x), rep(0, 2), col = COL[1], lwd = 3)
+```
+
+The software R can be used to find the p-value with the function `pchisq()`.  Just like `pnorm()`, `pchisq()` always gives the area to the left of the cutoff value.  Because, in this example, the p-value is represented by the area to the right of 40.13, we subtract the output of `pchisq()` from 1.
+
+```{r echo = TRUE}
+1 - pchisq(40.13, df = 2)
+```
+
+```{block2, type = "example", echo = TRUE}
+Find the p-value and draw a conclusion
+    about whether the question affects the sellers likelihood
+    of reporting the freezing problem.
+
+---
+
+Using a computer, we can compute a very precise value
+  for the tail area above $X^2 = 40.13$ for a chi-square
+  distribution with 2 degrees of freedom:
+  0.000000002.
+
+  Using a significance level of $\alpha=0.05$,
+  the null hypothesis is rejected since the p-value is smaller.
+  That is, the data provide convincing evidence that the
+  question asked did affect a seller's likelihood to tell
+  the truth about problems with the iPod.
+```
+
+\index{data!iPod|)}
+
+\index{data!diabetes|(}
+
+
+```{block2, type = "example", echo = TRUE}
+Table \@ref(tab:diabetes2ExpMetRosiLifestyleSummary)
+    summarizes the results of an experiment evaluating
+    three treatments for Type 2 Diabetes in patients
+    aged 10-17 who were being treated with metformin.
+    The three treatments considered were
+    continued treatment with metformin (`met`),
+    treatment with metformin combined with rosiglitazone
+    (`rosi`),
+    or a lifestyle intervention program.
+    Each patient had a primary outcome, which was either lacked
+    glycemic control (failure)
+    or did not lack that control (success).
+    What are appropriate hypotheses for this test?
+  
+---
+
+* $H_0$: There is no difference in the effectiveness of the three treatments.
+* $H_A$: There is some difference in effectiveness between the three treatments, e.g., perhaps the `rosi` treatment performed better than `lifestyle`.
+```
+
+
+```{r diabetes2ExpMetRosiLifestyleSummary}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3, 
+ "`lifestyle`", "109",  "125",  "234",
+ "`met`", "120",  "112", "232",  
+ "`rosi`", "90",  "143",  "233",
+ "Total", "319", "380", "699"
+)
+
+temptbl %>%
+ kable(caption = "Results for the Type 2 Diabetes study.", 
+    col.names = c( "", "Failure", "Success", "Total")) %>%
+ kable_styling()
+```
+
+
+
+```{block2, type = "guidedpractice", echo = TRUE}
+A chi-square test for a two-way table may be used to test
+the hypotheses in the diabetes Example above.
+
+As a first step, compute the expected values for each of the
+six table cells.^[The expected count for
+    row one / column one is found by multiplying the
+    row one total (234) and column one total (319),
+    then dividing by the table total (699):
+    $\frac{234\times 319}{699} = 106.8$.
+    Similarly for the second column and the first row:
+    $\frac{234\times 380}{699} = 127.2$.
+    Row 2: 105.9 and 126.1.
+    Row 3: 106.3 and 126.7.]
+```
+
+<!--
+\begin{exercisewrap}
+\begin{nexercise}
+Compute the chi-square test statistic for the data in
+Figure \ref{diabetes2ExpMetRosiLifestyleSummary}.\footnotemark
+\end{nexercise}
+\end{exercisewrap}
+\footnotetext{For each cell,
+    compute $\frac{(\text{obs} - \text{exp})^2}{exp}$.
+    For instance, the first row and first column:
+    $\frac{(109-106.8)^2}{106.8} = 0.05$.
+    Adding the results of each cell gives the
+    chi-square test statistic:
+    {\scriptsize$X^2 = 0.05 + \cdots + 2.11 = 8.16$}.}
+
+\begin{exercisewrap}
+\begin{nexercise}
+Because there are 3 rows and 2 columns,
+the degrees of freedom for the test is
+$df = (3 - 1) \times (2 - 1) = 2$.
+Use $X^2 = 8.16$, $df = 2$, evaluate whether
+to reject the null hypothesis using a significance level
+of 0.05.\footnotemark
+\end{nexercise}
+\end{exercisewrap}
+\footnotetext{
+    If using a computer, we can identify the p-value
+    as 0.017.
+    That is, we reject the null hypothesis because
+    the p-value is less than 0.05, and we conclude
+    that at least one of the treatments is more or
+    less effective than the others at treating
+    Type 2 Diabetes for glycemic control.}
+
+\index{data!diabetes|)}
+
+-->
+
+Note, when analyzing 2-by-2 contingency tables (that is, when both variables only have two possible options), one guideline
+is to use the two-proportion methods introduced in
+Section \@ref(diff-two-prop).
+
+## Chapter 6 review {#chp6-review}
+
+```{block2, type = "todo", echo = TRUE}
+need to expand on the technical condition as the last row.  also, is it helpful for the rest of the table to be repeated?
+```
+
+```{r chp6summary}
+  method_summary_table %>%
+ kable(caption = "Summary and comparison of Randomization Tests, Bootstrapping, and Mathematical Models as inferential statistical methods.", 
+    col.names = c("", " Randomization Test ", "Bootstrapping", "Mathematical Model")) %>%
+ kable_styling()
+```
 
 ### Terms
 
