@@ -30,6 +30,7 @@ suppressMessages(library(tidyverse))
 suppressMessages(library(scales))
 suppressMessages(library(infer))
 suppressMessages(library(patchwork))
+suppressMessages(library(gghighlight))
 
 # dplyr options ----------------------------------------------------------------
 

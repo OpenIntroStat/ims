@@ -242,13 +242,13 @@ Data sets with the reverse characteristic -- a long, thinner tail to the left --
 terms_chp_2 <- c(terms_chp_2, "tail", "right skewed", "left skewed", "symmetric")
 ```
 
-```{block2, type="onebox"}
+```{block2, type="onebox", echo=TRUE}
 When data trail off in one direction, the distribution has a **long tail**.
 If a distribution has a long left tail, it is left skewed.
 If a distribution has a long right tail, it is right skewed.
 ```
 
-```{block2, type="guidedpractice"}
+```{block2, type="guidedpractice", echo=TRUE}
 Besides the mean (since it was labeled), what can you see in the dot plot in Figure \@ref(fig:loan-int-rate-dotplot) that you cannot see in the histogram in Figure \@ref(fig:loan50IntRateHist)?^[The interest rates for individual loans.]
 ```
 
@@ -433,7 +433,7 @@ A good description of the shape of a distribution should include modality and wh
 Using Figure \@ref(fig:severalDiffDistWithSdOf1) as an example, explain why such a description is important.^[Figure \@ref(fig:severalDiffDistWithSdOf1) shows three distributions that look quite different, but all have the same mean, variance, and standard deviation. Using modality, we can distinguish between the first plot (bimodal) and the last two (unimodal). Using skewness, we can distinguish between the last plot (right skewed) and the first two. While a picture, like a histogram, tells a more complete story, we can use modality and shape (symmetry/skew) to characterize basic information about a distribution.]
 ```
 
-```{block2, type="example"}
+```{block2, type="example", echo=TRUE}
 Describe the distribution of the `interest_rate` variable using the histogram in Figure \@ref(fig:loan50IntRateHist). 
 The description should incorporate the center, variability, and shape of the distribution, and it should also be placed in context. 
 Also note any especially unusual cases.
@@ -446,71 +446,279 @@ In practice, the variance and standard deviation are sometimes used as a means t
 
 ### Box plots, quartiles, and the median
 
-A **box plot** summarizes a data set using five statistics while also plotting unusual observations. Figure \@ref(fig:loan\_int\_rate\_box\_plot\_layout) provides a vertical dot plot alongside a box plot of the `interest_rate` variable from the `loan50` data set.
+A **box plot** summarizes a data set using five statistics while also indentifying unusual observations. Figure \@ref(fig:loan_int_rate_boxplot_dotplot) provides a dot plot alongside a box plot of the `interest_rate` variable from the `loan50` data set.
 
-```{r loan_int_rate_box_plot_layout, eval=FALSE}
-d <- loan50$interest_rate
-
-par(mar = c(0, 4, 0, 1), mgp = c(2.8, 0.55, 0))
-boxPlot(d,
-        ylab = 'Interest Rate',
-        xlim = c(0.3, 3),
-        axes = FALSE,
-        ylim = range(d) + sd(d) * c(-1,1) * 0.2)
-AxisInPercent(2, c(0, pretty(d)))
-
-arrows(2, min(d) + 1, 1.35, min(d), length = 0.08)
-text(2, min(d) + 1, 'lower whisker', pos = 4)
-
-arrows(2, quantile(d, 0.25) + sd(d) / 7,
-       1.35, quantile(d, 0.25),
-       length = 0.08)
-text(2, quantile(d, 0.25) + sd(d)/6.5,
-     expression(Q[1]~~'(first quartile)'), pos = 4)
-
-m <- median(d)
-arrows(2, m + sd(d) / 5, 1.35, m, length = 0.08)
-text(2,m + sd(d) / 4.7, 'median', pos = 4)
-
-q <- quantile(d, 0.75)
-arrows(2, q + sd(d) / 4, 1.35, q, length = 0.08)
-text(2, q + sd(d) / 3.8,
-     expression(Q[3]~~'(third quartile)'), pos = 4)
-
-arrows(2, rev(sort(d))[3] - sd(d) / 4,
-       1.35, rev(sort(d))[3], length = 0.08)
-text(2, rev(sort(d))[3] - sd(d) / 3.8,
-     'upper whisker', pos = 4)
-
-y <- quantile(d, 0.75) + 1.5 * IQR(d)
-arrows(2, y - 0.1 * sd(d),
-       1.35, y, length = 0.08)
-lines(c(0.72, 1.28), rep(y, 2),
-      lty = 3, col = '#00000066')
-text(2, y - 0.1 * sd(d),
-     'max whisker reach', pos = 4)
-
-m <- rev(tail(sort(d), 5))
-s <- m[1] - 0.3 * sd(m)
-arrows(2, s, 1.1, m[1] - 0.2, length = 0.08)
-arrows(2, s, 1.1, m[2] + 0.3, length = 0.08)
-text(2, s, 'suspected outliers', pos = 4)
-
-pt.jitter <- 0.05
-nco <- 50
-cutoffs <- seq(0.9 * min(d), max(d), length.out = nco)
-for (i in 2:nco) {
-  these <- which(cutoffs[i - 1] < d & d <= cutoffs[i])
-  lt <- length(these)
-  if (lt == 0) {
-    next
-  }
-  x <- pt.jitter * (1:lt)
-  x <- x - mean(x)
-  points(rep(0.4, lt) + x, d[these],
-      col = rep(COL[1, 3], 25), pch = 19)
-}
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "box plot")
 ```
+
+```{r loan_int_rate_boxplot_dotplot, fig.cap="Plot A shows a dot plot and Plot B shows a box plot of the distribution of interest rates from the `loan50` dataset."}
+p_dotplot <- ggplot(loan50, aes(x = interest_rate)) + 
+  geom_dotplot(binwidth = 1, dotsize = 0.7, fill = COL["blue", "full"], color = COL["blue", "full"]) +
+  labs(x = NULL, y = NULL) +
+  theme(axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) +
+  scale_x_continuous(labels = percent_format(scale = 1, accuracy = 1),
+                     limits = c(0, 30))
+
+p_boxplot <- ggplot(loan50, aes(x = interest_rate)) + 
+  geom_boxplot(outlier.size = 2.5, outlier.color = COL["blue", "full"]) +
+  theme(axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) +
+  labs(x = "Interest rate") +
+  scale_x_continuous(labels = percent_format(scale = 1, accuracy = 1),
+                     limits = c(0, 30))
+
+p_dotplot / 
+  p_boxplot +
+  plot_annotation(tag_levels = "A") & 
+  theme(plot.tag = element_text(size = 10))
+```
+
+The dark line inside the box represents the **median**, which splits the data in half. 
+50% of the data fall below this value and 50% fall above it. 
+Since in the `loan50` dataset there are `r nrow(loan50)` observations (an even number), the median is defined as the average of the two observations closest to the $50^{th}$ percentile. 
+Table \@ref(tab:loan50_int_rate_sorted) shows all interest rates, arranged in ascending order. 
+We can see that the $25^{th}$ and the $26^{th}$ values are both `r sort(loan50$interest_rate)[25]`, which corresponds to the dark line in the box plot in Figure \ref(fig:loan_int_rate_boxplot_dotplot).
+
+```{r loan50_int_rate_sorted, comment=""}
+loan50_interest_rate_sorted <- sort(loan50$interest_rate)
+matrix(
+ c(loan50_interest_rate_sorted[1:10],
+ loan50_interest_rate_sorted[11:20],
+ loan50_interest_rate_sorted[21:30],
+ loan50_interest_rate_sorted[31:40],
+ loan50_interest_rate_sorted[41:50]),
+ byrow = TRUE,
+ ncol = 10
+) %>%
+  data.frame(row.names = c("1", "10", "20", "30", "40")) %>%
+  kable(
+    col.names = as.character(1:10),
+    caption = "Interest rates from the `loan50` dataset, arranged in ascending order."
+  )
+```
+
+When there are an odd number of observations, there will be exactly one observation that splits the data into two halves, and in such a case that observation is the median (no average needed).
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "median")
+```
+
+```{block2, type="onebox", echo=TRUE}
+**Median: the number in the middle**  
+If the data are ordered from smallest to largest, the **median** is the observation right in the middle.
+If there are an even number of observations, there will be two values in the middle, and the median is taken as their average.
+```
+
+The second step in building a box plot is drawing a rectangle to represent the middle 50% of the data.
+The length of the the box is called the **interquartile range**, or **IQR** for short.
+It, like the standard deviation, is a measure of \index{variability}variability in data.
+The more variable the data, the larger the standard deviation and IQR tend to be.
+The two boundaries of the box are called the **first quartile** (the $25^{th}$ percentile, i.e. 25\% of the data fall below this value) and the **third quartile** (the $75^{th}$ percentile, i.e. 75\% of the data fall below this value) \index{quartile!first quartile} \index{quartile!third quartile}, and these are often labeled $Q_1$ and $Q_3$, respectively.
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "interquartile range", "IQR", "first quartile", "third quartile")
+```
+
+```{block2, type="onebox", echo=TRUE}
+**Interquartile range (IQR)**
+The IQR interquartile range is the length of the box in a box plot.
+It is computed as $IQR = Q_3 - Q_1$, where $Q_1$ and $Q_3$ are the $25^{th}$ and $75^{th}$ percentiles, respectively.
+```
+
+```{block2, type="guidedpractice", echo=TRUE}
+What percent of the data fall between $Q_1$ and the median?
+What percent is between the median and $Q_3$?^[Since $Q_1$ and $Q_3$ capture the middle 50% of the data and the median splits the data in the middle, 25% of the data fall between $Q_1$ and the median, and another 25% falls between the median and $Q_3$.]
+```
+
+Extending out from the box, the **whiskers** attempt to capture the data outside of the box.
+The whiskers of a box plot reach to the minimum and the maximum values in the data, unless there are points that are considered unusually high or unusually low, which are identified as potential **outliers** by the box plot. 
+These are labeled with a dot on the box plot.
+The purpose of labeling these points -- instead of extending the whiskers to the minimum and maximum observed values -- is to help identify any observations that appear to be unusually distant from the rest of the data. 
+There are a variety of formulas for determining whether a particular data point is considered an outlier, and different statistical software use different formulas. 
+A commonly used formula is that any value that is beyond $1.5\times IQR$ away from the first or the third quartile is considered an outlier. 
+In a sense, the box is like the body of the box plot and the whiskers are like its arms trying to reach the rest of the data, up to the outliers.
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "outlier", "whiskers")
+```
+
+```{block2, type="onebox", echo=TRUE}
+**Outliers are extreme.**
+An **outlier** is an observation that appears extreme relative to the rest of the data. 
+Examining data for outliers serves many useful purposes, including
+
+- identifying strong skew \index{skew!strong} in the distribution,
+- identifying possible data collection or data entry errors, and 
+- providing insight into interesting properties of the data.
+```
+
+```{block2, type="guidedpractice", echo=TRUE}
+Using the box plot in Figure \@ref(loan_int_rate_boxplot_dotplot), estimate the values of the $Q_1$, $Q_3$, and IQR for `interest_rate` in the `loan50` data set.^[These visual estimates will vary a little from one person to the next: $Q_1 \approx$ 8%, $Q_3 \approx$ 14%, IQR $\approx$ 14 - 8 = 6%.]
+```
+
+### Robust statistics
+
+How are the **sample statistics** \index{sample statistic} of the `interest_rate` data set affected by the observation, 26.3%?
+What would have happened if this loan had instead been only 15%?
+What would happen to these summary statistics \index{summary statistic} if the observation at 26.3% had been even larger,
+say 35%? 
+These scenarios are plotted alongside the original data in Figure \@ref(fig:loan_int_rate_robust_ex), and sample statistics are computed under each scenario in Table \@ref(tab:robustOrNotTable).
+
+```{r}
+loan50_original <- loan50 %>% 
+  select(interest_rate) %>% 
+  mutate(
+    mark = if_else(interest_rate == 26.30, TRUE, FALSE)
+    )
+
+loan50_15 <- loan50 %>% 
+  select(interest_rate) %>% 
+  mutate(
+    mark = if_else(interest_rate == 26.30, TRUE, FALSE),
+    interest_rate = if_else(interest_rate == 26.30, 15, interest_rate)
+    )
+
+loan50_35 <- loan50 %>% 
+  select(interest_rate) %>% 
+  mutate(
+    mark = if_else(interest_rate == 26.30, TRUE, FALSE),
+    interest_rate = if_else(interest_rate == 26.30, 35, interest_rate)
+    )     
+
+p_original <- ggplot(loan50_original, aes(x = interest_rate)) +
+  geom_dotplot(binwidth=1, dotsize = 0.7, fill = COL["blue", "full"], color = COL["blue", "full"]) +
+  labs(x = NULL) +
+  scale_x_continuous(
+    labels = label_percent(scale = 1, accuracy = 1),
+    limits = c(0, 35)
+    ) +
+  theme(axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) +
+  gghighlight(mark)
+
+p_15 <- ggplot(loan50_15, aes(x = interest_rate)) +
+  geom_dotplot(binwidth=1, dotsize = 0.7, fill = COL["blue", "full"], color = COL["blue", "full"]) +
+  labs(x = NULL) +
+  scale_x_continuous(
+    labels = label_percent(scale = 1, accuracy = 1),
+    limits = c(0, 35)
+    ) +
+  theme(axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) +
+  gghighlight(mark)
+
+p_35 <- ggplot(loan50_35, aes(x = interest_rate)) +
+  geom_dotplot(binwidth=1, dotsize = 0.7, fill = COL["blue", "full"], color = COL["blue", "full"]) +
+  labs(x = "Interest rate") +
+  scale_x_continuous(
+    labels = label_percent(scale = 1, accuracy = 1),
+    limits = c(0, 35)
+    ) +
+  theme(axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) +
+  gghighlight(mark)
+
+p_original / 
+  p_15 /
+  p_35+
+  plot_annotation(tag_levels = "A") & 
+  theme(plot.tag = element_text(size = 10))
+```
+
+
+\begin{figure}[ht]
+  \centering
+  \Figure{1}{loan_int_rate_robust_ex}
+  \caption{Dot plots of the original interest rate data
+      and two modified data sets.}
+  \label{loan_int_rate_robust_ex}
+\end{figure}
+
+% See `loan_int_rate_robust_ex` figure code for calculations.
+\setlength{\captionwidth}{135mm}
+\begin{figure}[ht]
+\centering
+\begin{tabular}{l c cc c cc}
+% \cline{3-4} \cline{6-7}
+& \hspace{0mm} & \multicolumn{2}{c}{\bf robust} &
+    \hspace{2mm} & \multicolumn{2}{c}{\bf not robust} \\
+\hline
+scenario && median & IQR && $\bar{x}$ & $s$ \\ 
+\hline
+%   & & \multicolumn{2}{c|} & & \multicolumn{2}{c|} \\
+original \var{interest\us{}rate} data
+    && 9.93\% & 5.76\% && 11.57\% & 5.05\% \\
+move 26.3\% $\to$ 15\%
+    && 9.93\% & 5.76\% && 11.34\% & 4.61\% \\
+move 26.3\% $\to$ 35\%
+    && 9.93\% & 5.76\% && 11.74\% & 5.68\% \\
+   \hline
+\end{tabular}
+\caption{A comparison of how the median, IQR,
+  mean ($\bar{x}$), and standard deviation ($s$) change
+  had an extreme observations from the \var{interest\us{}rate}
+  variable been different.}
+\label{robustOrNotTable}
+\end{figure}
+\setlength{\captionwidth}{\mycaptionwidth}
+
+\begin{exercisewrap}
+\begin{nexercise} \label{interestRateWhichIsMoreRobust}
+(a)~Which is more affected by extreme observations,
+the mean or median?
+Figure~\ref{robustOrNotTable} may be helpful.
+(b)~Is the standard deviation or IQR more affected by
+extreme observations?\footnotemark{}
+\end{nexercise}
+\end{exercisewrap}
+\footnotetext{(a)~Mean is affected more.
+  (b)~Standard deviation is affected more.
+  Complete explanations are provided in the material
+  following Guided Practice~\ref{interestRateWhichIsMoreRobust}.}
+
+The median and IQR are called \term{robust statistics} because
+extreme observations have little effect on their values:
+moving the most extreme value generally has little influence
+on these statistics.
+On the other hand, the mean and standard deviation
+are more heavily influenced by changes in extreme observations,
+which can be important in some situations.
+
+\begin{examplewrap}
+\begin{nexample}{The median and IQR did not change under the
+    three scenarios in Figure~\ref{robustOrNotTable}.
+    Why might this be the case?}
+  The median and IQR are only sensitive to numbers
+  near $Q_1$, the median, and $Q_3$.
+  Since values in these regions are stable in the three
+  data sets, the median and IQR estimates are also stable.
+\end{nexample}
+\end{examplewrap}
+
+\begin{exercisewrap}
+\begin{nexercise}
+The distribution of loan amounts in the \data{loan50} data set
+is right skewed, with a few large loans lingering out into the
+right tail.
+If you were wanting to understand the typical loan size,
+should you be more interested in the mean
+or median?\footnotemark
+\end{nexercise}
+\end{exercisewrap}
+\footnotetext{Answers will vary!
+  If we're looking to simply understand what a typical individual
+  loan looks like, the median is probably more useful.
+  However, if the goal is to understand something that
+  scales well, such as the total amount of money we might
+  need to have on hand if we were to offer 1,000 loans,
+  then the mean would be more useful.}
 
 ## Chapter 2 review {#chp2-review}
 
