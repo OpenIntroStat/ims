@@ -7,7 +7,7 @@ However, since this might be your first exposure to these concepts, we take our 
 Mastery of the content presented in this chapter will be crucial for understanding the methods and techniques introduced in rest of the book.
 ```
 
-## Examining numerical data {#numerical-data}
+## Exploring numerical data {#numerical-data}
 
 In this section we will explore techniques for summarizing numerical variables. For example, consider the `loan_amount` variable from the `loan50` data set, which represents the loan size for all 50 loans in the data set. This variable is numerical since we can sensibly discuss the numerical difference of the size of two loans. On the other hand, area codes and zip codes are not numerical, but rather they are categorical variables.
 
@@ -446,13 +446,13 @@ In practice, the variance and standard deviation are sometimes used as a means t
 
 ### Box plots, quartiles, and the median
 
-A **box plot** summarizes a data set using five statistics while also indentifying unusual observations. Figure \@ref(fig:loan_int_rate_boxplot_dotplot) provides a dot plot alongside a box plot of the `interest_rate` variable from the `loan50` data set.
+A **box plot** summarizes a data set using five statistics while also indentifying unusual observations. Figure \@ref(fig:loan-int-rate-boxplot-dotplot) provides a dot plot alongside a box plot of the `interest_rate` variable from the `loan50` data set.
 
 ```{r include=FALSE}
 terms_chp_2 <- c(terms_chp_2, "box plot")
 ```
 
-```{r loan_int_rate_boxplot_dotplot, fig.cap="Plot A shows a dot plot and Plot B shows a box plot of the distribution of interest rates from the `loan50` dataset."}
+```{r loan-int-rate-boxplot-dotplot, fig.cap="Plot A shows a dot plot and Plot B shows a box plot of the distribution of interest rates from the `loan50` dataset."}
 p_dotplot <- ggplot(loan50, aes(x = interest_rate)) + 
   geom_dotplot(binwidth = 1, dotsize = 0.7, fill = COL["blue", "full"], color = COL["blue", "full"]) +
   labs(x = NULL, y = NULL) +
@@ -481,7 +481,7 @@ The dark line inside the box represents the **median**, which splits the data in
 50% of the data fall below this value and 50% fall above it. 
 Since in the `loan50` dataset there are `r nrow(loan50)` observations (an even number), the median is defined as the average of the two observations closest to the $50^{th}$ percentile. 
 Table \@ref(tab:loan50_int_rate_sorted) shows all interest rates, arranged in ascending order. 
-We can see that the $25^{th}$ and the $26^{th}$ values are both `r sort(loan50$interest_rate)[25]`, which corresponds to the dark line in the box plot in Figure \ref(fig:loan_int_rate_boxplot_dotplot).
+We can see that the $25^{th}$ and the $26^{th}$ values are both `r sort(loan50$interest_rate)[25]`, which corresponds to the dark line in the box plot in Figure \ref(fig:loan-int-rate-boxplot-dotplot).
 
 ```{r loan50_int_rate_sorted, comment=""}
 loan50_interest_rate_sorted <- sort(loan50$interest_rate)
@@ -557,18 +557,17 @@ Examining data for outliers serves many useful purposes, including
 ```
 
 ```{block2, type="guidedpractice", echo=TRUE}
-Using the box plot in Figure \@ref(loan_int_rate_boxplot_dotplot), estimate the values of the $Q_1$, $Q_3$, and IQR for `interest_rate` in the `loan50` data set.^[These visual estimates will vary a little from one person to the next: $Q_1 \approx$ 8%, $Q_3 \approx$ 14%, IQR $\approx$ 14 - 8 = 6%.]
+Using the box plot in Figure \@ref(loan-int-rate-boxplot-dotplot), estimate the values of the $Q_1$, $Q_3$, and IQR for `interest_rate` in the `loan50` data set.^[These visual estimates will vary a little from one person to the next: $Q_1 \approx$ 8%, $Q_3 \approx$ 14%, IQR $\approx$ 14 - 8 = 6%.]
 ```
 
 ### Robust statistics
 
 How are the **sample statistics** \index{sample statistic} of the `interest_rate` data set affected by the observation, 26.3%?
 What would have happened if this loan had instead been only 15%?
-What would happen to these summary statistics \index{summary statistic} if the observation at 26.3% had been even larger,
-say 35%? 
-These scenarios are plotted alongside the original data in Figure \@ref(fig:loan_int_rate_robust_ex), and sample statistics are computed under each scenario in Table \@ref(tab:robustOrNotTable).
+What would happen to these summary statistics \index{summary statistic} if the observation at 26.3% had been even larger, say 35%? 
+These scenarios are plotted alongside the original data in Figure \@ref(fig:loan-int-rate-robust-ex), and sample statistics are computed under each scenario in Table \@ref(tab:robustOrNotTable).
 
-```{r}
+```{r loan-int-rate-robust-ex, fig.cap="Dot plots of the original interest rate data and two modified data sets.", fig.width = 8, fig.asp = 1.2}
 loan50_original <- loan50 %>% 
   select(interest_rate) %>% 
   mutate(
@@ -591,7 +590,6 @@ loan50_35 <- loan50 %>%
 
 p_original <- ggplot(loan50_original, aes(x = interest_rate)) +
   geom_dotplot(binwidth=1, dotsize = 0.7, fill = COL["blue", "full"], color = COL["blue", "full"]) +
-  labs(x = NULL) +
   scale_x_continuous(
     labels = label_percent(scale = 1, accuracy = 1),
     limits = c(0, 35)
@@ -599,11 +597,14 @@ p_original <- ggplot(loan50_original, aes(x = interest_rate)) +
   theme(axis.title.y = element_blank(),
         axis.text.y  = element_blank(),
         axis.ticks.y = element_blank()) +
-  gghighlight(mark)
+  gghighlight(mark) +
+  labs(
+    x = NULL,
+    title = "Original data"
+    )
 
 p_15 <- ggplot(loan50_15, aes(x = interest_rate)) +
   geom_dotplot(binwidth=1, dotsize = 0.7, fill = COL["blue", "full"], color = COL["blue", "full"]) +
-  labs(x = NULL) +
   scale_x_continuous(
     labels = label_percent(scale = 1, accuracy = 1),
     limits = c(0, 35)
@@ -611,7 +612,11 @@ p_15 <- ggplot(loan50_15, aes(x = interest_rate)) +
   theme(axis.title.y = element_blank(),
         axis.text.y  = element_blank(),
         axis.ticks.y = element_blank()) +
-  gghighlight(mark)
+  gghighlight(mark) +
+  labs(
+    x = NULL,
+    title = "Move 26.3% to 15%"
+    )
 
 p_35 <- ggplot(loan50_35, aes(x = interest_rate)) +
   geom_dotplot(binwidth=1, dotsize = 0.7, fill = COL["blue", "full"], color = COL["blue", "full"]) +
@@ -623,102 +628,276 @@ p_35 <- ggplot(loan50_35, aes(x = interest_rate)) +
   theme(axis.title.y = element_blank(),
         axis.text.y  = element_blank(),
         axis.ticks.y = element_blank()) +
-  gghighlight(mark)
+  gghighlight(mark) +
+  labs(
+    x = NULL,
+    title = "Move 26.3% to 35%"
+    )
 
 p_original / 
   p_15 /
-  p_35+
+  p_35
+```
+
+```{r robustOrNotTable}
+loan50_robust_check <- bind_rows(
+  loan50_original %>% mutate(Scenario = "Original data"),
+  loan50_15 %>% mutate(Scenario = "Move 26.3% to 15%"),
+  loan50_35 %>% mutate(Scenario = "Move 26.3% to 35%")
+) %>%
+  mutate(Scenario = fct_relevel(Scenario, "Original data", "Move 26.3% to 15%", "Move 26.3% to 35%"))
+
+loan50_robust_check %>%
+  group_by(Scenario) %>%
+  summarise(
+    Median = median(interest_rate),
+    IQR = IQR(interest_rate),
+    Mean = mean(interest_rate), 
+    SD = sd(interest_rate), 
+    .groups = "drop"
+    ) %>%
+  kable(align = "lcccc", caption = "A comparison of how the median, IQR, mean, and standard deviation change as the value of an extereme observation from the original interest data changes.") %>%
+  kable_styling("striped") %>%
+  add_header_above(c(" " = 1, "Robust" = 2, "Not robust" = 2))
+```
+
+```{block2, type="guidedpractice", echo=TRUE}
+(a) Which is more affected by extreme observations, the mean or median?  
+
+(b) Is the standard deviation or IQR more affected by extreme observations?^[(a) Mean is affected more. (b) Standard deviation is affected more.]
+```
+
+The median and IQR are called **robust statistics** because extreme observations have little effect on their values: moving the most extreme value generally has little influence on these statistics.
+On the other hand, the mean and standard deviation are more heavily influenced by changes in extreme observations, which can be important in some situations.
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "robust statistics")
+```
+
+```{block2, type="example", echo=TRUE}
+The median and IQR did not change under the three scenarios in Table \@ref(tab:robustOrNotTable). 
+Why might this be the case?
+
+---
+  
+The median and IQR are only sensitive to numbers near $Q_1$, the median, and $Q_3$. 
+Since values in these regions are stable in the three data sets, the median and IQR estimates are also stable.
+```
+
+```{block2, type="guidedpractice", echo=TRUE}
+The distribution of loan amounts in the `loan50` data set is right skewed, with a few large loans lingering out into the right tail.
+If you were wanting to understand the typical loan size, should you be more interested in the mean or median?^[If we are looking to simply understand what a typical individual loan looks like, the median is probably more useful. However, if the goal is to understand something that scales well, such as the total amount of money we might need to have on hand if we were to offer 1,000 loans, then the mean would be more useful.]
+```
+
+### Transforming data
+
+When data are very strongly skewed, we sometimes transform them so they are easier to model.
+
+```{r county-pop-transform, fig.cap="Plot A: A histogram of the populations of all US counties. Plot B: A histogram of log$_{10}$-transformed county populations. For this plot, the x-value corresponds to the power of 10, e.g. 4 on the x-axis corresponds to $10^4 =$ 10,000. Data are from 2017.", warning = FALSE}
+
+p_pop <- ggplot(county, aes(x = pop2017)) +
+  geom_histogram(binwidth = 500000) +
+  scale_x_continuous(labels = label_number(scale = 0.000001, suffix = "M", accuracy = 1)) +
+  labs(
+    x = "Population (M = millions)", 
+    y = "Frequency"
+    )
+
+p_pop_log <- ggplot(county, aes(x = log(pop2017, base = 10))) +
+  geom_histogram(binwidth = 0.5) +
+  labs(
+    x = expression(log[10]*"(Population)"), 
+    y = "Frequency"
+    )
+
+p_pop + p_pop_log
+```
+
+```{block2, type = "example", echo=TRUE}
+Consider the histogram of county populations shown in Figure \@ref(fig:county-pop-transform), which shows extreme skew\index{skew!extreme}. What is not so useful about this plot?
+
+---
+
+Nearly all of the data fall into the left-most bin, and the extreme skew obscures many of the potentially interesting details in the data.
+```
+
+There are some standard transformations that may be useful for strongly right skewed data where much of the data is positive but clustered near zero.
+A **transformation** is a rescaling of the data using a function.
+For instance, a plot of the logarithm (base 10) of county populations results in the new histogram in Figure \@ref(fig:county-pop-transform).
+This data is symmetric, and any potential outliers appear much less extreme than in the original data set.
+By reigning in the outliers and extreme skew, transformations like this often make it easier to build statistical models against the data.
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "transformation")
+```
+
+Transformations can also be applied to one or both variables in a scatterplot.
+A scatterplot of the population change from 2010 to 2017 against the population in 2010 is shown in Figure \@ref(fig:county-pop-change-transform).
+In this first scatterplot, it's hard to decipher any interesting patterns because the population variable is so strongly skewed.
+However, if we apply a log$_{10}$ transformation to the population variable, as shown in
+Figure \@ref(fig:county-pop-change-transform), a positive association between the variables is revealed.
+In fact, we may be interested in fitting a trend line to the data when we explore methods around fitting regression lines in Chapter \@ref(cor-reg).
+
+```{r county-pop-change-transform, fig.cap="Plot A: Scatterplot of population change against the population before the change. Plot B: A~scatterplot of the same data but where the population size has been log-transformed.", warning = FALSE}
+
+p_pop_change <- ggplot(county, aes(y = pop_change, x = pop2010)) +
+  geom_point() +
+  scale_x_continuous(labels = label_number(scale = 0.000001, suffix = "M", accuracy = 1)) +
+  labs(
+    x = "Population before change (M = millions)", 
+    y = "Population change"
+    )
+
+p_pop_change_log <- ggplot(county, aes(y = pop_change, x = log(pop2010, base = 10))) +
+  geom_point() +
+  labs(
+    x = expression(log[10]*"(Population before change)"), 
+    y = "Population change"
+    )
+
+p_pop_change + p_pop_change_log
+```
+
+Transformations other than the logarithm can be useful, too.
+For instance, the square root ($\sqrt{\text{original observation}}$) and inverse ($\frac{1}{\text{original observation}}$) are commonly used by data scientists.
+Common goals in transforming data are to see the data structure differently, reduce skew, assist in modeling, or straighten a nonlinear relationship in a scatterplot.
+
+### Mapping data
+
+\index{intensity map}
+
+The `county` data set offers many numerical variables that we could plot using dot plots, scatterplots, or box plots, but these miss the true nature of the data.
+Rather, when we encounter geographic data, we should create an **intensity map**, where colors are used to show higher and lower values of a variable.
+Figures \@ref(fig:county-intensity-map-poverty-unemp) and \@ref(fig:county-intensity-map-howownership-median-income) shows intensity maps for poverty rate in percent (`poverty`), unemployment rate (`unemployment_rate`), homeownership rate in percent (`homeownership`), and median household income (`median_hh_income`).
+The color key indicates which colors correspond to which values.
+The intensity maps are not generally very helpful for getting precise values in any given county, but they are very helpful for seeing geographic trends and generating interesting research questions or hypotheses.
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "intensity map")
+```
+
+```{block2, type="example", echo=TRUE}
+What interesting features are evident in the poverty and unemployment rate intensity maps?
+
+---
+  
+Poverty rates are evidently higher in a few locations.
+Notably, the deep south shows higher poverty rates, as does much of Arizona and New Mexico.
+High poverty rates are evident in the Mississippi flood plains a little north of New Orleans and also in a large section of Kentucky.
+
+The unemployment rate follows similar trends, and we can see correspondence between the two
+variables. 
+In fact, it makes sense for higher rates of unemployment to be closely related to poverty rates.
+One observation that stand out when comparing the two maps: the poverty rate is much higher than the unemployment rate, meaning while many people may be working, they are not making enough to break out of poverty.
+```
+
+```{block2, type="guidedpractice", echo=TRUE}
+What interesting features are evident in the median household income intensity map in Figure \@ref(fig:countyMedIncomeMap)?^[Note: answers will vary. There is some correspondence between high earning and metropolitan areas, where we can see darker spots (higher median household income), though there are several exceptions. You might look for large cities you are familiar with and try to spot them on the map as dark spots.]
+```
+
+```{r county-map-prep}
+dfips <- maps::county.fips %>%
+  as_tibble() %>% 
+  extract(polyname, c("region", "subregion"), "^([^,]+),([^,]+)$")
+
+map_county <- map_data("county") %>%
+  as_tibble() %>%
+  left_join(dfips) %>%
+  mutate(fips = case_when(
+    subregion == "okaloosa"  & region == "florida"        ~ 12091L,
+    subregion == "st martin" & region == "louisiana"      ~ 22099L,
+    subregion == "currituck" & region == "north carolina" ~ 37053L,
+    # Oglala Lakota Count, see https://en.wikipedia.org/wiki/Oglala_Lakota_County,_South_Dakota
+    subregion == "shannon"   & region == "south dakota"   ~ 46113L, 
+    subregion == "galveston" & region == "texas"          ~ 48167L,
+    subregion == "accomack"  & region == "virginia"       ~ 51001L,
+    subregion == "pierce"    & region == "washington"     ~ 53053L,
+    subregion == "san juan"  & region == "washington"     ~ 53055L,
+    TRUE ~ fips
+  ))
+
+county_for_map <- county_complete %>%
+  select(fips, name, state, poverty_2017, unemployment_rate_2017, homeownership_2010, median_household_income_2017)
+
+map_county <- map_county %>%
+  left_join(county_for_map, by = "fips")
+```
+
+```{r county-intensity-map-poverty-unemp, fig.cap = "Plot A: Intensity map of poverty rate (percent). Plot B: Intensity map of the unemployment rate (percent).", fig.width = 10, fig.asp = 1}
+map_poverty <- ggplot(map_county, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = poverty_2017)) +
+  scale_fill_viridis_c(option = "D", labels = label_percent(scale = 1)) +
+  labs(x = NULL, y = NULL, fill = "Poverty") +
+  theme(axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+map_unemp <- ggplot(map_county, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = unemployment_rate_2017)) +
+  scale_fill_viridis_c(option = "A", labels = label_percent(scale = 1, accuracy = 1)) +
+  labs(x = NULL, y = NULL, fill = "Unemployment\nrate") +
+  theme(axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+map_poverty / 
+  map_unemp +
   plot_annotation(tag_levels = "A") & 
   theme(plot.tag = element_text(size = 10))
 ```
 
+```{r county-intensity-map-howownership-median-income, fig.cap = "Plot A: Intensity map of homeownership rate (percent). Plot B: Intensity map of median household income ($1000s).", fig.width = 10, fig.asp = 1}
+map_howownership <- ggplot(map_county, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = homeownership_2010)) +
+  scale_fill_viridis_c(option = "B", labels = label_percent(scale = 1)) +
+  labs(x = NULL, y = NULL, fill = "Homeownership\nrate") +
+  theme(axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) 
 
-\begin{figure}[ht]
-  \centering
-  \Figure{1}{loan_int_rate_robust_ex}
-  \caption{Dot plots of the original interest rate data
-      and two modified data sets.}
-  \label{loan_int_rate_robust_ex}
-\end{figure}
+map_median_income <- ggplot(map_county, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = median_household_income_2017)) +
+  scale_fill_viridis_c(option = "C", labels = label_dollar(scale = 0.001, suffix = "K")) +
+  labs(x = NULL, y = NULL, fill = "Median\nhousehold\nincome") +
+  theme(axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
 
-% See `loan_int_rate_robust_ex` figure code for calculations.
-\setlength{\captionwidth}{135mm}
-\begin{figure}[ht]
-\centering
-\begin{tabular}{l c cc c cc}
-% \cline{3-4} \cline{6-7}
-& \hspace{0mm} & \multicolumn{2}{c}{\bf robust} &
-    \hspace{2mm} & \multicolumn{2}{c}{\bf not robust} \\
-\hline
-scenario && median & IQR && $\bar{x}$ & $s$ \\ 
-\hline
-%   & & \multicolumn{2}{c|} & & \multicolumn{2}{c|} \\
-original \var{interest\us{}rate} data
-    && 9.93\% & 5.76\% && 11.57\% & 5.05\% \\
-move 26.3\% $\to$ 15\%
-    && 9.93\% & 5.76\% && 11.34\% & 4.61\% \\
-move 26.3\% $\to$ 35\%
-    && 9.93\% & 5.76\% && 11.74\% & 5.68\% \\
-   \hline
-\end{tabular}
-\caption{A comparison of how the median, IQR,
-  mean ($\bar{x}$), and standard deviation ($s$) change
-  had an extreme observations from the \var{interest\us{}rate}
-  variable been different.}
-\label{robustOrNotTable}
-\end{figure}
-\setlength{\captionwidth}{\mycaptionwidth}
+map_howownership / 
+  map_median_income +
+  plot_annotation(tag_levels = "A") & 
+  theme(plot.tag = element_text(size = 10))
+```
 
-\begin{exercisewrap}
-\begin{nexercise} \label{interestRateWhichIsMoreRobust}
-(a)~Which is more affected by extreme observations,
-the mean or median?
-Figure~\ref{robustOrNotTable} may be helpful.
-(b)~Is the standard deviation or IQR more affected by
-extreme observations?\footnotemark{}
-\end{nexercise}
-\end{exercisewrap}
-\footnotetext{(a)~Mean is affected more.
-  (b)~Standard deviation is affected more.
-  Complete explanations are provided in the material
-  following Guided Practice~\ref{interestRateWhichIsMoreRobust}.}
+## Exploring categorical data {#categorical-data}
 
-The median and IQR are called \term{robust statistics} because
-extreme observations have little effect on their values:
-moving the most extreme value generally has little influence
-on these statistics.
-On the other hand, the mean and standard deviation
-are more heavily influenced by changes in extreme observations,
-which can be important in some situations.
+In this section, we will introduce tables and other basic tools for categorical data that are used throughout this book.
+The `loan50` data set represents a sample from a larger loan data set called `loans`.
+This larger data set contains information on 10,000 loans made through Lending Club.
+We will examine the relationship between `homeownership`, which for the `loans` data can take a value of `rent`, `mortgage` (owns but has a mortgage), or `own`, and `app_type`, which indicates whether the loan application was made with a partner or whether it was an individual application.
 
-\begin{examplewrap}
-\begin{nexample}{The median and IQR did not change under the
-    three scenarios in Figure~\ref{robustOrNotTable}.
-    Why might this be the case?}
-  The median and IQR are only sensitive to numbers
-  near $Q_1$, the median, and $Q_3$.
-  Since values in these regions are stable in the three
-  data sets, the median and IQR estimates are also stable.
-\end{nexample}
-\end{examplewrap}
-
-\begin{exercisewrap}
-\begin{nexercise}
-The distribution of loan amounts in the \data{loan50} data set
-is right skewed, with a few large loans lingering out into the
-right tail.
-If you were wanting to understand the typical loan size,
-should you be more interested in the mean
-or median?\footnotemark
-\end{nexercise}
-\end{exercisewrap}
-\footnotetext{Answers will vary!
-  If we're looking to simply understand what a typical individual
-  loan looks like, the median is probably more useful.
-  However, if the goal is to understand something that
-  scales well, such as the total amount of money we might
-  need to have on hand if we were to offer 1,000 loans,
-  then the mean would be more useful.}
+```{block2, type="uptohere", echo=TRUE}
+```
 
 ## Chapter 2 review {#chp2-review}
 
