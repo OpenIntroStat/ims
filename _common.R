@@ -31,6 +31,7 @@ suppressMessages(library(scales))
 suppressMessages(library(infer))
 suppressMessages(library(patchwork))
 suppressMessages(library(gghighlight))
+suppressMessages(library(maps))
 
 # dplyr options ----------------------------------------------------------------
 
