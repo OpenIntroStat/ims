@@ -918,17 +918,52 @@ terms_chp_5 <- c(terms_chp_5, "bootstrapping")
 need a new physical object!
 ```
 
-Each client can be simulated using a (hypothetical) 62-sided die.
-The die has 3 red sides and 59 black sides. 
-For each roll, the rate of complication is 0.048 (= 3/62): if the die roll is red, we say the patient had a complication, and if it is black then we say they did not have a complication. 
-If we roll the die 62 times and compute the proportion of simulated patients with complications, $\hat{p}_{bs}$, then this "bootstrap" proportion represents a single simulated proportion from the "resample from the sample" approach.
+Most of the inferential procedures covered in this text are grounded in quantifying how one data set would differ from another when they are both taken from the same population.
+It doesn't make sense to take repeated samples from the same population because if you have the means to take more samples, a larger sample size will benefit you more than the exact same sample twice.
+Instead, we measure how the samples behave under an estimate of the population.  Figure \@ref(fig:boot1) shows how the unknown original population can be estimated by using the sample to approximate the proportion of successes and failures (in our case, the proportion of complications and no complications for the medical consultant).
+
+```{r boot1, fig.caption = "first figure with the ? pop, then sample, then estimate of the pop.  below i said 3 white (success) and 4 red (failure).  easy to change the text below.", warning = FALSE fig.width = 10}
+include_graphics("05/figures/boot1.png")
+```
+
+By taking repeated samples from the estimated population, the variability from sample to sample can be observed.  In Figure \@ref(fig:boot2) the repeated bootstrap samples are obviously different both from each other and from the original population.
+Recall that the bootstrap samples were taken from the same (estimated) population, and so the differences are due entirely to natural variability in the sampling procedure.
+
+```{r boot2, fig.caption = "next fig, has the bootstrap samples", warning = FALSE fig.width = 10}
+include_graphics("05/figures/boot2.png")
+```
+
+By summarizing each of the bootstrap samples (here, using the sample proportion), we see, directly, the variability of the sample proportion, $\hat{p}$, from sample to sample.
+The distribution of $\hat{p}_{bs}$ for the example scenario is shown in Figure \@ref(fig:boot3), and the bootstrap distribution for the medical consulatant data is shown in Figure \@ref(fig:MedConsBSSim).
+
+```{r boot3, fig.caption = "WITH ADDED HISTOGRAM... boot samples, arrow, histogram of all of them", warning = FALSE fig.width = 10}
+include_graphics("05/figures/boot3.png")
+```
+
+
+It turns out that in practice, it is very difficult for computers to work with an infinite population (with the same proportional breakdown as in the sample).
+However, there is a physical and computational model which produces an equivalent bootstrap distribution of the sample proportion in a computationally efficient manner.
+Consider the observed data to be a bag of marbles 3 of which are success (white) and 4 of which are failures (red).  By drawing the marbles out of the bag with replacement, we depict the same sampling **process** as was done with the infinitely large estimated population.
+Note in Figure \@ref(fig:boot4) that when sampling the original observations, a particular data point may end up in the new sample one time (evidenced by a circle around the observation), two times (evidenced by two circles around the observation), or not at all (no circles around the observation).  
+
+If we apply the bootstrap sampling process to the medical consultant example, we consider each client to be one of the marbles in the bag.
+There will be 59 white marbles (no complication) and 3 red marbles (complication).
+If we 62 choose marbles out of the bag (one at a time) and compute the proportion of simulated patients with complications, $\hat{p}_{bs}$, then this "bootstrap" proportion represents a single simulated proportion from the "resample from the sample" approach.
+
+```{r boot4, fig.caption = "sampling with replacement figure", warning = FALSE fig.width = 10}
+include_graphics("05/figures/boot4.png")
+```
 
 ```{block2, type="guidedpractice", echo=TRUE}
 In a simulation of 62 patients, about how many would we expect to have had a complication?^[About 5% of the patients (6.2 on average) in the simulation will have a complication, though we will see a little variation from one simulation to the next.]
 ```
 
-We conducted such a simulation. 
+Figure \@ref(fig:boot5) visualizes one simulation for the medical consulatant.
 Out of the simulated cases, there were 5 with a complication and 57 without a complication: $\hat{p}_{bs} = 5/62 = 0.081$.
+
+```{r boot5, fig.caption = "how impossible would it be to create one simulation with 62 marbles? 3 red, 59 white?", warning = FALSE fig.width = 10}
+hist(rnorm(10))
+```
 
 One simulation isn't enough to get a sense of the variability from one bootstrap proportion to another bootstrap proportion, so we repeated the simulation 10,000 times using a computer. 
 Figure \@ref(fig:MedConsBSSim) shows the distribution from the 10,000 bootstrap simulations. 
@@ -1036,23 +1071,22 @@ need a new physical object!
 #### Variability of the statistic {-}
 
 To answer the question, we will again use a simulation. 
-To simulate 120 games, this time we use a (hypothetical) 120-sided die to simulate the 120 listeners. 
-The die has 3 black sides and 117 red sides which simulates the probability of guessing set at 3 out of 120.
-
+To simulate 120 games, this time we use a bag of 120 marbles 3 are red and 117 are white.
+Sampling from the bag 120 times (while not actually removing the marbles from the bag) produces one bootstrap sample.   
 <!--
 To simulate 120 games under the null hypothesis where $p = 0.50$, we could flip a coin 120 times. 
 Each time the coin came up heads, this could represent the listener guessing correctly, and tails would represent the listener guessing incorrectly. 
 -->
 
 
-For example, we can simulate 5 tapper-listener pairs by rolling a 120-sided die with 3 red sides and 117 black sides.
+For example, we can start by simulating 5 tapper-listener pairs by sampling 5 marbles from the bag of 3 red and 117 white marbles.
 
-| B | B | B | R | B |
+| W | W | W | R | W |
 |:-----:|:-----:|:-----:|:-------:|:-----:|
 | Wrong | Wrong | Wrong | Correct | Wrong |
 
 
-After rolling the die 120 times, we got 2 red for $\hat{p}_{bs} = 0.0167$. 
+After selecting 120 marbles, we counted 2 red for $\hat{p}_{bs} = 0.0167$. 
 As we did with the randomization technique, seeing what would happen with one simulation isn't enough. 
 In order to evaluate whether our originally observed proportion of 0.025 is unusual or not, we should generate more simulations. 
 Here we've repeated the entire simulation ten times:
@@ -1148,16 +1182,16 @@ In the case of the medical complications data, we proceed as follows:
 need a new physical object!
 ```
 
-1. Randomly sample one observation from the 62 patients (roll a single 62-sided die with red and black sides).
-2. Randomly sample a second observation from the 62 patients. Because we sample with replacement (i.e., roll the die again), there is a 1-in-62 chance that this second observation will be the same one sampled in the first step!
+1. Randomly sample one observation from the 62 patients (sample, without removing the marbles, 62 marbles from the bag).
+2. Randomly sample a second observation from the 62 patients. Because we sample with replacement (i.e., we don't actually remove the marbles from the bag), there is a 1-in-62 chance that the second observation will be the same one sampled in the first step!
 ...
 62. Randomly sample a 62nd observation from the 62 patients.
 
 ```{r include=FALSE}
-terms_chp_5 <- c(terms_chp_5, "bootstrap sample")
+terms_chp_5 <- c(terms_chp_5, "bootstrap sample", "sampling with replacement")
 ```
 
-Bootstrap sampling is also called sampling with replacement. 
+Bootstrap sampling is often called **sampling with replacement**. 
 A bootstrap sample behaves similarly to how an actual sample would behave, and we compute the point estimate of interest (here, compute $\hat{p}_{bs}$). 
 
 Due to theory that is beyond this text, we know that the bootstrap proportions $\hat{p}_{bs}$ vary around $\hat{p}$ in a similar way to how different sample (i.e., different datasets which would produce different $\hat{p}$ values) proportions vary around the true parameter $p$. 
@@ -1181,6 +1215,9 @@ Bootstrap flow chart
 ```
 
 
+```{r bootboth, fig.caption = "(not sure if this should include a histogram or not) the infinite pop compared to with replacement", warning = FALSE, fig.width=10}
+include_graphics("05/figures/bootboth.png")
+```
 
 ```{r chp5-2-summary}
   method_summary_table %>%
