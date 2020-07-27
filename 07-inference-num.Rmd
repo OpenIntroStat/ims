@@ -11,7 +11,7 @@ The important data structure for this chapter is a numeric response variable (th
 The four data structures we detail are one numeric response variable, one numeric response variable which is a difference across a pair of observations, a numeric response variable broken down by a binary explanatory variable, and a numeric response variable broken down by an explanatory variable that has two or more levels.
 When appropriate, each of the data structures will be analyzed using the three methods from Chapter \@ref(inference-foundations): randomization test, bootstrapping, and mathematical models.
 
-As we build on the inferential ideas, we will visit new foundational concepts in statistical inference.  One key new idea rests in estimating how the sample mean (as opposed to the sample proportion) varies from sample to sample; the resulting value is referred to as the standard error of the mean.  We will also introduce a new important mathematical model, the t-distribution (as the foundation for the t-test).  
+As we build on the inferential ideas, we will visit new foundational concepts in statistical inference.  One key new idea rests in estimating how the sample mean (as opposed to the sample proportion) varies from sample to sample; the resulting value is referred to as the standard error of the mean.  We will also introduce a new important mathematical model, the $t$-distribution (as the foundation for the $t$-test).  
 ```
 
 ```{r summary3methods-chp6}
@@ -37,6 +37,13 @@ terms_chp_7 <- c("numerical data")
 ```
 
 
+
+In this chapter, we focus on the sample mean (instead of, for example, the sample median or the range of the observations) because of the well-studied mathematical model which describes the behavior of the sample mean.
+We will not cover mathematical models which describe other statistics, but the bootstrap and randomization techniques described below are immediately extendable to any function of the observed data.
+The sample mean will be calculated in one group, two paired groups, two independent groups, and many groups settings.
+The techniques described for each setting will vary slightly, but you will be well served to find the structural similarities across the different settings.
+
+
 ## One mean {#one-mean}
 
 Similar to how we can model the behavior of the
@@ -52,17 +59,30 @@ then we'll use it to construct confidence intervals
 and conduct hypothesis tests for the mean.
 
 
-In this chapter, we focus on the sample mean (instead of, for example, the sample median or the range of the observations) because of the well-studied mathematical model which describes the behavoir of the sample mean.
-We will not cover mathematical models which descibe other statistics, but the bootstrap and randomization techniques described below are immediately extendable to any function of the observed data.
-
 ### Bootstrap confidence interval for $\mu$
 
-now with the london flats?  same exact idea in chapter 5, confidence intervals only.  discuss other statistics (e.g. SD of the price of the flat?)
+As an employer who subsidizes housing for your employees, you need to know the average month rental price for a three bedroom flat in Edinburgh.
+In order to walk through the example more clearly, let's say that you are only able to randomly sample five Edinburgh flats (if this were a real example, you would surely be able to take a much larger sample size, possibly even being able to measure the entire population!).
 
 
 #### Observed data {-}
 
-need an example ... flats?
+Figure \@(fig:5flats) presents the details of the random sample of observations where the monthly rent of five flats has been recorded.
+
+```{r 5flats, fig.cap = "5 flats", warning = FALSE,  out.width="75%"}
+include_graphics("07/figures/5flats.png")
+```
+
+```{r}
+edin_3br <- data.frame(price = c(1400, 1995, 1250, 1995, 1600))
+
+edin_3br %>% summarize(mean(price), sd(price), n())
+```
+
+The sample average monthly rent of $\textsterling$ `r mean(edin_3br$price)` is a first guess at the price of three bedroom flats.  However, as a student of statistics, you understand that one sample mean based on a sample of five observations will not necessarily equal the true population average rent for all three bedroom flats in Edinburgh.
+Indeed, you can see that the observed rent prices vary with a standard deviation of `r sd(edin_3br$price)`, and surely the average monthly rent would be different if a different sample of size five had been taken from the population.
+Fortunately, as it did in previous chapters for the sample proportion, bootstrapping will approximate the variability of the sample mean from sample to sample.
+
 
 #### Variability of the statistic {-}
 
@@ -90,35 +110,220 @@ Recall that the bootstrap samples were taken from the same (estimated) populatio
 include_graphics("07/figures/bootquant2.png")
 ```
 
-By summarizing each of the bootstrap samples (here, using the sample mean, we see, directly, the variability of the sample mean, $\bar{x}$, from sample to sample.
-The distribution of $\hat{x}_{bs}$ for the example scenario is shown in Figure \@ref(fig:bootquant3), and the bootstrap distribution for the medical consultant data is shown in Figure \@ref(fig:MedConsBSSim).
+By summarizing each of the bootstrap samples (here, using the sample mean), we see, directly, the variability of the sample mean, $\bar{x}$, from sample to sample.
+The distribution of $\hat{x}_{bs}$ for the Edinburgh flats is shown in Figure \@ref(fig:bootquant3).
 
 ```{block2, type = "todo", echo = TRUE}
-again, add the example in detail here
+after the plot is made, describe the actual BS samples
 ```
+
 
 ```{r bootquant3, fig.cap = "WITH ADDED HISTOGRAM... boot samples, arrow, histogram of all of them", warning = FALSE,  out.width="75%"}
 include_graphics("07/figures/bootquant3.png")
 ```
 
 
+
+
 ```{block2, type = "todo", echo = TRUE}
-add the sampling with replacement part
+add the sampling with replacement part (????)
+```
 
-bring the whole example through
 
-make histograms with different percentiles, also SE histograms.
+Figure \@ref(fig:flats-bs-mean) summarizes one thousand bootstrap samples in a histogram of the bootstrap sample means.
+The bootstrapped average rent prices vary from $\textsterling$ 1250 to $\textsterling$ 1995 (with a small observed sample of size 5, a bootstrap resample can sometimes, although rarely, include only repeated measurements of the same observation).
+The bootstrap confidence interval is found by locating the middle 90% (for a 90% confidence interval) or a 95% (for a 95% confidence interval) of the bootstrapped statistics.
+
+```{block2, type = "example", echo = TRUE}
+Using Figure \@ref(fig:flats-bs-mean), find the 90% and 95% confidence intervals for the true mean monthly rental price of a three bedroom flat in Edinburgh.
+
+---
+A 90% confidence interval is given by $\textsterling$ 1429 to $\textsterling$ 1876.  The conclusion is that we are 90% confident that the true average rental price for three bedroom flats in Edinburgh lies somewhere between $\textsterling$ 1429 and $\textsterling$ 1876.
+
+
+A 95% confidence interval is given by $\textsterling$ 1389.75 to $\textsterling$ 1916.  The conclusion is that we are 90% confident that the true average rental price for three bedroom flats in Edinburgh lies somewhere between $\textsterling$ 1389.75 and $\textsterling$ 1916.
+```
+
+
+
+```{r flats-bs-mean, fig.cap="The original Edinburgh data is bootstrapped 1,000 times. The histogram provides a sense for the variability of the average rent values from sample to sample.", warning=FALSE, fig.width=10}
+
+set.seed(47)
+bsflats <- edin_3br %>%
+  rep_sample_n(size = 5, reps = 1000, replace = TRUE) 
+
+bsflats_mean <- bsflats %>%
+  group_by(replicate) %>% 
+  summarize( flat_bsmean = mean(price)) %>%
+  pull()
+
+bsq1 <- quantile(bsflats_mean, probs = c(0.005, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.995))
+
+bsmeans_up <- bsflats_mean[bsflats_mean >= bsq1[7]]
+bsmeans_low <- bsflats_mean[bsflats_mean <= bsq1[2]]
+
+umeans <- sort(unique(bsflats_mean))
+bin.width <- (umeans[length(umeans)] - umeans[1])/15
+#breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
+breaks <- seq(umeans[1] - 1, umeans[length(umeans)] + bin.width, by = bin.width)
+  
+
+histPlot(bsflats_mean, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
+     xlab = "", ylab="")
+#histPlot(bsmeans_up, breaks = breaks, col = COL[1], add = TRUE)
+#histPlot(bsmeans_low, breaks = breaks, col = COL[1], add = TRUE)
+axis(1)
+#axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
+lines(c(bsq1[6], bsq1[6]), c(0, 75), lty = 3, lwd = 3)
+lines(c(bsq1[3], bsq1[3]), c(0, 75), lty = 3, lwd = 3)
+lines(c(bsq1[7], bsq1[7]), c(0, 50), lty = 3, lwd = 3)
+lines(c(bsq1[2], bsq1[2]), c(0, 50), lty = 3, lwd = 3)
+lines(c(bsq1[8], bsq1[8]), c(0, 25), lty = 3, lwd = 3)
+lines(c(bsq1[1], bsq1[1]), c(0, 25), lty = 3, lwd = 3)
+text(bsq1[6], 75, "95 percentile", pos = 3)
+text(bsq1[3], 75, "5 percentile", pos = 3)
+text(bsq1[7], 50, "97.5 percentile", pos = 3)
+text(bsq1[2], 50, "2.5 percentile", pos = 3)
+text(bsq1[8], 25, "99.5 percentile", pos = 3)
+text(bsq1[1], 25, "0.5 percentile", pos = 3)
+text(bsq1[6], -5, round(bsq1[6],1), pos = 3)
+text(bsq1[3], -5, round(bsq1[3],1), pos = 3)
+text(bsq1[7], -5, round(bsq1[7],1), pos = 3)
+text(bsq1[2], -5, round(bsq1[2],1), pos = 3)
+text(bsq1[8], -5, round(bsq1[8],1), pos = 3)
+text(bsq1[1], -5, round(bsq1[1],1), pos = 3)
+par(las = 0)
+mtext("Bootstrapped values of the mean of the monthly flat price", 1, 2.5)
 
 ```
 
-### Mathematical model
+#### Bootstrap SE confidence interval {-}
 
-t-dist.  communicate like the chi-sq.  "here is the dist we get!"  yup, it kind of looks like the normal, but it's slightly different.
+Another method for creating bootstrap intervals is built on first calculating the variability of the bootstrap statistics (here, the bootstrap means).  If the bootstrap distribution is relatively symmetric and bell-shaped, then the bootstrap 95% confidence interval can be constructed with the formula familiar from the mathematical models in previous chapters:
+
+$$\mbox{point estimate} \pm 2 \cdot SE_{BS}$$
+The number 2 is an approximation connected to the "95%" part of the confidence interval (remember the 68-95-99.7 rule) which will be made more detailed in Section \@ref(one-mean-math).
+
+```{block2, type = "example", echo = TRUE}
+Explain how the SE of the bootstrapped means is calculated and what it is measuring.
+
+---
+
+The SE of the bootstrapped means measures how variable the means are from resample to resample.  The bootstrap SE is a good approximation to the SE of means as if we had taken repeated samples from the original population (which we agreed isn't something we would do because of wasted resources).
+
+Logistically, we can find the standard deviation of the bootstrapped means using the same calculations from Chapter \@ref(eda).  That is, the bootstrapped means are the individual observations about which we measure the variability.
+```
+
+```{block2, type = "guidedpractice", echo = TRUE}
+It turns out that the standard deviation of the bootstrapped means from Figure \@ref(fig:flats-bs-mean) is $\textsterling 136.9$.  [Note: in R the calculation was done using the function `sd()`.]  The average of the observed prices, the best guess point estimate for $\mu$, is  $\textsterling 1648$.
+
+Find and interpret the confidence interval for $\mu$ (the true average rental price of flats in Edinbugh) using the Bootstrap SE inverval formula.^[Using the formula for the boostrap SE interval, we find the 95% confidence interval for $\mu$ is: $$1648 \pm 2 \cdot 136.9 \rightarrow (\textsterling 1374.2, \textsterling 1921.8)$$
+                                                                                                                                                      
+We are 95% confident that the true average rent price for a three bedroom flat in Edinburgh is somewhere between $\textsterling 1374.2 and \textsterling 1921.8$.]
+```
 
 
+```{block2, type = "example", echo = TRUE}
+Compare and contrast the two different 95% confidence intervals for $\mu$ created by finding the percentiles of the bootstrapped means and created by finding the SE of the bootstrapped means.  Do you think the intervals *should* be identical?
+  
+---
+  
+* Percentile interval: $(\textsterling 1389.75, \textsterling 1916)$
+* SE interval: $(\textsterling 1374.2, \textsterling 1921.8)$
 
-#### The distribution of $\bar{x}$
+The intervals were created using different methods, so it is not surprising that they are not identical.  However, we are pleased to see that the two methods provide very similar interval approximations. 
 
+The technical details surrounding which data structures are best for percentile intervals and which are best for SE intervals is beyond the scope of this text.  However, the larger the samples are, the better the interval estimates will be.
+```
+
+#### Bootstrap confidence interval for $\sigma$ {-}
+
+Suppose that the research question at hand seeks to understand how variable the rental price of the flats are in Edinburgh.
+That is, your interest is no longer in the average rental price of the flats but in the *standard deviation* of the rental prices of all three bedroom flats in Edinburgh, $\sigma$.
+You may have already realized that the sample standard deviation, $s$, will work as a good **point estimate** for the parameter of interest: the population standard deviation, $\sigma$.
+The point estimate of the five observations is calculated to be $s = \textsterling  340.23$.
+While $s = \textsterling  340.23$ might be a good guess for $\sigma$, we prefer to have an interval 
+Although there is a mathematical model which describes how $s$ varies from sample to sample, the mathematical model will not be presented in this text.
+But even without the mathematical model, bootstrapping can be used to find a confidence interval for the parameter $\sigma$.
+
+```{r include=FALSE}
+terms_chp_7 <- c(terms_chp_7, "point estimate")
+```
+
+```{block2, type = "example", echo = TRUE}
+Describe the bootstrap distribution for the standard deviation shown in Figure \@ref(fig:flats-bs-sd).
+
+---
+  
+The distribution is skewed left and centered near $\textsterling 340.23$, which is the point estimate from the original data. Most observations in this distribution lie between $\textsterling 0$ and $\textsterling 408.1$.
+```
+
+```{block2, type = "guidedpractice", echo = TRUE}
+Using Figure \@ref(fig:flats-bs-sd), find *and interpret* a 90% confidence interval for the population standard deviation for three bedroom flat prices in Edinburgh.^[By looking at the percentile values in Figure \@ref(fig:flats-bs-sd), the middle 90% of the bootstrap standard deviations are given by the 5 percentile ($\\textsterling$ 153.9) and 95 percentile ($\\textsterling$ 385.6).  That is, we are 90% confident that the true standard deviation of rent prices is between $\\textsterling$ 153.9 and $\\textsterling$ 385.6.]
+```
+
+```{r flats-bs-sd, fig.cap="The original Edinburgh data is bootstrapped 1,000 times. The histogram provides a sense for the variability of the standard deviation of the rent values from sample to sample.", warning=FALSE, fig.width=10}
+
+bsflats_sd <- bsflats %>%
+  group_by(replicate) %>% 
+  summarize( flat_bssd = sd(price)) %>%
+  pull()
+
+bsq1 <- quantile(bsflats_sd, probs = c(0.005, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.995))
+
+bsmeans_up <- bsflats_sd[bsflats_sd >= bsq1[7]]
+bsmeans_low <- bsflats_sd[bsflats_sd <= bsq1[2]]
+
+umeans <- sort(unique(bsflats_sd))
+bin.width <- (umeans[length(umeans)] - umeans[1])/15
+#breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
+breaks <- seq(umeans[1] - 1, umeans[length(umeans)] + bin.width, by = bin.width)
+  
+
+histPlot(bsflats_sd, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
+     xlab = "", ylab="")
+#histPlot(bsmeans_up, breaks = breaks, col = COL[1], add = TRUE)
+#histPlot(bsmeans_low, breaks = breaks, col = COL[1], add = TRUE)
+axis(1)
+#axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
+lines(c(bsq1[6], bsq1[6]), c(0, 75), lty = 3, lwd = 3)
+lines(c(bsq1[3], bsq1[3]), c(0, 75), lty = 3, lwd = 3)
+lines(c(bsq1[7], bsq1[7]), c(0, 50), lty = 3, lwd = 3)
+lines(c(bsq1[2], bsq1[2]), c(0, 50), lty = 3, lwd = 3)
+lines(c(bsq1[8], bsq1[8]), c(0, 25), lty = 3, lwd = 3)
+lines(c(bsq1[1], bsq1[1]), c(0, 25), lty = 3, lwd = 3)
+text(bsq1[6], 75, "95 percentile", pos = 3)
+text(bsq1[3], 75, "5 percentile", pos = 3)
+text(bsq1[7], 50, "97.5 percentile", pos = 3)
+text(bsq1[2], 50, "2.5 percentile", pos = 3)
+text(bsq1[8], 25, "99.5 percentile", pos = 3)
+text(bsq1[1], 25, "0.5 percentile", pos = 3)
+text(bsq1[6], -5, round(bsq1[6],1), pos = 3)
+text(bsq1[3], -5, round(bsq1[3],1), pos = 3)
+text(bsq1[7], -5, round(bsq1[7],1), pos = 3)
+text(bsq1[2], -5, round(bsq1[2],1), pos = 3)
+text(bsq1[8], -5, round(bsq1[8],1), pos = 3)
+text(bsq1[1], -5, round(bsq1[1],1), pos = 3)
+par(las = 0)
+mtext("Bootstrapped values of the standard deviation of the monthly flat price", 1, 2.5)
+
+bsq1
+```
+
+
+#### Bootstrapping is not a solution to small sample sizes! {-}
+
+The example presented above is done for a sample with only five observations. 
+As with analysis techniques that build on mathematical models, bootstrapping works best when a large random sample has been taken from the population.
+Bootstrapping is a method for capturing the variability of a statistic when the mathematical model is unknown (it is not a method for navigating small samples).
+As you might guess, the larger the random sample, the more accurately that sample will represent the population of interest.
+
+### Mathematical model {#one-mean-math}
+
+
+As with the sample proportion, the variability of the sample mean is well described by the mathematical theory given by the Central Limit Theorem.  However, because of missing information about the inherent variability in the population, a $t$-distribution is used in place of the standard normal when performing hypothesis test or confidence interval analyses.
+
+#### A mathematical distribution of $\bar{x}$
 
 The sample mean tends to follow
 a normal distribution centered at the population mean, $\mu$,
@@ -335,7 +540,7 @@ distribution to model $\bar{x}$.
 
 
 We'll find it useful to use a new distribution for
-inference calculations called the **t-distribution**.
+inference calculations called the **$t$-distribution**.
 A $t$-distribution, shown as a solid line in
 Figure \@ref(fig:tDistCompareToNormalDist), has a bell shape.
 However, its tails are thicker than the normal distribution's,
@@ -463,8 +668,8 @@ The $t$-distribution allows us greater flexibility than
 the normal distribution when analyzing numerical data.
 In practice, it's common to use statistical software,
 such as R, Python, or SAS for these analyses.
-In R, the function used for calculating probabilities under a t-distribution is `pt()` (which should seem similar to previous R functions, `pnorm()` and `pchisq()`).
-Don't forget that with the t-distribution, the degrees of freedom must always be specified!
+In R, the function used for calculating probabilities under a $t$-distribution is `pt()` (which should seem similar to previous R functions, `pnorm()` and `pchisq()`).
+Don't forget that with the $t$-distribution, the degrees of freedom must always be specified!
 
 <!--
 Alternatively, a graphing calculator or a
@@ -495,7 +700,7 @@ Just like a normal probability problem, we first draw
 
 
 ```{r}
-# using pt() to find probability under the t-distribution
+# using pt() to find probability under the $t$-distribution
 pt(-2.10, df = 18)
 ```
 
