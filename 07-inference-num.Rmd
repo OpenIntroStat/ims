@@ -11,7 +11,7 @@ The important data structure for this chapter is a numeric response variable (th
 The four data structures we detail are one numeric response variable, one numeric response variable which is a difference across a pair of observations, a numeric response variable broken down by a binary explanatory variable, and a numeric response variable broken down by an explanatory variable that has two or more levels.
 When appropriate, each of the data structures will be analyzed using the three methods from Chapter \@ref(inference-foundations): randomization test, bootstrapping, and mathematical models.
 
-As we build on the inferential ideas, we will visit new foundational concepts in statistical inference.  One key new idea rests in estimating how the sample mean varies from sample to sample; the resulting value is referred to as the standard error of the mean.  We will also introduce a new important mathematical model, the t-distribution (as the foundation for the t-test).  
+As we build on the inferential ideas, we will visit new foundational concepts in statistical inference.  One key new idea rests in estimating how the sample mean (as opposed to the sample proportion) varies from sample to sample; the resulting value is referred to as the standard error of the mean.  We will also introduce a new important mathematical model, the t-distribution (as the foundation for the t-test).  
 ```
 
 ```{r summary3methods-chp6}
@@ -37,31 +37,951 @@ terms_chp_7 <- c("numerical data")
 ```
 
 
-## One mean
+## One mean {#one-mean}
+
+Similar to how we can model the behavior of the
+sample proportion $\hat{p}$ using a normal distribution,
+the sample mean $\bar{x}$ can also be modeled using
+a normal distribution when certain conditions are met.
+\index{point estimate!single mean}
+However, we'll soon learn that a new distribution,
+called the $t$-distribution,
+tends to be more useful when working with the sample mean.
+We'll first learn about this new distribution,
+then we'll use it to construct confidence intervals
+and conduct hypothesis tests for the mean.
+
+
+In this chapter, we focus on the sample mean (instead of, for example, the sample median or the range of the observations) because of the well-studied mathematical model which describes the behavoir of the sample mean.
+We will not cover mathematical models which descibe other statistics, but the bootstrap and randomization techniques described below are immediately extendable to any function of the observed data.
 
 ### Bootstrap confidence interval for $\mu$
 
 now with the london flats?  same exact idea in chapter 5, confidence intervals only.  discuss other statistics (e.g. SD of the price of the flat?)
 
+
 #### Observed data {-}
+
+need an example ... flats?
 
 #### Variability of the statistic {-}
 
+As with the inferential ideas covered in Chapter \@ref(inference-foundations), the inferential analysis methods in this chapter are grounded in quantifying how one dataset differs from another when they are both taken from the same population.
+Again, it still doesn't make sense to to take repeated samples from the same population (same reasoning:  if you have the means to take more samples, a larger sample size will benefit you more than then exact same sample twice).
+Just like with proportions, we are going to use the observed data to 
+
+Most of the inferential procedures covered in this text are grounded in quantifying how one data set would differ from another when they are both taken from the same population.
+It doesn't make sense to take repeated samples from the same population because if you have the means to take more samples, a larger sample size will benefit you more than the exact same sample twice.
+Instead, we measure how the samples behave under an estimate of the population.  Figure \@ref(fig:bootquant1) shows how the unknown original population can be estimated by using the sample to approximate the distribution of 
+
+```{block2, type = "todo", echo = TRUE}
+need to fill in the example here
+```
+
+```{r bootquant1, fig.cap = "first figure with the ? pop, then sample, then estimate of the pop.", warning = FALSE,  out.width="75%"}
+include_graphics("07/figures/bootquant1.png")
+```
+
+
+By taking repeated samples from the estimated population, the variability from sample to sample can be observed.  In Figure \@ref(fig:boot2) the repeated bootstrap samples are obviously different both from each other and from the original population.
+Recall that the bootstrap samples were taken from the same (estimated) population, and so the differences are due entirely to natural variability in the sampling procedure.
+
+```{r bootquant2, fig.cap = "next fig, has the bootstrap samples", warning = FALSE,  out.width="75%"}
+include_graphics("07/figures/bootquant2.png")
+```
+
+By summarizing each of the bootstrap samples (here, using the sample mean, we see, directly, the variability of the sample mean, $\bar{x}$, from sample to sample.
+The distribution of $\hat{x}_{bs}$ for the example scenario is shown in Figure \@ref(fig:bootquant3), and the bootstrap distribution for the medical consultant data is shown in Figure \@ref(fig:MedConsBSSim).
+
+```{block2, type = "todo", echo = TRUE}
+again, add the example in detail here
+```
+
+```{r bootquant3, fig.cap = "WITH ADDED HISTOGRAM... boot samples, arrow, histogram of all of them", warning = FALSE,  out.width="75%"}
+include_graphics("07/figures/bootquant3.png")
+```
+
+
+```{block2, type = "todo", echo = TRUE}
+add the sampling with replacement part
+
+bring the whole example through
+
+make histograms with different percentiles, also SE histograms.
+
+```
 
 ### Mathematical model
 
 t-dist.  communicate like the chi-sq.  "here is the dist we get!"  yup, it kind of looks like the normal, but it's slightly different.
 
+
+
+#### The distribution of $\bar{x}$
+
+
+The sample mean tends to follow
+a normal distribution centered at the population mean, $\mu$,
+when certain conditions are met.
+Additionally, we can compute a standard error for the sample
+mean using the population standard deviation $\sigma$
+and the sample size $n$.
+
+```{block2, type = "onebox", echo = TRUE}
+**Central Limit Theorem for the sample mean**  
+  When we collect a sufficiently large sample of
+  $n$ independent observations from a population with
+  mean $\mu$ and standard deviation $\sigma$,
+  the sampling distribution of $\bar{x}$ will be nearly
+  normal with
+  \begin{align*}
+  &\text{Mean}=\mu
+  &&\text{Standard Error }(SE) = \frac{\sigma}{\sqrt{n}}
+  \end{align*}
+```
+
+
+Before diving into confidence intervals and hypothesis
+tests using $\bar{x}$, we first need to cover two topics:
+
+* When we modeled $\hat{p}$ using the normal distribution,
+    certain conditions had to be satisfied.
+    The conditions for working with $\bar{x}$
+    are a little more complex, and below, we will discuss
+    how to check conditions for inference using a mathematical model.
+* The standard error is dependent on the population
+    standard deviation, $\sigma$.
+    However, we rarely know $\sigma$, and instead
+    we must estimate it.
+    Because this estimation is itself imperfect,
+    we use a new distribution called the
+    **$t$-distribution**\index{t-distribution@$t$-distribution}
+    to fix this problem, which we discuss in
+
+
+```{r include=FALSE}
+terms_chp_7 <- c(terms_chp_7, "t-distribution")
+```
+
+#### Evaluating the two conditions required for modeling $\bar{x}$ {-}
+
+
+Two conditions are required to apply the
+Central Limit Theorem\index{Central Limit Theorem}
+for a sample mean $\bar{x}$:
+* **Independence.** The sample observations must be independent,
+    The most common way to satisfy this condition is
+    when the sample is a simple random sample from the
+    population.
+    If the data come from a random process,
+    analogous to rolling a die,
+    this would also satisfy the independence condition.
+* **Normality.** When a sample is small,
+    we also require that the sample observations
+    come from a normally distributed population.
+    We can relax this condition more and more
+    for larger and larger sample sizes.
+    This condition is obviously vague,
+    making it difficult to evaluate,
+    so next we introduce a couple rules of thumb
+    to make checking this condition easier.
+
+
+
+```{r include=FALSE}
+terms_chp_7 <- c(terms_chp_7, "Central Limit Theorem")
+```
+
+```{block2, type = "onebox", echo = TRUE}
+**General rule: how to perform the normality check**
+  
+  There is no perfect way to check the normality condition,
+  so instead we use two general rules: 
+
+* $\mathbf{n < 30}$: If the sample size $n$ is less than 30
+      and there are no clear outliers in the data,
+      then we typically assume the data come from
+      a nearly normal distribution to satisfy the
+      condition.  
+* $\mathbf{n \geq 30}$: If the sample size $n$ is at least 30
+      and there are no *particularly extreme* outliers,
+      then we typically assume the sampling distribution
+      of $\bar{x}$ is nearly normal, even if the underlying
+      distribution of individual observations is not.
+```
+
+In this first course in statistics, you aren't expected
+to develop perfect judgement on the normality condition.
+However, you are expected to be able to handle
+clear cut cases based on the rules of thumb.^[More
+  nuanced guidelines would consider further relaxing
+  the *particularly extreme outlier* check when the
+  sample size is very large.
+  However, we'll leave further discussion here to a future course.]
+
+```{block2, type = "example", echo = TRUE}
+Consider the following two plots
+    that come from simple random samples from
+    different populations.
+    Their sample sizes are $n_1 = 15$ and $n_2 = 50$.
+
+    Are the independence and normality conditions met
+    in each case?
+
+---
+      
+Each samples is from a simple random sample of its
+  respective population, so the independence condition
+  is satisfied.
+  Let's next check the normality condition for
+  each using the rule of thumb.
+  
+  The first sample has fewer than 30 observations,
+  so we are watching for any clear outliers.
+  None are present; while there is a small gap in the
+  histogram on the right, this gap is small and
+  20% of the observations in this small sample
+  are represented in that far right bar of the histogram,
+  so we can hardly call these clear outliers.
+  With no clear outliers, the normality condition
+  is reasonably met.
+
+  The second sample has a sample size greater than 30 and
+  includes an outlier that appears to be roughly 5 times
+  further from the center of the distribution than the
+  next furthest observation.
+  This is an example of a particularly extreme outlier,
+  so the normality condition would not be satisfied.
+```
+
+```{r outliers_and_ss_condition, fig.cap="", warning=FALSE, fig.width=10}
+
+d1 <- rnorm(15, 3, 2)
+d2 <- c(exp(rnorm(49, 0, 0.7)), 22)
+
+histPlot(d1, axes = FALSE, # breaks = 20,
+         xlab = "Sample 1 Observations (n = 15)",
+         ylab = "",
+         col = COL[1])
+axis(1, at = seq(-10, 10, 2))
+axis(2)
+par(las = 0)
+mtext("Frequency", 2, 1.8)
+
+par(las = 1, mar = c(3, 4, 0.5, 0.5))
+histPlot(d2, axes = FALSE, breaks = 20,
+         xlab = "Sample 2 Observations (n = 50)",
+         ylab = "",
+         col = COL[1])
+axis(1, at = seq(-10, 30, 10))
+axis(2)
+par(las = 0)
+mtext("Frequency", 2, 2)
+```
+
+
+
+In practice, it's typical to also do a mental check to evaluate
+whether we have reason to believe the underlying population
+would have moderate skew (if $n < 30$)
+or have particularly extreme outliers ($n \geq 30$)
+beyond what we observe in the data.
+For example, consider the number of followers
+for each individual account on Twitter,
+and then imagine this distribution.
+The large majority of accounts have built up
+a couple thousand followers or fewer,
+while a relatively tiny fraction have amassed
+tens of millions of followers,
+meaning the distribution is extremely skewed.
+When we know the data come from such an extremely
+skewed distribution,
+it takes some effort to understand what sample
+size is large enough for the normality condition
+to be satisfied.
+
+
+
+\index{Central Limit Theorem!normal data|)}
+
+
+
+#### Introducing the $t$-distribution {-}
+
+\index{t-distribution@$t$-distribution|(}
+\index{distribution!t@$t$|(}
+
+In practice, we cannot directly calculate the standard error
+for $\bar{x}$ since we do not know the population standard
+deviation, $\sigma$.
+We encountered a similar issue when computing the standard
+error for a sample proportion, which relied on the population
+proportion, $p$.
+Our solution in the proportion context was to use sample
+value in place
+of the population value when computing the standard error.
+We'll employ a similar strategy for computing the standard
+error of $\bar{x}$, using the sample
+standard deviation $s$ in place of $\sigma$:
+\begin{align*}
+SE = \frac{\sigma}{\sqrt{n}} \approx \frac{s}{\sqrt{n}}
+\end{align*}
+This strategy tends to work well when we have
+a lot of data and can estimate $\sigma$ using $s$ accurately.
+However, the estimate is less precise with smaller samples,
+and this leads to problems when using the normal
+distribution to model $\bar{x}$.
+
+
+
+We'll find it useful to use a new distribution for
+inference calculations called the **t-distribution**.
+A $t$-distribution, shown as a solid line in
+Figure \@ref(fig:tDistCompareToNormalDist), has a bell shape.
+However, its tails are thicker than the normal distribution's,
+meaning observations are more likely to fall beyond two
+standard deviations from the mean than under the normal
+distribution. 
+
+The extra thick tails of the $t$-distribution are exactly
+the correction needed to resolve the problem of using $s$
+in place of $\sigma$ in the $SE$ calculation.
+
+
+```{r tDistCompareToNormalDist, fig.cap="Comparison of a $t$-distribution and a normal distribution.", warning=FALSE, fig.width=10}
+
+plot(c(-5, 5),
+     c(0, dnorm(0)),
+     type = 'n',
+     axes = FALSE)
+axis(1, seq(-6, 6, 2))
+abline(h = 0)
+
+xleg <- 2
+yleg <- 0.35
+yleg.line.offset <- -0.07
+line.leg.width <- 0.55
+lines(
+    c(xleg, xleg + line.leg.width),
+    rep(yleg, 2),
+    col = COL[4], lty = 3, lwd = 2.5)
+lines(
+    c(xleg, xleg + line.leg.width),
+    rep(yleg + yleg.line.offset, 2),
+    col = COL[1], lty = 1, lwd = 1.8)
+text(xleg + line.leg.width, yleg,
+    "Normal",
+    col = COL[4], pos = 4)
+text(xleg + line.leg.width, yleg + yleg.line.offset,
+    "t-distribution",
+    col = COL[1], pos = 4)
+
+X <- seq(-6, 6, 0.01)
+Y <- dnorm(X)
+lines(X, Y, lty = 3, lwd = 2.5, col = COL[4])
+
+Y <- dt(X, 2)
+lines(X, Y, lwd = 1.8, col = COL[1])
+
+```
+
+
+The $t$-distribution is always centered at zero and
+has a single parameter: degrees of freedom.
+The **degrees of freedom** \termsub{degrees of freedom ($\pmb{df}$)}
+    {degrees of freedom ($df$)!$t$-distribution}
+describes the precise form of the bell-shaped $t$-distribution.
+Several $t$-distributions are shown in
+Figure \@ref(fig:tDistConvergeToNormalDist)
+in comparison to the normal distribution.
+
+In general, we'll use a $t$-distribution
+with $df = n - 1$ to model the sample mean
+when the sample size is $n$.
+That is, when we have more observations,
+the degrees of freedom will be larger and
+the $t$-distribution will look more like the
+standard normal distribution;
+when the degrees of freedom is about 30 or more,
+the $t$-distribution is nearly indistinguishable
+from the normal distribution.
+
+```{r include=FALSE}
+terms_chp_7 <- c(terms_chp_7, "degrees of freedom")
+```
+
+
+```{r tDistConvergeToNormalDist, fig.cap="The larger the degrees of freedom, the more closely the $t$-distribution resembles the standard normal distribution.", warning=FALSE, fig.width=10}
+
+plot(c(-5, 5),
+     c(0, dnorm(0)),
+     type = 'n',
+     axes = FALSE)
+at <- seq(-10, 10, 2)
+axis(1, at)
+axis(1, at - 1, rep("", length(at)), tcl = -0.1)
+abline(h = 0)
+
+COL. <- fadeColor(COL[1], c("FF", "89", "68", "4C", "33"))
+COLt <- fadeColor(COL[1], c("FF", "AA", "85", "60", "45"))
+DF   <- c('normal', 8, 4, 2, 1)
+
+X <- seq(-10, 10, 0.02)
+Y <- dnorm(X)
+lines(X, Y, col = COL.[1])
+
+for (i in 2:5) {
+  Y <- dt(X, as.numeric(DF[i]))
+  lines(X, Y, col = COL.[i], lwd = 1.5)
+}
+
+legend(2.5, 0.4,
+       legend = c(DF[1],
+       paste('t, df = ', DF[2:5], sep = '')),
+       col = COL.,
+       text.col = COLt,
+       lty = rep(1, 5),
+       lwd = 1.5)
+```
+
+
+
+```{block2, type = "onebox", echo = TRUE}
+**Degrees of freedom: df**
+  
+  The degrees of freedom describes the shape of the
+  $t$-distribution.
+  The larger the degrees of freedom, the more closely
+  the distribution approximates the normal model. 
+  
+  When modeling $\bar{x}$ using the $t$-distribution,
+  use $df = n - 1$.
+```
+
+
+The $t$-distribution allows us greater flexibility than
+the normal distribution when analyzing numerical data.
+In practice, it's common to use statistical software,
+such as R, Python, or SAS for these analyses.
+In R, the function used for calculating probabilities under a t-distribution is `pt()` (which should seem similar to previous R functions, `pnorm()` and `pchisq()`).
+Don't forget that with the t-distribution, the degrees of freedom must always be specified!
+
+<!--
+Alternatively, a graphing calculator or a
+\termsub{$\pmb{t}$-table}{t-table@$t$-table} may be used;
+the $t$-table is similar to the normal distribution table,
+and it may be found in Appendix \ref{tDistributionTable},
+which includes usage instructions and examples
+for those who wish to use this option.
+-->
+No matter the approach you choose, apply your method
+using the examples below to confirm your working
+understanding of the $t$-distribution.
+
+```{block2, type = "example", echo = TRUE}
+What proportion of the $t$-distribution
+    with 18 degrees of freedom falls below -2.10?
+      
+---
+      
+Just like a normal probability problem, we first draw
+  the picture in Figure \@ref(fig:tDistDF18LeftTail2Point10)
+  and shade the area below -2.10.
+
+
+  Using statistical software, we can obtain a precise
+  value: 0.0250.
+```
+
+
+```{r}
+# using pt() to find probability under the t-distribution
+pt(-2.10, df = 18)
+```
+
+```{r tDistDF18LeftTail2Point10, fig.cap="The $t$-distribution with 18 degrees of freedom. The area below -2.10 has been shaded.", warning=FALSE, fig.width=10}
+
+normTail(L = -2.10,
+         df = 10,
+         xlim = c(-4, 4),
+         col = COL[1],
+         axes = FALSE)
+axis(1)
+```
+
+
+
+```{block2, type = "example", echo = TRUE}
+A $t$-distribution with 20 degrees of freedom
+    is shown in the top panel of
+    Figure \@ref(fig:tDistDF20RightTail1Point65).
+    Estimate the proportion of the distribution falling
+    above 1.65.
+    
+---
+
+With a normal distribution, this would correspond to
+  about 0.05, so we should expect the $t$-distribution
+  to give us a value in this neighborhood.
+  Using statistical software: 0.0573.
+```
+
+
+
+```{r tDistDF20RightTail1Point65, fig.cap="Top: The $t$-distribution with 20 degrees of freedom, with the area above 1.65 shaded. Bottom: The $t$-distribution with 2 degrees of freedom, with the area further than 3 units from 0 shaded.", warning=FALSE, fig.width=10}
+
+normTail(U = 1.65,
+         df = 12,
+         xlim = c(-4, 4),
+         col = COL[1],
+         axes = FALSE)
+axis(1)
+normTail(L = -3,
+         U = 3,
+         df = 2.3,
+         xlim = c(-4.5, 4.5),
+         col = COL[1],
+         axes = FALSE)
+axis(1)
+```
+
+```{block2, type = "example", echo = TRUE}
+A $t$-distribution with 2 degrees of freedom
+    is shown in the bottom panel of
+    Figure \@ref(fig:tDistDF20RightTail1Point65).
+    Estimate the proportion of the distribution falling more
+    than 3 units from the mean (above or below).
+    
+---
+
+With so few degrees of freedom, the $t$-distribution will
+  give a more notably different value than the normal
+  distribution.
+  Under a normal distribution, the area would be about
+  0.003 using the 68-95-99.7 rule.
+  For a $t$-distribution with $df = 2$, the area in both
+  tails beyond 3 units totals 0.0955.
+  This area is dramatically different than what
+  we obtain from the normal distribution.
+```
+
+```{block2, type = "guidedpractice", echo = TRUE}
+What proportion of the $t$-distribution with 19 degrees
+of freedom falls above -1.79 units?
+Use your preferred method for finding tail areas.^[We want to find the shaded area *above* -1.79 (we leave the picture to you).
+  The lower tail area has an area of 0.0447,
+  so the upper area would have an area of $1 - 0.0447 = 0.9553$.]
+```
+
+\index{distribution!t@$t$|)}
+\index{t-distribution@$t$-distribution|)}
+
+
+
+#### One sample $t$-confidence intervals {-}
+
+\index{data!dolphins and mercury|(}
+
+Let's get our first taste of applying the $t$-distribution
+in the context of an example about the mercury content
+of dolphin muscle.
+Elevated mercury concentrations are an important problem
+for both dolphins
+and other animals, like humans, who occasionally eat them.
+
+
+```{r rissosDolphin, fig.cap = "A Risso's dolphin. Photo by Mike Baird, www.bairdphotos.com", warning = FALSE,  out.width="75%"}
+include_graphics("07/figures/rissosDolphin.jpg")
+```
+
 #### Observed data {-}
 
-#### Variability of the statistic {-}
-
-#### Observed statistic vs. null statistics {-}
+We will identify a confidence interval for the average mercury content in dolphin muscle using a sample of 19 Risso's dolphins from the Taiji area in Japan. The data are summarized in Table \@ref(tab:summaryStatsOfHgInMuscleOfRissosDolphins). The minimum and maximum observed values can be used to evaluate whether or not there are clear outliers.
 
 
-#### Observed data {-}
+```{r summaryStatsOfHgInMuscleOfRissosDolphins}
+temptbl <- tribble(
+ ~col0,    ~col1, ~col2, ~col3, ~col4,
+ 19, 4.4, 2.3, 1.7, 9.2
+)
 
-#### Variability of the statistic {-}
+temptbl %>%
+ kable(caption = "Summary of mercury content in the muscle of 19 Risso's dolphins from the Taiji area. Measurements are in micrograms of mercury per wet gram
+    of muscle ($\\mu$g/wet g).",
+    col.names = c( "$n$", "$\\bar{x}$", "s", "minimum", "maximum")) %>%
+ kable_styling() 
+```
+
+```{block2, type = "example", echo = TRUE}
+Are the independence and
+    normality conditions satisfied for this data set?
+      
+---
+      
+The observations are a simple random sample,
+  therefore independence is reasonable.
+  The summary statistics in
+  Table \@ref(tab:summaryStatsOfHgInMuscleOfRissosDolphins)
+  do not suggest any clear outliers, with
+  all observations are within 2.5 standard deviations
+  of the mean.
+  Based on this evidence, the normality condition
+  seems reasonable.
+```
+
+In the normal model, we used $z^{\star}$ and the standard error to determine the width of a confidence interval. We revise the confidence interval formula slightly when using the $t$-distribution:
+\begin{align*}
+&\text{point estimate} \ \pm\  t^{\star}_{df} \times SE
+&&\to
+&&\bar{x} \ \pm\  t^{\star}_{df} \times \frac{s}{\sqrt{n}}
+\end{align*}
+
+```{block2, type = "example", echo = TRUE}
+Using the summary statistics in
+    Table \@ref(tab:summaryStatsOfHgInMuscleOfRissosDolphins),
+    compute the standard error for the average
+    mercury content in the $n = 19$ dolphins.
+    
+---
+      
+We plug in $s$ and $n$ into the formula:
+  $SE
+    = s / \sqrt{n}
+    = 2.3 / \sqrt{19}
+    = 0.528$.
+```
+
+The value $t^{\star}_{df}$ is a cutoff we obtain based on the
+confidence level and the $t$-distribution with $df$ degrees
+of freedom.
+That cutoff is found in the same way as with a normal
+distribution: we find $t^{\star}_{df}$ such that
+the fraction of the $t$-distribution with $df$ degrees
+of freedom within a distance $t^{\star}_{df}$
+of 0 matches the confidence level of interest.
+
+```{block2, type = "example", echo = TRUE}
+
+When $n = 19$, what is the appropriate
+    degrees of freedom?
+    Find $t^{\star}_{df}$ for this degrees of freedom
+    and the confidence level of 95%
+    
+---
+  
+The degrees of freedom is easy to calculate:
+  $df = n - 1 = 18$.
+  
+  Using statistical software, we find the cutoff where
+  the upper tail is equal to 2.5%:
+  $t^{\star}_{18} = 2.10$.
+  The area below -2.10 will also be equal to 2.5%.
+  That is, 95% of the $t$-distribution with $df = 18$
+  lies within 2.10 units of 0.
+```
+
+```{block2, type = "onebox", echo = TRUE}
+**Degrees of freedom for a single sample.**
+  
+If the sample has $n$ observations and we are examining a single mean, then we use the $t$-distribution with $df=n-1$ degrees of freedom.
+```
+
+%In our current example, we should use the $t$-distribution
+%with $df=19-1=18$ degrees of freedom.
+%We can generally identify $t_{18}^{\star}$
+%using statistical software.
+%Alternatively, we could use the $t$-table in
+%Appendix \ref{tDistributionTable}.
+%Generally the value of $t^{\star}_{df}$ is slightly larger
+%than what we would get under the normal model with $z^{\star}$.
+
+```{block2, type = "example", echo = TRUE}
+Compute and interpret the 95% confidence interval
+    for the average mercury content in Risso's dolphins.
+    
+---
+
+We can construct the confidence interval as
+  \begin{align*}
+  \bar{x} \ \pm\  t^{\star}_{18} \times SE
+    \quad \to \quad 4.4 \ \pm\  2.10 \times 0.528
+    \quad \to \quad (3.29, 5.51)
+  \end{align*}
+  We are 95% confident the average mercury content of muscles
+  in Risso's dolphins is between 3.29 and 5.51 $\mu$g/wet gram,
+  which is considered extremely high.
+```
+
+\index{data!dolphins and mercury|)}
+
+```{block2, type = "onebox", echo = TRUE}
+**Finding a $t$-confidence interval for the mean, $\mu$.**
+  
+  Based on a sample of $n$ independent and nearly normal
+  observations, a confidence interval for the population
+  mean is
+  \begin{align*}
+  &\text{point estimate} \ \pm\  t^{\star}_{df} \times SE
+  &&\to
+  &&\bar{x} \ \pm\  t^{\star}_{df} \times \frac{s}{\sqrt{n}}
+  \end{align*}
+  where $\bar{x}$ is the sample mean, $t^{\star}_{df}$
+  corresponds to the confidence level and degrees of freedom
+  $df$, and $SE$ is the standard error as estimated by
+  the sample.
+```
+
+```{block2, type = "guidedpractice", echo = TRUE}
+The FDA's webpage provides some data on mercury content of fish.
+Based on a sample of 15 croaker white fish (Pacific),
+a sample mean and standard deviation were computed as 0.287
+and 0.069 ppm (parts per million), respectively.
+The 15 observations ranged from 0.18 to 0.41 ppm.
+We will assume these observations are independent.
+Based on the summary statistics of the data,
+do you have any objections to the normality condition
+of the individual observations?^[The sample size is under 30,
+  so we check for obvious outliers:
+  since all observations are within 2 standard deviations
+  of the mean, there are no such clear outliers.]
+```
+
+
+\index{data!white fish and mercury|(}
+
+
+```{bock2, type = "example", echo = TRUE}
+Estimate the standard error of
+    $\bar{x} = 0.287$ ppm using the data summaries in the previous Guided Practice.    If we are to use the $t$-distribution to create a
+    90% confidence interval for the actual mean of the
+    mercury content, identify the degrees of freedom
+    and $t^{\star}_{df}$.
+  
+---
+      
+The standard error: $SE = \frac{0.069}{\sqrt{15}} = 0.0178$.
+
+  Degrees of freedom: $df = n - 1 = 14$.
+
+  Since the goal is a 90% confidence interval,
+  we choose $t_{14}^{\star}$ so that the two-tail area
+  is 0.1:
+  $t^{\star}_{14} = 1.76$.
+```
+
+<!--
+\begin{onebox}{Confidence interval for a single mean}
+  Once you've determined a one-mean confidence interval
+  would be helpful for an application,
+  there are four steps to constructing the interval:
+  \begin{description}
+  \item[Prepare.]
+      Identify $\bar{x}$, $s$, $n$, and determine what
+      confidence level you wish to use.
+  \item[Check.]
+      Verify the conditions to ensure $\bar{x}$
+      is nearly normal.
+  \item[Calculate.]
+      If the conditions hold, compute $SE$,
+      find $t_{df}^{\star}$, and construct the interval.
+  \item[Conclude.]
+      Interpret the confidence interval in the context
+      of the problem.
+  \end{description}
+\end{onebox}
+-->
+
+
+```{block2, type = "guidedpractice", echo = TRUE}
+Using the information and results of the previous Guided Practice and Example, compute a 90% confidence interval for the average mercury content of croaker white fish (Pacific).^[$\bar{x} \ \pm\ t^{\star}_{14} \times SE
+      \ \to\  0.287 \ \pm\  1.76 \times 0.0178
+      \ \to\ (0.256, 0.318)$.
+  We are 90% confident that the average mercury content
+  of croaker white fish (Pacific) is between 0.256 and 0.318 ppm.]
+```
+
+
+```{block2, type = "guidedpractice", echo = TRUE}
+The 90% confidence interval from the previous
+Guided Practice is 0.256 ppm to 0.318 ppm.
+Can we say that 90% of croaker white fish (Pacific)
+have mercury levels between 0.256 and 0.318 ppm?^[No, a confidence interval only provides a range
+  of plausible values for a population parameter,
+  in this case the population mean.
+  It does not describe what we might observe
+  for individual observations.]
+```
+
+\index{data!white fish and mercury|)}
+
+#### One sample $t$-tests {-}
+
+Now that we've used the $t$-distribution for making a confidence
+intervals for a mean, let's speed on through to
+hypothesis tests for the mean.
+
+<!--
+\newcommand{\cherryblossomn}{100}
+\newcommand{\cherryblossommean}{97.32}
+\newcommand{\cherryblossomnull}{93.29}
+\newcommand{\cherryblossomsd}{16.98}
+\newcommand{\cherryblossomse}{1.70}
+\newcommand{\cherryblossomz}{2.37}
+-->
+
+Is the typical US runner getting faster or slower over time? We consider this question in the context of the Cherry Blossom Race, which is a 10-mile race in Washington, DC each spring.
+
+The average time for all runners who finished the Cherry Blossom Race in 2006 was 93.29 minutes (93 minutes and about 17 seconds). We want to determine using data from 100 participants in the 2017 Cherry Blossom Race whether runners in this race are getting faster or slower, versus the other possibility that there has been no change.
+
+```{block2, type = "guidedpractice", echo = TRUE}
+What are appropriate hypotheses for this context?^[$H_0$: The average 10-mile run time was the same for 2006 and 2017. $\mu = 93.29$ minutes. $H_A$: The average 10-mile run time for 2017 was \emph{different} than that of 2006. $\mu \neq 93.29$ minutes.]
+```
+
+```{block2, type = "guidedpractice", echo = TRUE}
+The data come from a simple random sample of all participants,
+so the observations are independent.
+However, should we be worried about the normality condition?
+See Figure \@ref(fig:run10SampTimeHistogram) for a histogram
+of the differences and evaluate if we can move
+forward.^[With a sample of 100,
+  we should only be concerned if there is are particularly
+  extreme outliers.
+  The histogram of the data doesn't show any outliers of concern
+  (and arguably, no outliers at all).]
+```
+
+
+
+```{r run10SampTimeHistogram, fig.cap="A histogram of `time` for the sample Cherry Blossom Race data.", warning=FALSE, fig.width=10}
+
+set.seed(1)
+run17 <- subset(run17, event == "10 Mile")
+d <- run17[sample(nrow(run17), 100), ] %>%
+  mutate(time = net_sec / 60)
+
+histPlot(d$time,
+         main = "",
+         xlab = "Time (Minutes)",
+         ylab = "Frequency",
+         col = COL[1])
+```
+
+When completing a hypothesis test for the one-sample mean,
+the process is nearly identical to completing a hypothesis
+test for a single proportion.
+First, we find the Z score using the observed value,
+null value, and standard error;
+however, we call it a **T score** since we use
+a $t$-distribution for calculating the tail area.
+Then we finding the p-value using the same ideas we used
+previously: find the one-tail area under the sampling
+distribution, and double it.
+
+```{r include=FALSE}
+terms_chp_7 <- c(terms_chp_7, "T score")
+```
+
+```{block2, type = "example", echo = TRUE}
+With both the independence
+    and normality conditions satisfied,
+    we can proceed with a hypothesis test using
+    the $t$-distribution.
+    The sample mean and sample standard deviation
+    of the sample
+    of 100 runners from the
+    2017 Cherry Blossom Race
+    are 97.32 and 16.98 minutes,
+    respectively.
+    Recall that the sample size is 100
+    and the average run time in 2006 was 93.29 minutes.
+    Find the test statistic and p-value.
+    What is your conclusion?
+
+---
+  
+To find the test statistic (T score),
+  we first must determine the standard error:
+  \begin{align*}
+  SE
+    = 16.98 / \sqrt{100}
+    = 1.70
+  \end{align*}
+  Now we can compute the \emph{T score}
+  using the sample mean (97.32),
+  null value (98.29), and $SE$:
+  \begin{align*}
+  T
+    = \frac{97.32 - 93.29}{1.70}
+    = 2.37
+  \end{align*}
+  For $df = 100 - 1 = 99$,
+  we can determine using statistical software
+  (or a $t$-table, see below) that the one-tail area is 0.01,
+  which we double to get the p-value: 0.02.
+
+  Because the p-value is smaller than 0.05,
+  we reject the null hypothesis.
+  That is, the data provide strong evidence that the average
+  run time for the Cherry Blossom Run in 2017 is different
+  than the 2006 average.
+  Since the observed value is above the null value
+  and we have rejected the null hypothesis, we would conclude
+  that runners in the race were slower on average in 2017
+  than in 2006.
+```
+
+```{r}
+# using pt() to find the p-value
+1 - pt(2.37, df = 99)
+```
+
+
+```{block2, type = "onebox", echo = TRUE}
+**When using a $t$-distribution, we use a T score (same as Z score).**
+
+To help us remember to use the $t$-distribution,
+we use a $T$ to represent the test statistic,
+and we often call this a **T score**.
+The Z score and T score are computed in the exact same way
+and are conceptually identical:
+each represents how many standard errors the observed value
+is from the null value.
+```
+
+<!--
+\begin{onebox}{Hypothesis testing for a single mean}
+  Once you've determined a one-mean hypothesis test is the
+  correct procedure, there are four steps to completing the
+  test:
+  \begin{description}
+  \item[Prepare.]
+      Identify the parameter of interest,
+      list out hypotheses,
+      identify the significance level,
+      and identify $\bar{x}$, $s$, and $n$.
+  \item[Check.]
+      Verify conditions to ensure $\bar{x}$ is nearly normal.
+  \item[Calculate.]
+      If the conditions hold, compute $SE$,
+      compute the T score, and identify the p-value.
+  \item[Conclude.]
+      Evaluate the hypothesis test by comparing the p-value
+      to $\alpha$, and provide a conclusion in the context
+      of the problem.
+  \end{description}
+\end{onebox}
+-->
+
+<!--
+\CalculatorVideos{confidence intervals and hypothesis tests for a single mean}
+
+
+{\input{ch_inference_for_means/TeX/one-sample_means_with_the_t-distribution.tex}}
+-->
+
+
+
+
 
 ## Paired difference {#paired-data}
 
