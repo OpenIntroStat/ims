@@ -375,6 +375,7 @@ terms_chp_7 <- c(terms_chp_7, "t-distribution")
 Two conditions are required to apply the
 Central Limit Theorem\index{Central Limit Theorem}
 for a sample mean $\bar{x}$:  
+
 * **Independence.** The sample observations must be independent,
     The most common way to satisfy this condition is
     when the sample is a simple random sample from the
@@ -382,6 +383,7 @@ for a sample mean $\bar{x}$:
     If the data come from a random process,
     analogous to rolling a die,
     this would also satisfy the independence condition.  
+    
 * **Normality.** When a sample is small,
     we also require that the sample observations
     come from a normally distributed population.
@@ -490,7 +492,7 @@ mtext("Frequency", 2, 2)
 In practice, it's typical to also do a mental check to evaluate
 whether we have reason to believe the underlying population
 would have moderate skew (if $n < 30$)
-or have particularly extreme outliers ($n \geq 30$)
+or have particularly extreme outliers $(n \geq 30)$
 beyond what we observe in the data.
 For example, consider the number of followers
 for each individual account on Twitter,
@@ -886,20 +888,18 @@ The degrees of freedom is easy to calculate:
   lies within 2.10 units of 0.
 ```
 
+```{r}
+# use qt() to find the t-cutoff (with 95% in the middle)
+qt(0.025, df = 18)
+qt(0.975, df = 18)
+```
+
 ```{block2, type = "onebox", echo = TRUE}
 **Degrees of freedom for a single sample.**
   
 If the sample has $n$ observations and we are examining a single mean, then we use the $t$-distribution with $df=n-1$ degrees of freedom.
 ```
 
-%In our current example, we should use the $t$-distribution
-%with $df=19-1=18$ degrees of freedom.
-%We can generally identify $t_{18}^{\star}$
-%using statistical software.
-%Alternatively, we could use the $t$-table in
-%Appendix \ref{tDistributionTable}.
-%Generally the value of $t^{\star}_{df}$ is slightly larger
-%than what we would get under the normal model with $z^{\star}$.
 
 ```{block2, type = "example", echo = TRUE}
 Compute and interpret the 95% confidence interval
@@ -973,6 +973,12 @@ The standard error: $SE = \frac{0.069}{\sqrt{15}} = 0.0178$.
   we choose $t_{14}^{\star}$ so that the two-tail area
   is 0.1:
   $t^{\star}_{14} = 1.76$.
+```
+
+```{r}
+# use qt() to find the t-cutoff (with 90% in the middle)
+qt(0.05, df = 14)
+qt(0.95, df = 14)
 ```
 
 <!--
@@ -1263,11 +1269,25 @@ An instructor decided to run two slight variations of the same exam. Prior to pa
 
 ##### Observed data {-}
 
+```{r echo = FALSE, include = FALSE}
+data(classdata)
+
+classdata %>% 
+  filter(lecture %in% c("a", "b")) %>%
+  group_by(lecture) %>%
+  skim(m1)
+
+classdata %>% 
+  filter(lecture %in% c("a", "b")) %>%
+  group_by(lecture) %>%
+  summarise(n())
+```
+
 ```{r summaryStatsForTwoVersionsOfExams}
 temptbl <- tribble(
  ~variable, ~col0,    ~col1, ~col2, ~col3, ~col4,
- "A", 30, 79.4, 14, 45, 100,
- "B", 27, 74.1, 20, 32, 100
+ "A", 58, 75.1, 13.9, 44, 100,
+ "B", 55, 72.0, 13.8, 38, 100
 )
 
 temptbl %>%
@@ -1278,7 +1298,7 @@ temptbl %>%
 
 ```{block2, type = "guidedpractice", echo = TRUE}
 Construct hypotheses to evaluate whether the observed
-difference in sample means, $\bar{x}_A - \bar{x}_B=5.3$,
+difference in sample means, $\bar{x}_A - \bar{x}_B=3.1$,
 is due to chance. We will later evaluate these hypotheses
 using $\alpha = 0.01$.^[$H_0$: the exams are equally difficult, on average. $\mu_A - \mu_B = 0$. $H_A$: one exam was more difficult than the other, on average. $\mu_A - \mu_B \neq 0$.]
 ```
@@ -1302,30 +1322,29 @@ need to talk about the way to randomize is almost identical to chapter 5 & 6.  a
 ```
 
 In Section \@ref(inf-rand), the variability of the statistic (previously: $\hat{p}_1 - \hat{p}_2$) was visualized after shuffling the observations across the two treatment groups many times.
-The shuffling process implements the null hypothesis model (that there is no affect of the treatment).
+The shuffling process implements the null hypothesis model (that there is no effect of the treatment).
 In the exam example, the null hypothesis is that exam A and exam B are equally difficult, so the average scores across the two tests should be the same.
 If the exams were equally difficult, *due to natural variability*, we would sometimes expect students to do slightly better on exam A ($\bar{x}_A > \bar{x}_B$) and sometimes expect students to do slightly better on exam B ($\bar{x}_B > \bar{x}_A$).
-The question at hand is whether $\bar{x}_A - \bar{x}_B=5.3$ indicates that exam A is **more** than *slightly* easier.
+The question at hand is: does $\bar{x}_A - \bar{x}_B=3.1$ indicate that exam A is easier than exam B.
 
-Figure XXX1 shows how to shuffle the scores into two groups assuming no difference in the difficulty.  Figure XXX2 shows the values of the simulated statistics $\hat{p}_{1, sim} - \hat{p}_{2, sim}$ over 1000 random simulations.
+Figure XXX1 shows how to shuffle the scores into two groups assuming no difference in the difficulty.  Figure \@ref(fig:randexams) shows the values of the simulated statistics $\bar{x}_{1, sim} - \bar{x}_{2, sim}$ over 1000 random simulations.
 
-```{r, echo = TRUE}
-data(classdata)
-
+```{r randexams, fig.cap = "", warning = FALSE, fig.width = 10}
 set.seed(47)
 classdata %>% filter(lecture %in% c("a", "b")) %>%
   specify(m1 ~ lecture) %>%
   hypothesize(null = "independence") %>%
   generate(reps = 1000, type = "permute") %>%
   calculate(stat = "diff in means", order = c("a", "b")) %>%
-  visualize() 
+  visualize() +
+  ggtitle("")
 ```
 
 
 ##### Observed statistic vs. null statistics {-}
 
 
-```{r randexamspval, fig.cap = "", warning = FALSE, fig.width = 10, echo = TRUE}
+```{r randexamspval, fig.cap = "", warning = FALSE, fig.width = 10}
 stat_2means <- classdata %>% filter(lecture %in% c("a", "b")) %>%
   specify(m1 ~ lecture) %>%
   calculate(stat = "diff in means", order = c("a", "b")) 
@@ -1371,11 +1390,10 @@ classdata %>% filter(lecture %in% c("a", "b")) %>%
 ```
 
 <!--
-
 Below is the t-test for the example above using a randomization test.  Doesn't seem like we need both.
 
 
-After verifying the conditions for each sample and confirming the samples are independent of each other, we are ready to conduct the test using the $t$-distribution. In this case, we are estimating the true difference in average test scores using the sample data, so the point estimate is $\bar{x}_A - \bar{x}_B = 5.3$. The standard error of the estimate can be calculated as
+After verifying the conditions for each sample and confirming the samples are independent of each other, we are ready to conduct the test using the $t$-distribution. In this case, we are estimating the true difference in average test scores using the sample data, so the point estimate is $\bar{x}_A - \bar{x}_B = 3.1$. The standard error of the estimate can be calculated as
 \begin{align*}
 SE
   = \sqrt{\frac{s_A^2}{n_A} + \frac{s_B^2}{n_B}}
