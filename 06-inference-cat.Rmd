@@ -1678,10 +1678,6 @@ Hypotheses should be set up *before* observing the data.
 
 ### Bootstrap confidence interval for $p_1 - p_2$ {#two-prop-boot-ci}
 
-The key will be to use two different bags to simulate from the original data.
-
-Use the CPR data.  After we find the CI (use percentile and SE methods), write the interval values down below in the math section that describes the generic confidence interval method. 
-
 In Section \@ref(two-prop-errors), we worked with the randomization distribution to understand the distribution of $\hat{p}_1 - \hat{p}_2$ when the null hypothesis $H_0: p_1 - p_2 = 0$ is true.
 Now, through bootstrapping, we study the variability of $\hat{p}_1 - \hat{p}_2$ without the null assumption.
 
@@ -1764,7 +1760,9 @@ for (i in 1:length(diffs)) {
   Y   <- append(Y, 1:rec)
 }
 
-histPlot(X, Y,
+breaks <- seq(min(result)-.05, max(result)+ .05, by = (max(result) - min(result) )/ 20)
+
+histPlot(X, Y, breaks = breaks,
      xlim = c(-.3,.3),
      xlab = "Difference in Survival Rates",
      ylab = "",
@@ -1796,7 +1794,7 @@ The interval shows that we do not have much definitive evidence of the affect of
 terms_chp_6 <- c(terms_chp_6, "percentile interval")
 ```
 
-```{r CPR percentile interval, fig.cap="The CPR data is bootstrapped 1000 times. Each simulation creates a sample from the original data where the probability of survival in the treatment group is $\\hat{p}_{t}  = 14/40$ and the probability of survival in the control group is $\\hat{p}_{c} = 11/50$. ", warning=FALSE, fig.width=10}
+```{r bootCPR1000CI, fig.cap="The CPR data is bootstrapped 1000 times. Each simulation creates a sample from the original data where the probability of survival in the treatment group is $\\hat{p}_{t}  = 14/40$ and the probability of survival in the control group is $\\hat{p}_{c} = 11/50$. ", warning=FALSE, fig.width=10}
 
 #result from previous R chunk
 bsq <- quantile(result, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
@@ -1819,10 +1817,10 @@ histPlot(bsprops_low, breaks = breaks,
          col = COL[1], add = TRUE)
 axis(1)
 #axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
-lines(c(bsq[6], bsq[6]), c(0, 50), lty = 3, lwd = 3)
-lines(c(bsq[3], bsq[3]), c(0, 50), lty = 3, lwd = 3)
-text(bsq[6], 50, "95 percentile", pos = 3)
-text(bsq[3], 50, "5 percentile", pos = 3)
+lines(c(bsq[6], bsq[6]), c(0, 80), lty = 3, lwd = 3)
+lines(c(bsq[3], bsq[3]), c(0, 80), lty = 3, lwd = 3)
+text(bsq[6], 80, "95 percentile", pos = 3)
+text(bsq[3], 80, "5 percentile", pos = 3)
 par(las = 0)
 mtext("Bootstrapped values of the proportion of surgical complications", 1, 2.5)
 
@@ -1846,11 +1844,11 @@ The calculation above was performed in R using the `sd()` function, but any stat
 
 Because we don't know the true distribution of $\hat{p}_t - \hat{p}_c$, we will use a rough approximation to find a confidence interval for $p_t - p_c$.  A 95% confidence interval for $p_t - p_c$ is given by:
 
-\begin{align}
-\hat{p}_t - \hat{p}_c &\pm& 2 SE(\hat{p}_t - \hat{p}_c)\\
-14/40 - 11/50 &\pm& 0.0975\\
-&&(-0.065, 0.325)
-\end{align}
+\begin{align*}
+\hat{p}_t - \hat{p}_c \pm 2 SE(\hat{p}_t - \hat{p}_c)\\
+14/40 - 11/50 \pm 0.0975\\
+(-0.065, 0.325)
+\end{align*}
 
 We are 95% confident that the true value of $p_t - p_c$ is between -0.065 and 0.325.  Again, the wide confidence interval that overlaps zero indicates that the study provides very little evidence about the effectiveness of blood thinners.
 
