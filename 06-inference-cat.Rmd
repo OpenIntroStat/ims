@@ -513,7 +513,9 @@ Figure \@ref(fig:choosingZForCI) provides a picture of how to identify $z^{\star
 
 
 ```{block2, type="guidedpractice", echo=TRUE}
-Previously, we found that implanting a stent in the brain of a patient at risk for a stroke *increased* the risk of a stroke. The study estimated a 9% increase in the number of patients who had a stroke, and the standard error of this estimate was about $SE = 2.8%$. Compute a 90% confidence interval for the effect.^[We must find $z^{\star}$ such that 90% of the distribution falls between -$z^{\star}$ and $z^{\star}$ in the standard normal model, $N(\mu=0, \sigma=1)$. We can look up -$z^{\star}$ in the normal probability table by looking for a lower tail of 5% (the other 5% is in the upper tail), thus $z^{\star}=1.65$. The 90% confidence interval can then be computed as $\text{point estimate}\ \pm\ 1.65\times SE \to (4.4\%, 13.6\%)$. (Note: the conditions for normality had earlier been confirmed for us.) That is, we are 90% confident that implanting a stent in a stroke patient's brain increased the risk of stroke within 30 days by 4.4% to 13.6%.]
+Previously, we found that implanting a stent in the brain of a patient at risk for a stroke *increased* the risk of a stroke. The study estimated a 9% increase in the number of patients who had a stroke, and the standard error of this estimate was about $SE = 2.8%$. Compute a 90% confidence interval for the effect.^[We must find $z^{\star}$ such that 90% of the distribution falls between -$z^{\star}$ and $z^{\star}$ in the standard normal model, $N(\mu=0, \sigma=1)$. We can look up -$z^{\star}$ in the normal probability table by looking for a lower tail of 5% (the other 5% is in the upper tail), thus $z^{\star}=1.65$. The 90% confidence interval can then be computed as $\text{point estimate}\ \pm\ 1.65\times SE \to (4.4\%, 13.6\%)$. (Note: the conditions for normality had earlier been confirmed for us.) That is, we are 90% confident that implanting a stent in a stroke patient's brain increased the risk of stroke within 30 days by 4.4% to 13.6%.
+
+Note, the problem was set up as 90% to indicate that there was not a need for a high level of confidence (such a 95% or 99%).  A lower degree of confidence increases potential for error, but it also produces a more narrow interval. ]
 ```
 
 #### Hypothesis test for $H_0: p = p_0$ {-}
@@ -1840,15 +1842,78 @@ terms_chp_6 <- c(terms_chp_6, "SE interval")
 
 $$SE(\hat{p}_t - \hat{p}_c) \approx SD(\hat{p}_{bs,t} - \hat{p}_{bs,c}) = 0.0975$$
 
-The calculation above was performed in R using the `sd()` function, but any statistical software will calculate the standard deviation of the differences, here, the exact quantity we hope to approximate.
+The variability of the difference in proportions was calculated in R using the `sd()` function, but any statistical software will calculate the standard deviation of the differences, here, the exact quantity we hope to approximate.
 
-Because we don't know the true distribution of $\hat{p}_t - \hat{p}_c$, we will use a rough approximation to find a confidence interval for $p_t - p_c$.  A 95% confidence interval for $p_t - p_c$ is given by:
+Note that we do not know know the true distribution of $\hat{p}_t - \hat{p}_c$, so we will use a rough approximation to find a confidence interval for $p_t - p_c$.  As seen in the bootstrap histograms, the shape of the distribution is roughly symmetric and bell-shaped.  So for a rough approximation, we will apply the 67-95-99.7 rule which tells us that 95% of observed differences should be roughly no farther than 2 SE from the true parameter difference.  A 95% confidence interval for $p_t - p_c$ is given by:
 
 \begin{align*}
-\hat{p}_t - \hat{p}_c \pm 2 SE \rightarrow 14/40 - 11/50 \pm 0.0975 \rightarrow (-0.065, 0.325)
+\hat{p}_t - \hat{p}_c \pm 2 \cdot SE \ \ \ \rightarrow \ \ \ 14/40 - 11/50 \pm 2 \cdot 0.0975 \ \ \  \rightarrow \ \ \  (-0.065, 0.325)
 \end{align*}
 
 We are 95% confident that the true value of $p_t - p_c$ is between -0.065 and 0.325.  Again, the wide confidence interval that overlaps zero indicates that the study provides very little evidence about the effectiveness of blood thinners.
+
+#### What does 95% mean? {-}
+
+Recall that the goal of a confidence interval is to find a plausible range of values for a *parameter* of interest.
+The estimated statistic is not the value of interest, but it is typically the best guess for the unknown parameter.
+The confidence level (often 95%) is a number that takes a while to get used to.  Surprisingly, the percentage doesn't describe the dataset at hand, it describes many possible datasets.
+One way to understand a confidence interval is to think about all the confidence intervals that you have ever made or that you will ever make a scientist, the confidence level describes **those** intervals.
+
+Figure \@ref(fig:ci25ints) demonstrates a hypothetical situation in which 25 different studies are performed on the exact same population (with the same goal of estimating the true parameter value of $p_1 - p_2 = 0.47$).
+The study at hand represents one point estimate (a dot) and a corresponding interval.
+It is not possible to know whether the interval at hand is to the right of the unknown true parameter value (the black line) or to the left of that line.
+It is also impossible to know whether the interval captures the true parameter (is blue) or doesn't (is red).
+If we are making 95% intervals, then 5% of the intervals we create over our lifetime will *not* capture the parameter of interest (e.g., will be red as in Figure \@ref(fig:ci25ints) ).
+What we know is that over our lifetimes as scientists, 95% of the intervals created and reported on will capture the parameter value of interest:  thus the language "95% confident."
+
+
+```{r ci25ints, fig.cap = "One hypothetical population, parameter value of: $p_1 - p_2 = 0.47$.  Twenty-five different studies all which led to a different point estimate, SE, and confidence interval.  The study at hand is one of the horizontal lines (hopefully a blue line!).", warning = FALSE, fig.width = 10}
+data(run09)
+set.seed(52)
+m <- 103.4594
+s <- 19.31445
+n <- 100
+k <- 25
+SE <- s/sqrt(n)
+
+set.seed(47)
+means <- c()
+SE    <- c()
+for(i in 1:k){
+  temp <- sample(nrow(run09), n)
+  d    <- run09$time[temp]
+  means[i] <- mean(d, na.rm = TRUE)
+  SE[i]    <- sd(d)/sqrt(n)
+}
+xR <- m + 4 * c(-1, 1) * s / sqrt(n)
+yR <- c(0.7, 25.3)
+plot(xR, yR,
+     type = 'n',
+     xlab = '',
+     ylab = '',
+     axes = FALSE)
+abline(v = m, lty = 2, col = COL[5,2])
+axis(1, at = m, expression('p'[1]*' - p'[2]*' = 0.47'))
+for(i in 1:k){
+  ci <- means[i] + 2 * c(-1, 1) * SE[i]
+  if(abs(means[i] - m) > 1.96 * SE[i]){
+    col <- COL[4]
+    points(means[i], i, cex = 1.4, col = col)
+    lines(ci, rep(i, 2), col = col, lwd = 4)
+  } else {
+    col <- COL[1]
+  }
+  points(means[i], i, pch = 20, cex = 1.2, col = col)
+  lines(ci, rep(i, 2), col = col)
+}
+
+
+```
+
+The choice of 95% or 90% or even 99% as a confidence level is admittedly somewhat arbitrary; however, it is related to the logic we used when deciding that a p-value should be declared as significant if it is lower than 0.05 (or 0.10 or 0.01, respectively).
+Indeed, one can show mathematically, that a 95% confidence interval and a two-sided hypothesis test at a cutoff of 0.05 will provide the same conclusion when the same data and mathematical tools are applied for the analysis.
+A full derivation of the explicit connection between confidence intervals and hypothesis tests is beyond the scope of this text.
+
 
 ### Mathematical model {#math-2prop}
 
@@ -2058,6 +2123,8 @@ We'll use $p_t$ for the survival
   whether blood thinners help or harm
   heart attack patients who have been admitted after
   they have undergone CPR.
+  
+  Note, the problem was set up as 90% to indicate that there was not a need for a high level of confidence (such a 95% or 99%).  A lower degree of confidence increases potential for error, but it also produces a more narrow interval. 
 ```
 
 \index{data!CPR and blood thinner|)}
@@ -2170,10 +2237,11 @@ in breast cancer deaths in the mammogram and control groups.^[$H_0$: the breast 
     $p_{mgm} - p_{ctrl} \neq 0$.]
 ```
 
-Using the previous example,
+The research question describing mammograms is set up to address specific hypotheses (in contrast to a confidence interval for a parameter).  In order to fully take advantage of the hypothesis testing structure, we asses the randomness under the condition that the null hypothesis is true (as we always do for hypothesis testing).
+Using the data from Table \@ref(tab:mammogramStudySummaryTable),
 we will check the conditions for using a normal distribution to
-analyze the results of the study.
-The details are very similar to that of confidence intervals.
+analyze the results of the study using a hypothesis test.
+The details for checking conditions are very similar to that of confidence intervals.
 However, when the null hypothesis is that $p_1 - p_2 = 0$,
 we use a special proportion called the
 **pooled proportion**\index{pooled proportion} to check the success-failure condition:
@@ -2239,7 +2307,7 @@ Is it reasonable to model the difference
   success-failure condition and estimate the standard error:
   \begin{eqnarray*}
   \hat{p}_{\textit{pool}}
-    = \frac{\text{number of "successes"}}
+    = \frac{\text{number of ``successes"}}
       {\text{number of cases}}
     = \frac{\hat{p}_1 n_1 + \hat{p}_2 n_2}{n_1 + n_2}
   \end{eqnarray*}
@@ -2520,6 +2588,11 @@ Set up appropriate hypotheses for the test.\footnotemark
 
 
 ## Independence in two-way tables
+
+In Section \@ref(diff-two-prop) our focus was on the difference in proportions, a statistic calculated from finding the success proportions (from the binary response variable) measured across two groups (the binary explanatory variable).
+As we will see in the examples below, sometimes the explanatory or response variables have more than two possible options.
+In that setting, a difference across two groups is not sufficient, and the proportion of "success" is not well defined if there are 3 or 4 or more possible response levels.
+The primary way to summarize categorical data where the explanatory and response variables both have 2 or more levels is through a two-way table as in Table \@ref(tab:ipod-ask-data-summary).
 
 Note that with two-way tables, there is not an obvious single parameter of interest. 
 Instead, research questions usually focus on how the proportions of the response variable changes (or not) across the different levels of the explanatory variable. 
@@ -2890,6 +2963,44 @@ points(X[X >= 40.1], Y[X >= 40.1], lwd=3, col = COL[4], cex=0.4)
 
 #### The chi-square test of $H_0:$ independence {-}
 
+Previously, in Section \@ref(math-2prop), we applied the Central Limit Theorem to the sampling variability of $\hat{p}_1 - \hat{p}_2$.
+The result was that we could use the normal distribution (e.g., $z^*$ values (see Figure \@ref(fig:choosingZForCI) ) and p-values from $Z$ scores) to complete the mathematical inferential procedure.
+The chi-square test statistic has a different mathematical distribution called the chi-squared distribution.
+The important specification to make in describing the chi-square distribution is something called degrees of freedom.
+The degrees of freedom change the shape of the chi-square distribution to fit the problem at hand.
+Figure \@ref(fig:chisqDistDF) visualizes different chi-square distributions corresponding to different degrees of freedom.
+
+```{r chisqDistDF, fig.cap="The chi-square distribution for differing degrees of freedom.  The larger the degrees of freedom, the longer the right tail extends.", warning=FALSE, fig.width=10}
+
+x <- c(0, seq(0.0000001, 40, 0.05))
+DF <- c(2.0000001, 4, 9)
+y <- list()
+for (i in 1:length(DF)) {
+  y[[i]] <- dchisq(x, DF[i])
+}
+plot(0, 0,
+     type = 'n',
+     xlim = c(0, 25),
+     ylim = range(c(y, recursive = TRUE)),
+     axes = FALSE)
+for (i in 1:length(DF)) {
+  lines(x, y[[i]],
+        lty = i,
+        col = COL[ifelse(i == 3, 4, i)],
+        lwd = 1.5 + i / 2)
+}
+abline(h = 0)
+axis(1)
+legend('topright',
+       lwd = 0.3 + 1:4 / 1.25,
+       col = COL[c(1, 2, 4)],
+       lty = 1:4,
+       legend = paste(round(DF)),
+       title = 'Degrees of Freedom',
+       cex = 1)
+```
+
+
 ##### Variability of the statistic {-}
 
 As it turns out, the chi-squared test statistic follows a chi-square distribution when the null hypothesis is true. 
@@ -3005,11 +3116,17 @@ temptbl %>%
 
 
 
+Typically we will use a computer to do the computational work of finding the chi-square statistic.
+However, it is always good to have a sense for what the computer is doing, and in particular, calculating the values which would be expected if the null hypothesis is true can help to understand the null hypothesis claim.
+Additionally, comparing the expected and observed values by eye often gives the researcher some insight into why or why not the result of the test ends up being significant.
+
+
 ```{block2, type = "guidedpractice", echo = TRUE}
 A chi-square test for a two-way table may be used to test
 the hypotheses in the diabetes Example above.
 
-As a first step, compute the expected values for each of the
+
+To get a sense for the statistic used in the chi-square test, first compute the expected values for each of the
 six table cells.^[The expected count for
     row one / column one is found by multiplying the
     row one total (234) and column one total (319),
