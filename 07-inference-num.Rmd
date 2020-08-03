@@ -107,7 +107,7 @@ By taking repeated samples from the estimated population, the variability from s
 Recall that the bootstrap samples were taken from the same (estimated) population, and so the differences are due entirely to natural variability in the sampling procedure.
 
 ```{r bootquant2, fig.cap = "do we want the resamples to come from the sample (w replacemnt) or from a pseudo-infinite population?", warning = FALSE,  out.width="75%"}
-include_graphics("07/figures/bootquant1.png")
+include_graphics("07/figures/bootquant2.png")
 ```
 
 ```{r boot1mean, fig.cap = "next fig, has the bootstrap samples, triangles are each a different car", warning = FALSE,  out.width="75%"}
@@ -1188,8 +1188,6 @@ is from the null value.
 <!--
 \CalculatorVideos{confidence intervals and hypothesis tests for a single mean}
 
-
-{\input{ch_inference_for_means/TeX/one-sample_means_with_the_t-distribution.tex}}
 -->
 
 
@@ -1248,8 +1246,8 @@ The Brand B manufacturer is skeptical and retorts:
 ```{r tiredata, fig.cap = "Boxplots of the tire tread data and the brand of tire from which the original measurements came.", warning = FALSE, fig.width=10}
 # inches  about 1/32" per 3500 mi
 set.seed(47)
-brandA <- rnorm(25, .3102, .0003)
-brandB <- rnorm(25, .3097, .0003)
+brandA <- rnorm(25, .310, .003)
+brandB <- rnorm(25, .308, .003)
 
 tires <- data.frame(tread = c(brandA, brandB), 
                     car = rep(1:25,2), 
@@ -1327,15 +1325,21 @@ ggplot(tires2, aes( x = `Randomized Tire Brand`, y = tread, color = `Randomized 
 
 ##### Observed statistic vs. null statistics {-}
 
-By repeating the randomization process, we can create a distribution of the average of the differences in tire treads.
+By repeating the randomization process, we can create a distribution of the average of the differences in tire treads, as seen in Figure \@ref(fig:pairRandomiz).
 As expected (because the differences were generated under the null hypothesis), the center of the histogram is zero.
-A line has been drawn at the observed difference 
+A line has been drawn at the observed difference which is nowhere near the differences simulated from natural variability by mixing up which the tire  received brand A and which received brand B.
+Because the observed statistic is so far away from the natural variability of the randomized differences, we believe that there is a significant difference between brand A and brand B.
+Our conclusion is that the extra amount of average tire tread in brand A is due to more than just natural variability:  we reject $H_0$ and conclude that $\mu_A > \mu_B$.
+
+```{block2, type = "todo", echo = TRUE}
+need an actual p-value here, probably shade the tails of the graph, too
+```
 
 ```{r pairrandfull, fig.cap = "process of randomizing across pairs.", warning = FALSE,  out.width="75%"}
 include_graphics("07/figures/pairrandfull.png")
 ```
 
-```{r pairRand}
+```{r pairRandomiz, fig.cap = "Histogram of 1000 differences with tire brand randomly assigned across the two observations per pair.", warning = FALSE, fig.width=10}
 # inches  about 1/32" per 3500 mi
 
 obs_diff <- mean(brandA) - mean(brandB)
@@ -1423,12 +1427,75 @@ correspondence, they are said to be **paired**.
 
 ##### Variability of the statistic {-}
 
+Following the example of bootstrapping the one-sample statistic, the observed differences can be bootstrapped in order to understand the variability of the average difference from sample to sample.
+
+```{r bootdiff1, fig.cap = "a figure similar to this but with differences in prices (books????) as the unit to bootstrap.", warning = FALSE,  out.width="75%"}
+include_graphics("07/figures/bootquant3.png")
+```
+
+In Figure \@ref(fig:pairboot), two 99% confidence intervals for the difference in the cost of a new book at the UCLA bookstore compared with Amazon have been calculated.
+The bootstrap percentile interval is computing using the 0.5 percentile and 99.5 percentile bootstrapped differences and is found to be ($ 0.25, $ 7.87).
+The bootstrap SE interval is found by computing the SE of the bootstrapped differences ($s_{diff} =  \$1.64$) and the normal multiplier of $z^* = 2.58$.  The averaged difference is $\bar{x} = \$3.58$.
+The 99% confidence interval is: $ \$3.58 \pm 2.58 \cdot \$ 1.64 \rightarrow (\$-0.65, \$7.81)$.
+The confidence intervals seem to indicate that the UCLA bookstore price is, on average, higher than the Amazon price.
+However, if the analysis required a strong degree of certainty (e.g., 99% confidence), and the bootstrap SE interval was most appropriate (given a second course in statistics the nuances of the methods were investigated), the results of which book seller is higher is not well determined.
+That is, the 99% bootstrap SE interval gives potential for UCLA to be lower, on average, than Amazon (because of the possible negative values for the true mean difference in price).
+
+```{r pairboot, fig.cap = "Bootstrap distribution for the average difference in new book price at the UCLA bookstore versus Amazon.  99% confidence intervals are superimposed using blue (bootstrap percentile interval) and green (bootstrap SE interval) lines.", warning = FALSE, fig.width=10}
+# inches  about 1/32" per 3500 mi
+
+diff_price <- ucla_textbooks_f18 %>% 
+  select(subject, course_num, bookstore_new, amazon_new) %>%
+  mutate(price_diff = bookstore_new - amazon_new) %>%
+  filter(!is.na(bookstore_new) & !is.na(amazon_new)) %>%
+  specify(response = price_diff) %>%
+  calculate(stat = "mean")
+
+boot_diff <- ucla_textbooks_f18 %>% 
+  select(subject, course_num, bookstore_new, amazon_new) %>%
+  mutate(price_diff = bookstore_new - amazon_new) %>%
+  filter(!is.na(bookstore_new) & !is.na(amazon_new)) %>%
+  specify(response = price_diff) %>%
+  generate(reps = 1000, type = "bootstrap") %>%
+  calculate(stat = "mean") 
+
+ci_perc_diff <- boot_diff %>%
+  get_confidence_interval(level = 0.99, type = "percentile")
+
+ci_se_diff <- boot_diff %>%
+  get_confidence_interval(level = 0.99, type = "se",
+                          point_estimate = diff_price)
+boot_diff %>%
+  infer::visualize(bins = 20) +
+  infer::shade_confidence_interval(ci_perc_diff, 
+                                   color = "#569BBD", 
+                                   fill = NULL, size = .5) +
+  infer::shade_confidence_interval(ci_se_diff, 
+                                   color = "#4C721D",
+                                   fill = NULL, size = .5) +
+  ggtitle("Simulation-Based Bootstrap Distribution for Mean Difference") +
+  geom_vline(xintercept = diff_price$stat) +  
+  geom_line(aes(y = replicate, x = stat, color = "a"), alpha = 0) +  # bogus code
+  geom_line(aes(y = replicate, x = stat, color = "b"), alpha = 0) +  # bogus code
+  geom_line(aes(y = replicate, x = stat, color = "c"), alpha = 0) +  # bogus code
+  ylim(c(0,200)) + 
+  guides(color = guide_legend(override.aes = list(alpha = 1))) +
+  scale_color_manual(name = "CI type",
+                       values = c("a" = "#569BBD", "b" = "#4C721D", "c" = "#000000"),
+                       labels = c("Percentile", "SE", "Observed stat"),
+                     guide = "legend")
+
+ci_perc_diff
+ci_se_diff
+
+```
 
 
 
 ### Mathematical model
 
-
+Thinking about the differences as a single observation on an observational unit changes the paired setting into the one-sample setting.
+The mathematical model for the one-sample case is covered in Section \@ref(one-mean-math).
 
 ##### Observed data {-}
 
@@ -1662,7 +1729,6 @@ on Amazon?^[The average price difference
 \index{data!textbooks|)}
 \index{paired|)}
 
-{\input{ch_inference_for_means/TeX/paired_data.tex}}
 
 
 ## Difference of two means {#differenceOfTwoMeans}
