@@ -1215,6 +1215,18 @@ temptbl %>%
 ```
 
 
+```{block2, type = "onebox", echo = TRUE}
+**Paired data.**
+
+  Two sets of observations are *paired* if each
+  observation in one set has a special correspondence
+  or connection with exactly one observation in the other
+  data set.
+```
+
+```{r include=FALSE}
+terms_chp_7 <- c(terms_chp_7, "paired data")
+```
 
 ### Randomization test for $H_0: \mu_d = 0$
 
@@ -1240,10 +1252,12 @@ brandA <- rnorm(25, .3102, .0003)
 brandB <- rnorm(25, .3097, .0003)
 
 tires <- data.frame(tread = c(brandA, brandB), 
-                    car = rep(1:25,2),
-                    `Tire Brand` = c(rep("Brand A", 25), rep("Brand B", 25)))
+                    car = rep(1:25,2), 
+                    brand = c(rep("Brand A", 25), rep("Brand B", 25)))
 
-ggplot(tires, aes( x = `Tire Brand`, y = tread, color = `Tire Brand`)) +
+tires %>%
+  mutate(`Tire Brand` = brand) %>%
+ggplot(aes( x = `Tire Brand`, y = tread, color = `Tire Brand`)) +
   geom_boxplot() +
   geom_point() +
   geom_line(aes(group = car), color = "grey") +
@@ -1352,35 +1366,10 @@ ggplot(diff.df, aes( x = diffRand)) +
 
 ### Bootstrap confidence interval for $\mu_d$
 
-for bootstrap and mathematical model there is not much to do here except go through a full example.  tie the ideas back to the one-sample problem.
-
-
-##### Observed data {-}
-
-##### Variability of the statistic {-}
-
-### Mathematical model
-
-for bootstrap and mathematical model there is not much to do here except go through a full example.  tie the ideas back to the one-sample problem.
-
+For both the bootstrap and the mathematical models applied to paired data, the analysis is virtually identical to the one-sample approach given in Section \@ref(one-mean).
+The key to working with paired data (for bootstrapping and mathematical approaches) is to consider the measurement of interest to be the difference in measured values across the pair of observations.
 
 ##### Observed data {-}
-
-##### Variability of the statistic {-}
-
-##### Observed statistic vs. null statistics {-}
-
-
-<!--
-\newcommand{\uclabookN}{68}
-\newcommand{\uclabookDF}{67}
-\newcommand{\uclabookM}{3.58}
-\newcommand{\uclabookSD}{13.42}
-\newcommand{\uclabookSE}{1.63}
--->
-
-\index{paired|(}
-\index{data!textbooks|(}
 
 In an earlier edition of this textbook,
 we found that Amazon prices were, on average,
@@ -1410,94 +1399,124 @@ ucla_textbooks_f18 %>%
  kable_styling() 
 
 ```
-\subsection{Paired observations}
+
+
+<!--
+\newcommand{\uclabookN}{68}
+\newcommand{\uclabookDF}{67}
+\newcommand{\uclabookM}{3.58}
+\newcommand{\uclabookSD}{13.42}
+\newcommand{\uclabookSE}{1.63}
+-->
+
+\index{paired|(}
+\index{data!textbooks|(}
+
 
 Each textbook has two corresponding prices in the data set:
 one for the UCLA Bookstore and one for Amazon.
 When two sets of observations have this special
-correspondence, they are said to be \term{paired}.
+correspondence, they are said to be **paired**.
 
-\begin{onebox}{Paired data}
-  Two sets of observations are \emph{paired} if each
-  observation in one set has a special correspondence
-  or connection with exactly one observation in the other
-  data set.
-\end{onebox}
+
+
+
+##### Variability of the statistic {-}
+
+
+
+
+### Mathematical model
+
+
+
+##### Observed data {-}
+
 
 To analyze paired data, it is often useful to look
 at the difference in outcomes of each pair of observations.
 In the textbook data, we look at the differences
 in prices, which is represented as the
-\var{price\us{}difference} variable
+`price_difference` variable
 in the data set.
 Here the differences are taken as
 \begin{align*}
 \text{UCLA Bookstore price} - \text{Amazon price}
 \end{align*}
-%for each book.
+
 It is important that we always subtract using
 a consistent order;
 here Amazon prices are always subtracted from UCLA prices.
-The first difference shown in Figure \ref{textbooksDF}
+The first difference shown in Table \@ref(tab:textbooksDF)
 is computed as $47.97 - 47.45 = 0.52$.
 Similarly, the second difference is computed as
 $14.26 - 13.55 = 0.71$,
  and the third is $13.50 - 12.53 = 0.97$.
 A histogram of the differences is shown in
-Figure \ref{diffInTextbookPricesF18}.
+Figure \@ref(fig:diffInTextbookPricesF18).
 Using differences between paired observations
 is a common and useful way to analyze paired data.
 
-\begin{figure}[h]
-  \centering
-  \Figures{0.63}{textbooksF18}{diffInTextbookPricesF18}
-  \caption{Histogram of the difference in price for
-      each book sampled.}
-  \label{diffInTextbookPricesF18}
-\end{figure}
 
+```{r diffInTextbookPricesF18, fig.cap = "Histogram of the difference in price for each book sampled.", warning = FALSE, fig.width = 10}
 
-\subsection{Inference for paired data}
+data("ucla_textbooks_f18")
+
+d <- ucla_textbooks_f18 %>% 
+  select(subject, course_num, bookstore_new, amazon_new) %>%
+  mutate(price_diff = bookstore_new - amazon_new) %>%
+  filter(!is.na(bookstore_new) & !is.na(amazon_new))
+
+histPlot(d$price_diff, axes = FALSE, # breaks = 20,
+         xlab = "UCLA Bookstore Price - Amazon Price (USD)",
+         ylab = "",
+         col = COL[1])
+AxisInDollars(1, at = pretty(d$price_diff), tck = -0.03)
+axis(2, at = seq(0, 30, 10), tck = -0.02)
+# axis(2, at = seq(0, 15, 5), tck = -0.02)
+par(las = 0)
+mtext("Frequency", 2, 2.4)
+```
+
+##### Variability of the statistic {-}
+
 
 To analyze a paired data set,
 we simply analyze the differences.
 We can use the same $t$-distribution techniques
 we applied in
-Section \ref{oneSampleMeansWithTDistribution}.
+Section \@ref(one-mean-math).
 
-\begin{figure}[h]
-\centering
-\begin{tabular}{ccccc}
-\hline
-$n_{_{\text{\emph{diff}}}}$	&\hspace{3mm}& $\bar{x}_{_{\text{\emph{diff}}}}$	&\hspace{3mm}& $s_{_{\text{\emph{diff}}}}$ \vspace{1mm}\\
-68  && 3.58  && 13.42 \\
-\hline
-\end{tabular}
-\caption{Summary statistics for the 68 price differences.}
-\label{textbooksSummaryStats}
-\end{figure}
 
-%\Comment{Consider breaking the next example into two pieces.}
+```{r textbooksSummaryStats}
+temptbl <- tribble(
+  ~col0,    ~col1, ~col2,
+  68, 3.58, 13.42
+)
 
-\begin{examplewrap}
-\begin{nexample}{Set up a hypothesis test
+temptbl %>%
+ kable(caption = "Summary statistics for the 68 price differences.",
+    col.names = c("$n_{diff}$", "$\\bar{x}_{diff}$", "$s_{diff}$")) %>%
+ kable_styling() 
+```
+
+```{block2, type = "example", echo = TRUE}
+Set up a hypothesis test
     to determine whether, on average, there is a difference
     between Amazon's price for a book and the UCLA
     bookstore's price.
     Also, check the conditions for whether we can move
-    forward with the test using the $t$-distribution.}
-  \label{htSetupTextbookPriceDiff}%
-  We are considering two scenarios: there is no difference
+    forward with the test using the $t$-distribution.
+  
+---
+      
+We are considering two scenarios: there is no difference
   or there is some difference in average prices.
-  \begin{itemize}
-  \setlength{\itemsep}{0mm}
-  \item[$H_0$:]
-      $\mu_{\text{\emph{diff}}} = 0$.
+
+* $H_0$: $\mu_{\text{\emph{diff}}} = 0$.
       There is no difference in the average textbook price.
-  \item[$H_A$:]
-      $\mu_{\text{\emph{diff}}} \neq 0$.
+* $H_A$: $\mu_{\text{\emph{diff}}} \neq 0$.
       There is a difference in average prices.
-  \end{itemize}
 
   Next, we check the independence and normality conditions.
   The observations are based on a simple random sample,
@@ -1508,14 +1527,20 @@ $n_{_{\text{\emph{diff}}}}$	&\hspace{3mm}& $\bar{x}_{_{\text{\emph{diff}}}}$	&\h
   of $\bar{x}$ is satisfied.
   With these conditions satisfied,
   we can move forward with the $t$-distribution.
-\end{nexample}
-\end{examplewrap}
+```
 
-\begin{examplewrap}
-\begin{nexample}{Complete the hypothesis test started
-    in Example \ref{htSetupTextbookPriceDiff}.}
-  \label{SEAndTScoreTextbookPriceDiff}
-  To compute the test  compute the standard error associated with
+##### Observed statistic vs. null statistics {-}
+
+As mentioned previously, the methods applied to a difference will be identical to the one-sample techniques.  Therefore, the full hypothesis test framework is given as an example.
+
+```{block2, type = "example", echo = TRUE}
+
+Complete the hypothesis test started
+    in the previous Example.
+
+---
+
+To compute the test  compute the standard error associated with
   $\bar{x}_{\text{\emph{diff}}}$ using the standard
   deviation of the differences
   ($s_{_{\text{\emph{diff}}}} = 13.42$)
@@ -1539,10 +1564,8 @@ $n_{_{\text{\emph{diff}}}}$	&\hspace{3mm}& $\bar{x}_{_{\text{\emph{diff}}}}$	&\h
   To visualize the p-value, the sampling distribution
   of $\bar{x}_{\text{\emph{diff}}}$ is drawn as though
   $H_0$ is true,
-  and the p-value is represented by the two shaded tails:
-  \begin{center}
-  \Figures{0.53}{textbooksF18}{textbooksF18HTTails}
-  \end{center}
+  and the p-value is represented by the two shaded tails in Figure \@(fig:textbooksF18HTTails).
+
   The degrees of freedom is
   $df = 68 - 1 = 67$.
   Using statistical software, we find the
@@ -1553,23 +1576,38 @@ $n_{_{\text{\emph{diff}}}}$	&\hspace{3mm}& $\bar{x}_{_{\text{\emph{diff}}}}$	&\h
   we reject the null hypothesis.
   Amazon prices are, on average, lower than the
   UCLA Bookstore prices for UCLA courses.
-\end{nexample}
-\end{examplewrap}
+```
 
-\D{\newpage}
 
-\begin{exercisewrap}
-\begin{nexercise}
-Create a 95\% confidence interval for the average
+```{r textbooksF18HTTails, fig.cap = "Distribution of $\\bar{x}_{diff}$ under the null hypothesis of no difference.  The observed average difference of 2.98 is marked with the shaded areas more extreme than the observed difference given as the p-value.", warning = FALSE, echo = TRUE}
+
+m <- mean(d$price_diff)
+s <- sd(d$price_diff)
+se <- s / sqrt(length(d$price_diff))
+z <- m / se
+
+normTail(L = -abs(m),
+         U = abs(m),
+         s = se,
+         df = 20,
+         # xlim = 5 * c(-1, 1),
+         col = COL[1],
+         # border = COL[4],
+         axes = FALSE)
+at <- c(-100, 0, m, 100)
+labels <- expression(0, mu[0]*' = 0', bar(x)[diff]*" = 2.98", 0)
+axis(1, at, labels, cex.axis = 0.9)
+
+```
+
+```{block2, type = "guidedpractice", echo = TRUE}
+Create a 95% confidence interval for the average
 price difference between books at the UCLA bookstore
-and books on Amazon.\footnotemark{}
-\end{nexercise}
-\end{exercisewrap}
-\footnotetext{Conditions
+and books on Amazon.^[Conditions
   have already verified and the standard error
-  computed in
-  Example \ref{htSetupTextbookPriceDiff}.
-  To find the interval,
+  computed in a previous Example.
+
+To find the confidence interval,
   identify $t^{\star}_{67}$ using statistical software
   or the $t$-table ($t^{\star}_{67} = 2.00$),
   and plug it, the point estimate,
@@ -1581,24 +1619,21 @@ and books on Amazon.\footnotemark{}
           3.58 \ \pm\ 2.00 \times 1.63
       \quad\to\quad (0.32 6.84)
   \end{align*}
-  We are 95\% confident that Amazon is, on average,
-  between \$0.32 and \$6.84 less expensive
-  than the UCLA Bookstore for UCLA course books.}
+  We are 95% confident that Amazon is, on average,
+  between $0.32 and $6.84 less expensive
+  than the UCLA Bookstore for UCLA course books.]
+```
 
-\begin{exercisewrap}
-\begin{nexercise}
+```{block2, type = "guidedpractice", echo = TRUE}
 We have strong evidence that Amazon is,
 on average, less expensive.
 How should this conclusion affect UCLA student
 buying habits?
 Should UCLA students always buy their books
-on Amazon?\footnotemark{}
-\end{nexercise}
-\end{exercisewrap}
-\footnotetext{The average price difference
+on Amazon?^[The average price difference
   is only mildly useful for this question.
   Examine the distribution shown in
-  Figure \ref{diffInTextbookPricesF18}.
+  Figure \@ref(fig:diffInTextbookPricesF18).
   There are certainly a handful of cases where
   Amazon prices are far below the UCLA Bookstore's,
   which suggests it is worth checking Amazon
@@ -1621,17 +1656,13 @@ on Amazon?\footnotemark{}
   a large margin, making the case to use Amazon over
   the UCLA Bookstore quite compelling at that time.
   Now we frequently check multiple websites
-  to find the best price.}
+  to find the best price.]
+```
 
 \index{data!textbooks|)}
 \index{paired|)}
 
 {\input{ch_inference_for_means/TeX/paired_data.tex}}
-
-
-
-
-
 
 
 ## Difference of two means {#differenceOfTwoMeans}
@@ -3304,9 +3335,7 @@ If you're not sure what some of these terms mean, we recommend you go back in th
 We are purposefully presenting them in alphabetical order, instead of in order of appearance, so they will be a little more challenging to locate. 
 However you should be able to easily spot them as **bolded text**.
 
-```{r eval = FALSE}
+```{r}
 make_terms_table(terms_chp_7)
 ```
-
-
 
