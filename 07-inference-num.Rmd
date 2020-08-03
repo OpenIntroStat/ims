@@ -95,10 +95,10 @@ It doesn't make sense to take repeated samples from the same population because 
 Instead, we measure how the samples behave under an estimate of the population.  Figure \@ref(fig:bootquant1) shows how the unknown original population can be estimated by using the sample to approximate the distribution of 
 
 ```{block2, type = "todo", echo = TRUE}
-need to fill in the example here
+need to fill in the example here:  carmax example, find the average price a car is selling for at a particular CarMax.
 ```
 
-```{r bootquant1, fig.cap = "first figure with the ? pop, then sample, then estimate of the pop.", warning = FALSE,  out.width="75%"}
+```{r bootquant1, fig.cap = "first figure with the ? pop, then sample, then estimate of the pop. need to re-do with cars", warning = FALSE,  out.width="75%"}
 include_graphics("07/figures/bootquant1.png")
 ```
 
@@ -106,8 +106,12 @@ include_graphics("07/figures/bootquant1.png")
 By taking repeated samples from the estimated population, the variability from sample to sample can be observed.  In Figure \@ref(fig:boot2) the repeated bootstrap samples are obviously different both from each other and from the original population.
 Recall that the bootstrap samples were taken from the same (estimated) population, and so the differences are due entirely to natural variability in the sampling procedure.
 
-```{r bootquant2, fig.cap = "next fig, has the bootstrap samples", warning = FALSE,  out.width="75%"}
-include_graphics("07/figures/bootquant2.png")
+```{r bootquant2, fig.cap = "do we want the resamples to come from the sample (w replacemnt) or from a pseudo-infinite population?", warning = FALSE,  out.width="75%"}
+include_graphics("07/figures/bootquant1.png")
+```
+
+```{r boot1mean, fig.cap = "next fig, has the bootstrap samples, triangles are each a different car", warning = FALSE,  out.width="75%"}
+include_graphics("07/figures/boot1mean.png")
 ```
 
 By summarizing each of the bootstrap samples (here, using the sample mean), we see, directly, the variability of the sample mean, $\bar{x}$, from sample to sample.
@@ -118,16 +122,10 @@ after the plot is made, describe the actual BS samples
 ```
 
 
-```{r bootquant3, fig.cap = "WITH ADDED HISTOGRAM... boot samples, arrow, histogram of all of them", warning = FALSE,  out.width="75%"}
+```{r bootquant3, fig.cap = "WITH ADDED HISTOGRAM... boot samples, arrow, histogram of all of them... maybe this plot should be sampling with replacement instead of sampling from infinite population?", warning = FALSE,  out.width="75%"}
 include_graphics("07/figures/bootquant3.png")
 ```
 
-
-
-
-```{block2, type = "todo", echo = TRUE}
-add the sampling with replacement part (????)
-```
 
 
 Figure \@ref(fig:flatsbsmean) summarizes one thousand bootstrap samples in a histogram of the bootstrap sample means.
@@ -1200,18 +1198,128 @@ is from the null value.
 
 ## Paired difference {#paired-data}
 
+Paired data represent a particular type of experimental structure where the analysis is somewhat akin to a one-sample analysis (see Section \@ref(one-mean)) but has other features that resemble a two-sample analysis (see Section \@ref(differenceOfTwoMeans)).  As with a two-sample analysis, quantitative measurements are made on each of two different levels of the explanatory variable.  However, because the observational unit is **paired** across the two groups, the two measurements are subtracted such that only the difference is retained.  Table \@ref(tab:pairedexamples) presents some examples of studies where paired designs were implemented.
 
-### case study
+```{r pairedexamples}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3, 
+ "Car", "Brand A vs Brand B", "amount of tire tread after 1,000 miles", "difference in tread",
+ "Textbook", "UCLA vs Amazon", "price of new text", "difference in price",
+ "Individual person", "Pre-course vs Post-course", "exam score", "difference in score"
+)
+
+temptbl %>%
+ kable(caption = "Examples of studies where a paired design is used to measure the difference in the measurement over two conditions.",
+    col.names = c("Observational unit", "Comparison groups", "Measurement", "Value of interest")) %>%
+ kable_styling() 
+```
+
+
 
 ### Randomization test for $H_0: \mu_d = 0$
 
-for randomization, idea of coin flipping
+Consider an experiment done to measure whether tire brand A or tire brand B has longer wear.  That is, after 1,000 miles on a car, which brand of tires has more tread, on average?  
 
 ##### Observed data {-}
 
+The observed data represent 25 tread measurements taken on 25 tires of Brand A and 25 tires of Brand B.  But the key to this example is taht the 
+
+
+```{r}
+# inches  about 1/32" per 3500 mi
+set.seed(47)
+brandA <- rnorm(25, .001, .0003)
+brandB <- rnorm(25, .0008, .0003)
+
+tires <- data.frame(tread = c(brandA, brandB), 
+                    car = rep(1:25,2),
+                    brand = c(rep("Brand A", 25), rep("Brand B", 25)))
+
+ggplot(tires, aes( x = brand, y = tread, color = brand)) +
+  geom_boxplot() +
+  geom_point() +
+  geom_line(aes(group = car), color = "grey") +
+  ylab("") + 
+  xlab("Brand of tires.") +
+  ggtitle("Wear of tire tread (in inches) after 1,000 miles,\n broken down by different tire brands.")
+
+```
+
 ##### Variability of the statistic {-}
 
+
+```{r pairrand, fig.cap = "process of randomizing across pairs.", warning = FALSE,  out.width="75%"}
+include_graphics("07/figures/pairrand.png")
+```
+
+
+
+```{r}
+# inches  about 1/32" per 3500 mi
+set.seed(47)
+tires1 <- tires %>%
+  group_by(car) %>%
+  mutate(brandPerm = sample(brand))
+
+ggplot(tires1, aes( x = brandPerm, y = tread, color = brandPerm)) +
+  geom_boxplot() +
+  geom_point() +
+  geom_line(aes(group = car), color = "grey") +
+  ylab("") + 
+  xlab("Brand of tires, randomly assigned (1).") +
+  ggtitle("Wear of tire tread (in inches) after 1,000 miles,\n broken down by different tire brands, randomly assigned (1).")
+
+```
+
+```{r}
+# inches  about 1/32" per 3500 mi
+set.seed(4747)
+tires2 <- tires %>%
+  group_by(car) %>%
+  mutate(brandPerm = sample(brand))
+
+ggplot(tires2, aes( x = brandPerm, y = tread, color = brandPerm)) +
+  geom_boxplot() +
+  geom_point() +
+  geom_line(aes(group = car), color = "grey") +
+  ylab("") + 
+  xlab("Brand of tires, randomly assigned (2).") +
+  ggtitle("Wear of tire tread (in inches) after 1,000 miles,\n broken down by different tire brands, randomly assigned (2).")
+
+```
+
 ##### Observed statistic vs. null statistics {-}
+
+
+```{r pairrandfull, fig.cap = "process of randomizing across pairs.", warning = FALSE,  out.width="75%"}
+include_graphics("07/figures/pairrandfull.png")
+```
+
+```{r pairRand}
+# inches  about 1/32" per 3500 mi
+set.seed(4747)
+diffRand <- c()
+for (i in 1:1000){
+
+tirediff <- data.frame(brandA, brandB) %>%
+  mutate(diffs = brandA - brandB) %>%
+  mutate(grpPerm = sample(c(-1,1), 25, replace = TRUE)) %>%
+  mutate(diffsPerm = diffs * grpPerm) %>%
+  summarize(mean(diffsPerm)) %>% pull()
+
+diffRand <- c(diffRand, tirediff)
+}
+  
+diff.df = data.frame(diffRand)
+  
+ggplot(diff.df, aes( x = diffRand)) +
+  geom_histogram() +
+  ylab("") + 
+  xlab("Difference in tire wear, across randomly assigned groups.") +
+  ggtitle("Difference in wear of tire tread (in inches) after 1,000 miles,\n brand randomly assigned.")
+
+```
+
 
 ### Bootstrap confidence interval for $\mu_d$
 
@@ -1232,6 +1340,268 @@ for bootstrap and mathematical model there is not much to do here except go thro
 ##### Variability of the statistic {-}
 
 ##### Observed statistic vs. null statistics {-}
+
+
+<!--
+\newcommand{\uclabookN}{68}
+\newcommand{\uclabookDF}{67}
+\newcommand{\uclabookM}{3.58}
+\newcommand{\uclabookSD}{13.42}
+\newcommand{\uclabookSE}{1.63}
+-->
+
+\index{paired|(}
+\index{data!textbooks|(}
+
+In an earlier edition of this textbook,
+we found that Amazon prices were, on average,
+lower than those of the UCLA Bookstore for UCLA courses
+in 2010.
+It's been several years, and many stores have adapted
+to the online market, so we wondered,
+how is the UCLA Bookstore doing today?
+
+We sampled 201 UCLA courses.
+Of those, 68
+required books could be found on Amazon.
+A portion of the data set from these courses
+is shown in Figure \@ref(tab:textbooksDF),
+where prices are in US dollars.
+
+
+```{r textbooksDF}
+data("ucla_textbooks_f18")
+
+ucla_textbooks_f18 %>% 
+  select(subject, course_num, bookstore_new, amazon_new) %>%
+  mutate(price_diff = bookstore_new - amazon_new) %>%
+  filter(!is.na(bookstore_new) & !is.na(amazon_new)) %>%
+  head(4) %>%
+   kable(caption = "Four cases of the `ucla_textbooks_f18` dataset.") %>%
+ kable_styling() 
+
+```
+\subsection{Paired observations}
+
+Each textbook has two corresponding prices in the data set:
+one for the UCLA Bookstore and one for Amazon.
+When two sets of observations have this special
+correspondence, they are said to be \term{paired}.
+
+\begin{onebox}{Paired data}
+  Two sets of observations are \emph{paired} if each
+  observation in one set has a special correspondence
+  or connection with exactly one observation in the other
+  data set.
+\end{onebox}
+
+To analyze paired data, it is often useful to look
+at the difference in outcomes of each pair of observations.
+In the textbook data, we look at the differences
+in prices, which is represented as the
+\var{price\us{}difference} variable
+in the data set.
+Here the differences are taken as
+\begin{align*}
+\text{UCLA Bookstore price} - \text{Amazon price}
+\end{align*}
+%for each book.
+It is important that we always subtract using
+a consistent order;
+here Amazon prices are always subtracted from UCLA prices.
+The first difference shown in Figure \ref{textbooksDF}
+is computed as $47.97 - 47.45 = 0.52$.
+Similarly, the second difference is computed as
+$14.26 - 13.55 = 0.71$,
+ and the third is $13.50 - 12.53 = 0.97$.
+A histogram of the differences is shown in
+Figure \ref{diffInTextbookPricesF18}.
+Using differences between paired observations
+is a common and useful way to analyze paired data.
+
+\begin{figure}[h]
+  \centering
+  \Figures{0.63}{textbooksF18}{diffInTextbookPricesF18}
+  \caption{Histogram of the difference in price for
+      each book sampled.}
+  \label{diffInTextbookPricesF18}
+\end{figure}
+
+
+\subsection{Inference for paired data}
+
+To analyze a paired data set,
+we simply analyze the differences.
+We can use the same $t$-distribution techniques
+we applied in
+Section \ref{oneSampleMeansWithTDistribution}.
+
+\begin{figure}[h]
+\centering
+\begin{tabular}{ccccc}
+\hline
+$n_{_{\text{\emph{diff}}}}$	&\hspace{3mm}& $\bar{x}_{_{\text{\emph{diff}}}}$	&\hspace{3mm}& $s_{_{\text{\emph{diff}}}}$ \vspace{1mm}\\
+68  && 3.58  && 13.42 \\
+\hline
+\end{tabular}
+\caption{Summary statistics for the 68 price differences.}
+\label{textbooksSummaryStats}
+\end{figure}
+
+%\Comment{Consider breaking the next example into two pieces.}
+
+\begin{examplewrap}
+\begin{nexample}{Set up a hypothesis test
+    to determine whether, on average, there is a difference
+    between Amazon's price for a book and the UCLA
+    bookstore's price.
+    Also, check the conditions for whether we can move
+    forward with the test using the $t$-distribution.}
+  \label{htSetupTextbookPriceDiff}%
+  We are considering two scenarios: there is no difference
+  or there is some difference in average prices.
+  \begin{itemize}
+  \setlength{\itemsep}{0mm}
+  \item[$H_0$:]
+      $\mu_{\text{\emph{diff}}} = 0$.
+      There is no difference in the average textbook price.
+  \item[$H_A$:]
+      $\mu_{\text{\emph{diff}}} \neq 0$.
+      There is a difference in average prices.
+  \end{itemize}
+
+  Next, we check the independence and normality conditions.
+  The observations are based on a simple random sample,
+  so independence is reasonable.
+  While there are some outliers,
+  $n = 68$ and none of the outliers
+  are particularly extreme, so the normality
+  of $\bar{x}$ is satisfied.
+  With these conditions satisfied,
+  we can move forward with the $t$-distribution.
+\end{nexample}
+\end{examplewrap}
+
+\begin{examplewrap}
+\begin{nexample}{Complete the hypothesis test started
+    in Example \ref{htSetupTextbookPriceDiff}.}
+  \label{SEAndTScoreTextbookPriceDiff}
+  To compute the test  compute the standard error associated with
+  $\bar{x}_{\text{\emph{diff}}}$ using the standard
+  deviation of the differences
+  ($s_{_{\text{\emph{diff}}}} = 13.42$)
+  and the number of differences
+  ($n_{_{\text{\emph{diff}}}} = 68$):
+  \begin{align*}
+  SE_{\bar{x}_{\text{\emph{diff}}}}
+    = \frac{s_{\text{\emph{diff}}}}{\sqrt{n_{\text{\emph{diff}}}}}
+    = \frac{13.42}{\sqrt{68}} = 1.63
+  \end{align*}
+  The test statistic is the T-score of
+  $\bar{x}_{\text{\emph{diff}}}$
+  under the null condition that the actual mean
+  difference is 0:
+  \begin{align*}
+  T
+    = \frac{\bar{x}_{\text{\emph{diff}}} - 0}
+        {SE_{x_{\text{\emph{diff}}}}}
+    = \frac{3.58 - 0}{1.63} = 2.20
+  \end{align*}
+  To visualize the p-value, the sampling distribution
+  of $\bar{x}_{\text{\emph{diff}}}$ is drawn as though
+  $H_0$ is true,
+  and the p-value is represented by the two shaded tails:
+  \begin{center}
+  \Figures{0.53}{textbooksF18}{textbooksF18HTTails}
+  \end{center}
+  The degrees of freedom is
+  $df = 68 - 1 = 67$.
+  Using statistical software, we find the
+  one-tail area of 0.0156.
+  Doubling this area gives the p-value: 0.0312.
+
+  Because the p-value is less than 0.05,
+  we reject the null hypothesis.
+  Amazon prices are, on average, lower than the
+  UCLA Bookstore prices for UCLA courses.
+\end{nexample}
+\end{examplewrap}
+
+\D{\newpage}
+
+\begin{exercisewrap}
+\begin{nexercise}
+Create a 95\% confidence interval for the average
+price difference between books at the UCLA bookstore
+and books on Amazon.\footnotemark{}
+\end{nexercise}
+\end{exercisewrap}
+\footnotetext{Conditions
+  have already verified and the standard error
+  computed in
+  Example \ref{htSetupTextbookPriceDiff}.
+  To find the interval,
+  identify $t^{\star}_{67}$ using statistical software
+  or the $t$-table ($t^{\star}_{67} = 2.00$),
+  and plug it, the point estimate,
+  and the standard error into the confidence
+  interval formula:
+  \begin{align*}
+  \text{point estimate} \ \pm\ z^{\star} \times SE
+      \quad\to\quad
+          3.58 \ \pm\ 2.00 \times 1.63
+      \quad\to\quad (0.32 6.84)
+  \end{align*}
+  We are 95\% confident that Amazon is, on average,
+  between \$0.32 and \$6.84 less expensive
+  than the UCLA Bookstore for UCLA course books.}
+
+\begin{exercisewrap}
+\begin{nexercise}
+We have strong evidence that Amazon is,
+on average, less expensive.
+How should this conclusion affect UCLA student
+buying habits?
+Should UCLA students always buy their books
+on Amazon?\footnotemark{}
+\end{nexercise}
+\end{exercisewrap}
+\footnotetext{The average price difference
+  is only mildly useful for this question.
+  Examine the distribution shown in
+  Figure \ref{diffInTextbookPricesF18}.
+  There are certainly a handful of cases where
+  Amazon prices are far below the UCLA Bookstore's,
+  which suggests it is worth checking Amazon
+  (and probably other online sites) before purchasing.
+  However, in many cases the Amazon price is
+  above what the UCLA Bookstore charges,
+  and most of the time the price isn't that different.
+  Ultimately, if getting a book immediately from
+  the bookstore is notably more convenient,
+  e.g. to get started on reading or homework,
+  it's likely a good idea to go with the UCLA
+  Bookstore unless the price difference on a
+  specific book happens to be quite large.
+
+  For reference, this is a very different result
+  from what we (the authors) had seen in a similar
+  data set from 2010.
+  At that time, Amazon prices were almost uniformly
+  lower than those of the UCLA Bookstore's and by
+  a large margin, making the case to use Amazon over
+  the UCLA Bookstore quite compelling at that time.
+  Now we frequently check multiple websites
+  to find the best price.}
+
+\index{data!textbooks|)}
+\index{paired|)}
+
+{\input{ch_inference_for_means/TeX/paired_data.tex}}
+
+
+
+
 
 
 
@@ -1263,11 +1633,11 @@ who smoke have a different average birth weight than newborns
 from mothers who don't smoke?"
 
 
-### Randomization test for $H_0: \mu_1 - \mu_2 = 0$
+### Randomization test for $H_0: \mu_1 - \mu_2 = 0$ {#rand2mean}
 
 \index{data!two exam comparison|(}
 
-An instructor decided to run two slight variations of the same exam. Prior to passing out the exams, she shuffled the exams together to ensure each student received a random version. Summary statistics for how students performed on these two exams are shown in Table \@ref(tab:summaryStatsForTwoVersionsOfExams). Anticipating complaints from students who took Version B, she would like to evaluate whether the difference observed in the groups is so large that it provides convincing evidence that Version B was more difficult (on average) than Version A.
+An instructor decided to run two slight variations of the same exam. Prior to passing out the exams, she shuffled the exams together to ensure each student received a random version. Summary statistics for how students performed on these two exams are shown in Table \@ref(tab:summaryStatsForTwoVersionsOfExams) and plotted in Figure \@ref(fig:boxplotTwoVersionsOfExams). Anticipating complaints from students who took Version B, she would like to evaluate whether the difference observed in the groups is so large that it provides convincing evidence that Version B was more difficult (on average) than Version A.
 
 
 ##### Observed data {-}
@@ -1297,6 +1667,18 @@ temptbl %>%
  kable(caption = "Summary statistics of scores for each exam version.",
     col.names = c("", "$n$", "$\\bar{x}$", "s", "minimum", "maximum")) %>%
  kable_styling() 
+```
+
+
+```{r boxplotTwoVersionsOfExams, fig.cap="Exam scores for students given one of three different exams.", warning=FALSE, fig.width=10}
+
+classdata %>%
+  filter(lecture %in% c("a", "b")) %>%
+  mutate(exam = lecture) %>%
+  ggplot(aes(x = exam, y = m1, color = exam)) +
+  geom_boxplot() +
+  geom_point() +
+  ggtitle("Boxplot of exam score broken down by version of exam.")
 ```
 
 ```{block2, type = "guidedpractice", echo = TRUE}
@@ -1330,7 +1712,19 @@ In the exam example, the null hypothesis is that exam A and exam B are equally d
 If the exams were equally difficult, *due to natural variability*, we would sometimes expect students to do slightly better on exam A ($\bar{x}_A > \bar{x}_B$) and sometimes expect students to do slightly better on exam B ($\bar{x}_B > \bar{x}_A$).
 The question at hand is: does $\bar{x}_A - \bar{x}_B=3.1$ indicate that exam A is easier than exam B.
 
-Figure XXX1 shows how to shuffle the scores into two groups assuming no difference in the difficulty.  Figure \@ref(fig:randexams) shows the values of the simulated statistics $\bar{x}_{1, sim} - \bar{x}_{2, sim}$ over 1000 random simulations.
+Figure \@ref(fig:rand2means) shows the process of randomizing the exam to the observed exam scores.
+If the null hypothesis is true, then the score on each exam should represent the true student ability on that material.
+It shouldn't matter whether they were given exam A or exam B.
+By reallocating which student got which exam, we are able to understand how the difference in average exam scores changes due only to natural variablility.
+There is only one iteration of the randomization process in Figure \@ref(fig:rand2means), leading to one simulated difference in average scores.
+
+
+```{r rand2means, fig.cap = "The version of the test (A or B) is randomly allocated to the test scores, under the null assumption that the tests are equally difficult.", warning = FALSE,  out.width="75%"}
+include_graphics("07/figures/rand2means.png")
+```
+
+Building on Figure \@ref(fig:rand2means), Figure \@ref(fig:randexams) shows the values of the simulated statistics $\bar{x}_{1, sim} - \bar{x}_{2, sim}$ over 1000 random simulations.
+We see that, just by chance, the difference in scores can range anywhere from -10 points to +10 points.
 
 ```{r randexams, fig.cap = "", warning = FALSE, fig.width = 10}
 set.seed(47)
@@ -1338,7 +1732,7 @@ classdata %>% filter(lecture %in% c("a", "b")) %>%
   specify(m1 ~ lecture) %>%
   hypothesize(null = "independence") %>%
   generate(reps = 1000, type = "permute") %>%
-  calculate(stat = "diff in means", order = c("a", "b")) %>%
+  calculate(stat = "diff in means", order = c("a", "b")) %>% 
   visualize() +
   ggtitle("")
 ```
@@ -1346,6 +1740,9 @@ classdata %>% filter(lecture %in% c("a", "b")) %>%
 
 ##### Observed statistic vs. null statistics {-}
 
+The goal of the randomization test is to assess the observed data, here the statistic of interest is $\bar{x}_A - \bar{x}_B=3.1$.
+The randomization distribution allows us to identify whether a difference of 3.1 points is more than one would expect by natural variability.
+By plotting the value of 3.1 on Figure \@ref(fig:randexamspval), we can measure how different or similar 3.1 is to the randomized differences which were generated under the null hypothesis.
 
 ```{r randexamspval, fig.cap = "", warning = FALSE, fig.width = 10}
 stat_2means <- classdata %>% filter(lecture %in% c("a", "b")) %>%
@@ -1391,6 +1788,15 @@ classdata %>% filter(lecture %in% c("a", "b")) %>%
   calculate(stat = "diff in means", order = c("a", "b")) %>%
   get_p_value(obs_stat = stat_2means, direction = "right")
 ```
+
+
+The large p-value and consistency of $\bar{x}_A - \bar{x}_B=3.1$ with the randomized differences leds us to *not reject the null hypothesis*.  Said differently, there is no evidence to think that one of the tests is easier than the other.
+One might be inclined to conclude that the tests have the same level of difficulty, but that conclusion would be wrong.
+The hypothesis testing framework is set up only to reject a null claim, it is not set up to validate a null claim.
+As we concluded, the data are consistent with exams A and B being equally difficult,  but the data are also consistent with exam A being 3.1 points "easier" than exam B.
+The data are not able to adjudicate on whether the exams are equally hard or whether one of them is slightly easier.
+Indeed, conclusions where the null hypothesis is not rejected often seem unsatisfactory.
+However, in this case, the teacher and class are probably all relieved that there is no evidence to demonstrate that one of the exams is more difficult than the other.
 
 <!--
 Below is the t-test for the example above using a randomization test.  Doesn't seem like we need both.
@@ -1509,7 +1915,15 @@ Figure \@ref(fig:bootexamsci) displays the variability of the differences in mea
 
 ```{block2, type = "todo", echo = TRUE}
 one we have the whole example, write up a bit about how the two different intervals are constructed (including the calculated value of the SE of the difference in means)
+
+with the cars, we can compare two different cities.  link each bootstrap sample, create the interval, etc.
 ```
+
+
+```{r boot2mean, fig.cap = "first figure with the ? pop, then sample, then estimate of the pop. need to re-do with cars", warning = FALSE,  out.width="75%"}
+include_graphics("07/figures/boot2mean.png")
+```
+
 
 ```{r bootexamsci, fig.cap = "", warning = FALSE, fig.width=10}
 data(stem_cell)
@@ -2426,7 +2840,10 @@ It is helpful to think of $MSE$ as a measure of the variability
 within the groups.
 Details of the computations of the $MSE$ and a link to an
 extra online section for ANOVA calculations are provided
-in the footnote^[Let $\bar{x}$ represent the mean
+in the footnote^[
+See [additional details on ANOVA calculations](www.openintro.org/d?file=stat\_extra\_anova\_calculations)
+for interested readers.]
+Let $\bar{x}$ represent the mean
   of outcomes across all groups.
   Then the **sum of squares total ($SST$)** is computed as
   \begin{align*}
@@ -2444,11 +2861,6 @@ in the footnote^[Let $\bar{x}$ represent the mean
   Then the $MSE$ is the standardized form of $SSE$:
   $MSE = \frac{1}{df_{E}}SSE$.
   
-See [additional details on ANOVA calculations](www.openintro.org/d?file=stat\_extra\_anova\_calculations)
-for interested readers.
-
-#### Variability of the statistic {-}
-
 When the null hypothesis is true, any differences among the
 sample means are only due to chance, and the $MSG$ and $MSE$
 should be about equal.
@@ -2460,6 +2872,93 @@ F = \frac{MSG}{MSE}
 The $MSG$ represents a measure of the between-group variability,
 and $MSE$ measures the variability within each of the groups.
 
+```{block2, type = "onebox", echo = TRUE}
+**The test statistic for three or more means is an F.**
+  
+The F statistic is a ratio of how the groups differ (MSG) as compared to how the observations within a group vary (MSE).
+  
+\begin{align*}
+F = \frac{MSG}{MSE}
+\end{align*}
+The $MSG$ represents a measure of the between-group variability,
+and $MSE$ measures the variability within each of the groups.  
+```
+
+
+
+#### Variability of the statistic {-}
+
+We recall the exams from Section \@ref(rand2mean) which demonstrated a two-sample randomization test for a comparison of means.
+Suppose now that the teacher had had such an extremely large class that three different exams were given: A, B, and C.
+Table \@ref(tab:summaryStatsForThreeVersionsOfExams) and Figure \@ref(fig:boxplotThreeVersionsOfExams) provide a summary of the data including exam C.
+Again, we'd like to investigate whether or not the difficult of the exams is the same across the three exams, so the test is 
+
+* $H_0: \mu_A = \mu_B = \mu_C$.  The inherent average difficulty is the same across the three exams.
+* $H_A: $ not $H_0$.  At least one of the exams is inherently more (or less) difficult than the others.
+
+
+
+```{r summaryStatsForThreeVersionsOfExams}
+# classdata %>%
+# group_by(lecture) %>%
+# skim(m1)
+
+temptbl <- tribble(
+ ~variable, ~col0,    ~col1, ~col2, ~col3, ~col4,
+ "A", 58, 75.1, 13.9, 44, 100,
+ "B", 55, 72.0, 13.8, 38, 100,
+ "C", 51, 78.9, 13.1, 45, 100
+)
+
+temptbl %>%
+ kable(caption = "Summary statistics of scores for each exam version.",
+    col.names = c("", "$n$", "$\\bar{x}$", "s", "minimum", "maximum")) %>%
+ kable_styling() 
+```
+
+```{r boxplotThreeVersionsOfExams, fig.cap="Exam scores for students given one of three different exams.", warning=FALSE, fig.width=10}
+
+classdata %>%
+  mutate(exam = lecture) %>%
+  ggplot(aes(x = exam, y = m1, color = exam)) +
+  geom_boxplot() +
+  geom_point() +
+  ggtitle("Boxplot of exam score broken down by version of exam.")
+```
+
+Figure \@ref(fig:randANOVA) shows the process of randomizing the three different exams to the observed exam scores.
+If the null hypothesis is true, then the score on each exam should represent the true student ability on that material.
+It shouldn't matter whether they were given exam A or exam B or exam C.
+By reallocating which student got which exam, we are able to understand how the difference in average exam scores changes due only to natural variablility.
+There is only one iteration of the randomization process in Figure \@ref(fig:randANOVA), leading to three different randomized sample means (computed assuming the null hypothesis is true).
+
+
+```{r randANOVA, fig.cap = "The version of the test (A or B or C) is randomly allocated to the test scores, under the null assumption that the tests are equally difficult.", warning = FALSE,  out.width="75%"}
+include_graphics("07/figures/randANOVA.png")
+```
+
+
+In the two-sample case, the null hypothesis was investigated using the difference in the sample means.
+However, as noted above, with three groups (three different exams), the comparison of the three sample means gets slightly more complicated.  The statistic used to compare averages across 3 or more groups is the F statistic!
+Recall, the F statistic is a ratio of how the groups differ (MSG) as compared to how the observations within a group vary (MSE).
+
+
+
+Building on Figure \@ref(fig:randANOVA), Figure \@ref(fig:rand3exams) shows the values of the simulated $F$ statistics over 1000 random simulations.
+We see that, just by chance, the F statistic can be as large as 7.
+
+```{r rand3exams, fig.cap = "", warning = FALSE, fig.width = 10}
+set.seed(47)
+classdata %>% 
+  specify(m1 ~ lecture) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "F") %>%
+  visualize() +
+  ggtitle("") +
+  xlab("F statistic across 1000 randomizations of the exams.")
+```
+
 
 #### Observed statistic vs. null statistic {-}
 
@@ -2467,12 +2966,48 @@ and $MSE$ measures the variability within each of the groups.
 need a simulation method here where the data gets randomized, the F statistic is calculted, and the p-value is obtained from the histogram.
 ```
 
+```{r rand3examspval, fig.cap = "", warning = FALSE, fig.width = 10}
+class_Fstat <- classdata %>% 
+  specify(m1 ~ lecture) %>%
+  calculate(stat = "F") %>%
+  pull()
 
+set.seed(47)
+classdata %>% 
+  specify(m1 ~ lecture) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "F") %>% # get_p_value(obs_stat = class_Fstat, direction = "greater")
+  visualize() +
+  shade_p_value(obs_stat = class_Fstat, direction = "greater", 
+                fill = "#F0513318", color = "#F05133") +
+  ggtitle("") +
+  ylab("") +
+  xlab("F statistics across 1000 randomizations of the exams.")
+```
 
+Using statistical software, we can calculate that 3.6% of the randomized F test statistics were at or above the observed test statistic of $F= 3.48$.
+That is, the p-value of the test is 0.036.
+Assuming that we had set the level of significance to be $\alpha = 0.05$, the p-value is smaller than the level of significance which would lead us to reject the null hypothesis.
+We claim that the difficulty level (i.e., the true average score, $\mu$) is different for at least one of the exams.
+
+While it is temping to say that exam C is harder than the other two (given the inability to differentiate between exam A and exam B in Section \@ref(rand2mean)), we must be very careful about conclusions made using different techniquest on the same data.  
+
+When the null hypothesis is true, random variability that exists in nature produces data with p-values less than 0.05.  
+How often does that happen?
+5% of the time.
+That is to say, if you use 20 different models applied to the same data where there is no signal (i.e., the null hypothesis is true), you are reasonably likely to to get a p-value less than 0.05 in one of the tests you run.
+The details surrounding the ideas of this problem, called a **multiple comparisons test** or **multiple comparisons problem**, are outside the scope of this textbook, but should be something that you keep in the back of your head.
+To best mitigate any extra type I errors, we suggest that you set up your hypotheses and testing protocol before running any analyses.
+Once the conclusions have been reached, you should report your findings instead of running a different type of test on the same data.
 
 ### Mathematical model
 
 ####  The ANOVA F-test {-}
+
+As seen with many of the tests and statistics from previous sections, the randomization test on the F statistic has mathematical theory to describe the distribution without using a computational approach.  
+
+We return to the baseball example from Table \@ref(tab:mlbHRPerABSummaryTable) to demonstrate the mathematical model applied to the ANOVA setting.
 
 ##### Variability of the statistic {-}
 
