@@ -1222,14 +1222,22 @@ Consider an experiment done to measure whether tire brand A or tire brand B has 
 
 ##### Observed data {-}
 
-The observed data represent 25 tread measurements taken on 25 tires of Brand A and 25 tires of Brand B.  But the key to this example is taht the 
+The observed data represent 25 tread measurements taken on 25 tires of Brand A and 25 tires of Brand B.
+The study used a total of 25 cars, so on each car, one tire was of Brand A and one was of Brand B.
+Figure \@ref(fig:tiredata) presents the observed data.
+The Brand A manufacturer looks at the box plot below and says:
+> clearly the tread on Brand A tires is higher, on average, than the tread on Brand B tires after 1,000 miles of driving.
+
+The Brand B manufacturer is skeptical and retorts:
+> but with only 25 cars, it seems that the variability in road conditions (sometimes on tire hits a pothole, etc.) could be what leads to the small difference in average tread amount.
 
 
-```{r}
+
+```{r tiredata}
 # inches  about 1/32" per 3500 mi
 set.seed(47)
-brandA <- rnorm(25, .001, .0003)
-brandB <- rnorm(25, .0008, .0003)
+brandA <- rnorm(25, .312, .0003)
+brandB <- rnorm(25, .308, .0003)
 
 tires <- data.frame(tread = c(brandA, brandB), 
                     car = rep(1:25,2),
@@ -1248,13 +1256,25 @@ ggplot(tires, aes( x = brand, y = tread, color = brand)) +
 ##### Variability of the statistic {-}
 
 
+A randomization test will identify whether the differences seen in the box plot below could have happened just by chance variability.
+As before, we will simulate the variability in the study under the assumption that the null hypothesis is true.
+In this study, the null hypothesis is that average tire tread wear is the same across Brand A and Brand B tires.
+
+* $H_0: \mu_A = \mu_B$, the average tread wear is the same for the two tire brands.  
+* $H_A: \mu_A \ne \mu_B$, the average tread wear is different across the two tire brands.
+
+Figure \@ref(fig:pairrand) describes how the tread values can be simulated under the null hypothesis.
+Remember, if the null hypothesis is true, it will not matter which brand is put on which tire because the overall tread wear will be the same across pairs.
+
 ```{r pairrand, fig.cap = "process of randomizing across pairs.", warning = FALSE,  out.width="75%"}
 include_graphics("07/figures/pairrand.png")
 ```
 
+After randomizing the tire brand to the tread measurements under the null hypothesis, a new boxplot summarizes the randomized data.  
+Figure \@ref(fig:tiredatarand1) presents one randomization of the data.
+Notice how the same two observations are linked by a grey line, but some of the tread values have been randomly assigned to the opposite tire brand than they were originally (while some are still connected to their original tire brands).
 
-
-```{r}
+```{r tiredatarand1}
 # inches  about 1/32" per 3500 mi
 set.seed(47)
 tires1 <- tires %>%
@@ -1271,7 +1291,10 @@ ggplot(tires1, aes( x = brandPerm, y = tread, color = brandPerm)) +
 
 ```
 
-```{r}
+Figure \@ref(fig:tiredatarand2) presents yet another randomization of the data.
+Again, the same observations are linked by a grey line, and some of the tread values have been randomly assigned to the opposite tire brand than they were originally (while some are still connected to their original tire brands).
+
+```{r tiredatarand2}
 # inches  about 1/32" per 3500 mi
 set.seed(4747)
 tires2 <- tires %>%
@@ -1290,6 +1313,9 @@ ggplot(tires2, aes( x = brandPerm, y = tread, color = brandPerm)) +
 
 ##### Observed statistic vs. null statistics {-}
 
+By repeating the randomization process, we can create a distribution of the average of the differences in tire treads.
+As expected (because the differences were generated under the null hypothesis), the center of the histogram is zero.
+A line has been drawn at the observed difference 
 
 ```{r pairrandfull, fig.cap = "process of randomizing across pairs.", warning = FALSE,  out.width="75%"}
 include_graphics("07/figures/pairrandfull.png")
@@ -1297,6 +1323,9 @@ include_graphics("07/figures/pairrandfull.png")
 
 ```{r pairRand}
 # inches  about 1/32" per 3500 mi
+
+obs_diff <- mean(brandA) - mean(brandB)
+
 set.seed(4747)
 diffRand <- c()
 for (i in 1:1000){
@@ -1316,8 +1345,8 @@ ggplot(diff.df, aes( x = diffRand)) +
   geom_histogram() +
   ylab("") + 
   xlab("Difference in tire wear, across randomly assigned groups.") +
-  ggtitle("Difference in wear of tire tread (in inches) after 1,000 miles,\n brand randomly assigned.")
-
+  ggtitle("Difference in wear of tire tread (in inches) after 1,000 miles,\n brand randomly assigned.") + 
+  geom_vline(xintercept = obs_diff, color = "#F05133") 
 ```
 
 
