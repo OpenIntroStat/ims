@@ -14,7 +14,7 @@ As we build on the inferential ideas, we will visit new foundational concepts in
 For example, we will cover the conditions for when a normal model is appropriate; the two different error rates in hypothesis testing; and choosing the confidence level for a confidence interval.
 ```
 
-```{r summary3methods-chp6}
+```{r summary3methodsChp6}
 method_summary_table <- tribble(
  ~variable,    ~col1, ~col2, ~col3,
 "What does it do?",  "Shuffles the explanatory variable to mimic the natural variability  found in a randomized experiment.", "Resamples (with replacement) from the observed data to mimic the sampling variability found by collecting data.",  "Uses theory (primarily the Central Limit Theorem) to describe the hypothetical variability resulting from either repeated randomized experiments or random samples.",
@@ -36,7 +36,7 @@ method_summary_table <- tribble(
 terms_chp_6 <- c("categorical data")
 ```
 
-## Inference for a single proportion {#single-prop}
+## One proportion {#single-prop}
 
 We encountered inference methods for a single proportion
 in Chapter \@ref(inference-foundations),
@@ -51,13 +51,15 @@ For each observational unit, the single variable is measured as either a success
 Because the nature of the research question at hand focuses on only a single variable, there is not a way to randomize the variable across a different (explanatory) variable. 
 For this reason, we will not use randomization as an analysis tool when focusing on a single proportion.  Instead, we will apply bootstrapping techniques to test a given hypothesis, and we will also revisit the associated mathematical models.
 
-### One proportion: bootstrap under $H_0$ {#one-prop-null-boot}
+### Bootstrap test for $H_0: p = p_0$ {#one-prop-null-boot}
 
 The bootstrap simulation concept when $H_0$ is true is similar to the ideas used
 in the case studies presented in
 Section \@ref(boot-ci) where we bootstrapped without an assumption about $H_0$.  Because we will be testing a hypothesized value of $p$ (referred to as $p_0$), the bootstrap simulation for hypothesis testing has a fantastic advantage that it can be used for any sample size (a huge benefit for small samples, a nice alternative for large samples).
 
 We expand on the medical consultant example, see Section \@ref(sec-med-consult), where instead of finding an interval estimate for the true complication rate, we work to test a specific research claim.
+
+##### Observed data {-}
 
 Recall the set-up for the example:
 
@@ -85,7 +87,7 @@ Because, as it turns out, the conditions of working with the normal distribution
 
 The p-value is computed based on the null distribution, which is the distribution of the test statistic if the null hypothesis is true. Supposing the null hypothesis is true, we can compute the p-value by identifying the chance of observing a test statistic that favors the alternative hypothesis at least as strongly as the observed test statistic. Here we will use a bootstrap simulation to measure the p-value.
 
-#### Generating the null distribution and p-value by bootstrap simulation {-}
+##### Variability of the statistic {-}
 
 We want to identify the sampling distribution of the test statistic ($\hat{p}$) if the null hypothesis was true. In other words, we want to see how the sample proportion changes due to chance alone. Then we plan to use this information to decide whether there is enough evidence to reject the null hypothesis.
 
@@ -96,11 +98,9 @@ Under the null hypothesis, 10% of liver donors have complications during or afte
 terms_chp_6 <- c(terms_chp_6, "parametric bootstrap")
 ```
 
-```{block2, type = "todo", echo = TRUE}
-need a new physical object
-```
 
-Each client can be simulated using a single 10-sided die with one red side and nine black sides. Rolling the die once is one way of simulating the chance a patient has a complication *if the true complication rate is 10%* for the data. If we roll the die 62 times and compute the proportion of patients with complications in the simulation, $\hat{p}_{sim}$, then this sample proportion is exactly a sample from the null distribution.
+Similar to the process described in Section \@ref(boot-ci), each client can be simulated using a bag of marbles with 10% red marbles and 90% white marbles.
+Sampling a marble from the bag (with 10% red marbles) is one way of simulating whether a patient has a complication *if the true complication rate is 10%* for the data. If we select 62 marbles and then compute the proportion of patients with complications in the simulation, $\hat{p}_{sim}$, then the resulting sample proportion is exactly a sample from the null distribution.
 
 An undergraduate student was paid $2 to complete this simulation. There were 5 simulated cases with a complication and 57 simulated cases without a complication, i.e., $\hat{p}_{sim} = 5/62 = 0.081$.
 
@@ -111,6 +111,8 @@ Is this one simulation enough to determine whether or not we should reject the n
   
 No. To assess the hypotheses, we need to see a distribution of many $\hat{p}_{sim}$, not just a *single* draw from this sampling distribution.
 ```
+
+#### Observed statistic vs. null statistics {-}
 
 One simulation isn't enough to get a sense of the null distribution; many simulation studies are needed. Roughly 10,000 seems sufficient. However, paying someone to simulate 10,000 studies by hand is a waste of time and money. Instead, simulations are typically programmed into a computer, which is much more efficient.
 
@@ -193,9 +195,9 @@ If it were plotted, the exact null distribution would look almost identical to t
 -->
 
 
-### One proportion: mathematical model {#one-prop-norm}
+### Mathematical model {#one-prop-norm}
 
-#### Identifying when the sample proportion is nearly normal {-}
+#### Conditions {-}
 
 In Section \@ref(normalDist), we introduced the normal distribution and showed how it can be used as a mathematical model to describe the variability of a statistic.
 There are conditions under which a sample proportion $\hat{p}$ is well modeled using a normal distribution.
@@ -243,13 +245,10 @@ is used in place of $p$.
 The independence condition is a more nuanced requirement.
 When it isn't met, it is important to understand how and why
 it isn't met.
-For example, if we took a cluster sample
-(see Section \@ref(samp-methods)), the observations wouldn't be independent. 
-However, suitable statistical methods are available for analyzing the data, but they are beyond the scope of even most second or third courses
-in statistics.
-On the other hand, we'd be stretched to find any method
-that we could confidently apply to correct the inherent biases
-of data from a convenience sample.
+For example, there exist no statistical methods available to truly correct the inherent biases of data from a convenience sample.
+On the other hand, if we took a cluster sample
+(see Section \@ref(samp-methods)), the observations wouldn't be independent, but suitable statistical methods are available for analyzing the data (but they are beyond the scope of even most second or third courses
+in statistic).
 
 ```{block2, type="example", echo=TRUE}
 In the examples based on large sample theory, we modeled $\hat{p}$ using the normal distribution. Why is this not appropriate for the case study on the medical consultant?
@@ -266,7 +265,7 @@ book in what is a large library of statistical methods that
 are suitable for a very wide range of data and contexts.
 
 
-#### Confidence intervals for a proportion  {-}
+#### Confidence interval for $p$  {-}
 
 \index{point estimate!single proportion}
 
@@ -287,6 +286,12 @@ We have seen $\hat{p}$ to be the sample proportion.  The value $z^{\star}$ deter
 When the conditions are met so that the distribution fo $\hat{p}$ is nearly normal, the **variability** of a single proportion, $\hat{p}$ is well described by:
   
 $$SE(\hat{p}) = \sqrt{\frac{p(1-p)}{n}}$$
+  
+Note that we almost never know the true value of $p$.  A more helpful formula to use is:
+  
+$$SE(\hat{p}) \approx \sqrt{\frac{(\mbox{best guess of }p)(1 - \mbox{best guess of }p)}{n}}$$
+  
+For hypothesis testing, we often use $p_0$ as the best guess of $p$.  For confidence intervals, we typically use $\hat{p}$ as the best guess of $p$.
 ```
 
 \index{data!Payday regulation poll|(}
@@ -308,6 +313,18 @@ did search and replace for each term above.  for example 826 for 826
 
 -->
 
+```{block2, type = "guidedpractice", echo = TRUE}
+Consider taking many polls of registered voters (i.e., random samples) of size 300 asking them if they support legalized marijuana.
+It is suspected that about 2/3 of all voters support legalized marijuana.
+To understand how the sample proportion ($\hat{p}$) would vary across the samples, calculate the standard error of $\hat{p}$.^[Because the $p$ is unknown but expected to be around 2/3, we will use 2/3 in place of $p$ in the formula for the standard error.  
+$SE = \sqrt{\frac{p(1-p)}{n}} \approx
+    \sqrt{\frac{2/3 (1 - 2/3)}
+        {300}} = 0.027$.]
+
+```
+
+##### Variability of the statistic {-}
+
 ```{block2, type = "example", echo = TRUE}
 
 A simple random sample of 826
@@ -315,12 +332,19 @@ A simple random sample of 826
     understand their interests around regulation and costs.
     70% of the responses supported new
     regulations on payday lenders.
-    Is it reasonable to model $\hat{p} = 0.70$
+
+  1. Is it reasonable to model the variability of $\hat{p}$ from sample to sample
     using a normal distribution?
-      
+    
+  2. Estimate the standard error of $\hat{p}$.
+
+  3. Construct a 95% confidence interval for $p$,
+    the proportion of payday borrowers who support increased
+    regulation for payday lenders.  
+    
 ---
       
-  The data are a random sample, so the observations are
+1.  The data are a random sample, so the observations are
   independent and representative of the population of
   interest.
 
@@ -339,27 +363,16 @@ A simple random sample of 826
   \end{align*}
   Since both values are at least 10, we can use the normal
   distribution to model $\hat{p}$.
-```
-
-
-```{block2, type = "guidedpractice", echo = TRUE}
-
-Estimate the standard error of $\hat{p} = 0.70$.
-Because $p$ is unknown and the standard error is for
+  
+2. Because $p$ is unknown and the standard error is for
 a confidence interval, use $\hat{p}$ in place of $p$
-in the formula.^[$SE = \sqrt{\frac{p(1-p)}{n}} \approx
+in the formula.
+
+$SE = \sqrt{\frac{p(1-p)}{n}} \approx
     \sqrt{\frac{0.70 (1 - 0.70)}
-        {826}} = 0.016$.]
-```
+        {826}} = 0.016$.
 
-```{block2 type = "example", echo = TRUE}
-
-Construct a 95% confidence interval for $p$,
-    the proportion of payday borrowers who support increased
-    regulation for payday lenders.
-    
----
-      
+3.       
   Using
   the point estimate 0.70,
   $z^{\star} = 1.96$ for a 95% confidence interval,
@@ -379,6 +392,9 @@ Construct a 95% confidence interval for $p$,
   of the poll was between 0.669 and
   0.731.
 ```
+
+
+
 
 ```{block2, type = "onebox", echo = TRUE}
 **Constructing a confidence interval for a single proportion**
@@ -496,25 +512,13 @@ where $z^{\star}$ corresponds to the confidence level selected.
 Figure \@ref(fig:choosingZForCI) provides a picture of how to identify $z^{\star}$ based on a confidence level. We select $z^{\star}$ so that the area between -$z^{\star}$ and $z^{\star}$ in the normal model corresponds to the confidence level. 
 
 
-
-```{block2, type="onebox", echo=TRUE}
-**Margin of error.**
-
-In a confidence interval, $z^{\star}\times SE$ is called the **margin of error**\index{margin of error}.
-```
-
-
-
-```{r include=FALSE}
-terms_chp_6 <- c(terms_chp_6, "margin of error")
-```
-
-
 ```{block2, type="guidedpractice", echo=TRUE}
-Previously, we found that implanting a stent in the brain of a patient at risk for a stroke *increased* the risk of a stroke. The study estimated a 9% increase in the number of patients who had a stroke, and the standard error of this estimate was about $SE = 2.8%$. Compute a 90% confidence interval for the effect.^[We must find $z^{\star}$ such that 90% of the distribution falls between -$z^{\star}$ and $z^{\star}$ in the standard normal model, $N(\mu=0, \sigma=1)$. We can look up -$z^{\star}$ in the normal probability table by looking for a lower tail of 5% (the other 5% is in the upper tail), thus $z^{\star}=1.65$. The 90% confidence interval can then be computed as $\text{point estimate}\ \pm\ 1.65\times SE \to (4.4\%, 13.6\%)$. (Note: the conditions for normality had earlier been confirmed for us.) That is, we are 90% confident that implanting a stent in a stroke patient's brain increased the risk of stroke within 30 days by 4.4% to 13.6%.]
+Previously, we found that implanting a stent in the brain of a patient at risk for a stroke *increased* the risk of a stroke. The study estimated a 9% increase in the number of patients who had a stroke, and the standard error of this estimate was about $SE = 2.8%$. Compute a 90% confidence interval for the effect.^[We must find $z^{\star}$ such that 90% of the distribution falls between -$z^{\star}$ and $z^{\star}$ in the standard normal model, $N(\mu=0, \sigma=1)$. We can look up -$z^{\star}$ in the normal probability table by looking for a lower tail of 5% (the other 5% is in the upper tail), thus $z^{\star}=1.65$. The 90% confidence interval can then be computed as $\text{point estimate}\ \pm\ 1.65\times SE \to (4.4\%, 13.6\%)$. (Note: the conditions for normality had earlier been confirmed for us.) That is, we are 90% confident that implanting a stent in a stroke patient's brain increased the risk of stroke within 30 days by 4.4% to 13.6%.
+
+Note, the problem was set up as 90% to indicate that there was not a need for a high level of confidence (such a 95% or 99%).  A lower degree of confidence increases potential for error, but it also produces a more narrow interval. ]
 ```
 
-#### Hypothesis testing for a proportion {-}
+#### Hypothesis test for $H_0: p = p_0$ {-}
 
 <!--
 \label{htForPropSection}
@@ -540,8 +544,8 @@ of regulation?
 
 ```{block2, type = "guidedpractice", echo = TRUE}
 Set up hypotheses to evaluate whether borrowers
-have a majority support or majority opposition for this
-type of regulation.^[$H_0$: $p = 0.50$. $H_A$: $p \neq 0.50$.]
+have a majority support for this
+type of regulation.^[$H_0$: there is not support for the regulation; $H_0$: $p \leq 0.50$. $H_A$: the majority of borrowers support the regulation; $H_A$: $p > 0.50$.]
 ```
 
 To apply the normal distribution framework in the context
@@ -572,7 +576,7 @@ for a hypothesis test here?^[Independence holds since the poll
     which is checked
     using the null value ($p_0 = 0.5$) from $H_0$:
     $np_0 = 826 \times 0.5 = 413$,
-    $n(1 - p_0) = 826 \times 0.5 = 413$.]
+    $n(1 - p_0) = 826 \times 0.5 = 413$.  Recall that here, the best guess for $p$ is $p_0$ which comes from the null hypothesis (because we assume the null hypothesis is true when performing the testing procedure steps).  $H_0$: there is not support for the regulation; $H_0$: $p \leq 0.50$. $H_A$: the majority of borrowers support the regulation; $H_A$: $p > 0.50$.]
 ```
 
     
@@ -606,14 +610,21 @@ Using the hypotheses and data from the previous
       = \frac{0.51 - 0.50}{0.017}
       = 0.59
   \end{align*}
-  The single tail area is 0.2776, and the p-value,
-  represented by both tail areas together, is 0.5552.
+  The single tail area which represents the p-value is 0.2776.
   Because the p-value is larger than 0.05,
   we do not reject $H_0$.
   The poll does not provide convincing evidence that
-  a majority of payday loan borrowers support or oppose
-  regulations around credit checks and evaluation of
-  debt payments.  In this situation, the conclusion is somewhat unsatisfactory because there is no conclusion.  That is, there is no resolution one way or the other about public opinion.  We cannot claim that exactly 50% of people support the regulation, but we cannot claim a majority in either direction.
+  a majority of payday loan borrowers support regulations around credit checks and evaluation of
+  debt payments.
+  
+  In Section \@ref(two-prop-errors) we discuss two-sided hypothesis tests of which the payday example may have been better structured.  
+That is, we might have wanted to ask whether the borrows **support or oppose** the regulations (to study opinion in either direction away from the 50% benchmark).
+In that case, the p-value would have been doubled to 0.5552 (again, we would not reject $H_0$).
+In the two-sided hypothesis setting, the appropriate conclusion would be to claim that the poll does not provide convincing evidence that a majority of payday loan borrowers support  or oppose regulations around credit checks and evaluation of debt payments.
+
+In both the one-sided or two-sided setting, the conclusion is somewhat unsatisfactory because there is no conclusion.
+That is, there is no resolution one way or the other about public opinion.
+We cannot claim that exactly 50% of people support the regulation, but we cannot claim a majority in either direction.
 ```
 
   
@@ -640,7 +651,7 @@ see Section \@ref(HypothesisTesting).
 \CalculatorVideos{confidence intervals and hypothesis tests for a single proportion}
 -->
 
-#### When one or more conditions aren't met {-}
+#### Violating conditions {-}
 
 We've spent a lot of time discussing conditions for when
 $\hat{p}$ can be reasonably modeled by a normal distribution.
@@ -656,13 +667,23 @@ for a hypothesis test, we can simulate the null distribution
 of $\hat{p}$ using the null value, $p_0$, as seen in Section \@ref(one-prop-null-boot).  Unfortunately, methods for dealing with observations which are not independent are outside the scope of this book.
 
 
+<!--
 #### Choosing a sample size when estimating a proportion {-}
 
-\index{margin of error|(}
+```{block2, type="onebox", echo=TRUE}
+**Margin of error.**
+
+In a confidence interval, $z^{\star}\times SE$ is called the **margin of error**\index{margin of error}.
+```
+
+
 
 ```{r include=FALSE}
 terms_chp_6 <- c(terms_chp_6, "margin of error")
 ```
+
+
+\index{margin of error|(}
 
 When collecting data, we choose a sample size suitable
 for the purpose of the study. 
@@ -682,7 +703,7 @@ of the actual proportion in a 95% confidence interval.
 %ME = z^{\star} \times SE \leq m
 %\end{align*}
 %where $ME$ represented the actual margin of error and $z^{\star}$ was chosen to correspond to the confidence level. The standard error formula is specified to correspond to the particular setting. For instance, in the case of means, the standard error was given as $\sigma / \sqrt{n}$. In the case of a single proportion, we use $\sqrt{p(1-p) / n\ }$ for the standard error.
--->
+
 
 \index{data!Student football stadium|(}
 
@@ -838,13 +859,12 @@ of error of 0.04 with 95% confidence?^[We complete the same computations as befo
 \index{data!Payday regulation poll|)}
 \index{margin of error|)}
 
-<!--
 {\input{ch_inference_for_props/TeX/inference_for_a_single_proportion.tex}}
 -->
 
 
 
-## Inference for the difference of two proportions {#diff-two-prop}
+## Difference of two proportions {#diff-two-prop}
 
 We now extend the methods from Section \@ref(single-prop) to apply confidence intervals and hypothesis tests to differences in population proportions that come from two groups: $p_1 - p_2$.
 
@@ -873,8 +893,9 @@ we apply the mathematical framework.
 terms_chp_6 <- c(terms_chp_6, "point estimate")
 ```
 
-### Two proportions: randomization test {#two-prop-errors}
+### Randomization test for $H_0: p_1 - p_2 = 0$ {#two-prop-errors}
 
+#### Observed data {-}
 
 We consider a study on a new malaria vaccine
 called PfSPZ.
@@ -1110,6 +1131,8 @@ in the actual data?\footnotemark{}
 -->
 
 As we saw in Section \@ref(inf-rand), we can randomize the responses (`infection` or `no infection`) to the treatment conditions under the null hypothesis of independence and compute possible differences in proportions.
+The process by which we randomize observations to two groups is summarized and visualized in Figure \@ref(fig:fullrand). 
+
 <!--
 We computed one possible difference under the
 independence model in Guided
@@ -1133,8 +1156,10 @@ that we have a good idea of what represents the
 \emph{distribution of differences from chance alone}.
 -->
 
+#### Variability of the statistic {-}
+
 Figure \@ref(fig:malaria-rand-dot-plot) shows a stacked plot
-of the differences found from 100 randomization simulations,
+of the differences found from 100 randomization simulations (i.e., repeated iterations as described in Figure \@ref(fig:fullrand)),
 where each dot represents a simulated difference between
 the infection rates (control rate minus treatment rate).
 
@@ -1193,6 +1218,8 @@ abline(h = 0)
 points(X[X > 0.64], Y[X > 0.64], lwd=3, col = COL[4], cex=0.4)
 ```
 
+#### Observed statistic vs null statistics {-}
+
 Note that the distribution of these simulated differences
 is centered around 0.
 We simulated the differences assuming that the independence
@@ -1200,6 +1227,8 @@ model was true, and under this condition,
 we expect the difference to be near zero with some random
 fluctuation, where *near* is pretty generous in this
 case since the sample sizes are so small in this study.
+
+
 
 ```{block2, type = "example", echo = TRUE}
 How often would you observe a difference
@@ -1212,7 +1241,7 @@ How often would you observe a difference
   It appears that a difference of at least
   64.3% due to chance alone would only
   happen about 2% of the time according to
-  Figure \@fig(fig:malaria-rand-dot-plot).
+  Figure \@ref(fig:malaria-rand-dot-plot).
   Such a low probability indicates a rare event.
 ```
 
@@ -1221,7 +1250,7 @@ a rare event suggests two possible interpretations
 of the results of the study:
 
 * $H_0$ Independence model. The vaccine has no effect on infection rate, and we just happened to observe a difference that would only occur on a rare occasion.
-* $H_A$ Alternative model. The vaccine has an effect on infection rate, and the difference we observed was actually due to the vaccine being effective at combatting malaria, which explains the large difference of 64.3%.
+* $H_A$ Alternative model. The vaccine has an effect on infection rate, and the difference we observed was actually due to the vaccine being effective at combating malaria, which explains the large difference of 64.3%.
 
 Based on the simulations, we have two options:   
 
@@ -1378,7 +1407,7 @@ Here we want to be cautious about failing to reject $H_0$ when the null is actua
 The significance level selected for a test should reflect the real-world consequences associated with making a Type 1 or Type 2 Error.
 ```
 
-#### Introducing two-sided hypotheses {-}
+#### Two-sided hypotheses {-}
 
 <!--
 %_________________
@@ -1437,6 +1466,13 @@ We'll consider both of these possibilities using a two-sided hypothesis test.
 * $H_0$: Blood thinners do not have an overall survival effect, i.e., the survival proportions are the same in each group. $p_t - p_c = 0$.
 
 * $H_A$: Blood thinners have an impact on survival, either positive or negative, but not zero. $p_t - p_c \neq 0$.
+
+Note that if we had done a one-sided hypothesis test, the resulting hypotheses would have been:
+
+* $H_0$: Blood thinners do not have a positive overall survival effect, i.e., the survival proportions for the blood thinner group is the same or lower than the control group. $p_t - p_c \leq 0$.
+
+* $H_A$: Blood thinners have a positive impact on survival. $p_t - p_c > 0$.
+
 ```
 
 There were 50 patients in the experiment who did not receive a blood thinner and 40 patients who did. 
@@ -1468,7 +1504,7 @@ According to the point estimate, for patients who have undergone CPR outside of 
 However, we wonder if this difference could be easily explainable by chance.
 
 As we did in our past two studies this chapter, we will simulate what type of differences we might see from chance alone under the null hypothesis. 
-By randomly assigning "simulated treatment" and "simulated control" stickers to the patients' files, we get a new grouping. 
+By randomly assigning each of the patient's files to a "simulated treatment" or "simulated control" allocation, we get a new grouping. 
 If we repeat this simulation 10,000 times, we can build a **null distribution**\index{null distribution} of the differences shown in Figure \@ref(fig:CPR-study-right-tail).
 
 
@@ -1506,11 +1542,11 @@ text(0.13, 3*N/25, "0.13", pos=3, cex=0.7)
 
 ```
 
-The right tail area is about 0.13. (Note: it is only a coincidence that we also have $\hat{p}_t - \hat{p}_c=0.13$.) 
-However, contrary to how we calculated the p-value in previous studies, the p-value of this test is not 0.13!
+The right tail area is 0.131. (Note: it is only a coincidence that we also have $\hat{p}_t - \hat{p}_c=0.13$.) 
+However, contrary to how we calculated the p-value in previous studies, the p-value of this test is not 0.131!
 
 The p-value is defined as the chance we observe a result at least as favorable to the alternative hypothesis as the result (i.e., the difference) we observe. 
-In this case, any differences less than or equal to -0.13 would also provide equally strong evidence favoring the alternative hypothesis as a difference of 0.13. 
+In this case, any differences less than or equal to -0.13 would also provide equally strong evidence favoring the alternative hypothesis as a difference of +0.13 did. 
 A difference of -0.13 would correspond to 13% higher survival rate in the control group than the treatment group. 
 In Figure \@ref(fig:CPR-study-p-value) we've also shaded these differences in the left tail of the distribution. 
 These two shaded tails provide a visual representation of the p-value for a two-sided test.
@@ -1520,7 +1556,7 @@ These two shaded tails provide a visual representation of the p-value for a two-
 -->
 
 
-```{r CPR-study-p-value, fig.cap="Null distribution of the point estimate for the difference in proportions, $\\hat{p}_t - \\hat{p}_c$.. All values that are at least as extreme as +0.13 but in either direction away from 0 are shaded.", warning=FALSE, fig.width=10}
+```{r CPR-study-p-value, fig.cap="Null distribution of the point estimate for the difference in proportions, $\\hat{p}_t - \\hat{p}_c$. All values that are at least as extreme as +0.13 but in either direction away from 0 are shaded.", warning=FALSE, fig.width=10}
 
 hist(d, breaks = breaks, col=COL[7,3], main="", xlab="Differences under the null hypothesis", ylab="", axes=FALSE)
 axis(1)
@@ -1534,7 +1570,7 @@ text(0.13, 3*N/25, "0.13", pos=3, cex=0.7)
 ```
 
 
-For a two-sided test, take the single tail (in this case, 0.13) and double it to get the p-value: 0.26. 
+For a two-sided test, take the single tail (in this case, 0.131) and double it to get the p-value: 0.262. 
 Since this p-value is larger than 0.05, we do not reject the null hypothesis. 
 That is, we do not find statistically significant evidence that the blood thinner has any influence on survival of patients who undergo CPR prior to arriving at the hospital. 
 
@@ -1578,7 +1614,8 @@ Typically, we do not worry too much about the precision of very large p-values b
 
 #### Controlling the Type 1 Error rate {-}
 
-It is never okay to change two-sided tests to one-sided tests after observing the data. 
+Now that we understand the difference between one-sided and two-sided tests, we must recognize when to use each type of test.
+Because of the result of increased error rates, it is never okay to change two-sided tests to one-sided tests after observing the data. 
 We explore the consequences of ignoring this advice in the next example.
 
 ```{block2, type="example", echo=TRUE}
@@ -1641,15 +1678,258 @@ Hypotheses should be set up *before* observing the data.
 
 
 
-### Two proportions: bootstrap {#two-prop-boot-ci}
+### Bootstrap confidence interval for $p_1 - p_2$ {#two-prop-boot-ci}
 
-The key will be to use two different bags to simulate from the original data.
+In Section \@ref(two-prop-errors), we worked with the randomization distribution to understand the distribution of $\hat{p}_1 - \hat{p}_2$ when the null hypothesis $H_0: p_1 - p_2 = 0$ is true.
+Now, through bootstrapping, we study the variability of $\hat{p}_1 - \hat{p}_2$ without the null assumption.
 
-Use the CPR data.  After we find the CI (use percentile and SE methods), write the interval values down below in the math section that describes the genertic confidence interval method.  The data are provided in Table \@ref(tab:resultsForCPRStudyInSmallSampleSection).
+#### Observed data {-}
 
-### Two proportions: mathematical model 
+Reconsider the CPR data from Section \@ref(two-prop-errors) which is provided in Table \@ref(tab:resultsForCPRStudyInSmallSampleSection).   The experiment consisted of two treatments on patients who underwent CPR for a heart attack and were subsequently admitted to a hospital.  Each patient was randomly assigned to either receive a blood thinner (treatment group) or not receive a blood thinner (control group). 
+The outcome variable of interest was whether the patient survived for at least 24 hours.
 
-#### Sampling distribution of the difference of two proportions {-}
+Again, we use the difference in sample proportions as the observed statistic of interest.  Here, the value of the statistic is: $\hat{p}_t - \hat{p}_c = 0.35 - 0.22 = 0.13$.
+
+#### Variability of the statistic {-}
+
+The bootstrap method applied to two samples is an extension of the method described in Section \@ref(boot-ci).  Now, we have two samples, so each sample estimates the population from which they came.  In the CPR setting, the `treatment` sample estimates the population of all individuals who have gotten (or will get) the treatment; the `control` sample estimate the population of all individuals who do not get the treatment and are controls.  Figure \@ref(fig:boot2proppops) extends Figure \@ref(fig:boot1) to show the bootstrapping process from two samples simultaneously.
+
+```{r boot2proppops, fig.cap = "creating two populations from which to take the bootstrap samples.", warning = FALSE, out.width = "75%"}
+include_graphics("06/figures/boot2proppops.png")
+```
+
+
+As before, once the population is estimated, we can randomly resample observations to create bootstrap samples, as seen in Figure \@ref(fig:boot2propresamps).
+
+```{r boot2propresamps, fig.cap = "creating two populations from which to take the bootstrap samples.", warning = FALSE, out.width = "75%"}
+include_graphics("06/figures/boot2propresamps.png")
+```
+
+
+The variability of the statistic (the difference in sample proportions) can be calculated by taking one treatment bootstrap sample and one control bootstrap sample and calculating the difference of the bootstrap survival proportions.  One sample from each of the estimated populations has been taken with the sample proportions calculated for the treatment bootstrap sample and the control bootstrap sample.  
+
+```{block2, type = "todo", echo = TRUE}
+once the image is in, we need to describe above (and below) the values (proportions, differences) in the image explicitly.
+```
+
+
+```{r boot2samp2, fig.cap = "some way to connect the first BS sample on the left with the first BS sample on the right.", warning = FALSE, out.width="75%"}
+include_graphics("06/figures/boot2prop3.png")
+```
+
+
+As always, the variability of the difference in proportions can only be estimated by repeated simulations, in this case, repeated bootstrap samples.  Figure \@ref(fig:boot2samp2) shows multiple bootstrap differences calculated for each of the repeated bootstrap samples.
+
+```{r boot2samp3, fig.cap = "in this graph, some kind of connection between each of the two sides", warning = FALSE,  out.width="75%"}
+include_graphics("06/figures/boot2prop2.png")
+```
+
+```{block2, type = "todo", echo = TRUE}
+Do we also want to visualize "sampling with replacement" in the two sample case?
+```
+
+Repeated bootstrap simulations lead to a bootstrap sampling distribution of the statistic of interest, here the difference in sample proportions.
+Figure \@ref(fig:boot2samp1) visualizes the process in the toy example, and Figure \@ref(fig:bootCPR1000) shows 1000 bootstrap differences in proportions for the CPR data.
+
+```{r boot2samp1, fig.cap = "(probably populations only, no BS samples) two sample estimating two populations (two infinite popuations)", warning = FALSE,  out.width="75%"}
+include_graphics("06/figures/boot2prop1.png")
+```
+
+```{r bootCPR1000, fig.cap="A histogram of differences in proportions from 1000 bootstrap simulations.", warning=FALSE, fig.width=10}
+
+set.seed(47)
+exp_gp  <- rep(c("blood_thinner", "control"), c(40, 50))
+outcome <- c(rep(c('survived', 'died'), c(11, 39)),
+             rep(c('survived', 'died'), c(14, 26)))
+
+nsim    <- 1000
+n       <- length(exp_gp)
+success <- "survived"
+
+SimulateTable <- function(exp_gp, outcome, ...) {
+  bsobs <- sample(1:n, replace = TRUE)
+  table(exp_gp[bsobs], outcome[bsobs])
+}
+
+
+sim_tables <-
+    lapply(1:nsim, SimulateTable,
+        exp_gp = exp_gp,
+        outcome = outcome)
+result <- sim_tables %>%
+    lapply(function(x) {
+    	  x[1, 1] / sum(x[1, ]) - x[2, 1] / sum(x[2, ])
+    	}) %>%
+    	unlist()
+
+values <- table(result)
+diffs <- unique(result)
+
+X <- c()
+Y <- c()
+for (i in 1:length(diffs)) {
+  x   <- diffs[i]
+  rec <- sum(result == x)
+  X   <- append(X, rep(x, rec))
+  Y   <- append(Y, 1:rec)
+}
+
+breaks <- seq(min(result)-.05, max(result)+ .05, by = (max(result) - min(result) )/ 20)
+
+histPlot(X, Y, breaks = breaks,
+     xlim = c(-.3,.3),
+     xlab = "Difference in Survival Rates",
+     ylab = "",
+     axes = FALSE,
+     #ylim = c(0, max(Y)),
+     col = COL[1],
+     pch = 20)
+ at <- seq(-0.3, 0.3, 0.1)
+ labels <- c(-0.3, "", -0.1, 0, 0.1, "", 0.3)
+axis(1, at, labels)
+abline(h = 0)
+#points(X[X > 0.64], Y[X > 0.64], lwd=3, col = COL[4], cex=0.4)
+```
+
+
+#### Percentile vs. SE bootstrap confidence intervals {-}
+
+Figure \@ref(fig:bootCPR1000) provides an estimate for the variability of the difference in survival proportions from sample to sample,  The values in the histogram can be used in two different ways to create a confidence interval for the parameter of interest:  $p_1 - p_2$.
+
+##### Percentile bootstrap interval {-}
+
+As in Section \@ref(boot-ci), the bootstrap confidence interval can be calculated directly from the bootstrapped differences in Figure \@ref(fig:bootCPR1000).  The interval created from the percentiles of the distribution is called the **percentile interval**.
+Note that here we calculate the 90% confidence interval by finding the $5^{th}$ and $95^{th}$ percentile values from the bootstrapped differences.
+The bootstrap 5 percentile proportion is -0.155 and the 95 percentile is 0.167.
+The result is: we are 90% confident that, in the population, the true difference in probability of survival is between -0.155 and 0.167. 
+The interval shows that we do not have much definitive evidence of the affect of blood thinners, one way or another.
+
+```{r include=FALSE}
+terms_chp_6 <- c(terms_chp_6, "percentile interval")
+```
+
+```{r bootCPR1000CI, fig.cap="The CPR data is bootstrapped 1000 times. Each simulation creates a sample from the original data where the probability of survival in the treatment group is $\\hat{p}_{t}  = 14/40$ and the probability of survival in the control group is $\\hat{p}_{c} = 11/50$. ", warning=FALSE, fig.width=10}
+
+#result from previous R chunk
+bsq <- quantile(result, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
+
+bsprops_up <- result[result >= bsq[6]]
+bsprops_low <- result[result <= bsq[3]]
+
+#uprops <- sort(unique(result))
+#bin.width <- diff(uprops)[1]*100
+#breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
+
+breaks <- seq(min(result)-.05, max(result)+ .05, by = (max(result) - min(result) )/ 20)
+
+histPlot(result, breaks = breaks, 
+         axes = FALSE, col = rgb(1,1,1),
+     xlab = "", ylab="")
+histPlot(bsprops_up, breaks = breaks,
+         col = COL[1], add = TRUE)
+histPlot(bsprops_low, breaks = breaks, 
+         col = COL[1], add = TRUE)
+axis(1)
+#axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
+lines(c(bsq[6], bsq[6]), c(0, 80), lty = 3, lwd = 3)
+lines(c(bsq[3], bsq[3]), c(0, 80), lty = 3, lwd = 3)
+text(bsq[6], 80, "95 percentile", pos = 3)
+text(bsq[3], 80, "5 percentile", pos = 3)
+par(las = 0)
+mtext("Bootstrapped values of the proportion of surgical complications", 1, 2.5)
+
+```
+
+
+
+##### SE bootstrap interval {-}
+
+Alternatively, we can use the variability in the bootstrapped differences to calculate a standard error of the difference.
+The resulting interval is called the **SE interval**.
+Section \@ref(math-2prop) details the mathematical model for the standard error of the difference in sample proportions, but the bootstrap distribution typically does an excellent job of estimating the variability.
+
+```{r include=FALSE}
+terms_chp_6 <- c(terms_chp_6, "SE interval")
+```
+
+$$SE(\hat{p}_t - \hat{p}_c) \approx SD(\hat{p}_{bs,t} - \hat{p}_{bs,c}) = 0.0975$$
+
+The variability of the difference in proportions was calculated in R using the `sd()` function, but any statistical software will calculate the standard deviation of the differences, here, the exact quantity we hope to approximate.
+
+Note that we do not know know the true distribution of $\hat{p}_t - \hat{p}_c$, so we will use a rough approximation to find a confidence interval for $p_t - p_c$.  As seen in the bootstrap histograms, the shape of the distribution is roughly symmetric and bell-shaped.  So for a rough approximation, we will apply the 67-95-99.7 rule which tells us that 95% of observed differences should be roughly no farther than 2 SE from the true parameter difference.  A 95% confidence interval for $p_t - p_c$ is given by:
+
+\begin{align*}
+\hat{p}_t - \hat{p}_c \pm 2 \cdot SE \ \ \ \rightarrow \ \ \ 14/40 - 11/50 \pm 2 \cdot 0.0975 \ \ \  \rightarrow \ \ \  (-0.065, 0.325)
+\end{align*}
+
+We are 95% confident that the true value of $p_t - p_c$ is between -0.065 and 0.325.  Again, the wide confidence interval that overlaps zero indicates that the study provides very little evidence about the effectiveness of blood thinners.
+
+#### What does 95% mean? {-}
+
+Recall that the goal of a confidence interval is to find a plausible range of values for a *parameter* of interest.
+The estimated statistic is not the value of interest, but it is typically the best guess for the unknown parameter.
+The confidence level (often 95%) is a number that takes a while to get used to.  Surprisingly, the percentage doesn't describe the dataset at hand, it describes many possible datasets.
+One way to understand a confidence interval is to think about all the confidence intervals that you have ever made or that you will ever make a scientist, the confidence level describes **those** intervals.
+
+Figure \@ref(fig:ci25ints) demonstrates a hypothetical situation in which 25 different studies are performed on the exact same population (with the same goal of estimating the true parameter value of $p_1 - p_2 = 0.47$).
+The study at hand represents one point estimate (a dot) and a corresponding interval.
+It is not possible to know whether the interval at hand is to the right of the unknown true parameter value (the black line) or to the left of that line.
+It is also impossible to know whether the interval captures the true parameter (is blue) or doesn't (is red).
+If we are making 95% intervals, then 5% of the intervals we create over our lifetime will *not* capture the parameter of interest (e.g., will be red as in Figure \@ref(fig:ci25ints) ).
+What we know is that over our lifetimes as scientists, 95% of the intervals created and reported on will capture the parameter value of interest:  thus the language "95% confident."
+
+
+```{r ci25ints, fig.cap = "One hypothetical population, parameter value of: $p_1 - p_2 = 0.47$.  Twenty-five different studies all which led to a different point estimate, SE, and confidence interval.  The study at hand is one of the horizontal lines (hopefully a blue line!).", warning = FALSE, fig.width = 10}
+data(run09)
+set.seed(52)
+m <- 103.4594
+s <- 19.31445
+n <- 100
+k <- 25
+SE <- s/sqrt(n)
+
+set.seed(47)
+means <- c()
+SE    <- c()
+for(i in 1:k){
+  temp <- sample(nrow(run09), n)
+  d    <- run09$time[temp]
+  means[i] <- mean(d, na.rm = TRUE)
+  SE[i]    <- sd(d)/sqrt(n)
+}
+xR <- m + 4 * c(-1, 1) * s / sqrt(n)
+yR <- c(0.7, 25.3)
+plot(xR, yR,
+     type = 'n',
+     xlab = '',
+     ylab = '',
+     axes = FALSE)
+abline(v = m, lty = 2, col = COL[5,2])
+axis(1, at = m, expression('p'[1]*' - p'[2]*' = 0.47'))
+for(i in 1:k){
+  ci <- means[i] + 2 * c(-1, 1) * SE[i]
+  if(abs(means[i] - m) > 1.96 * SE[i]){
+    col <- COL[4]
+    points(means[i], i, cex = 1.4, col = col)
+    lines(ci, rep(i, 2), col = col, lwd = 4)
+  } else {
+    col <- COL[1]
+  }
+  points(means[i], i, pch = 20, cex = 1.2, col = col)
+  lines(ci, rep(i, 2), col = col)
+}
+
+
+```
+
+The choice of 95% or 90% or even 99% as a confidence level is admittedly somewhat arbitrary; however, it is related to the logic we used when deciding that a p-value should be declared as significant if it is lower than 0.05 (or 0.10 or 0.01, respectively).
+Indeed, one can show mathematically, that a 95% confidence interval and a two-sided hypothesis test at a cutoff of 0.05 will provide the same conclusion when the same data and mathematical tools are applied for the analysis.
+A full derivation of the explicit connection between confidence intervals and hypothesis tests is beyond the scope of this text.
+
+
+### Mathematical model {#math-2prop}
+
+#### Variability of $\hat{p}_1 - \hat{p}_2$ {-}
 
 Like with $\hat{p}$, the difference of two sample
 proportions $\hat{p}_1 - \hat{p}_2$ can be modeled
@@ -1665,7 +1945,7 @@ the success-failure condition must be met by both groups.
 The difference $\hat{p}_1 - \hat{p}_2$ can be modeled
   using a normal distribution when
 
-1. *Independence*, extended.  The data are independent within and between
+1. *Independence* (extended).  The data are independent within and between
     the two groups. Generally this is satisfied if the data come from two independent random samples or if the data come from a randomized experiment.
 2. *Success-failure condition.*
     The success-failure condition holds for both
@@ -1697,7 +1977,7 @@ terms_chp_6 <- c(terms_chp_6, "standard error for difference in proportions")
 
 
 
-#### Confidence intervals for $p_1 - p_2$ {-}
+#### Confidence interval for $p_1 - p_2$ {-}
 
 <!--
 {Confidence intervals for $\pmb{p_1 - p_2}$}
@@ -1855,6 +2135,8 @@ We'll use $p_t$ for the survival
   whether blood thinners help or harm
   heart attack patients who have been admitted after
   they have undergone CPR.
+  
+  Note, the problem was set up as 90% to indicate that there was not a need for a high level of confidence (such a 95% or 99%).  A lower degree of confidence increases potential for error, but it also produces a more narrow interval. 
 ```
 
 \index{data!CPR and blood thinner|)}
@@ -1879,25 +2161,19 @@ Create a 95% confidence interval for the effect of fish oils
 on heart attacks for patients who are well-represented by
 those in the study.
 Also interpret the interval in the context of the
-study.^[Because the patients were randomized,
-  the subjects are independent, both within and between
-  the two groups.
-  The success-failure condition is also met for both
-  groups as all counts are at least 10.
-  This satisfies the conditions necessary to model
-  the difference in proportions using a normal distribution.
+study.^[Because the patients were randomized, the subjects are independent, both within and between the two groups.
+The success-failure condition is also met for both groups as all counts are at least 10.
+This satisfies the conditions necessary to model the difference in proportions using a normal distribution.
 
-  Compute the sample proportions ($\hat{p}_{\text{fish oil}} = 0.0112$, $\hat{p}_{\text{placebo}} = 0.0155$), point estimate of the difference ($0.0112 - 0.0155 = -0.0043$), and standard error $SE = \sqrt{\frac{0.0112 \times 0.9888}{12933} + \frac{0.0155 \times 0.9845}{12938}} = 0.00145$. 
+Compute the sample proportions ($\hat{p}_{\text{fish oil}} = 0.0112$, $\hat{p}_{\text{placebo}} = 0.0155$), point estimate of the difference ($0.0112 - 0.0155 = -0.0043$), and standard error $SE = \sqrt{\frac{0.0112 \times 0.9888}{12933} + \frac{0.0155 \times 0.9845}{12938}} = 0.00145$. 
 
-Next, plug the values into the general formula for
-  a confidence interval, where we'll use a 95%
-  confidence level with $z^{\star} = 1.96$:
-  \begin{align*}
+Next, plug the values into the general formula for a confidence interval, where we'll use a 95% confidence level with $z^{\star} = 1.96$:
+\begin{align*}
   -0.0043 \pm 1.96 \times 0.00145
       \quad \to \quad
       (-0.0071, -0.0015)
-  \end{align*}
-  We are 95% confident that fish oils decreases
+\end{align*}  
+We are 95% confident that fish oils decreases
   heart attacks by
   0.15 to 0.71 percentage points
   (off of a baseline of about 1.55%)
@@ -1921,7 +2197,7 @@ fish_oil_18[[3]] %>%
  kable_styling()
 ```
 
-#### Hypothesis tests for the difference of two proportions {-}
+#### Hypothesis test for $H_0: p_1 - p_2 = 0$ {-}
 
 \index{data!mammography|(}
 \index{data!breast cancer|(}
@@ -1973,10 +2249,11 @@ in breast cancer deaths in the mammogram and control groups.^[$H_0$: the breast 
     $p_{mgm} - p_{ctrl} \neq 0$.]
 ```
 
-Using the previous example,
+The research question describing mammograms is set up to address specific hypotheses (in contrast to a confidence interval for a parameter).  In order to fully take advantage of the hypothesis testing structure, we asses the randomness under the condition that the null hypothesis is true (as we always do for hypothesis testing).
+Using the data from Table \@ref(tab:mammogramStudySummaryTable),
 we will check the conditions for using a normal distribution to
-analyze the results of the study.
-The details are very similar to that of confidence intervals.
+analyze the results of the study using a hypothesis test.
+The details for checking conditions are very similar to that of confidence intervals.
 However, when the null hypothesis is that $p_1 - p_2 = 0$,
 we use a special proportion called the
 **pooled proportion**\index{pooled proportion} to check the success-failure condition:
@@ -2037,11 +2314,11 @@ Is it reasonable to model the difference
 **Use the pooled proportion when $H_0$ is $p_1 - p_2 = 0$.**
   
   When the null hypothesis is that the proportions are equal,
-  use the pooled proportion ($\hat{p}_{\textit{pooled}}$)
+  use the pooled proportion ($\hat{p}_{\textit{pool}}$)
   to verify the
   success-failure condition and estimate the standard error:
   \begin{eqnarray*}
-  \hat{p}_{\textit{pooled}}
+  \hat{p}_{\textit{pool}}
     = \frac{\text{number of ``successes"}}
       {\text{number of cases}}
     = \frac{\hat{p}_1 n_1 + \hat{p}_2 n_2}{n_1 + n_2}
@@ -2322,14 +2599,19 @@ Set up appropriate hypotheses for the test.\footnotemark
 -->
 
 
-## Testing for independence in two-way tables
+## Independence in two-way tables
+
+In Section \@ref(diff-two-prop) our focus was on the difference in proportions, a statistic calculated from finding the success proportions (from the binary response variable) measured across two groups (the binary explanatory variable).
+As we will see in the examples below, sometimes the explanatory or response variables have more than two possible options.
+In that setting, a difference across two groups is not sufficient, and the proportion of "success" is not well defined if there are 3 or 4 or more possible response levels.
+The primary way to summarize categorical data where the explanatory and response variables both have 2 or more levels is through a two-way table as in Table \@ref(tab:ipod-ask-data-summary).
 
 Note that with two-way tables, there is not an obvious single parameter of interest. 
 Instead, research questions usually focus on how the proportions of the response variable changes (or not) across the different levels of the explanatory variable. 
 Because there is not a population parameter to estimate, bootstrapping to find the standard error of the estimate is not meaningful.
 As such, for two-way tables, we will focus on the randomization test and corresponding mathematical approximation (and not bootstrapping).
 
-### Two-way table: randomization test
+### Randomization test of $H_0:$ independence
 
 \index{data!iPod|(}
 
@@ -2550,7 +2832,9 @@ To identify the expected count for the $i^{th}$ row
 ```
 
 
-#### The chi-square statistic for two-way tables {-}
+#### The chi-square statistic {-}
+
+##### Observed data {-}
 
 The chi-square test statistic for a two-way table is found
 by comparing the observed and expected counts for each cell in the table.
@@ -2575,7 +2859,9 @@ X^2 = 16.53 + 0.35 + \dots + 4.66 = 40.13
 \end{align*}
 
 
-#### Randomization distribution of the chi-square statisic {-}
+#### Randomization distribution of the chi-square statistic {-}
+
+##### Variability of the statistic {-}
 
 Is 40.13 a big number?  That is, does it indicate that the observed and expected values are really different?  Or is 40.13 a value of the statistic that we'd expect to see just due to natural variability?  Previously, we applied the randomization test to the setting where the research question investigated a difference in proportions.  The same idea of shuffling the data under the null hypothesis can be used in the setting of the two-way table.
 
@@ -2635,6 +2921,9 @@ chisq.test(rand.ipod, correct = FALSE)$expected
 chisq.test(rand.ipod, correct = FALSE)$stat
 ```
 
+
+##### Observed statistic vs null statistics {-}
+
 As before, one randomization will not be sufficient for understanding if the observed data are particularly different from the expected chi-square statistics when $H_0$ is true.  To investigate whether 40.13 is large enough to indicate the the observed and expected counts are significantly different, we need to understand what values of the chi-squared statistic would happen just due to change.  Figure \@ref(fig:ipodRandDotPlot) plots 1000 chi-squared statistics generated under the null hypothesis.  We can see that the observed value is so far from the null statistics that the simulated p-value is zero.  That is, the probability of seeing the observed statistic when the null hypothesis is true is virtually zero.  In this case we can conclude that the decision of whether or not to disclose the iPod's problem is changed by the question asked.  (We use the causal language of "changed" because the study was an experiment.)  Note that with a chi-squared test, we only know that the two variables (here: `question` and `disclosure`) are related (i.e., not independent).  We are not able to claim which type of question causes which type of disclosure.
 
 
@@ -2682,9 +2971,49 @@ points(X[X >= 40.1], Y[X >= 40.1], lwd=3, col = COL[4], cex=0.4)
 ```
 
 
-### Two-way table: mathematical model
+### Mathematical model
 
-#### The chi-square test for two-way tables {-}
+#### The chi-square test of $H_0:$ independence {-}
+
+Previously, in Section \@ref(math-2prop), we applied the Central Limit Theorem to the sampling variability of $\hat{p}_1 - \hat{p}_2$.
+The result was that we could use the normal distribution (e.g., $z^*$ values (see Figure \@ref(fig:choosingZForCI) ) and p-values from $Z$ scores) to complete the mathematical inferential procedure.
+The chi-square test statistic has a different mathematical distribution called the chi-squared distribution.
+The important specification to make in describing the chi-square distribution is something called degrees of freedom.
+The degrees of freedom change the shape of the chi-square distribution to fit the problem at hand.
+Figure \@ref(fig:chisqDistDF) visualizes different chi-square distributions corresponding to different degrees of freedom.
+
+```{r chisqDistDF, fig.cap="The chi-square distribution for differing degrees of freedom.  The larger the degrees of freedom, the longer the right tail extends.", warning=FALSE, fig.width=10}
+
+x <- c(0, seq(0.0000001, 40, 0.05))
+DF <- c(2.0000001, 4, 9)
+y <- list()
+for (i in 1:length(DF)) {
+  y[[i]] <- dchisq(x, DF[i])
+}
+plot(0, 0,
+     type = 'n',
+     xlim = c(0, 25),
+     ylim = range(c(y, recursive = TRUE)),
+     axes = FALSE)
+for (i in 1:length(DF)) {
+  lines(x, y[[i]],
+        lty = i,
+        col = COL[ifelse(i == 3, 4, i)],
+        lwd = 1.5 + i / 2)
+}
+abline(h = 0)
+axis(1)
+legend('topright',
+       lwd = 0.3 + 1:4 / 1.25,
+       col = COL[c(1, 2, 4)],
+       lty = 1:4,
+       legend = paste(round(DF)),
+       title = 'Degrees of Freedom',
+       cex = 1)
+```
+
+
+##### Variability of the statistic {-}
 
 As it turns out, the chi-squared test statistic follows a chi-square distribution when the null hypothesis is true. 
 For two way tables, the degrees of freedom is equal to:
@@ -2695,6 +3024,8 @@ In our example, the degrees of freedom parameter is
 \begin{align*}
 df = (2-1)\times (3-1) = 2
 \end{align*}
+
+##### Observed statistic vs. null statistics {-}
 
 To bring it back to the example, if the null hypothesis is true
 (i.e., the questions had no impact on the sellers in
@@ -2797,11 +3128,17 @@ temptbl %>%
 
 
 
+Typically we will use a computer to do the computational work of finding the chi-square statistic.
+However, it is always good to have a sense for what the computer is doing, and in particular, calculating the values which would be expected if the null hypothesis is true can help to understand the null hypothesis claim.
+Additionally, comparing the expected and observed values by eye often gives the researcher some insight into why or why not the result of the test ends up being significant.
+
+
 ```{block2, type = "guidedpractice", echo = TRUE}
 A chi-square test for a two-way table may be used to test
 the hypotheses in the diabetes Example above.
 
-As a first step, compute the expected values for each of the
+
+To get a sense for the statistic used in the chi-square test, first compute the expected values for each of the
 six table cells.^[The expected count for
     row one / column one is found by multiplying the
     row one total (234) and column one total (319),
