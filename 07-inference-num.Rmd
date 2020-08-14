@@ -127,10 +127,10 @@ include_graphics("07/figures/bootquant3.png")
 
 Figure \@ref(fig:carsbsmean) summarizes one thousand bootstrap samples in a histogram of the bootstrap sample means.
 The bootstrapped average car prices vary from $ 12,760 to $ 20,800.
-The bootstrap confidence interval is found by locating the middle 90% (for a 90% confidence interval) or a 95% (for a 95% confidence interval) of the bootstrapped statistics.
+The bootstrap percentile confidence interval is found by locating the middle 90% (for a 90% confidence interval) or a 95% (for a 95% confidence interval) of the bootstrapped statistics.
 
 ```{block2, type = "example", echo = TRUE}
-Using Figure \@ref(fig:carsbsmean), find the 90% and 95% confidence intervals for the true average price of a car from Awesome Auto.
+Using Figure \@ref(fig:carsbsmean), find the 90% and 95% bootstrap percentile confidence intervals for the true average price of a car from Awesome Auto.
 
 ---
 
@@ -198,13 +198,15 @@ mtext("Bootstrapped values of the mean of the car price from Awesome Auto.", 1, 
 #### Bootstrap SE confidence interval {-}
 
 As seen in Section \@ref(two-prop-boot-ci), another method for creating bootstrap confidence intervals directly uses a calculation of the variability of the bootstrap statistics (here, the bootstrap means).
-If the bootstrap distribution is relatively symmetric and bell-shaped, then the bootstrap 95% confidence interval can be constructed with the formula familiar from the mathematical models in previous chapters:
+If the bootstrap distribution is relatively symmetric and bell-shaped, then the 95% bootstrap SE confidence interval can be constructed with the formula familiar from the mathematical models in previous chapters:
 
 $$\mbox{point estimate} \pm 2 \cdot SE_{BS}$$
-The number 2 is an approximation connected to the "95%" part of the confidence interval (remember the 68-95-99.7 rule) which will be made more detailed in Section \@ref(one-mean-math).
+The number 2 is an approximation connected to the "95%" part of the confidence interval (remember the 68-95-99.7 rule).
+As will be seen in Section \@ref(one-mean-math), a new distribution (the $t$-distribution) will be applied to most mathematical inference on numerical variables.
+However, because bootstrapping is not grounded in the same theory as the mathematical approcah given in this text, we stick with the standard normal quantiles (in R use the function `qt()` to find percentiles other than 95%) for different confidence percentages.^[There is a large literature on understanding and improving bootstrap intervals, see Hesterberg 2015 ["What Teachers Should Know About the Bootstrap"](https://www.tandfonline.com/doi/full/10.1080/00031305.2015.1089789) and Hayden 2019 ["Questionable Claims for  Simple Versions of the Bootstrap"](https://www.tandfonline.com/doi/full/10.1080/10691898.2019.1669507) for more information.]
 
 ```{block2, type = "example", echo = TRUE}
-Explain how the SE of the bootstrapped means is calculated and what it is measuring.
+Explain how the standard error (SE) of the bootstrapped means is calculated and what it is measuring.
 
 ---
 
@@ -213,10 +215,12 @@ The SE of the bootstrapped means measures how variable the means are from resamp
 Logistically, we can find the standard deviation of the bootstrapped means using the same calculations from Chapter \@ref(eda).  That is, the bootstrapped means are the individual observations about which we measure the variability.
 ```
 
-```{block2, type = "guidedpractice", echo = TRUE}
-It turns out that the standard deviation of the bootstrapped means from Figure \@ref(fig:carsbsmean) is $1,768.97.  [Note: in R the calculation was done using the function `sd()`.]  The average of the observed prices is  $17,320, ad we will consider the sample average to be the best guess point estimate for $\mu$. .
+Although we won't spend a lot of energy on this concept, you may be wondering some of the differences between a standard error and a standard deviation.  The **standard error** describes how a statistic (e.g., sample mean or sample proportion) varies from sample to sample.  The **standard deviation** can be thought of as a function applied to any list of numbers which measures how far those numbers vary from their own average.  So, you can have a standard deviation calculated on a column of dog heights or a standard deviation calculated on a column of bootstrapped means from the resampled data.
 
-Find and interpret the confidence interval for $\mu$ (the true average cost of a car at Awesome Auto) using the Bootstrap SE inverval formula.^[Using the formula for the boostrap SE interval, we find the 95% confidence interval for $\mu$ is: $17,320 \pm 2 \cdot 1,768.97 \rightarrow$ ($13,782.06, $20,857.94).  We are 95% confident that the true average car price at Awesome Auto is somewhere between $13,782.06 and $20,857.94.]
+```{block2, type = "guidedpractice", echo = TRUE}
+It turns out that the standard deviation of the bootstrapped means from Figure \@ref(fig:carsbsmean) is $1,768.97 (a value which is an excellent approximation for the standard error of sample means if we were to take repeated samples from the population).  [Note: in R the calculation was done using the function `sd()`.]  The average of the observed prices is  $17,320, ad we will consider the sample average to be the best guess point estimate for $\mu$. .
+
+Find and interpret the confidence interval for $\mu$ (the true average cost of a car at Awesome Auto) using the bootstrap SE confidence inverval formula.^[Using the formula for the boostrap SE interval, we find the 95% confidence interval for $\mu$ is: $17,320 \pm 2 \cdot 1,768.97 \rightarrow$ ($13,782.06, $20,857.94).  We are 95% confident that the true average car price at Awesome Auto is somewhere between $13,782.06 and $20,857.94.]
 ```
 
 
@@ -1578,7 +1582,7 @@ Choose one of the boostrap confidence intervals for the true difference in avera
   
 ---
   
-Because the 90% intervals above do not overlap zero (zero is never one of the bootstrapped differences, 95% or 99% intervals would have given the same conclusion!), we conclude tha the ESC treatment is significantly better with respect to heart pumping capacity than the treatment.
+Because neither of the 90% intervals (either percentile or SE) above overlap zero (note that zero is never one of the bootstrapped differences so 95% and 99% intervals would have given the same conclusion!), we conclude tha the ESC treatment is significantly better with respect to heart pumping capacity than the treatment.
 
 Beause the study is a randomized controled experiment, we can conclude that it is the treatment (ESC) whic is causing the change in pumping capacity.
 ```
@@ -2445,8 +2449,8 @@ include_graphics("07/figures/bootquant3.png")
 ```
 
 In Figure \@ref(fig:pairboot), two 99% confidence intervals for the difference in the cost of a new book at the UCLA bookstore compared with Amazon have been calculated.
-The bootstrap percentile interval is computing using the 0.5 percentile and 99.5 percentile bootstrapped differences and is found to be ($ 0.25, $ 7.87).
-The bootstrap SE interval is found by computing the SE of the bootstrapped differences ($s_{diff} =  \$1.64$) and the normal multiplier of $z^* = 2.58$.  The averaged difference is $\bar{x} = \$3.58$.
+The bootstrap percentile confidence interval is computing using the 0.5 percentile and 99.5 percentile bootstrapped differences and is found to be ($ 0.25, $ 7.87).
+The bootstrap SE interval is found by computing the SE of the bootstrapped differences ($SE_{\overline{x}_{diff}} =  \$1.64$) and the normal multiplier of $z^* = 2.58$.  The averaged difference is $\bar{x} = \$3.58$.
 The 99% confidence interval is: $ \$3.58 \pm 2.58 \cdot \$ 1.64 \rightarrow (\$-0.65, \$7.81)$.
 The confidence intervals seem to indicate that the UCLA bookstore price is, on average, higher than the Amazon price.
 However, if the analysis required a strong degree of certainty (e.g., 99% confidence), and the bootstrap SE interval was most appropriate (given a second course in statistics the nuances of the methods were investigated), the results of which book seller is higher is not well determined.
