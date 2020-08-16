@@ -18,6 +18,10 @@ knitr::opts_chunk$set(
   fig.show = "hold"
 )
 
+# knitr table options ----------------------------------------------------------
+
+options(knitr.table.format = "html")
+
 # packages ---------------------------------------------------------------------
 
 suppressMessages(library(gghighlight))
