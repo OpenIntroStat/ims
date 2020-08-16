@@ -5,7 +5,7 @@ This chapter focuses on the mechanics and construction of summary statistics and
 We use statistical software for generating the summaries and graphs presented in this chapter and book.
 However, since this might be your first exposure to these concepts, we take our time in this chapter to detail how to create them.
 Mastery of the content presented in this chapter will be crucial for understanding the methods and techniques introduced in rest of the book.
-:::
+::: 
 
 ## Exploring numerical data {#numerical-data}
 
@@ -130,7 +130,7 @@ The average interest rate across all loans in the population can be estimated us
 ---
   
 The sample mean, `r round(loan50_interest_rate_mean, 2)`, provides a rough estimate of $\mu_x$. While it is not perfect, this is our single best guess **point estimate**\index{point estimate} of the average interest rate of all the loans in the population under study. In Chapter \@ref(inference-foundations) and beyond, we will develop tools to characterize the accuracy of point estimates, like the sample mean. As you might have guessed, point estimates based on larger samples tend to be more accurate than those based on smaller samples.
-:::
+::: 
 
 ```{r include=FALSE}
 terms_chp_2 <- c(terms_chp_2, "point estimate")
@@ -295,7 +295,7 @@ How many modes would you expect in this height data set?^[There might be two hei
 
 Looking for modes isn't about finding a clear and correct answer about the number of modes in a distribution, which is why *prominent*\index{prominent} is not rigorously defined in this book. The most important part of this examination is to better understand your data.
 
-### Variance and standard deviation (\#variance-sd)
+### Variance and standard deviation {#variance-sd}
 
 The mean was introduced as a method to describe the center of a data set, and **variability**\index{variability} in the data is also important. Here, we introduce two measures of variability: the variance and the standard deviation. Both of these are very useful in data analysis, even though their formulas are a bit tedious to calculate by hand. The standard deviation is the easier of the two to comprehend, and it roughly describes how far away the typical observation is from the mean.
 
@@ -433,7 +433,9 @@ Using Figure \@ref(fig:severalDiffDistWithSdOf1) as an example, explain why such
 Describe the distribution of the `interest_rate` variable using the histogram in Figure \@ref(fig:loan50IntRateHist). 
 The description should incorporate the center, variability, and shape of the distribution, and it should also be placed in context. 
 Also note any especially unusual cases.
+
 ---
+
 The distribution of interest rates is unimodal and skewed to the high end. Many of the rates fall near the mean at 11.57%, and most fall within one standard deviation (5.05%) of the mean. 
 There are a few exceptionally large interest rates in the sample that are above 20%.
 ::: 
@@ -715,7 +717,7 @@ Consider the histogram of county populations shown in Figure \@ref(fig:county-po
 ---
 
 Nearly all of the data fall into the left-most bin, and the extreme skew obscures many of the potentially interesting details in the data.
-:::
+::: 
 
 There are some standard transformations that may be useful for strongly right skewed data where much of the data is positive but clustered near zero.
 A **transformation** is a rescaling of the data using a function.
@@ -885,6 +887,8 @@ map_howownership /
   theme(plot.tag = element_text(size = 10))
 ```
 
+### Exercises
+
 ## Exploring categorical data {#categorical-data}
 
 ::: {.uptohere}
@@ -894,7 +898,203 @@ This section is still under construction.
 In this section, we will introduce tables and other basic tools for categorical data that are used throughout this book.
 The `loan50` data set represents a sample from a larger loan data set called `loans`.
 This larger data set contains information on 10,000 loans made through Lending Club.
-We will examine the relationship between `homeownership`, which for the `loans` data can take a value of `rent`, `mortgage` (owns but has a mortgage), or `own`, and `app_type`, which indicates whether the loan application was made with a partner or whether it was an individual application.
+We will examine the relationship between `homeownership`, which for the `loans` data can take a value of `rent`, `mortgage` (owns but has a mortgage), or `own`, and `app_type`, which indicates whether the loan application was made with a partner or whether it was an individual application. 
+
+::: {.data}
+The data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`loans_full_schema`](http://openintrostat.github.io/openintro/reference/loans_full_schema.html).
+:::
+
+### Contingency tables and bar plots 
+
+```{r}
+loans_full_schema <- loans_full_schema %>%
+  mutate(application_type = as.character(application_type)) %>%
+  filter(application_type != "") %>%
+  mutate(
+    homeownership    = tolower(homeownership), 
+    homeownership    = fct_relevel(homeownership, "rent", "mortgage", "own"), 
+    application_type = fct_relevel(application_type, "joint", "individual")
+    ) 
+
+loans_individual_rent <- loans_full_schema %>%
+  filter(
+    application_type == "individual",
+    homeownership    == "rent") %>%
+  nrow()
+```
+
+Table \@ref(tab:loan-home-app-type-totals) summarizes two variables: `application_type` and `homeownership`. 
+A table that summarizes data for two categorical variables in this way is called a **contingency table**. 
+Each value in the table represents the number of times a particular combination of variable outcomes occurred. 
+For example, the value `r loans_individual_rent` corresponds to the number of loans in the data set where the borrower rents their home and the application type was by an individual.
+Row and column totals are also included. 
+The **row totals** provide the total counts across each row and the **column totals** down each column. 
+We can also create a table that shows only the overall percentages or proportions for each combination of categories, or we can create a table for a single variable, such as the one shown in Table \@ref(tab:loan-homeownership-totals) for the `homeownership` variable.
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "contingency table", "row totals", "column totals")
+```
+
+```{r loan-home-app-type-totals}
+loans_full_schema %>%
+  count(application_type, homeownership) %>%
+  pivot_wider(names_from = homeownership, values_from = n) %>% 
+  adorn_totals(where = c("row", "col")) %>%
+  kable(caption = "A contingency table for application type and homeownership.") %>%
+  kable_styling(full_width = FALSE) %>%
+  add_header_above(c(" " = 1, "homeownership" = 3, " " = 1))
+```
+
+```{r loan-homeownership-totals}
+loans_full_schema %>%
+  mutate(homeownership = tolower(homeownership)) %>%
+  count(homeownership, name = "Count") %>%
+  adorn_totals(where = "row") %>%
+  kable(caption = "A table summarizing the frequencies for each value of the homeownership variable: mortgage, own, and rent.") %>%
+  kable_styling(full_width = FALSE)
+```
+
+A bar plot is a common way to display a single categorical variable. 
+The left panel of Figure \@ref(fig:loan-homeownership-bar-plot) shows a **bar plot** for the `homeownership` variable. 
+In the right panel, the counts are converted into proportions, showing the proportion of observations that are in each level.
+
+```{r loan-homeownership-bar-plot, fig.cap = "Two bar plots: the left panel shows the counts and the right panel shows the proportions of values of the homeownership variable.", fig.asp=0.5, fig.width=8}
+p_count <- ggplot(loans_full_schema, aes(x = homeownership)) +
+  geom_bar(fill = COL[1,1]) + 
+  labs(x = "Homeownership", y = "Frequency")
+
+p_proportion <- loans_full_schema %>%
+  count(homeownership) %>%
+  mutate(proportion = n / sum(n)) %>%
+  ggplot(aes(x = homeownership, y = proportion)) +
+  geom_col(fill = COL[1,1]) + 
+  labs(x = "Homeownership", y = "Proportion")
+
+p_count + p_proportion
+```
+
+### Using a bar plot with two variables
+
+We can display the distributions of two categorical variables on a bar plot concurrently. 
+Such plots are generally useful for visualizing the relationship between two categorical variables. 
+Figure \@ref(fig:loan-homeownership-app-type-bar-plot) shows three such plots that visualize the relationship between `homeownership` and `application_type` variables. 
+Plot A in Figure \@ref(fig:loan-homeownership-app-type-bar-plot) is a **stacked bar plot**. 
+This plot most clearly displays that loan applicants most commonly live in mortgaged homes. 
+It is difficult to say, based on this plot alone, how different application types vary across the levels of homeownership. 
+Plot B is a **dodged bar plot**. 
+This plot most clearly displays that within each level of homeownership, individual applications are more common than joint applications. 
+Finally, plot C is a **standardized bar plot** (also known as **filled bar plot**). 
+This plot most clearly displays that joint applications are most common among applications who live in mortgaged homes, compared to renters and owners. 
+This type of visualization is helpful in understanding the fraction of individual or joint loan applications for borrowers in each level of `homeownership`. 
+Additionally, since the proportions of and vary across the groups, we can conclude that the two variables are associated for this sample. 
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "stacked bar plot", "dodged bar plot", "filled bar plot", "standardized bar plot")
+```
+
+```{r loan-homeownership-app-type-bar-plot, fig.cap = "Three bar plots (stacked, dodged, and standardized) displaying homeownership and application type variables.", fig.asp=1, fig.width=8}
+p_stacked <- ggplot(loans_full_schema, aes(x = homeownership, fill = application_type)) +
+  geom_bar() +
+  scale_fill_manual(values = c(COL["yellow","full"], COL["blue","full"])) + 
+  labs(x = "Homeownership", y = "Frequency", fill = "Application type")
+
+p_dodged <- ggplot(loans_full_schema, aes(x = homeownership, fill = application_type)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c(COL["yellow","full"], COL["blue","full"])) + 
+  labs(x = "Homeownership", y = "Frequency", fill = "Application type")
+
+p_standardized <- ggplot(loans_full_schema, aes(x = homeownership, fill = application_type)) +
+  geom_bar(position = "fill") +
+  scale_fill_manual(values = c(COL["yellow","full"], COL["blue","full"])) + 
+  labs(x = "Homeownership", y = "Proportion", fill = "Application type")
+
+p_stacked + p_dodged + p_standardized + guide_area() +
+  plot_annotation(tag_levels = "A") +
+  plot_layout(guides = "collect")
+```
+
+::: {.example}
+Examine the three bar plots in Figure \@ref(fig:loan-homeownership-app-type-bar-plot). When is the stacked, dodged, or standardized bar plot the most useful? 
+
+---
+
+The stacked bar plot is most useful when it's reasonable to assign one variable as the explanatory variable and the other variable as the response, since we are effectively grouping by one variable first and then breaking it down by the others.
+
+Dodged bar plots are more agnostic in their display about which variable, if any, represents the explanatory and which the response variable. 
+It is also easy to discern the number of cases in of the six different group combinations. 
+However, one downside is tha it tends to require more horizontal space; the narrowness of Plot B compared to the other two in Figure \@ref(fig:loan-homeownership-app-type-bar-plot) makes the plot feel a bit cramped. 
+Additionally, when two groups are of very different sizes, as we see in the group relative to either of the other two groups, it is difficult to discern if there is an association between the variables.
+
+The standardized stacked bar plot is helpful if the primary variable in the stacked bar plot is relatively imbalanced, e.g. the category has only a third of the observations in the category, making the simple stacked bar plot less useful for checking for an association. 
+The major downside of the standardized version is that we lose all sense of how many cases each of the bars represents.
+::: 
+
+### Mosaic plots
+
+A **mosaic plot** is a visualization technique suitable for contingency tables that resembles a standardized stacked bar plot with the benefit that we still see the relative group sizes of the primary variable as well. 
+
+```{r include=FALSE}
+terms_chp_2 <- c(terms_chp_2, "mosaic plot")
+```
+
+To get started in creating our first mosaic plot, we'll break a square into columns for each category of the variable, with the result shown in Plot A of Figure \@(fig:loan-homeownership-type-mosaic-plot). 
+Each column represents a level of `homeownership`, and the column widths correspond to the proportion of loans in each of those categories. 
+For instance, there are fewer loans where the borrower is an owner than where the borrower has a mortgage. 
+In general, mosaic plots use box *areas* to represent the number of cases in each category.
+
+Plot B in Figure \@(fig:loan-homeownership-type-mosaic-plot) displays the relationship between homeownership and application type. 
+Each column is split proportional to the number of loans from individual and joint borrowers. 
+For example, the second column represents loans where the borrower has a mortgage, and it was divided into individual loans (upper) and joint loans (lower). 
+As another example, the bottom segment of the third column represents loans where the borrower owns their home and applied jointly, while the upper segment of this column represents borrowers who are homeowners and filed individually. 
+We can again use this plot to see that the and variables are associated, since some columns are divided in different vertical locations than others, which was the same technique used for checking an association in the standardized stacked bar plot.
+
+```{r loan-homeownership-type-mosaic-plot, fig.cap = "The mosaic plots: one for homeownership alone and the other displaying the relationship between homeownership and applocation type.", fig.asp=0.5, fig.width=8}
+p_mosaic_1 <- ggplot(loans_full_schema) +
+  geom_mosaic(aes(x = product(homeownership))) +
+  labs(x = "Homeownership", y = "") +
+  theme(axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank())
+
+p_mosaic_2 <- ggplot(loans_full_schema) +
+  geom_mosaic(aes(x = product(homeownership), fill = application_type)) +
+  scale_fill_manual(values = c(COL["yellow","full"], COL["blue","full"])) +
+  labs(x = "Homeownership", y = "") +
+  guides(fill = FALSE)
+
+p_mosaic_1 + p_mosaic_2 +
+  plot_annotation(tag_levels = "A")
+```
+
+In Figure \@ref(fig:loan-homeownership-type-mosaic-plot), we chose to first split by the homeowner status of the borrower. 
+However, we could have instead first split by the application type, as in Figure \@ref(fig:loan-app-type-mosaic-plot). Like with the bar plots, it's common to use the explanatory variable to represent the first split in a mosaic plot, and then for the response to break up each level of the explanatory variable, if these labels are reasonable to attach to the variables under consideration.
+
+```{r loan-app-type-mosaic-plot, fig.cap = "Mosaic plot where loans are grouped by homeownership after they have been divided into individual and joint application types.", fig.asp=1}
+ggplot(loans_full_schema) +
+  geom_mosaic(aes(x = product(application_type), fill = homeownership)) +
+  scale_fill_manual(values = c(COL["green","full"], COL["gray","full"], COL["red","full"])) +
+  labs(x = "Application type", y = "") +
+  guides(fill = FALSE)
+```
+
+### Row and column proportions
+
+
+### Pie charts
+
+### Comparing numerical data across groups
+
+### Exercises
+
+## Case study: malaria vaccine
+
+### Variability within data
+
+### Simulating the study
+
+### Checking for independence 
+
+### Exercises
 
 ## Chapter review {#chp2-review}
 
@@ -905,8 +1105,55 @@ If you're not sure what some of these terms mean, we recommend you go back in th
 We are purposefully presenting them in alphabetical order, instead of in order of appearance, so they will be a little more challenging to locate. 
 However you should be able to easily spot them as **bolded text**.
 
-```{r eval = FALSE}
+```{r}
 make_terms_table(terms_chp_2)
 ```
 
 ### Chapter exercises
+
+::: {.sectionexercise}
+
+```{r intro, child="01-exercises/02-04-chapter-review.Rmd", eval=FALSE}
+```
+
+:::
+
+### Interactive R tutorials
+
+Navigate the concepts you've learned in this chapter in R using the following self-paced tutorials. 
+All you need is your browser to get started!
+
+::: {.alltutorials}
+[Tutorial 2: Summarizing and visualizing data
+](https://openintrostat.github.io/ims-tutorials/02-summarizing-and-visualizing-data/)
+:::
+
+::: {.singletutorial}
+[Tutorial 1 - Lesson 1: Visualizing categorical data](https://openintro.shinyapps.io/ims-02-summarizing-and-visualizing-data-01/)
+:::
+
+::: {.singletutorial}
+[Tutorial 1 - Lesson 2: Visualizing numerical data](https://openintro.shinyapps.io/ims-02-summarizing-and-visualizing-data-02/)
+:::
+
+::: {.singletutorial}
+[Tutorial 1 - Lesson 3: Summarizing with statistics](https://openintro.shinyapps.io/ims-02-summarizing-and-visualizing-data-03/)
+:::
+
+::: {.singletutorial}
+[Tutorial 1 - Lesson 4: Case study](https://openintro.shinyapps.io/ims-02-summarizing-and-visualizing-data-04/)
+:::
+
+You can also access the full list of tutorials supporting this book [here](https://openintrostat.github.io/ims-tutorials/).
+
+### R labs
+
+Further apply the concepts you've learned in this chapter in R with computational labs that walk you through a data analysis case study.
+
+::: {.singlelab}
+[Lab 1: Intro to data]http://openintrostat.github.io/oilabs-tidy/02_intro_to_data/intro_to_data.html)
+:::
+
+::: {.alllabs}
+[Full list of labs supporting OpenIntro::Introduction to Modern Statistics](http://openintrostat.github.io/oilabs-tidy/)
+:::
