@@ -20,19 +20,19 @@ knitr::opts_chunk$set(
 
 # packages ---------------------------------------------------------------------
 
-suppressMessages(library(knitr))
+suppressMessages(library(gghighlight))
 suppressMessages(library(ggmosaic))
-suppressMessages(library(skimr))
-suppressMessages(library(kableExtra))
+suppressMessages(library(gridExtra))
+suppressMessages(library(infer))
 suppressMessages(library(janitor))
+suppressMessages(library(knitr))
+suppressMessages(library(kableExtra))
+suppressMessages(library(maps))
 suppressMessages(library(openintro))
+suppressMessages(library(patchwork))
 suppressMessages(library(tidyverse))
 suppressMessages(library(scales))
-suppressMessages(library(infer))
-suppressMessages(library(patchwork))
-suppressMessages(library(gghighlight))
-suppressMessages(library(maps))
-suppressMessages(library(gridExtra))
+suppressMessages(library(skimr))
 
 # dplyr options ----------------------------------------------------------------
 
