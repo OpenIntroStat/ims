@@ -6,7 +6,7 @@
 
 ## Where did Intoduction to Statistics with Randomization and Simulation go?
 
-As we're working on the 2nd edition of this book, we realized that we weren't too enamored by the name, and decided to rename the book to "Introduction to Modern Statistics" to better reflect the content covered in the book, which features simulation-based inference but also many non-inference topics!
+As we're working on the 2nd edition of this book, we realized that we weren't too enamoured by the name, and decided to rename the book to "Introduction to Modern Statistics" to better reflect the content covered in the book, which features simulation-based inference but also many non-inference topics!
 
 If you're looking for the source files for the 1st edition of OpenIntro - Introduction to Statistics with Randomization and Simulation, please download the zipped release [here](https://github.com/OpenIntroStat/randomization-and-simulation/releases).
 
@@ -18,18 +18,15 @@ Tentative outline:
 
 ### [Chp 1. Introduction to data](https://openintro-ims.netlify.app/intro-to-data.html)
 
-*Planned draft completion date: 13 June 2020* :heavy_check_mark:
+*Complete*
 
 - Case Study (capable of extending to MLR or 2 by 2 table)
 - Data basics
 - Sampling principles and strategies
 - Experiments
-- Data in R
 - Chapter review
 
 ### Chp 2. Exploratory Data Analysis - Visual summaries and summary statistics
-
-*Planned draft completion date: 20 June 2020*
 
 - Cat vs. cat - segmented plots / contingency tables
 	- Conditional probability from contingency tables
@@ -40,7 +37,7 @@ Tentative outline:
 
 ### Chp 3. Correlation and Regression (descriptive)
 
-*Planned draft completion date: 27 June 2020*
+*Awaiting completion*
 
 - Visual summaries of data: scatterplot, side-by-side boxplots, histogram, density plot, box plot (lead out with multivariate, follow with univariate)
 - Describing distributions: correlation, central tendency, variability, skew, modality
@@ -52,7 +49,7 @@ Tentative outline:
 
 ### Chp 4. Multiple Regression (descriptive)
 
-*Planned draft completion date: 4 July 2020*
+*Awaiting completion*
 
 - Num vs. whatever - MLR
 	- Introduction to multiple regression
@@ -66,7 +63,7 @@ Tentative outline:
 
 ### Chp 5. Foundations of Inference
 
-*Planned draft completion date: 11 July 2020*
+*Awaiting completion*
 
 - Understanding inference through simulation
 - Randomization case study: gender discrimination
@@ -77,7 +74,7 @@ Tentative outline:
 
 ### Chp 6. Inference for categorical data
 
-*Planned draft completion date: 18 July 2020*
+*Awaiting completion*
 
 - Inference for a single proportion
 	- Simulation
@@ -89,7 +86,7 @@ Tentative outline:
 
 ### Chp 7. Inference for numerical data
 
-*Planned draft completion date: 1 August 2020*
+*Awaiting completion*
 
 - One-sample means
 	- Bootstrap (for means, medians)
@@ -100,7 +97,7 @@ Tentative outline:
 
 ### Chp 8. Inference for regression
 
-*Planned draft completion date: 22 August 2020*
+*Awaiting completion*
 
 - Inference for linear regression
 	- Bootstrap for regression coefficients
@@ -114,7 +111,7 @@ Tentative outline:
 
 ### Appendix: Probability
 
-(Keep same content as before, minus the bit of probability that got moved to categorical EDA)
+*Not included in preliminary edition, may be included in first edition*
 
 ---
 
