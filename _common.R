@@ -2,37 +2,41 @@
 set.seed(25)
 options(digits = 3)
 
+# packages ---------------------------------------------------------------------
+
+suppressMessages(library(gghighlight))
+suppressMessages(library(ggmosaic))
+suppressMessages(library(gridExtra))
+suppressMessages(library(infer))
+suppressMessages(library(janitor))
+suppressMessages(library(knitr))
+suppressMessages(library(kableExtra))
+suppressMessages(library(maps))
+suppressMessages(library(openintro))
+suppressMessages(library(patchwork))
+suppressMessages(library(tidyverse))
+suppressMessages(library(scales))
+suppressMessages(library(skimr))
+
 # knitr chunk options ----------------------------------------------------------
 
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
   message = FALSE,
+  warning = FALSE,
   #cache = TRUE,
   echo = FALSE, # hide code unless otherwise noted in chunk options
   out.width = "70%",
   fig.align = 'center',
   fig.width = 6,
   fig.asp = 0.618,  # 1 / phi
-  fig.show = "hold",
-  message = FALSE
+  fig.show = "hold"
 )
 
-# packages ---------------------------------------------------------------------
+# kableExtra options -----------------------------------------------------------
 
-suppressMessages(library(knitr))
-suppressMessages(library(ggmosaic))
-suppressMessages(library(skimr))
-suppressMessages(library(kableExtra))
-suppressMessages(library(janitor))
-suppressMessages(library(openintro))
-suppressMessages(library(tidyverse))
-suppressMessages(library(scales))
-suppressMessages(library(infer))
-suppressMessages(library(patchwork))
-suppressMessages(library(gghighlight))
-suppressMessages(library(maps))
-suppressMessages(library(gridExtra))
+options(kableExtra.html.bsTable = TRUE)
 
 # dplyr options ----------------------------------------------------------------
 
