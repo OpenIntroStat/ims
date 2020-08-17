@@ -1195,7 +1195,45 @@ loans_full_schema %>%
   theme_void()
 ```
 
-### Comparing numerical data across groups
+### Comparing numerical data across groups 
+
+Some of the more interesting investigations can be considered by examining numerical data across groups. 
+In this section we will expand on a few methods we've already seen to make plots for numerical data from multiple groups on the same graph as well as introduce a few new methods for comparing numerical data across groups. 
+
+We will revisit the `county` dataset and compare the median household income for counties that gained population from 2010 to 2017 versus counties that had no gain. 
+While we might like to make a causal connection here, remember that these are observational data and so such an interpretation would be, at best, half-baked. 
+
+```{r}
+n_county          <- nrow(county)
+n_missing_pop2017 <- county %>% 
+  filter(is.na(pop2017)) %>% 
+  nrow()
+n_with_pop_change <- n_county - n_missing_pop2017
+
+county <- county %>%
+  mutate(
+    pop_change_3levels = case_when(
+      pop_change < 0 ~ "loss",
+      pop_change == 0 ~ "no change",
+      pop_change > 0 ~ "gain"
+    ),
+    pop_change_2levels = if_else(pop_change_3levels == 0, "gain", "no gain")
+  )
+
+n_pop_no_gain     <- county %>% filter(pop_change_3levels == "no gain") %>% nrow()
+n_pop_loss        <- county %>% filter(pop_change_3levels == "loss") %>% nrow()
+n_pop_no_change   <- county %>% filter(pop_change_3levels == "no change") %>% nrow()
+n_pop_gain        <- county %>% filter(pop_change_3levels == "gain") %>% nrow()
+```
+
+We have data on `r n_county` counties in the United States. 
+We are missing 2017 population data from `r n_missing_pop2017`, and of the remaining `r n_with_pop_change` counties, in `r n_pop_gain` the population increased from 2010 to 2017 and in the remaining `r n_pop_no_gain`.
+
+
+There were 1,454 counties where the population increased from 2010 to
+2017, and there were 1,672 counties with no gain (all but one were a
+loss). A random sample of 100 counties from the first group and 50 from
+the second group are shown in ...
 
 ### Exercises
 
