@@ -503,7 +503,7 @@ Since the simulated groups are of equal size, we would expect $53 / 2 = 26.5$, i
 The results of a single randomization from chance alone is shown in Table \@ref(tab:OpportunityCostTableSimulated). 
 From this table, we can compute a difference that occurred from chance alone:
 \begin{align*}
-\hat{p}_{trmt, simulated} - \hat{p}_{ctrl, simulated}
+\hat{p}_{trmt, sim} - \hat{p}_{ctrl, sim}
  = \frac{24}{75} - \frac{29}{75}
  = 0.32 - 0.387
  = - 0.067
@@ -913,50 +913,98 @@ Most of the inferential procedures covered in this text are grounded in quantify
 It doesn't make sense to take repeated samples from the same population because if you have the means to take more samples, a larger sample size will benefit you more than the exact same sample twice.
 Instead, we measure how the samples behave under an estimate of the population.  Figure \@ref(fig:boot1) shows how the unknown original population can be estimated by using the sample to approximate the proportion of successes and failures (in our case, the proportion of complications and no complications for the medical consultant).
 
-```{r boot1, fig.cap = "first figure with the ? pop, then sample, then estimate of the pop.  below i said 3 white (success) and 4 red (failure).  easy to change the text below.", warning = FALSE,  out.width="75%"}
+```{r boot1, fig.cap = "The unknown population is estimated using the observed sample data.  Note that we can use the sample to create an estimated or bootstrapped population from which to sample.  The observed data include three red and four white marbles, so the estimated population also has red marbles in a proportion of 3/7.", warning = FALSE,  out.width="75%"}
 include_graphics("05/figures/boot1prop1.png")
 ```
 
 By taking repeated samples from the estimated population, the variability from sample to sample can be observed.  In Figure \@ref(fig:boot2) the repeated bootstrap samples are obviously different both from each other and from the original population.
 Recall that the bootstrap samples were taken from the same (estimated) population, and so the differences are due entirely to natural variability in the sampling procedure.
 
-```{r boot2, fig.cap = "next fig, has the bootstrap samples", warning = FALSE,  out.width="75%"}
+<!--
+Bootstrap sampling provides a measure of the variability of sample to sample.  Note that we are taking samples from the estimated population that was created in Figure \@ref(fig:boot1).
+-->
+
+```{r boot2, fig.cap = "Bootstrap sampling provides a measure of the variability of sample to sample.  Note that we are taking samples from the estimated population that was created from the sample.", warning = FALSE,  out.width="75%"}
 include_graphics("05/figures/boot1prop2.png")
 ```
 
 By summarizing each of the bootstrap samples (here, using the sample proportion), we see, directly, the variability of the sample proportion, $\hat{p}$, from sample to sample.
-The distribution of $\hat{p}_{bs}$ for the example scenario is shown in Figure \@ref(fig:boot3), and the bootstrap distribution for the medical consultant data is shown in Figure \@ref(fig:MedConsBSSim).
+The distribution of $\hat{p}_{BS}$ for the example scenario is shown in Figure \@ref(fig:boot3), and the bootstrap distribution for the medical consultant data is shown in Figure \@ref(fig:MedConsBSSim).
 
-```{r boot3, fig.cap = "WITH ADDED HISTOGRAM... boot samples, arrow, histogram of all of them", warning = FALSE,  out.width="75%"}
+```{r boot3, fig.cap = "The bootstrapped proportion is estimated for each bootstrap sample.  The resulting bootstrap distribution (histogram) provides a measure for how the proportions vary from sample to sample", warning = FALSE,  out.width="75%"}
 include_graphics("05/figures/boot1prop3.png")
 ```
 
+```{r pollBootDotPlot, fig.cap="The creation of the histogram that goes in the one proportion bootstrapping ppt figures", echo = FALSE, eval = FALSE, warning=FALSE, fig.width=10}
+
+set.seed(40)
+nsim = 100
+n   = 7
+group = c(rep("red", 3), rep("white", 4))
+success = "red"
+sim  = matrix(NA, nrow = n, ncol = nsim)
+n1  = n2 = 7
+
+statistic <- function(var1, group){	
+	t1 <- group == success 
+	sum(t1)/n1
+#	t2 <- var1 == success & group == levels(as.factor(group))[2]
+#	sum(t1)/n1 - sum(t2)/n2 
+}
+
+for(i in 1:nsim){
+	sim[,i] = sample(group, n, replace = TRUE)
+}
+
+sim_dist = apply(sim, 2, statistic, var1 = outcome)
+diffs  = sim_dist
+#pval   = sum(diffs >= 0.29) / nsim
+values <- table(sim_dist)
+
+
+X <- c()
+Y <- c()
+for(i in 1:length(diffs)){
+	x  <- diffs[i]
+	rec <- sum(sim_dist == x)
+	X  <- append(X, rep(x, rec))
+	Y  <- append(Y, 1:rec)
+}
+
+myPDF("onebootdotplot.pdf")
+plot(X, Y, xlim=range(diffs)+c(-1,1)*sd(diffs)/4, xlab = "", ylab= "", axes = FALSE, ylim=c(0,max(Y)), col=COL[1], cex=0.5, pch=19, lwd=1)
+axis(1, at = seq(0,0.9,0.1), labels = c(0.0,"",0.2,"",0.4,"",0.6,"",0.8, ""))
+abline(h=0)
+dev.off()
+
+```
 
 It turns out that in practice, it is very difficult for computers to work with an infinite population (with the same proportional breakdown as in the sample).
 However, there is a physical and computational model which produces an equivalent bootstrap distribution of the sample proportion in a computationally efficient manner.
-Consider the observed data to be a bag of marbles 3 of which are success (white) and 4 of which are failures (red).  By drawing the marbles out of the bag with replacement, we depict the same sampling **process** as was done with the infinitely large estimated population.
+Consider the observed data to be a bag of marbles 3 of which are success (white) and 4 of which are failures (red).  By drawing the marbles out of the bag with replacement, we depict the exact same sampling **process** as was done with the infinitely large estimated population.
 Note in Figure \@ref(fig:boot4) that when sampling the original observations, a particular data point may end up in the new sample one time (evidenced by a circle around the observation), two times (evidenced by two circles around the observation), or not at all (no circles around the observation).  
 
-If we apply the bootstrap sampling process to the medical consultant example, we consider each client to be one of the marbles in the bag.
-There will be 59 white marbles (no complication) and 3 red marbles (complication).
-If we 62 choose marbles out of the bag (one at a time) and compute the proportion of simulated patients with complications, $\hat{p}_{bs}$, then this "bootstrap" proportion represents a single simulated proportion from the "resample from the sample" approach.
 
-```{r boot4, fig.cap = "sampling with replacement figure", warning = FALSE,  out.width="75%"}
+
+```{r boot4, fig.cap = "Taking repeated resamples from the sample data is the same process as creating an infinitely large estimate of the population.  It is computationally more feasible to take resamples directly from the sample.  Note that the resampling is now done with replacement (that is, the original sample does not ever change) so that the original sample and estimated hypothetical population are equivalent.", warning = FALSE,  out.width="75%"}
 include_graphics("05/figures/boot1prop4.png")
 ```
 
 
-```{r boot1prop, fig.cap = "here is the full process.  do we want to break it up as above?", warning = FALSE,  out.width="75%"}
+```{r boot1prop, fig.cap = "A comparison of the process of sampling from the estimate infinite population and resampling with replacement from the original sample.  Note that the histogram of bootstrapped proportions is the same because the process by which the statistics were estimated is equivalent.", warning = FALSE,  out.width="75%"}
 include_graphics("05/figures/boot1propboth.png")
 ```
 
+If we apply the bootstrap sampling process to the medical consultant example, we consider each client to be one of the marbles in the bag.
+There will be 59 white marbles (no complication) and 3 red marbles (complication).
+If we 62 choose marbles out of the bag (one at a time) and compute the proportion of simulated patients with complications, $\hat{p}_{BS}$, then this "bootstrap" proportion represents a single simulated proportion from the "resample from the sample" approach.
 
 ::: {.guidedpractice}
 In a simulation of 62 patients, about how many would we expect to have had a complication?^[About 5% of the patients (6.2 on average) in the simulation will have a complication, though we will see a little variation from one simulation to the next.]
 ::: 
 
 Figure \@ref(fig:boot5) visualizes one simulation for the medical consultant.
-Out of the simulated cases, there were 5 with a complication and 57 without a complication: $\hat{p}_{bs} = 5/62 = 0.081$.
+Out of the simulated cases, there were 5 with a complication and 57 without a complication: $\hat{p}_{BS} = 5/62 = 0.081$.
 
 ```{r boot5, fig.cap = "how impossible would it be to create one simulation with 62 marbles? 3 red, 59 white?", warning = FALSE, out.width="75%"}
 hist(rnorm(10))
@@ -968,7 +1016,7 @@ The bootstrapped proportions vary from about zero to 11.3%.
 The variability in the bootstrapped proportions leads us to believe that the true probability of complication (the parameter, $p$) is somewhere between 0 and 11.3%.  The range of values for the true proportion is called a **bootstrap percentile confidence interval**, and we will see it again in throughout the next few sections and chapters.
 
 <!--The simulated proportions that are less than or equal to $\hat{p}=0.048$ are shaded.
-There were 1222 simulated sample proportions with $\hat{p}_{bs} \leq 0.048$, which represents a fraction 0.1222 of our simulations:
+There were 1222 simulated sample proportions with $\hat{p}_{BS} \leq 0.048$, which represents a fraction 0.1222 of our simulations:
 -->
 
 ```{r MedConsBSSim, fig.cap="The original medical consultant data is bootstrapped 10,000 times. Each simulation creates a sample from the original data where the probability of a complication is $\\hat{p} = 3/62$. The bootstrap 2.5 percentile proportion is 0 and the 97.5 percentile is 0.113. The result is: we are confident that, in the population, the true probability of a complication is between 0% and 11.3%.", warning=FALSE, fig.width=10}
@@ -1000,7 +1048,7 @@ mtext("Bootstrapped values of the proportion of surgical complications", 1, 2.5)
 <!--
 \begin{align*}
 \text{left tail }
-	= \frac{\text{Number of observed simulations with }\hat{p}_{bs}\leq\text{ 0.048}}{10000}
+	= \frac{\text{Number of observed simulations with }\hat{p}_{BS}\leq\text{ 0.048}}{10000}
 	= \frac{1222}{10000} = 0.1222
 \end{align*}
 However, this is not our p-value! Remember that we are conducting a two-sided test, so we should double the one-tail area to get the p-value:\footnote{This doubling approach is preferred even when the distribution isn't symmetric, as in this case.}
@@ -1035,7 +1083,7 @@ No. Because the interval overlaps 10%, it might be that the consultant's work is
 \index{data!medical consultant|)}
 
 
-### Tappers and listeners case study
+### Tappers and listeners case study {#tapperscasestudy}
 
 Here's a game you can try with your friends or family: pick a simple, well-known song, tap that tune on your desk, and see if the other person can guess the song. 
 In this simple game, you are the tapper, and the other person is the listener.
@@ -1062,9 +1110,6 @@ From the perspective of the null hypothesis, we might wonder, how likely is it t
 That is, what's the chance we would happen to see such a small fraction if $H_0$ were true and the true correct-guess rate is 0.50?
 -->
 
-::: {.todo}
-need a new physical object!
-::: 
 
 #### Variability of the statistic {-}
 
@@ -1084,7 +1129,7 @@ For example, we can start by simulating 5 tapper-listener pairs by sampling 5 ma
 | Wrong | Wrong | Wrong | Correct | Wrong |
 
 
-After selecting 120 marbles, we counted 2 red for $\hat{p}_{bs} = 0.0167$. 
+After selecting 120 marbles, we counted 2 red for $\hat{p}_{BS1} = 0.0167$. 
 As we did with the randomization technique, seeing what would happen with one simulation isn't enough. 
 In order to evaluate whether our originally observed proportion of 0.025 is unusual or not, we should generate more simulations. 
 Here we've repeated the entire simulation ten times:
@@ -1094,7 +1139,7 @@ Here we've repeated the entire simulation ten times:
 0.0083 \quad 0.000
 \end{align*} <!-- % round(rbinom(10, 120, 0.5) / 120, 3) -->
 As before, we'll run a total of 10,000 simulations using a computer. 
-As seen in Figure \@ref(fig:tappers-bs-sim), the range of 95% of the resampled $\hat{p}_{bs}$ is 0.000 to 0.0583. 
+As seen in Figure \@ref(fig:tappers-bs-sim), the range of 95% of the resampled $\hat{p}_{BS}$ is 0.000 to 0.0583. 
 That is, we expect that between 0% and 5.83% of people are truly able to guess the tapper's tune.
 
 ```{r tappers-bs-sim, fig.cap="The original listener-tapper data is bootstrapped 10,000 times. Each simulation creates a sample where the probability of being correct is $\\hat{p} = 3/120$. The 2.5 percentile proportion is 0 and the 97.5 percentile is 0.0583. The result is that we are confident that, in the population, the true percent of people who can guess correctly is between 0% and 5.83%.", warning=FALSE, fig.width=10}
@@ -1176,9 +1221,6 @@ If we want to be very certain we capture the population parameter, should we use
 As we saw above, a **bootstrap sample**\index{bootstrap sample} is a sample of the original sample. 
 In the case of the medical complications data, we proceed as follows:
 
-::: {.todo}
-need a new physical object!
-::: 
 
 1. Randomly sample one observation from the 62 patients (sample, without removing the marbles, 62 marbles from the bag).
 2. Randomly sample a second observation from the 62 patients. Because we sample with replacement (i.e., we don't actually remove the marbles from the bag), there is a 1-in-62 chance that the second observation will be the same one sampled in the first step!
@@ -1190,17 +1232,17 @@ terms_chp_5 <- c(terms_chp_5, "bootstrap sample", "bootstrap percentile confiden
 ```
 
 Bootstrap sampling is often called **sampling with replacement**. 
-A bootstrap sample behaves similarly to how an actual sample would behave, and we compute the point estimate of interest (here, compute $\hat{p}_{bs}$). 
+A bootstrap sample behaves similarly to how an actual sample would behave, and we compute the point estimate of interest (here, compute $\hat{p}_{BS}$). 
 
-Due to theory that is beyond this text, we know that the bootstrap proportions $\hat{p}_{bs}$ vary around $\hat{p}$ in a similar way to how different sample (i.e., different datasets which would produce different $\hat{p}$ values) proportions vary around the true parameter $p$. 
-Therefore, an interval estimate for $p$ can be produced using the $\hat{p}_{bs}$ values themselves.
+Due to theory that is beyond this text, we know that the bootstrap proportions $\hat{p}_{BS}$ vary around $\hat{p}$ in a similar way to how different sample (i.e., different datasets which would produce different $\hat{p}$ values) proportions vary around the true parameter $p$. 
+Therefore, an interval estimate for $p$ can be produced using the $\hat{p}_{BS}$ values themselves.
 
 ::: {.onebox}
 **95% Bootstrap percentile confidence interval for a parameter $p$.**
 
-The 95% bootstrap confidence interval for the parameter $p$ can be obtained directly using the ordered values $\hat{p}_{bs}$ values. Consider the sorted $\hat{p}_{bs}$ values, and let $\hat{p}_{bs, 0.025}$ be the 2.5% value and $\hat{p}_{bs, 0.975}$ be the 97.5% value. The 95% confidence interval is given by:
+The 95% bootstrap confidence interval for the parameter $p$ can be obtained directly using the ordered values $\hat{p}_{BS}$ values. Consider the sorted $\hat{p}_{BS}$ values, and let $\hat{p}_{BS, 0.025}$ be the 2.5% value and $\hat{p}_{BS, 0.975}$ be the 97.5% value. The 95% confidence interval is given by:
 <center>
-($\hat{p}_{bs, 0.025}$, $\hat{p}_{bs, 0.975}$)
+($\hat{p}_{BS, 0.025}$, $\hat{p}_{BS, 0.975}$)
 </center>
 ::: 
 
@@ -1213,7 +1255,7 @@ Bootstrap flow chart
 ::: 
 
 
-```{r bootboth, fig.cap = "(not sure if this should include a histogram or not) the infinite pop compared to with replacement", warning = FALSE,  out.width="75%"}
+```{r bootboth, fig.cap = "We will use sampling with replacement to measure the variability of the statistic of interest (here the proportion).  Sampling with replacement is a computational tool which is equivalent to using the sample as a way of estimating an infinitely large population from which to sample.", warning = FALSE,  out.width="75%"}
 include_graphics("05/figures/boot1propboth.png")
 ```
 
@@ -1238,12 +1280,11 @@ While they differ in the settings, in their outcomes, and also in the technique 
 Figure \@ref(fig:FourCaseStudies) shows the null distributions in each of the four case studies where we ran 10,000 simulations. 
 In the case of the opportunity cost study, which originally had just 1,000 simulations, we've included an additional 9,000 simulations.
 
-::: {.todo}
-"The null distribution for each of the four case studies presented in Sections \ref{caseStudyOpportunityCost}-\ref{SimulationCaseStudies}."
-::: 
+<!--
+The null distribution for each of the four case studies presented in Sections \\@ref(caseStudyOpportunityCost), \\@ref(caseStudyGenderDiscrimination), \\@ref(sec-med-consult), and \\@ref(tapperscasestudy).
+-->
 
-
-```{r FourCaseStudies, fig.cap="The null distribution for each of the four case studies presented previously in this Chapter.", warning=FALSE, fig.width=10}
+```{r FourCaseStudies, fig.cap="The null distribution for each of the four case studies presented in previous.", warning=FALSE, fig.width=10}
 
 number.of.simulations <- 10000
 m.fact <- number.of.simulations / 1e3
@@ -1573,13 +1614,13 @@ terms_chp_5 <- c(terms_chp_5, "standard normal distribution")
 ```
 
 
-::: {.todo}
+<!--
 still can't figure out references
+The two normal models shown in the Figures \\@ref(fig:twoSampleNormals) but plotted together on the same scale.
+-->
 
-The normal models shown in Figure \ref{twoSampleNormals} but plotted together and on the same scale.
-::: 
 
-```{r twoSampleNormalsStacked, fig.cap="The two normal models shown above and now plotted together on the same scale.", warning=FALSE, fig.width=10}
+```{r twoSampleNormalsStacked, fig.cap="The two normal models shown in the previous figures but plotted together on the same scale.", warning=FALSE, fig.width=10}
 
 # curve 1
 X <- seq(-4,4,0.01)
@@ -1973,9 +2014,6 @@ After drawing a figure to represent the situation, identify the Z score for the 
 If the probability of Shannon scoring at least 1630 is 0.3336, then what is the probability she scores less than 1630? Draw the normal curve representing this exercise, shading the lower region instead of the upper one.^[We found the probability to be 0.6664. A picture for this exercise is represented by the shaded area below "0.6664".]
 ::: 
 
-::: {.todo}
-the example and guided practice below both have figures in them.  How do we put figures in footnotes?
-::: 
 
 ::: {.example}
 Edward earned a 1400 on his SAT. What is his percentile?
@@ -1983,6 +2021,11 @@ Edward earned a 1400 on his SAT. What is his percentile?
 ---
  
 First, a picture is needed. Edward's percentile is the proportion of people who do not get as high as a 1400. These are the scores to the left of 1400.
+
+```{r}
+normTail(1500, 300, 1400, axes = FALSE, col = COL[1])
+axis(1, at = c(900, 1500, 2100))
+```
 
 Identifying the mean $\mu=1500$, the standard deviation $\sigma=300$, and the cutoff for the tail area $x=1400$ makes it easy to compute the Z score:
 \begin{eqnarray*}
@@ -1992,15 +2035,13 @@ Using the normal probability table, identify the row of $-0.3$ and column of $0.
 ::: 
 
 
-```{r satBelow1400, fig.cap="", warning=FALSE, fig.width=10}
-normTail(1500, 300, 1400, axes = FALSE, col = COL[1])
-axis(1, at = c(900, 1500, 2100))
-```
-
-
 ::: {.guidedpractice}
 Use the results of the previous example to compute the proportion of SAT takers who did better than Edward. Also draw a new picture.^[If Edward did better than 37% of SAT takers, then about 63% must have done better than him. 
-\includegraphics[height=14mm]{02/figures/satBelow1400/satAbove1400}]
+```{r}
+normTail(1500, 300, U=1400, axes=FALSE, col=COL[1])
+axis(1, at=c(900, 1500, 2100))
+```
+]
 ::: 
 
 
@@ -2017,7 +2058,17 @@ Stuart earned an SAT score of 2100. Draw a picture for each part. (a) What is hi
 Based on a sample of 100 men,^[This sample was taken from the USDA Food Commodity Intake Database.] the heights of male adults between the ages 20 and 62 in the US is nearly normal with mean 70.0'' and standard deviation 3.3''.
 
 ::: {.guidedpractice}
-Mike is 5'7'' and Jim is 6'4''. (a) What is Mike's height percentile? (b) What is Jim's height percentile? Also draw one picture for each part.^[First put the heights into inches: 67 and 76 inches. Figures are shown below. (a) $Z_{Mike} = \frac{67 - 70}{3.3} = -0.91\ \to\ 0.1814$. (b) $Z_{Jim} = \frac{76 - 70}{3.3} = 1.82\ \to\ 0.9656$. \\\includegraphics[height=14mm]{02/figures/mikeAndJimPercentiles/mikeAndJimPercentiles}]
+Mike is 5'7'' and Jim is 6'4''. (a) What is Mike's height percentile? (b) What is Jim's height percentile? Also draw one picture for each part.^[First put the heights into inches: 67 and 76 inches. Figures are shown below. (a) $Z_{Mike} = \frac{67 - 70}{3.3} = -0.91\ \to\ 0.1814$. (b) $Z_{Jim} = \frac{76 - 70}{3.3} = 1.82\ \to\ 0.9656$. 
+```{r}
+normTail(70, 3.3, L=67, axes=FALSE, col=COL[1])
+axis(1, at=c(-100, 67, 70, 1000), cex.axis=1.7)
+text(62, 0.07, "Mike", cex=2)
+
+normTail(70, 3.3, L=76, axes=FALSE, col=COL[1])
+axis(1, at=c(-100, 70, 76, 1000), cex.axis=1.7)
+text(62, 0.07, "Jim", cex=2)
+```
+]
 ::: 
 
 The last several problems have focused on finding the probability or percentile for a particular observation. 
@@ -2029,7 +2080,22 @@ Erik's height is at the $40^{th}$ percentile. How tall is he?
 
 ---
 
-As always, first draw the picture (see below).
+As always, first draw the picture.
+
+```{r}
+X <- seq(-4,4,0.01)
+Y <- dnorm(X)
+plot(X, Y, type='l', axes=F, xlim=c(-3.1,3.1))
+axis(1, at=c(-2,0,2), label=round(70+3.3*c(-2,0,2),2), cex.axis=0.8)
+these <- which(X <= -0.25)
+polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
+
+#arrows(1.3,0.28, 0.43, 0.28, length=0.07)
+text(-2, 0.24, '  40%\n(0.40)', cex=0.8, col=COL[1])
+
+lines(X, Y)
+abline(h=0)
+```
 
 In this case, the lower tail probability is known (0.40), which can be shaded on the diagram. We want to find the observation that corresponds to this value. As a first step in this direction, we determine the Z score associated with the $40^{th}$ percentile.
 
@@ -2046,20 +2112,7 @@ Solving for $x_{Erik}$ yields the height 69.18 inches. That is, Erik is about 5'
 qnorm(0.4, m = 0, s = 1)
 ```
 
-```{r height40Perc, fig.cap="", warning=FALSE, fig.width=10}
-X <- seq(-4,4,0.01)
-Y <- dnorm(X)
-plot(X, Y, type='l', axes=F, xlim=c(-3.1,3.1))
-axis(1, at=c(-2,0,2), label=round(70+3.3*c(-2,0,2),2), cex.axis=0.8)
-these <- which(X <= -0.25)
-polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
 
-#arrows(1.3,0.28, 0.43, 0.28, length=0.07)
-text(-2, 0.24, '  40%\n(0.40)', cex=0.8, col=COL[1])
-
-lines(X, Y)
-abline(h=0)
-```
 
 
 ::: {.example}
@@ -2067,7 +2120,11 @@ What is the adult male height at the $82^{nd}$ percentile?
  
 ---
  
-Again, we draw the figure first (see below).
+Again, we draw the figure first.
+
+```{r}
+qnorm(0.82, m = 0, s = 1)
+```
 
 Next, we want to find the Z score at the $82^{nd}$ percentile, which will be a positive value. Using `qnorm()`, the $82^{nd}$ percentile corresponds to $Z=0.92$. Finally, the height $x$ is found using the Z score formula with the known mean $\mu$, standard deviation $\sigma$, and Z score $Z=0.92$:
 \begin{eqnarray*}
@@ -2076,9 +2133,7 @@ Next, we want to find the Z score at the $82^{nd}$ percentile, which will be a p
 This yields 73.04 inches or about 6'1'' as the height at the $82^{nd}$ percentile.
 ::: 
 
-```{r echo = TRUE}
-qnorm(0.82, m = 0, s = 1)
-```
+
 
 ```{r height82Perc, fig.cap="", warning=FALSE, fig.width=10}
 X <- seq(-4,4,0.01)
@@ -2106,7 +2161,7 @@ abline(h=0)
 ::: {.guidedpractice}
 (a) What is the probability that a randomly selected male adult is at least 6'2'' (74 inches)?  
 (b) What is the probability that a male adult is shorter than 5'9'' (69 inches)?^[Numerical answers: (a) 0.1131. (b) 0.3821.]
-:: 
+::: 
 
 ::: {.example}
 What is the probability that a random adult male is between 5'9'' and 6'2''?
@@ -2114,12 +2169,6 @@ What is the probability that a random adult male is between 5'9'' and 6'2''?
 ---
  
 These heights correspond to 69 inches and 74 inches. First, draw the figure. The area of interest is no longer an upper or lower tail.  
-
-The total area under the curve is 1. If we find the area of the two tails that are not shaded (from the previous Guided Practice, these areas are $0.3821$ and $0.1131$), then we can find the middle area:
-  
-That is, the probability of being between 5'9'' and 6'2'' is 0.5048.
-::: 
-
 
 ```{r}
 par(las=1, mar=c(1.5,0,0.5,0), mgp=c(3,0.45,0))
@@ -2135,6 +2184,8 @@ abline(h=0)
 
 ```
 
+
+The total area under the curve is 1. If we find the area of the two tails that are not shaded (from the previous Guided Practice, these areas are $0.3821$ and $0.1131$), then we can find the middle area:
 
 
 ```{r}
@@ -2182,7 +2233,9 @@ text(8,0.53, "0.3821")
 text(16,0.53, "0.1131")
 text(24,0.53, "0.5048")
 ```
-
+  
+That is, the probability of being between 5'9'' and 6'2'' is 0.5048.
+::: 
 
 
 
