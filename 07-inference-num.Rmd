@@ -2064,6 +2064,13 @@ tires <- data.frame(tread = c(brandA, brandB),
                     car = rep(car, 2), 
                     brand = c(rep("Smooth Turn", 25), rep("Quick Spin", 25)))
 
+orig_means <- tires %>%
+  mutate(`Tire Brand` = brand) %>%
+  group_by(`Tire Brand`) %>%
+  summarize(mean_tread = round(mean(tread),4))  %>%
+  mutate(mean_label = c("bar(x)[QS]", "bar(x)[ST]")) %>%
+  mutate(mean_label = paste(mean_label, " == ", mean_tread))
+
 tires %>%
   mutate(`Tire Brand` = brand) %>%
 ggplot(aes( x = `Tire Brand`, y = tread, color = `Tire Brand`)) +
@@ -2073,8 +2080,11 @@ ggplot(aes( x = `Tire Brand`, y = tread, color = `Tire Brand`)) +
   geom_line(aes(group = car), color = "grey") +
   ylab("") + 
   xlab("Brand of tire") +
-  geom_point() +
+  geom_point(show.legend = TRUE) +
+  geom_text(data = orig_means, aes(label = mean_label, 
+                y = 0.318), parse = TRUE, show.legend = FALSE) + 
   ggtitle("Original data")
+
 ```
 
 
@@ -2096,7 +2106,7 @@ The change in the paired setting, however, is that the assignment happens *withi
 Remember, if the null hypothesis is true, it will not matter which brand is put on which tire because the overall tread wear will be the same across pairs.
 
 
-Figures \@ref(fig:tiredata4) and \@ref(fig:tiredata5) show that the random assignment of group (tire brand) happens within a car.  
+Figures \@ref(fig:tiredata4) and \@ref(fig:tiredata5) show that the random assignment of group (tire brand) happens within a single car.  
 That is, every single car will still have one tire of each type.
 It just so happens that the 4th car's tire brands were swapped and the 5th car's tire brands were not swapped.
 
@@ -2167,7 +2177,7 @@ origplot4 + shuffbrand4
 
 
 
-```{r tiredata5, fig.cap = "The 5th car. The tire brand was randomly permuted to stay the same! In the randomization calculation, the measurements ended up in the original groups.", warning = FALSE, fig.asp = 0.50, out.width = "100%"}
+```{r tiredata5, fig.cap = "The 5th car. The tire brand was randomly permuted to stay the same! In the randomization calculation, the measurements ended up in the original groups.", warning = FALSE, fig.asp = 0.50, fig.height = 20, out.width = "100%"}
 
 theme_set(
   theme_bw() +
@@ -2219,8 +2229,10 @@ origplot5 + shuffbrand5
 ```
 
 
+We can put the shuffled assignments for all the cars into one plot as seen in Figure \@ref(fig:tiredataPerm).
 
-```{r tiredataPerm, fig.cap = "Boxplots of the tire tread data and (left) the brand of tire from which the original measurements came, (center) shuffled brand assignment, (right) sorted by randomized brand.", warning = FALSE, fig.asp = 0.33, out.width = "100%"}
+
+```{r tiredataPerm, fig.cap = "Boxplots of the tire tread data with: the brand of tire from which the original measurements came (left) and shuffled brand assignment (right).  As evidenced by the colors, some of the cars kept their original tire assignments and some cars swapped the tire assignments.", warning = FALSE, fig.asp = 0.50, fig.height = 10, out.width = "100%"}
 
 theme_set(
   theme_bw() +
@@ -2254,6 +2266,12 @@ ggplot(aes( x = `Tire Brand`, y = tread, color = `Randomized Brand`)) +
   theme(legend.position = "none", text = element_text(size = 6)) +
   ggtitle("Shuffled assignment of tire brand")
 
+permed_means <- permdata %>%
+  group_by(`Randomized Brand`) %>%
+  summarize(mean_tread = round(mean(tread),4))  %>%
+  mutate(mean_label = c("bar(x)[QSsim1]", "bar(x)[STsim1]")) %>%
+  mutate(mean_label = paste(mean_label, " == ", mean_tread))
+
 shuffbrandfull <- permdata %>%
 ggplot(aes( x = `Randomized Brand`, y = tread, color = `Randomized Brand`)) +
  # geom_boxplot() +
@@ -2264,51 +2282,78 @@ ggplot(aes( x = `Randomized Brand`, y = tread, color = `Randomized Brand`)) +
   xlab("Randomized brand of tire") +
   ylim(c(miny, maxy)) + 
   geom_point() +
+  geom_text(data = permed_means, 
+            aes(label = mean_label, 
+                y = 0.318), parse = TRUE, show.legend = FALSE) + 
   ggtitle("Sorted data")
 
-origplot + shuffbrand + shuffbrandfull
+origplot + shuffbrand
 
 ```
 
+The next step in the randomization test is to sort the brands so that the assigned brand value on the x-axis aligns with the assigned group from the randomization.  See Figure \@ref(fig:tiredataPermSort) which has the same randomized groups (right image in Figure \@ref(fig:tiredataPerm) and left image in Figure \@ref(fig:tiredataPermSort)) as seen previously.  However, the right image in Figure \@ref(fig:tiredataPermSort) sorts the randomized groups so that we can measure the variability across groups as compared to the variability within groups.  
 
-After randomizing the tire brand to the tread measurements under the null hypothesis, a new boxplot summarizes the randomized data.  
-Figure \@ref(fig:tiredatarand1) presents one randomization of the data.
+```{r tiredataPermSort, fig.cap = "Boxplots of the tire tread data and (left) the brand of tire from which the original measurements came, (center) shuffled brand assignment, (right) sorted by randomized brand.", warning = FALSE, fig.asp = 0.33, out.width = "100%"}
+shuffbrand + shuffbrandfull
+```
+
+
+
+Figure \@ref(fig:tiredatarand1) presents another randomization of the data.
 Notice how the same two observations are linked by a grey line, but some of the tread values have been randomly assigned to the opposite tire brand than they were originally (while some are still connected to their original tire brands).
 
-```{r tiredatarand1, fig.cap = "One randomization where the brand is randomly swapped (or not) across the two tread wear measurements from the same car.", warning = FALSE, out.width="90%"}
+```{r tiredatarand1, fig.cap = "One randomization where the brand is randomly swapped (or not) across the two tread wear measurements from the same car.", warning = FALSE, fig.asp = 0.50, out.width = "100%"}
 # inches  about 1/32" per 3500 mi
 set.seed(47)
 tires1 <- tires %>%
   group_by(car) %>%
   mutate(`Randomized Tire Brand` = sample(brand))
 
+permed_means <- tires1 %>%
+  group_by(`Randomized Tire Brand`) %>%
+  summarize(mean_tread = round(mean(tread),4))  %>%
+  mutate(mean_label = c("bar(x)[QSsim2]", "bar(x)[STsim2]")) %>%
+  mutate(mean_label = paste(mean_label, " == ", mean_tread))
+
 ggplot(tires1, aes( x = `Randomized Tire Brand`, y = tread, color = `Randomized Tire Brand`)) +
   geom_boxplot(show.legend = FALSE,color = "black") +
   geom_point() +
   geom_line(aes(group = car), color = "grey") +
   ylab("") + 
-  xlab("Brand of tires, randomly assigned (1).") +
-  ggtitle("Wear of tire tread (in inches) after 1,000 miles,\n broken down by different tire brands, randomly assigned (1).")
+  xlab("Brand of tires, randomly assigned (2).") +
+    geom_text(data = permed_means, 
+            aes(label = mean_label, 
+                y = 0.318), parse = TRUE, show.legend = FALSE) + 
+  ggtitle("Wear of tire tread (in inches) after 1,000 miles,\n broken down by different tire brands, randomly assigned (2).")
 
 ```
 
 Figure \@ref(fig:tiredatarand2) presents yet another randomization of the data.
 Again, the same observations are linked by a grey line, and some of the tread values have been randomly assigned to the opposite tire brand than they were originally (while some are still connected to their original tire brands).  
 
-```{r tiredatarand2, fig.cap = "An additional randomization where the brand is randomly swapped (or not) across the two tread wear measurements from the same car.", warning = FALSE, out.width="90%"}
+```{r tiredatarand2, fig.cap = "An additional randomization where the brand is randomly swapped (or not) across the two tread wear measurements from the same car.", warning = FALSE, fig.asp = 0.50, out.width = "100%"}
 # inches  about 1/32" per 3500 mi
 set.seed(4747)
 tires2 <- tires %>%
   group_by(car) %>%
   mutate(`Randomized Tire Brand` = sample(brand))
 
+permed_means <- tires2 %>%
+  group_by(`Randomized Tire Brand`) %>%
+  summarize(mean_tread = round(mean(tread),4))  %>%
+  mutate(mean_label = c("bar(x)[QSsim3]", "bar(x)[STsim3]")) %>%
+  mutate(mean_label = paste(mean_label, " == ", mean_tread))
+
 ggplot(tires2, aes( x = `Randomized Tire Brand`, y = tread, color = `Randomized Tire Brand`)) +
   geom_boxplot(show.legend = FALSE, color = "black") +
   geom_point() +
   geom_line(aes(group = car), color = "grey") +
   ylab("") + 
-  xlab("Brand of tires, randomly assigned (2).") +
-  ggtitle("Wear of tire tread (in inches) after 1,000 miles,\n broken down by different tire brands, randomly assigned (2).")
+  xlab("Brand of tires, randomly assigned (3).") +
+  geom_text(data = permed_means, 
+            aes(label = mean_label, 
+                y = 0.318), parse = TRUE, show.legend = FALSE) + 
+  ggtitle("Wear of tire tread (in inches) after 1,000 miles,\n broken down by different tire brands, randomly assigned (3).")
 
 ```
 
