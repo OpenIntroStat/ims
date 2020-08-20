@@ -14,28 +14,30 @@ If you're looking for the source files for the 1st edition of OpenIntro - Introd
 
 Some restructuring, some reordering, and some new content with better treatment of randomization and simulation throughout the book.
 
+Each section comes with exercises as well as chapter level exercises in the last (review) section of each chapter. The review section also includes interactive R tutorials and labs.
+
 Tentative outline:
 
-### [Chp 1. Introduction to data](https://openintro-ims.netlify.app/intro-to-data.html)
+### [Chp 1. Getting started with data](https://openintro-ims.netlify.app/getting-started-with-data.html)
 
 *Complete*
 
-- Case Study (capable of extending to MLR or 2 by 2 table)
+- Case study
 - Data basics
 - Sampling principles and strategies
 - Experiments
 - Chapter review
 
-### Chp 2. Exploratory Data Analysis - Visual summaries and summary statistics
+### [Chp 2. Summarizing and visualizing data](https://openintro-ims.netlify.app/summarizing-visualizing-data.html)
 
-- Cat vs. cat - segmented plots / contingency tables
-	- Conditional probability from contingency tables
-	- Bayes Theorem (law of total probability?)
-- Num vs. cat - side-by-side box plots / comparing distributions 
-	- Mention univariate - center, skew, shape, spread
-	- Mention conditional probabilities as well
+*Exercises to be added in*
 
-### Chp 3. Correlation and Regression (descriptive)
+- Exploring numerical data
+- Exploring categorical data
+- Case study
+- Chapter review
+
+### [Chp 3. Introduction to linear models](https://openintro-ims.netlify.app/intro-linear-models.html)
 
 *Awaiting completion*
 
@@ -47,9 +49,9 @@ Tentative outline:
 	- Fitting a line by least squares regression
 	- Types of outliers in linear regression
 
-### Chp 4. Multiple Regression (descriptive)
+### [Chp 4. Multivariable and logistic models](https://openintro-ims.netlify.app/multi-logistic-models.html)
 
-*Awaiting completion*
+*In progress*
 
 - Num vs. whatever - MLR
 	- Introduction to multiple regression
@@ -61,57 +63,67 @@ Tentative outline:
 	- Three scales interpretation (e.g. probability, odds, log-odds)
 	- “parallel” logistic curves? 
 
-### Chp 5. Foundations of Inference
+### [Chp 5. Introduction to statistical inference](https://openintro-ims.netlify.app/intro-stat-inference.html)
 
-*Awaiting completion*
+*Complete*
 
-- Understanding inference through simulation
-- Randomization case study: gender discrimination
-- Randomization case study: opportunity cost
-- Hypothesis testing
-- Confidence intervals
-- Simulation case studies
+- Randomization tests
+  - Case study: Gender discrimination
+  - Case study: Opportunity cost
+- Bootstrap confidence intervals
+- Mathematical models
 
-### Chp 6. Inference for categorical data
+### [Chp 6. Inference for categorical responses](https://openintro-ims.netlify.app/inference-cat.html)
 
-*Awaiting completion*
+*Complete*
 
-- Inference for a single proportion
-	- Simulation
-	- Exact (if we include course on probability)
-	- CLT and Normal approximation
+- One proportion
+  - Bootstrap test
+  - Bootstrap confidence interval
+  - Mathematical model
 - Difference of two proportions
-- Testing for goodness of fit using chi-square (special topic, include simulation version)
-- Testing for independence in two-way tables (special topic)
+  - Randomization test
+  - Bootstrap confidence interval
+  - Mathematical model
+- Independence in two way tables
+  - Randomization test
+  - Bootstrap confidence interval
+  - Mathematical model
+  
+### [Chp 7. Inference for numerical responses](https://openintro-ims.netlify.app/inference-num.html)
 
-### Chp 7. Inference for numerical data
+*In progress*
 
-*Awaiting completion*
-
-- One-sample means
-	- Bootstrap (for means, medians)
-	- t-distribution
-- Paired data
+- One mean
+  - Bootstrap confidence interval
+  - Mathematical model
 - Difference of two means
-- Comparing many means with ANOVA (special topic, include simulation version)
+  - Randomization test
+  - Bootstrap confidence interval
+  - Mathematical model
+- Paired differences
+  - Randomization test
+  - Bootstrap confidence interval
+  - Mathematical model
+- Comparing many means
+  - Randomization test
+  - Mathematical model
 
-### Chp 8. Inference for regression
+### [Chp 8. Inference for regression](https://openintro-ims.netlify.app/inference-reg.html)
 
-*Awaiting completion*
+*In progress*
 
 - Inference for linear regression
-	- Bootstrap for regression coefficients
-	- t-distribution for regression coefficients
-	- Model Comparison: Occam’s Razor and R^2 > R^2_adj
-- Checking model assumptions using graphs
-	- L-I-N-E
+  - Randomization test
+  - Bootstrap confidence interval
+  - Mathematical model
+- Checking model assumptions
 - Inference for multiple regression
-	- residuals vs. fitted instead of residuals vs. x
 - Inference for logistic regression
 
 ### Appendix: Probability
 
-*Not included in preliminary edition, may be included in first edition*
+*The Probability appendix is not yet available for this book. If you would like to learn about probability, we recommend you refer to [OpenIntro Statistics, 4th Edition](openintro.org/book/os).*
 
 ---
 

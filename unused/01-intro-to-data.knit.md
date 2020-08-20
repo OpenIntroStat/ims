@@ -1,4 +1,4 @@
-# Introduction to data {#intro-to-data}
+# Introduction to data {#getting-started-with-data}
 
 \BeginKnitrBlock{chapterintro}<div class="chapterintro">Scientists seek to answer questions using rigorous methods and careful observations. 
 These observations -- collected from the likes of field notes, surveys, and experiments -- form the backbone of a statistical investigation and are called **data**. 

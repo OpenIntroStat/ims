@@ -95,7 +95,7 @@ For example:
 
 ` y %>% f(x, ., z)` is the same as `f(x,y,z)`
 
-Pipes are used commonly with functions in the `dplyr` package (see `R` examples in Chapter \@ref(eda)) and they allow us to sequentially build data wrangling operations. 
+Pipes are used commonly with functions in the `dplyr` package (see `R` examples in Chapter \@ref(summarizing-visualizing-data)) and they allow us to sequentially build data wrangling operations. 
 We’ll start with short pipes and throughout the course build up to longer pipes that perform multiple operations.
 
 Consider the \data{hsb2} data, High School and Beyond survey.  
