@@ -6,6 +6,7 @@ options(digits = 3)
 
 suppressMessages(library(gghighlight))
 suppressMessages(library(ggmosaic))
+suppressMessages(library(ggridges))
 suppressMessages(library(gridExtra))
 suppressMessages(library(infer))
 suppressMessages(library(janitor))
