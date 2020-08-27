@@ -1428,15 +1428,14 @@ Based on Figure \@ref(fig:countyIncomeRidgeMulti), what can you say about how me
 This section is currently under construction!
 :::
 
-### Keep it simple
+### Keep it simple 
+
+We discussed earlier that pie charts do not tend to be useful when the categorical variable being displayed has many levels. 
+In addition, there is little value added to coloring each pie. 
+And definitely no value added to making the pie chart three dimensional. 
+A simple bar plot can communicate the same information in a simpler, easier to digest way. 
 
 ```{r}
-knitr::include_graphics("02/figures/pie-3d.jpg")
-```
-
-vs.
-
-```{r pie-to-bar}
 expenses <- tribble(
   ~category,                     ~value,
   "Cutting tools"                , 0.03,
@@ -1444,9 +1443,21 @@ expenses <- tribble(
   "Labor"                        , 0.31,
   "Machinery"                    , 0.27,
   "Workplace materials"          , 0.17
-)
-ggplot(expenses, aes(x = fct_reorder(category, value), y = value)) +
-  geom_col() +
+) %>%
+  mutate(value =  value * 100) %>%
+  uncount(weights = value)
+```
+
+```{r out.width="30%"}
+# remake in R using ggthreed
+knitr::include_graphics("02/figures/pie-3d.jpg")
+```
+
+vs.
+
+```{r pie-to-bar}
+ggplot(expenses, aes(x = fct_infreq(category))) +
+  geom_bar() +
   theme_minimal() +
   coord_flip() +
   labs(x = "", y = "")
@@ -1454,30 +1465,38 @@ ggplot(expenses, aes(x = fct_reorder(category, value), y = value)) +
 
 ### Use color to draw attention
 
-```{r}
-p_bad <- expenses %>%
-  mutate(category = str_replace(category, " ", "\n")) %>%
-  ggplot(aes(x = category, y = value, fill = category)) +
-    geom_col() +
-    theme_minimal() +
-    labs(x = "", y = "") +
-    theme(legend.position = "none")
+Avoid adding color just to add color, instead use it to draw attention. 
+This doesn't mean you shouldn't think about how visually pleasing your visualization is, and if you're adding color for making it visually pleasing without drawing attention to a particular feature, that might still be fine. 
+But you should be critical of default coloring and explicitly decide whether to include color and how. 
+Also note that not everyone sees color the same way, often it's useful to add color and one more feature (e.g. pattern) so that you can refer to the features you're drawing attention to in multiple ways. 
 
-p_good <- ggplot(expenses, aes(x = fct_reorder(category, value), y = value, fill = category)) +
-  geom_col() +
+::: {.todo}
+Add something using ggpattern.
+:::
+
+```{r fig.width = 5, fig.asp=0.8}
+p_bad <- ggplot(expenses, aes(x = fct_infreq(category), fill = category)) +
+  geom_bar() +
+  theme_minimal() +
+  coord_flip() +
+  labs(x = "", y = "") +
+  theme(legend.position = "none")
+
+p_good <- ggplot(expenses, aes(x = fct_infreq(category), fill = category)) +
+  geom_bar() +
   theme_minimal() +
   coord_flip() +
   labs(x = "", y = "") +
   scale_fill_manual(values = c("red", rep("gray", 4))) +
   theme(legend.position = "none")
 
-p_bad + p_good
+p_bad / p_good
 ```
 
 
 ### Tell a story
 
-```{r fig.cap = "Credit: Angela Zoss and Eric Monson, Duke Data Visualization Services"}
+```{r fig.cap = "Credit: Angela Zoss and Eric Monson, Duke Data Visualization Services", out.width="100%"}
 knitr::include_graphics("02/figures/time-series.story.png")
 ```
 
@@ -1552,7 +1571,7 @@ ggplot(data = brexit, aes(x = region)) +
 
 And clean up axis labels.
 
-```{r}
+```{r out.width="100%", fig.asp=0.5, fig.width=8}
 p_bad <- ggplot(data = brexit, aes(x = region)) +
   geom_bar()
 
@@ -1568,7 +1587,7 @@ p_bad + p_good
 Segmented bar plots can be hard to read. 
 Use faceting, avoid redundancy, and use informative labels (note the shortlink to the survey).
 
-```{r}
+```{r out.width="100%", fig.asp=0.8, fig.width=8}
 p_bad <- ggplot(data = brexit, aes(x = region, fill = opinion)) +
   geom_bar()
 
@@ -1584,16 +1603,19 @@ p_good <- ggplot(data = brexit, aes(x = opinion)) +
     y = ""
   )
 
-p_bad + p_good +
-  plot_layout(widths = c(1, 4))
+p_bad / p_good
 ```
 
 ### Select meaningful colors
 
+::: {.todo}
+An example with an ordinal variable with more levels would be better.
+:::
+
 Rainbow colors are not always the right choice.
 Viridis scale works well with ordinal data 
 
-```{r}
+```{r out.width="100%", fig.asp=0.8, fig.width=8}
 p_bad <- ggplot(data = brexit, aes(x = region, fill = opinion)) +
   geom_bar(position = "fill") +
   coord_flip()
@@ -1611,8 +1633,7 @@ p_good <- ggplot(data = brexit, aes(x = region, fill = opinion)) +
     fill = ""
 )
 
-p_bad + p_good +
-  plot_layout(widths = c(1, 2))
+p_bad / p_good
 ```
 
 ### Exercises
