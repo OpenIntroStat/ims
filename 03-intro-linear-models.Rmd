@@ -1,27 +1,420 @@
 # Introduction to linear models {#intro-linear-models}
 
 
-::: {.uptohere}
-This chapter is currently under construction.
-:::
-
-
 ::: {.chapterintro}
-Chapter intro
+Linear regression is a very powerful statistical technique. 
+Many people have some familiarity with regression just from reading the news, where straight lines are overlaid on scatterplots. 
+Linear models can be used for prediction or to evaluate whether there is a linear relationship between two numerical variables.
+:::
+
+## Fitting a line, residuals, and correlation
+
+It's helpful to think deeply about the line fitting process. In this section, we define the form of a linear model, explore criteria for what makes a good fit, and introduce a new statistic called *correlation*.
+
+### Fitting a line to data
+
+Figure \@ref(fig:perfLinearModel) shows two variables whose relationship can be modeled perfectly with a straight line. 
+The equation for the line is $y = 5 + 64.96 x$. 
+Consider what a perfect linear relationship means: we know the exact value of $y$ just by knowing the value of $x$. 
+This is unrealistic in almost any natural process. 
+For example, if we took family income ($x$), this value would provide some useful information about how much financial support a college may offer a prospective student ($y$). 
+However, the prediction would be far from perfect, since other factors play a role in financial support beyond a family's finances.
+
+```{r perfLinearModel, fig.cap = "Requests from twelve separate buyers were simultaneously placed with a trading company to purchase Target Corporation stock (ticker `TGT`, December 28th, 2018), and the total cost of the shares were reported. Because the cost is computed using a linear formula, the linear fit is perfect."}
+target <- simulated_scatter %>%
+  filter(group == 4)
+
+ggplot(target, aes(x = x, y = y)) +
+  geom_smooth(method = "lm", color = "black", size = 0.5) +
+  geom_point(col = COL["blue", "full"], size = 3) +
+  scale_y_continuous(labels = label_dollar(scale = 0.001, suffix = "K", accuracy = 1), breaks = c(0, 1000, 2000)) +
+  labs(
+    x = "Number of Target Corporation Stocks to Purchase",
+    y = "Total Cost of the Share Purchase"
+  )
+```
+
+Linear regression is the statistical method for fitting a line to data where the relationship between two variables, $x$ and $y$, can be modeled by a straight line with some error: 
+
+$$ y = \beta_0 + \beta_1x + \varepsilon$$ 
+
+The values $\beta_0$ and $\beta_1$ represent the model's parameters ($\beta$ is the Greek letter *beta*), and the error is represented by $\varepsilon$ (the Greek letter *epsilon*). 
+The parameters are estimated using data, and we write their point estimates as $b_0$ and $b_1$. 
+When we use $x$ to predict $y$, we usually call $x$ the explanatory or **predictor** variable, and we call $y$ the response; we also often drop the $\epsilon$ term when writing down the model since our main focus is often on the prediction of the average outcome.
+
+```{r include=FALSE}
+terms_chp_3 <- c("predictor")
+```
+
+It is rare for all of the data to fall perfectly on a straight line.
+Instead, it's more common for data to appear as a *cloud of points*,
+such as those examples shown in Figure \@ref(fig:imperfLinearModel). 
+In each case, the data fall around a straight line, even if none of the observations fall exactly on the line. 
+The first plot shows a relatively strong downward linear trend, where the remaining variability in the data around the line is minor relative to the strength of the relationship between $x$ and $y$. 
+The second plot shows an upward trend that, while evident, is not as strong as the first. The last plot shows a very weak downward trend in the data, so slight we can hardly notice it. 
+In each of these examples, we will have some uncertainty regarding our estimates of the model parameters, $\beta_0$ and $\beta_1$. 
+For instance, we might wonder, should we move the line up or down a little, or should we tilt it more or less? 
+As we move forward in this chapter, we will learn about criteria for line-fitting, and we will also learn about the uncertainty associated with estimates of model parameters.
+
+```{r imperfLinearModel, fig.asp = 0.3, fig.width = 9, fig.cap = "Three data sets where a linear model may be useful even though the data do not all fall exactly on the line."}
+neg <- simulated_scatter %>% filter(group == 1)
+pos <- simulated_scatter %>% filter(group == 2)
+ran <- simulated_scatter %>% filter(group == 3)
+
+p_neg <- ggplot(neg, aes(x = x, y = y)) +
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  labs(x = NULL, y = NULL)
+
+p_pos <- ggplot(pos, aes(x = x, y = y)) +
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  labs(x = NULL, y = NULL)
+
+p_ran <- ggplot(ran, aes(x = x, y = y)) +
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  labs(x = NULL, y = NULL)
+
+p_neg + p_pos + p_ran
+```
+
+There are also cases where fitting a straight line to the data, even if there is a clear relationship between the variables, is not helpful. 
+One such case is shown in Figure \@ref(fig:notGoodAtAllForALinearModel) where there is a very clear relationship between the variables even though the trend is not linear.
+We discuss nonlinear trends in this chapter and the next, but details of fitting nonlinear models are saved for a later course.
+
+```{r notGoodAtAllForALinearModel, fig.cap = "The best fitting line for these data is flat, which is not useful in this linear case. These data are from a physics experiment."}
+bad <- simulated_scatter %>% filter(group == 5)
+
+ggplot(bad, aes(x = x, y = y)) +
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  labs(
+    x = "Angle of Incline (Degrees)", 
+    y = "Distance Traveled (m)"
+    )
+```
+
+### Using linear regression to predict possum head lengths
+
+Brushtail possums are a marsupial that lives in Australia, and a photo
+of one is shown in Figure \@ref(fig:brushtail-possum). 
+Researchers captured 104 of these animals and took body measurements before releasing the animals back into the wild. 
+We consider two of these measurements: the total length of each possum, from head to tail, and the length of each possum's head.
+
+```{r brushtail-possum, fig.cap = "The common brushtail possum of Australia. Photo by Greg Schecter, [flic.kr/p/9BAFbR](https://flic.kr/p/9BAFbR), CC BY 2.0 license. "}
+knitr::include_graphics("03/figures/brushtail-possum/brushtail-possum.jpg")
+```
+
+Figure \@ref(fig:scattHeadLTotalL) shows a scatterplot for the head length and total length of the possums. 
+Each point represents a single possum from the data. 
+The head and total length variables are associated: possums with an above average total length also tend to have above average head lengths. 
+While the relationship is not perfectly linear, it could be helpful to partially explain the connection between these variables with a straight line.
+
+```{r scattHeadLTotalL, fig.cap = "A scatterplot showing head length against total length for 104 brushtail possums. A point representing a possum with head length 86.7 mm and total length 84 cm is highlighted."}
+ggplot(possum, aes(x = total_l, y = head_l)) +
+  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  labs(
+    x = "Total Length (cm)",
+    y = "Head Length (mm)"
+  ) +
+  geom_point(data = tibble(x = 84, y = 86.7), aes(x = x, y = y), color = COL["red", "full"], size = 5, shape = 21, stroke = 2)
+```
+
+We want to describe the relationship between the head length and total length variables in the possum data set using a line. 
+In this example, we will use the total length as the predictor variable, $x$, to predict a possum's head length, $y$. 
+We could fit the linear relationship by eye, as in Figure \@ref(fig:scattHeadLTotalLLine). 
+
+```{r scattHeadLTotalLLine, fig.cap = "A reasonable linear model was fit to represent the relationship between head length and total length."}
+ggplot(possum, aes(x = total_l, y = head_l)) +
+  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  labs(
+    x = "Total Length (cm)",
+    y = "Head Length (mm)"
+  ) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5)
+```
+
+The equation for this line is
+
+$$\hat{y} = 41 + 0.59x$$ 
+
+A "hat" on $y$ is used to signify that this is an estimate. 
+We can use this line to discuss properties of possums. 
+For instance, the equation predicts a possum with a total length of 80 cm will have a head length of 
+
+$$\begin{aligned}
+\hat{y} &= 41 + 0.59\times 80 \\
+        &= 88.2 % mm\end{aligned}$$ 
+        
+The estimate may be viewed as an average: the equation predicts that possums with a total length of 80 cm will have an average head length of 88.2 mm. 
+Absent further information about an 80 cm possum, the prediction for head length that uses the average is a reasonable estimate. 
+
+There may be other variables that could help us predict the head length of a possum besides its length. 
+Perhaps the relationship would be a little different for male possums than female possums, or perhaps it would differ for possums from one region of Australia versus another region. 
+Plot A in Figure \@ref(fig:scattHeadLTotalL_sex_age) shows the relationship between total length and head lentgh of brushtail possums, taking into consideration their sex. 
+Male possums (represented by blue triangles) seem to be larger in terms of total length and head length than female possums (represented by red circles). 
+Plot B in Figure \@ref(fig:scattHeadLTotalL_sex_age) shows the same relationship, taking into consideration their age. 
+It's harder to tell if age changes the relationship between total length and head length for these possums. 
+
+```{r scattHeadLTotalL_sex_age, fig.cap = "Relationship between total length and head lentgh of brushtail possums, taking into consideration their sex (Plot A) or age (Plot B)."}
+p_sex <- ggplot(possum, aes(x = total_l, y = head_l, shape = sex, color = sex)) +
+  geom_point(alpha = 0.6, size = 2) +
+  scale_color_manual(values = c(COL["red","full"], COL["blue","full"])) +
+  labs(
+    x = "Total Length (cm)",
+    y = "Head Length (mm)",
+    color = "Sex", shape = "Sex"
+  )
+
+p_age <- ggplot(possum, aes(x = total_l, y = head_l, color = age)) +
+  geom_point(alpha = 0.6, size = 2) +
+  labs(
+    x = "Total Length (cm)",
+    y = "Head Length (mm)",
+    color = "Age"
+  ) +
+  scale_color_viridis_c()
+
+p_sex + p_age + plot_annotation(tag_levels = "A")
+```
+
+In Chapter \@ref(multi-logistic-models), we'll learn about how we can include more than one predictor. 
+Before we get there, we first need to better understand how to best build a simple linear model with one predictor.
+
+### Residuals
+
+**Residuals** are the leftover variation in the data after accounting for the model fit: 
+
+$$\text{Data} = \text{Fit} + \text{Residual}$$ 
+
+Each observation will have a residual, and three of the residuals for the linear model we fit for the data is shown in Figure \@ref(fig:scattHeadLTotalLLine). 
+If an observation is above the regression line, then its residual, the vertical distance from the observation to the line, is positive. 
+Observations below the line have negative residuals. 
+One goal in picking the right linear model is for these residuals to be as small as possible. 
+
+```{r include=FALSE}
+terms_chp_3 <- c(terms_chp_3, "residuals")
+```
+
+Figure \@ref(fig:scattHeadLTotalLLine_highlighted) is almost a replica of Figure \@ref(fig:scattHeadLTotalLLine), with three points from the data highlighted. 
+The observation marked by a red circle has a small, negative residual of about -1; the observation marked by a green diamond has a large residual of about +7; and the observation marked by a yellow triangle has a moderate residual of about -4. 
+The size of a residual is usually discussed in terms of its absolute value. 
+For example, the residual for the observation marked by a yellow triangle is larger than that of the observation marked by a red circle because $|-4|$ is larger than $|-1|$.
+
+```{r scattHeadLTotalLLine_highlighted, fig.cap = "A reasonable linear model was fit to represent the relationship between head length and total length, with three points highlighted."}
+ggplot(possum, aes(x = total_l, y = head_l)) +
+  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  labs(
+    x = "Total Length (cm)",
+    y = "Head Length (mm)"
+  ) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) +
+  geom_point(data = possum %>% filter(total_l == 76), shape = 21, stroke = 2, size = 4, color = COL["red", "full"]) +
+  geom_point(data = possum %>% filter(total_l == 85, head_l == 98.6), shape = 5, stroke = 2, size = 5, color = COL["green", "full"]) +
+  geom_point(data = possum %>% filter(total_l == 95.5, head_l == 94), shape = 2, stroke = 2, size = 5, color = COL["yellow", "full"])
+```
+
+::: {.onebox}
+**Residual: Difference between observed and expected.**
+The residual of the $i^{th}$ observation $(x_i, y_i)$ is the difference of the observed response ($y_i$) and the response we would predict based on the model fit ($\hat{y}_i$): 
+
+$$e_i = y_i - \hat{y}_i$$ 
+
+We typically identify $\hat{y}_i$ by plugging $x_i$ into the model.
 :::
 
 
-## Visual summaries of data: scatterplot, side-by-side boxplots, histogram, density plot, box plot (lead out with multivariate, follow with univariate)
+::: {.example}
+The linear fit shown in Figure \@ref(fig:scattHeadLTotalLLine_highlighted) is given as $\hat{y} = 41 + 0.59x$.
+Based on this line, formally compute the residual of the observation
+$(77.0, 85.3)$. 
+This observation is marked by a red circle in Figure \@ref(fig:scattHeadLTotalLLine_highlighted). 
+Check it against the earlier visual estimate, -1. 
 
-## Describing distributions: correlation, central tendency, variability, skew, modality
+---
 
-## Num vs. num - SLR
+We first compute the predicted value of the observation marked by a red circle based on the model: 
 
-- correlation
-- Line fitting, residuals, and correlation
-- Fitting a line by least squares regression
-- Types of outliers in linear regression
-	
+$$\hat{y} = 41+0.59x = 41+0.59\times 77.0 = 86.4$$
+
+
+Next we compute the difference of the actual head length and the predicted head length: 
+
+$$e = y - \hat{y} = 85.3 -  86.4 = -1.1$$
+
+The model's error is $e = -1.1$mm, which is very close to the
+visual estimate of -1mm. The negative residual indicates that the linear model overpredicted head length for this particular possum.
+:::
+
+
+::: {.guidedpractice}
+If a model underestimates an observation, will the residual be positive or negative? What about if it overestimates the observation?^[If a model underestimates an observation, then the model estimate is below the actual. The residual, which is the actual observation value minus the model estimate, must then be positive. The opposite is true when the model overestimates the observation: the residual is negative.]
+:::
+
+
+::: {.guidedpractice}
+Compute the residuals for the observation marked by a green diamond, $(85.0, 98.6)$, and the observation marked by a yellow triangle, $(95.5, 94.0)$, in the figure using the linear relationship $\hat{y} = 41 + 0.59x$.^[Green diamond: $\hat{y} = 41+0.59x = 41+0.59\times 85.0 = 91.15 \rightarrow e = y - \hat{y} = 98.6-91.15=7.45$. This is close to the earlier estimate of 7. Yellow triangle: $\hat{y} = 41+0.59x = 97.3 \rightarrow e = -3.3$. This is also close to the estimate of -4.]
+:::
+
+Residuals are helpful in evaluating how well a linear model fits a data set. 
+We often display them in a such as the one shown in Figure \@ref(fig:scattHeadLTotalLResidualPlot) for the regression line in Figure \@ref(fig:scattHeadLTotalLLine_highlighted). 
+The residuals are plotted at their original horizontal locations but with the vertical coordinate as the residual. 
+For instance, the point $(85.0, 98.6)$ (marked by the green diamond) had a predicted value of 91.4 mm and had a residual of 7.45 mm, so in the residual plot it is placed at $(91.4, 7.45)$. 
+Creating a residual plot is sort of like tipping the scatterplot over so the regression line is horizontal. 
+
+```{r scattHeadLTotalLResidualPlot, fig.cap = "Residual plot for the model predicting head length from total length for brushtail possums."}
+m_head_total <- lm(head_l ~ total_l, data = possum)
+m_head_total_aug <- augment(m_head_total)
+
+ggplot(m_head_total_aug, aes(x = .fitted, y = .resid)) +
+  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  labs(
+    x = "Predicted values of head length (mm)",
+    y = "Residuals"
+  ) +
+  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  geom_point(data = m_head_total_aug %>% filter(total_l == 76), shape = 21, stroke = 2, size = 4, color = COL["red", "full"]) +
+  geom_point(data = m_head_total_aug %>% filter(total_l == 85, head_l == 98.6), shape = 5, stroke = 2, size = 5, color = COL["green", "full"]) +
+  geom_point(data = m_head_total_aug %>% filter(total_l == 95.5, head_l == 94), shape = 2, stroke = 2, size = 5, color = COL["yellow", "full"])
+```
+
+::: {.example}
+One purpose of residual plots is to identify characteristics or patterns still apparent in data after fitting a model.
+Figure \@ref(fig:sampleLinesAndResPlots) shows three scatterplots with linear models in the first row and residual plots in the second row. Can you identify any patterns remaining in the residuals? 
+
+---
+
+In the first data set (first column), the residuals show no obvious
+patterns. The residuals appear to be scattered randomly around the
+dashed line that represents 0.
+
+The second data set shows a pattern in the residuals. There is some
+curvature in the scatterplot, which is more obvious in the residual
+plot. We should not use a straight line to model these data. Instead, a
+more advanced technique should be used.
+
+The last plot shows very little upwards trend, and the residuals also
+show no obvious patterns. It is reasonable to try to fit a linear model
+to the data. However, it is unclear whether there is statistically
+significant evidence that the slope parameter is different from zero.
+The point estimate of the slope parameter, labeled $b_1$, is not zero,
+but we might wonder if this could just be due to chance. We will address this sort of scenario in Chapter \@ref(inference-reg).
+::: 
+
+```{r sampleLinesAndResPlots, fig.cap="Sample data with their best fitting lines (top row) and their corresponding residual plots (bottom row).", fig.width=9, fig.asp=1}
+
+neg_lin <- simulated_scatter %>% filter(group == 6)
+neg_cur <- simulated_scatter %>% filter(group == 7)
+random  <- simulated_scatter %>% filter(group == 8)
+
+neg_lin_mod <- augment(lm(y ~ x, data = neg_lin))
+neg_cur_mod <- augment(lm(y ~ x, data = neg_cur))
+random_mod  <- augment(lm(y ~ x, data = random))
+
+p_neg_lin <- ggplot(neg_lin, aes(x = x, y = y)) +
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
+
+p_neg_cur <- ggplot(neg_cur, aes(x = x, y = y)) +
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
+
+p_random <- ggplot(random, aes(x = x, y = y)) +
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
+
+p_neg_lin_res <- ggplot(neg_lin_mod, aes(x = .fitted, y = .resid)) +
+  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
+
+p_neg_cur_res <- ggplot(neg_cur_mod, aes(x = .fitted, y = .resid)) +
+  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
+
+p_random_res <- ggplot(random_mod, aes(x = .fitted, y = .resid)) +
+  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
+
+p_neg_lin + p_neg_cur + p_random + p_neg_lin_res + p_neg_cur_res + p_random_res +
+  plot_layout(ncol = 3, heights = c(2, 1))
+```
+
+### Describing linear relationships with correlation
+
+We've seen plots with strong linear relationships and others with very weak linear relationships. 
+It would be useful if we could quantify the strength of these linear relationships with a statistic.
+
+::: {.onebox}
+**Correlation: strength of a linear relationship** 
+**Correlation** which always takes values between -1 and 1, describes the strength of the linear relationship between two variables. We denote the correlation by $R$.
+:::
+
+```{r include=FALSE}
+terms_chp_3 <- c(terms_chp_3, "correlation")
+```
+
+We can compute the correlation using a formula, just as we did with the sample mean and standard deviation. 
+This formula is rather complex,[^Formally, we can compute the correlation for observations $(x_1, y_1)$, $(x_2, y_2)$, \..., $(x_n, y_n)$ using the formula $$R = \frac{1}{n-1} \sum_{i=1}^{n} \frac{x_i-\bar{x}}{s_x}\frac{y_i-\bar{y}}{s_y}$$ where $\bar{x}$, $\bar{y}$, $s_x$, and $s_y$ are the sample means and standard deviations for each variable.]
+and like with other statistics, we generally perform the calculations on a computer or calculator.
+Figure \@ref(fig:posNegCorPlots) shows eight plots and their corresponding correlations. Only when the relationship is perfectly linear is the correlation either -1 or 1. If the relationship is strong and positive, the correlation will be near +1. If it is strong and negative, it will be near -1. If there is no apparent linear relationship between the variables, then the correlation will be near zero.
+
+```{r posNegCorPlots, fig.cap="Sample scatterplots and their correlations. The first row shows variables with a positive relationshiop, represented by the trend up and to the right. The second row shows variables with a negative trend, where a large value in one variable is associated with a low value in the other.", fig.width=8, fig.asp=0.5}
+simulated_scatter %>%
+  filter(group %in% 9:16) %>%
+  ggplot(aes(x = x, y = y)) + 
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  theme_void() +
+  facet_wrap(~group, nrow = 2, scales = "free_x") + 
+  theme(
+    panel.border = element_rect(colour = "gray", fill = NA, size = 1),
+    strip.background = element_blank(),
+    strip.text.x = element_blank()
+  ) +
+  stat_cor(aes(label = ..r.label..))
+```
+
+The correlation is intended to quantify the strength of a linear trend.
+Nonlinear trends, even when strong, sometimes produce correlations that do not reflect the strength of the relationship; see three such examples in
+Figure \@ref(fig:corForNonLinearPlots).
+
+```{r corForNonLinearPlots, fig.cap="Sample scatterplots and their coorelations. In each case, there is a strong relationship between the variables, However, because the relationship is nonlinear, the correlation is relatively weak.", fig.asp=0.3}
+simulated_scatter %>%
+  filter(group %in% 17:19) %>%
+  ggplot(aes(x = x, y = y)) + 
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  theme_void() +
+  facet_wrap(~group, nrow = 1, scales = "free_x") + 
+  theme(
+    panel.border = element_rect(colour = "gray", fill = NA, size = 1),
+    strip.background = element_blank(),
+    strip.text.x = element_blank()
+  ) +
+  stat_cor(aes(label = ..r.label..))
+```
+
+::: {.guidedpractice}
+No straight line is a good fit for the data sets represented inFigure \@ref(fig:corForNonLinearPlots). 
+Try drawing nonlinear curves on each plot. 
+Once you create a curve for each, describe what is important in your fit.[^We'll leave it to you to draw the lines. In general, the lines you draw should be close to most points and reflect overall trends in the data.]
+:::
+
+::: {.uptohere}
+
+:::
+
 	
 ## Chapter review {#chp3-review}
 

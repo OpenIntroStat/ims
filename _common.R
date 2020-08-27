@@ -4,8 +4,10 @@ options(digits = 3)
 
 # packages ---------------------------------------------------------------------
 
+suppressMessages(library(broom))
 suppressMessages(library(gghighlight))
 suppressMessages(library(ggmosaic))
+suppressMessages(library(ggpubr))
 suppressMessages(library(ggridges))
 suppressMessages(library(gridExtra))
 suppressMessages(library(infer))
