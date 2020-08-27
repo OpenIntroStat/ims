@@ -20,6 +20,8 @@ suppressMessages(library(patchwork))
 suppressMessages(library(tidyverse))
 suppressMessages(library(scales))
 suppressMessages(library(skimr))
+suppressMessages(library(threed))
+suppressMessages(library(ggthreed))
 
 # knitr chunk options ----------------------------------------------------------
 
