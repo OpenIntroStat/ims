@@ -660,7 +660,7 @@ Use the model $\widehat{aid} = 24.3 - 0.0431 \times \textit{family_income}$ to e
 We want to calculate the aid for a familuy with $1 million income. 
 Note that in our model this will be represented as 1,000 since the data are in $1,000s.
 
-$$24.3 - 0.0431 * 1000 = -18.8 $$
+$$24.3 - 0.0431 \times 1000 = -18.8 $$
 
 The model predicts this student will have -$18,800 in aid (!). 
 However, Elmhurst College does not offer *negative aid* where they select some students to pay extra on top of tuition to attend.
@@ -679,6 +679,10 @@ terms_chp_3 <- c(terms_chp_3, "extrapolation")
 We evaluated the strength of the linear relationship between two variables earlier using the correlation, $R$. 
 However, it is more common to explain the strength of a linear fit using $R^2$, called **R-squared**. 
 If provided with a linear model, we might like to describe how closely the data cluster around the linear fit. 
+
+```{r include=FALSE}
+terms_chp_3 <- c(terms_chp_3, "R-squared")
+```
 
 The $R^2$ of a linear model describes the amount of variation in the response that is explained by the least squares line. 
 For example, consider the Elmhurst data, shown in Figure \@ref(fig:elmhurstScatterW2Lines). 
@@ -701,7 +705,93 @@ If a linear model has a very strong negative relationship with a correlation of 
 
 ### Categorical predictors with two levels
 
+Categorical variables are also useful in predicting outcomes. 
+Here we consider a categorical predictor with two levels (recall that a *level* is the same as a *category*). 
+We'll consider Ebay auctions for a video game, *Mario Kart* for the Nintendo Wii, where both the total price of the auction and the condition of the game were recorded. Here we want to predict total price based on game condition, which takes values `used` and `new`. 
 
+::: {.data}
+The [`mariokart`](http://openintrostat.github.io/openintro/reference/mariokart.html) data can be found in the [openintro](http://openintrostat.github.io/openintro) package.  
+::: 
+
+```{r}
+mariokart_lt100 <- mariokart %>%
+  filter(total_pr < 100) %>%
+  mutate(cond = fct_relevel(cond, "used", "new"))
+```
+
+A plot of the auction data is shown in Figure \@ref(fig:marioKartNewUsed). 
+Note that the original dataset contains some Mario Kart games being sold at prices above \$100 but for this analysis we have limited our focus to the `r nrow(mariokart_lt100)` Mario Kart games that are sold below \$100.
+
+```{r marioKartNewUsed, fig.cap="Total auction prices for the video game Mario Kart, divided into used ($x = 0$) and new ($x = 1$) condition games. The least squares regression line is also shown."}
+mariokart_lt100 %>%
+  filter(total_pr < 100) %>%
+  ggplot(aes(x = as.numeric(cond) - 1, y = total_pr)) +
+  geom_jitter(color = COL["blue","full"], alpha = 0.8, position = position_jitter(width = 0.05)) +
+  geom_smooth(method = "lm", color = "black", se = FALSE, fullrange = TRUE) +
+  scale_x_continuous(
+    breaks = c(0, 1), 
+    minor_breaks = c(0, 1),
+    limits = c(-0.2, 1.2),
+    labels = c("0\n(used)", "1\n(new)")
+    ) +
+  labs(
+    x = "Condition",
+    y = "Total price"
+  )
+```
+
+To incorporate the game condition variable into a regression equation, we must convert the categories into a numerical form. 
+We will do so using an **indicator variable** called `condnew`, which takes value 1 when the game is new and 0 when the game is used. 
+Using this indicator variable, the linear model may be written as 
+
+$$\widehat{price} = \beta_0 + \beta_1 \times condnew$$
+
+The parameter estimates are given in Table \@ref(tab:marioKartNewUsedRegrSummary).
+
+```{r include=FALSE}
+terms_chp_3 <- c(terms_chp_3, "indicator variable")
+```
+
+```{r marioKartNewUsedRegrSummary}
+m_total_pr_cond       <- lm(total_pr ~ cond, data = mariokart_lt100)
+m_total_pr_cond_tidy  <- tidy(m_total_pr_cond)
+
+m_total_pr_cond_int   <- m_total_pr_cond_tidy %>% 
+  filter(term == "(Intercept)") %>% 
+  pull(estimate)
+m_total_pr_cond_slope <- m_total_pr_cond_tidy %>% 
+  filter(term == "condnew") %>% 
+  pull(estimate)
+
+m_total_pr_cond_tidy %>%
+  kable(caption = "Least squares ression summary for the final auction price against the condition of the game.") %>%
+  kable_styling(full_width = FALSE) 
+```
+
+Using values from Table \@ref(tab:marioKartNewUsedRegrSummary), the model equation can be summarized as 
+
+$$\widehat{price} = `r m_total_pr_cond_int` + 10.90 \times condnew$$
+
+
+::: {.example}
+Interpret the two parameters estimated in the model for the price of Mario Kart in eBay auctions. 
+The intercept is the estimated price when takes value 0, i.e. when the game is in used condition. 
+That is, the average selling price of a used version of the game is \$42.87.
+
+---
+
+The slope indicates that, on average, new games sell for about \$10.90 more than used games.
+:::
+
+
+::: {.onebox}
+**Interpreting model estimates for categorical predictors.** 
+
+The estimated intercept is the value of the response variable for the first category (i.e. the category corresponding to an indicator value of 0). 
+The estimated slope is the average change in the response variable between the two categories.
+:::
+
+We'll elaborate further on this topic in Chapter \@ref(multi-logistic-models), where we examine the influence of many predictor variables simultaneously using multiple regression.
 	
 ## Chapter review {#chp3-review}
 
