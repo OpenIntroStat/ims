@@ -346,7 +346,10 @@ p_random_res <- ggplot(random_mod, aes(x = .fitted, y = .resid)) +
   theme_void() +
   theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
 
-p_neg_lin + p_neg_cur + p_random + p_neg_lin_res + p_neg_cur_res + p_random_res +
+p_neg_lin     + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + 
+p_neg_cur     + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + p_random + 
+p_neg_lin_res + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + 
+p_neg_cur_res + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + p_random_res +
   plot_layout(ncol = 3, heights = c(2, 1))
 ```
 
@@ -793,6 +796,178 @@ The estimated slope is the average change in the response variable between the t
 
 We'll elaborate further on this topic in Chapter \@ref(multi-logistic-models), where we examine the influence of many predictor variables simultaneously using multiple regression.
 	
+## Types of outliers in linear regression
+
+In this section, we identify criteria for determining which outliers are important and influential. 
+Outliers in regression are observations that fall far from the cloud of points. 
+These points are especially important because they can have a strong influence on the least squares line. 
+
+:::{ .example}
+There are three plots shown in Figure \@ref(fig:outlierPlots1) along with the least squares line and residual plots. 
+For each scatterplot and residual plot pair, identify the outliers and note how they influence the least squares line. 
+Recall that an outlier is any point that doesn't appear to belong with the vast majority of the other points.
+
+---
+
+- A: There is one outlier far from the other points, though it only appears to slightly influence the line.
+
+- B: There is one outlier on the right, though it is quite close to the least squares line, which suggests it wasn't very influential.
+
+- C: There is one point far away from the cloud, and this outlier appears to pull the least squares line up on the right; examine how the line around the primary cloud doesn't appear to fit very well.
+:::
+
+```{r outlierPlots1, fig.cap="Three plots, each with a least squares line and residual plot. All data sets have at least one outlier.", out.width="100%"}
+d1 <- simulated_scatter %>% filter(group == 24)
+d2 <- simulated_scatter %>% filter(group == 25)
+d3 <- simulated_scatter %>% filter(group == 26)
+
+m1_aug <- augment(lm(y ~ x, data = d1))
+m2_aug <- augment(lm(y ~ x, data = d2))
+m3_aug <- augment(lm(y ~ x, data = d3))
+
+p_1 <- ggplot(d1, aes(x = x, y = y)) +
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
+  labs(title = "A")
+
+p_1_res <- ggplot(m1_aug, aes(x = .fitted, y = .resid)) +
+  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
+  ylim(-4, 4)
+
+p_2 <- ggplot(d2, aes(x = x, y = y)) +
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
+  labs(title = "B")
+
+p_2_res <- ggplot(m2_aug, aes(x = .fitted, y = .resid)) +
+  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
+  ylim(-4, 4)
+
+p_3 <- ggplot(d3, aes(x = x, y = y)) +
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
+  labs(title = "C")
+
+p_3_res <- ggplot(m3_aug, aes(x = .fitted, y = .resid)) +
+  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
+  ylim(-4, 4)
+
+p_1     + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + 
+p_2     + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + p_3 + 
+p_1_res + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + 
+p_2_res + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + p_3_res +
+  plot_layout(ncol = 3, heights = c(2, 1))
+```
+
+:::{ .example}
+There are three plots shown in Figure \@ref(fig:outlierPlots2) along with the least squares line and residual plots. 
+As you did in previous exercise, for each scatterplot and residual plot pair, identify the outliers and note how they influence the least squares line. 
+Recall that an outlier is any point that doesn't appear to belong with the vast majority of the other points.
+
+---
+
+- D: There is a primary cloud and then a small secondary cloud of four outliers. The secondary cloud appears to be influencing the line somewhat strongly, making the least square line fit poorly almost everywhere. There might be an interesting explanation for the dual clouds, which is something that could be investigated.
+
+- E: There is no obvious trend in the main cloud of points and the outlier on the right appears to largely control the slope of the least squares line.
+
+- F: There is one outlier far from the cloud. However, it falls quite close to the least squares line and does not appear to be very influential.
+:::
+
+```{r outlierPlots2, fig.cap="Three plots, each with a least squares line and residual plot. All data sets have at least one outlier.", out.width="100%"}
+d4 <- simulated_scatter %>% filter(group == 27)
+d5 <- simulated_scatter %>% filter(group == 28)
+d6 <- simulated_scatter %>% filter(group == 29)
+
+m4_aug <- augment(lm(y ~ x, data = d4))
+m5_aug <- augment(lm(y ~ x, data = d5))
+m6_aug <- augment(lm(y ~ x, data = d6))
+
+p_4 <- ggplot(d4, aes(x = x, y = y)) +
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
+  labs(title = "D")
+
+p_4_res <- ggplot(m4_aug, aes(x = .fitted, y = .resid)) +
+  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
+  ylim(-4, 4)
+
+p_5 <- ggplot(d5, aes(x = x, y = y)) +
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
+  labs(title = "E")
+
+p_5_res <- ggplot(m5_aug, aes(x = .fitted, y = .resid)) +
+  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
+  ylim(-4, 4)
+
+p_6 <- ggplot(d6, aes(x = x, y = y)) +
+  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
+  labs(title = "F")
+
+p_6_res <- ggplot(m6_aug, aes(x = .fitted, y = .resid)) +
+  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
+  ylim(-4, 4)
+
+p_4     + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + 
+p_5     + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + p_6 + 
+p_4_res + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + 
+p_5_res + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + p_6_res +
+  plot_layout(ncol = 3, heights = c(2, 1))
+```
+
+Examine the residual plots in Figures \@ref(outlierPlots1) and \@ref(outlierPlots2). 
+You will probably find that there is some trend in the main clouds of Plots C, D, and E. 
+In these cases, the outliers influenced the slope of the least squares lines. 
+In Plot E, data with no clear trend were assigned a line with a large trend simply due to one outlier (!).
+
+::: {.onebox}
+**Leverage.** 
+Points that fall horizontally away from the center of the cloud tend to pull harder on the line, so we call them points with **high leverage**.
+:::
+
+Points that fall horizontally far from the line are points of high leverage; these points can strongly influence the slope of the least squares line. 
+If one of these high leverage points does appear to actually invoke its influence on the slope of the line -- as in Plots C, D, and E of Figures \@ref(outlierPlots1) and \@ref(outlierPlots2) -- then we call it an **influential point**. 
+Usually we can say a point is influential if, had we fitted the line without it, the influential point would have been unusually far from the least squares line.
+
+```{r include=FALSE}
+terms_chp_3 <- c("high leverage", "influential point")
+```
+
+It is tempting to remove outliers. Don't do this without a very good reason. 
+Models that ignore exceptional (and interesting) cases often perform poorly. 
+For instance, if a financial firm ignored the largest market swings -- the "outliers" -- they would soon go bankrupt by making poorly thought-out investments.
+
 ## Chapter review {#chp3-review}
 
 ### Terms
@@ -802,7 +977,7 @@ If you're not sure what some of these terms mean, we recommend you go back in th
 We are purposefully presenting them in alphabetical order, instead of in order of appearance, so they will be a little more challenging to locate. 
 However you should be able to easily spot them as **bolded text**.
 
-```{r eval=FALSE}
+```{r}
 make_terms_table(terms_chp_3)
 ```
 
