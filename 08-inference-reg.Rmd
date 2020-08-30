@@ -47,8 +47,318 @@ As we have seen in previous chapters, we can use bootstrapping to estimate the s
 ### Mathematical model {#mathslope}
 
 When certain technical assumptions apply, it is convenient to use mathematical approximations to test and estimate the slope parameter. 
-The approximations will build on the t-distribution which were described in Chapter \@ref(inference-num). The mathematical model is often correct and is usually easy to implement computationally.
+The approximations will build on the t-distribution which were described in Chapter \@ref(inference-num). 
+The mathematical model is often correct and is usually easy to implement computationally.
 The validity of the technical conditions will be considered in detail in Section \@ref(tech-cond-linmod). 
+
+<!--
+RELEVANT SECTION FROM OS4
+
+Inference for linear regression {#inferenceForLinearRegression}
+===============================
+
+In this section, we discuss uncertainty in the estimates of the slope
+and y-intercept for a regression line. Just as we identified standard
+errors for point estimates in previous chapters, we first discuss
+standard errors for these new estimates.
+
+Midterm elections and unemployment
+----------------------------------
+
+Elections for members of the United States House of Representatives
+occur every two years, coinciding every four years with the U.S.
+Presidential election. The set of House elections occurring during the
+middle of a Presidential term are called . In America's two-party
+system, one political theory suggests the higher the unemployment rate,
+the worse the President's party will do in the midterm elections.
+
+To assess the validity of this claim, we can compile historical data and
+look for a connection. We consider every midterm election from 1898 to
+2018, with the exception of those elections during the Great Depression.
+Figure [\[unemploymentAndChangeInHouse\]](#unemploymentAndChangeInHouse){reference-type="ref"
+reference="unemploymentAndChangeInHouse"} shows these data and the
+least-squares regression line: $$\begin{aligned}
+&\text{\% change in House seats for President's party}  \\
+&\qquad\qquad= -7.36 - 0.89 \times \text{(unemployment rate)}\end{aligned}$$
+We consider the percent change in the number of seats of the President's
+party (e.g. percent change in the number of seats for Republicans in
+2018) against the unemployment rate.
+
+Examining the data, there are no clear deviations from linearity, the
+constant variance condition, or substantial outliers. While the data are
+collected sequentially, a separate analysis was used to check for any
+apparent correlation between successive observations; no such
+correlation was found.
+
+\centering
+\Figure{}{unemploymentAndChangeInHouse}
+The data for the Great Depression (1934 and 1938) were removed because
+the unemployment rate was 21% and 18%, respectively. Do you agree that
+they should be removed for this investigation? Why or why not?
+
+\footnotetext{We will provide two considerations.
+  Each of these points would have very high leverage on any
+  least-squares regression line, and years with such high
+  unemployment may not help us understand what would happen
+  in other years where the unemployment is only modestly high.
+  On the other hand, these are exceptional cases, and we would
+  be discarding important information if we exclude them from
+  a final analysis.}
+There is a negative slope in the line shown in
+Figure [\[unemploymentAndChangeInHouse\]](#unemploymentAndChangeInHouse){reference-type="ref"
+reference="unemploymentAndChangeInHouse"}. However, this slope (and the
+y-intercept) are only estimates of the parameter values. We might
+wonder, is this convincing evidence that the "true" linear model has a
+negative slope? That is, do the data provide strong evidence that the
+political theory is accurate, where the unemployment rate is a useful
+predictor of the midterm election? We can frame this investigation into
+a statistical hypothesis test:
+
+-   $\beta_1 = 0$. The true linear model has slope zero.
+
+-   $\beta_1 \neq 0$. The true linear model has a slope different than
+    zero. The unemployment is predictive of whether the President's
+    party wins or loses seats in the House of Representatives.
+
+We would reject $H_0$ in favor of $H_A$ if the data provide strong
+evidence that the true slope parameter is different than zero. To assess
+the hypotheses, we identify a standard error for the estimate, compute
+an appropriate test statistic, and identify the p-value.
+
+Understanding regression output from software {#testStatisticForTheSlope}
+---------------------------------------------
+
+Just like other point estimates we have seen before, we can compute a
+standard error and test statistic for $b_1$. We will generally label the
+test statistic using a $T$, since it follows the $t$-distribution.
+
+We will rely on statistical software to compute the standard error and
+leave the explanation of how this standard error is determined to a
+second or third statistics course.
+Figure [\[midtermUnempRegTable\]](#midtermUnempRegTable){reference-type="ref"
+reference="midtermUnempRegTable"} shows software output for the least
+squares regression line in
+Figure [\[unemploymentAndChangeInHouse\]](#unemploymentAndChangeInHouse){reference-type="ref"
+reference="unemploymentAndChangeInHouse"}. The row labeled *unemp*
+includes the point estimate and other hypothesis test information for
+the slope, which is the coefficient of the unemployment variable.
+
+\centering
++----------------:+---------:+-----------:+--------:+---------------:+
+| \vspace{-3.7mm} |          |            |         |                |
++-----------------+----------+------------+---------+----------------+
+|                 | Estimate | Std. Error | t value | Pr($>$$|$t$|$) |
++-----------------+----------+------------+---------+----------------+
+| \vspace{-3.6mm} |          |            |         |                |
++-----------------+----------+------------+---------+----------------+
+| (Intercept)     | -7.3644  | 5.1553     | -1.43   | 0.1646         |
++-----------------+----------+------------+---------+----------------+
+| unemp           | -0.8897  | 0.8350     | -1.07   | 0.2961         |
++-----------------+----------+------------+---------+----------------+
+|                 |          |            |         |                |
++-----------------+----------+------------+---------+----------------+
+
+What do the first and second columns of
+Figure [\[midtermUnempRegTable\]](#midtermUnempRegTable){reference-type="ref"
+reference="midtermUnempRegTable"} represent? The entries in the first
+column represent the least squares estimates, $b_0$ and $b_1$, and the
+values in the second column correspond to the standard errors of each
+estimate. Using the estimates, we could write the equation for the least
+square regression line as $$\begin{aligned}
+  \hat{y} = -7.3644 - 0.8897 x
+  \end{aligned}$$ where $\hat{y}$ in this case represents the predicted
+change in the number of seats for the president's party, and $x$
+represents the unemployment rate.
+
+\D{\newpage}
+We previously used a $t$-test statistic for hypothesis testing in the
+context of numerical data. Regression is very similar. In the hypotheses
+we consider, the null value for the slope is 0, so we can compute the
+test statistic using the T (or Z) score formula: $$\begin{aligned}
+T
+  = \frac{\text{estimate} - \text{null value}}{\text{SE}}
+  = \frac{-0.8897 - 0}{0.8350}
+  = -1.07\end{aligned}$$ This corresponds to the third column of
+Figure [\[midtermUnempRegTable\]](#midtermUnempRegTable){reference-type="ref"
+reference="midtermUnempRegTable"}.
+
+Use the table in
+Figure [\[midtermUnempRegTable\]](#midtermUnempRegTable){reference-type="ref"
+reference="midtermUnempRegTable"} to determine the p-value for the
+hypothesis test. The last column of the table gives the p-value for the
+two-sided hypothesis test for the coefficient of the unemployment rate:
+0.2961. That is, the data do not provide convincing evidence that a
+higher unemployment rate has any correspondence with smaller or larger
+losses for the President's party in the House of Representatives in
+midterm elections.
+
+Inference for regression We usually rely on statistical software to
+identify point estimates, standard errors, test statistics, and p-values
+in practice. However, be aware that software will not generally check
+whether the method is appropriate, meaning we must still verify
+conditions are met.
+
+Examine
+Figure [\[elmhurstScatterWLSROnly\]](#elmhurstScatterWLSROnly){reference-type="ref+page"
+reference="elmhurstScatterWLSROnly"}, which relates the Elmhurst College
+aid and student family income. How sure are you that the slope is
+statistically significantly different from zero? That is, do you think a
+formal hypothesis test would reject the claim that the true slope of the
+line should be zero?
+[\[overallAidIncomeInfAssessOfRegrLineSlope\]]{#overallAidIncomeInfAssessOfRegrLineSlope
+label="overallAidIncomeInfAssessOfRegrLineSlope"} While the relationship
+between the variables is not perfect, there is an evident decreasing
+trend in the data. This suggests the hypothesis test will reject the
+null claim that the slope is zero.
+
+Figure [\[rOutputForIncomeAidLSRLineInInferenceSection\]](#rOutputForIncomeAidLSRLineInInferenceSection){reference-type="ref"
+reference="rOutputForIncomeAidLSRLineInInferenceSection"} shows
+statistical software output from fitting the least squares regression
+line shown in
+Figure [\[elmhurstScatterWLSROnly\]](#elmhurstScatterWLSROnly){reference-type="ref"
+reference="elmhurstScatterWLSROnly"}. Use this output to formally
+evaluate the following hypotheses.
+
+-   The true coefficient for family income is zero.
+
+-   The true coefficient for family income is not zero.
+
+\footnotetext{We look in the second row corresponding
+  to the family income variable.
+  We see the point estimate of the slope of the line is -0.0431,
+  the standard error of this estimate is 0.0108, and the $t$-test
+  statistic is $T = -3.98$.
+  The p-value corresponds exactly to the two-sided test we are
+  interested in: 0.0002.
+  The p-value is so small that we reject the null hypothesis
+  and conclude that family income and financial aid at Elmhurst
+  College for freshman entering in the year 2011 are negatively
+  correlated and the true slope parameter is indeed less than~0,
+  just as we believed in
+  Example~\ref{overallAidIncomeInfAssessOfRegrLineSlope}.}
+\centering
++----------------:+---------:+-----------:+--------:+---------------:+
+| \vspace{-3.7mm} |          |            |         |                |
++-----------------+----------+------------+---------+----------------+
+|                 | Estimate | Std. Error | t value | Pr($>$$|$t$|$) |
++-----------------+----------+------------+---------+----------------+
+| \vspace{-3.6mm} |          |            |         |                |
++-----------------+----------+------------+---------+----------------+
+| (Intercept)     | 24319.3  | 1291.5     | 18.83   | $<$0.0001      |
++-----------------+----------+------------+---------+----------------+
+| familyμsincome  | -0.0431  | 0.0108     | -3.98   | 0.0002         |
++-----------------+----------+------------+---------+----------------+
+|                 |          |            |         |                |
++-----------------+----------+------------+---------+----------------+
+
+\newpage
+Confidence interval for a coefficient
+-------------------------------------
+
+Similar to how we can conduct a hypothesis test for a model coefficient
+using regression output, we can also construct a confidence interval for
+that coefficient.
+
+ Compute the 95% confidence interval for the coefficient using the
+regression output from
+Table [\[rOutputForIncomeAidLSRLineInInferenceSection\]](#rOutputForIncomeAidLSRLineInInferenceSection){reference-type="ref"
+reference="rOutputForIncomeAidLSRLineInInferenceSection"}. The point
+estimate is -0.0431 and the standard error is $SE = 0.0108$. When
+constructing a confidence interval for a model coefficient, we generally
+use a $t$-distribution. The degrees of freedom for the distribution are
+noted in the regression output, $df = 48$, allowing us to identify
+$t_{48}^{\star} = 2.01$ for use in the confidence interval.
+
+We can now construct the confidence interval in the usual way:
+$$\begin{aligned}
+  \text{point estimate} \pm t_{48}^{\star} \times SE
+    \qquad\to\qquad -0.0431 \pm 2.01 \times 0.0108
+    \qquad\to\qquad (-0.0648, -0.0214)
+  \end{aligned}$$ We are 95% confident that with each dollar increase in
+, the university's gift aid is predicted to decrease on average by
+\$0.0214 to \$0.0648.
+
+Confidence intervals for coefficients Confidence intervals for model
+coefficients can be computed using the $t$-distribution:
+$$\begin{aligned}
+  b_i \ \pm\ t_{df}^{\star} \times SE_{b_{i}}
+  \end{aligned}$$ where $t_{df}^{\star}$ is the appropriate $t$-value
+corresponding to the confidence level with the model's degrees of
+freedom.
+
+On the topic of intervals in this book, we've focused exclusively on
+confidence intervals for model parameters. However, there are other
+types of intervals that may be of interest, including prediction
+intervals for a response value and also confidence intervals for a mean
+response value in the context of regression. These two interval types
+are introduced in an online extra that you may download at
+
+\oiRedirect{stat_extra_linear_regression_supp}
+    {www.openintro.org/d?file=stat\_extra\_linear\_regression\_supp}
+
+-----------
+
+
+
+Conditions for the least squares line
+-------------------------------------
+
+When fitting a least squares line, we generally require
+
+Linearity.
+
+:   The data should show a linear trend. If there is a nonlinear trend
+    (e.g. left panel of
+    Figure [\[whatCanGoWrongWithLinearModel\]](#whatCanGoWrongWithLinearModel){reference-type="ref"
+    reference="whatCanGoWrongWithLinearModel"}), an advanced regression
+    method from another book or later course should be applied.
+
+Nearly normal residuals.
+
+:   Generally, the residuals must be nearly normal. When this condition
+    is found to be unreasonable, it is usually because of outliers or
+    concerns about influential points, which we'll talk about more in
+    Sections [3](#typesOfOutliersInLinearRegression){reference-type="ref"
+    reference="typesOfOutliersInLinearRegression"}. An example of a
+    residual that would be a potentially concern is shown in
+    Figure [\[whatCanGoWrongWithLinearModel\]](#whatCanGoWrongWithLinearModel){reference-type="ref"
+    reference="whatCanGoWrongWithLinearModel"}, where one observation is
+    clearly much further from the regression line than the others.
+
+Constant variability.
+
+:   The variability of points around the least squares line remains
+    roughly constant. An example of non-constant variability is shown in
+    the third panel of
+    Figure [\[whatCanGoWrongWithLinearModel\]](#whatCanGoWrongWithLinearModel){reference-type="ref"
+    reference="whatCanGoWrongWithLinearModel"}, which represents the
+    most common pattern observed when this condition fails: the
+    variability of $y$ is larger when $x$ is larger.
+
+Independent observations.
+
+:   Be cautious about applying regression to data, which are sequential
+    observations in time such as a stock price each day. Such data may
+    have an underlying structure that should be considered in a model
+    and analysis. An example of a data set where successive observations
+    are not independent is shown in the fourth panel of
+    Figure [\[whatCanGoWrongWithLinearModel\]](#whatCanGoWrongWithLinearModel){reference-type="ref"
+    reference="whatCanGoWrongWithLinearModel"}. There are also other
+    instances where correlations within the data are important, which is
+    further discussed in
+    Chapter [\[ch\_regr\_mult\_and\_log\]](#ch_regr_mult_and_log){reference-type="ref"
+    reference="ch_regr_mult_and_log"}.
+
+\centering
+\Figure{}{whatCanGoWrongWithLinearModel}
+Should we have concerns about applying least squares regression to the
+Elmhurst data in
+Figure [\[elmhurstScatterW2Lines\]](#elmhurstScatterW2Lines){reference-type="ref"
+reference="elmhurstScatterW2Lines"}?
+
+\footnotetext{The trend appears to be linear, the data fall around the line with no obvious outliers, the variance is roughly constant. These are also not time series observations. Least squares regression can be applied to these data.}
+\D{\newpage}
+-->
 
 #### Observed data {-}
 
