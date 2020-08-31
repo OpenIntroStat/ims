@@ -71,7 +71,7 @@ loans_var_def %>%
 
 Let's start by fitting a linear regression model for interest rate with a single predictor indicating whether or not a person has a bankruptcy in their record: 
 
-$$\widehat{rate} = 12.33 + 0.74 \times bankruptcy$$
+$$\widehat{\texttt{interest_rate}} = 12.33 + 0.74 \times bankruptcy$$
 
 Results of this model are shown in Table \@ref(tab:intRateVsPastBankrModel).
 
@@ -100,7 +100,11 @@ The output from software is shown in Table \@ref(tab:intRateVsVerIncomeModel).
 This regression output provides multiple rows for the variable. 
 Each row represents the relative difference for each level of `verified_income`. 
 However, we are missing one of the levels: `Not Verified`. 
-The missing level is called the **reference level**, and it represents the default level that other levels are measured against.
+The missing level is called the **reference level** and it represents the default level that other levels are measured against.
+
+```{r include=FALSE}
+terms_chp_4 <- c("reference level")
+```
 
 ```{r intRateVsVerIncomeModel}
 m_verified_income <- lm(interest_rate ~ verified_income, data = loans)
@@ -117,7 +121,7 @@ How would we write an equation for this regression model?
 
 The equation for the regression model may be written as a model with two predictors: 
 
-$$\widehat{rate} = 11.10 + 1.42 \times \text{verified_income}_{\text{Source Verified}} + 3.25 \times \text{verified_income}_{\text{Verified}}$$ 
+$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times \text{verified_income}_{\text{Source Verified}} + 3.25 \times \text{verified_income}_{\text{Verified}}$$ 
 
 We use the notation $\text{variable}_{\text{level}}$ to represent indicator variables for when the categorical variable takes a particular value. 
 For example, $\text{verified_income}_{\text{Source Verified}}$ would take a value of 1 if
@@ -136,7 +140,7 @@ Using the model for predicting interest rate from income verification type, comp
 
 When `verified_income` takes a value of `Not Verified`, then both indicator functions in the equation for the linear model are set to 0:
 
-$$\widehat{rate} = 11.10 + 1.42 \times 0 + 3.25 \times 0 = 11.10$$
+$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times 0 + 3.25 \times 0 = 11.10$$
 
 The average interest rate for these borrowers is 11.1%. 
 Because the level does not have its own coefficient and it is the reference value, the indicators for the other levels for this variable all drop out.
@@ -150,7 +154,7 @@ Using the model for predicting interest rate from income verification type, comp
 
 When `verified_income` takes a value of `Source Verified`, then the corresponding variable takes a value of 1 while the other ($\text{verified_income}_{\text{Verified}}$) is 0:
 
-$$\widehat{rate} = = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 12.52$$
+$$\widehat{\texttt{interest_rate}} = = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 12.52$$
 
 The average interest rate for these borrowers is 12.52%.
 :::
@@ -188,6 +192,148 @@ How much larger of an interest rate would we expect for a borrower who has verif
 
 
 ### Many predictors in a model
+
+The world is complex, and it can be helpful to consider many factors at once in statistical modeling. 
+For example, we might like to use the full context of borrower to predict the interest rate they receive rather than using a single variable. 
+This is the strategy used in **multiple regression**. 
+While we remain cautious about making any causal interpretations using multiple regression on observational data, such models are a common first step in gaining insights or providing some evidence of a causal connection.
+
+```{r include=FALSE}
+terms_chp_4 <- c(terms_chp_4, "multiple regression")
+```
+
+We want to construct a model that accounts for not only for any past bankruptcy or whether the borrower had their income source or amount verified, but simultaneously accounts for all the variables in the `loans` data set: `verified_income`, `debt_to_income`, `credit_util`, `bankruptcy`, `term`, `issue_month`, and `credit_checks`.
+
+$$\begin{align*}
+\widehat{\texttt{interest_rate}}
+    &= \beta_0 +
+        \beta_1\times \texttt{verified_income}_{\texttt{Source Verified}} +
+        \beta_2\times \texttt{verified_income}_{\texttt{Verified}} \\
+    &\qquad\  +
+        \beta_3\times \texttt{debt_to_income} \\
+    &\qquad\  +
+        \beta_4 \times \texttt{credit_util} \\
+    &\qquad\  +
+        \beta_5 \times \texttt{bankruptcy} \\
+    &\qquad\  +
+        \beta_6 \times \texttt{term} \\
+    &\qquad\  +
+        \beta_7 \times \texttt{issue_month}_{\texttt{Jan-2018}} +
+        \beta_8 \times \texttt{issue_month}_{\texttt{Mar-2018}} \\
+    &\qquad\  +
+        \beta_9 \times \texttt{credit_checks}
+\end{align*}$$ 
+
+This equation represents a holistic approach for modeling all of the variables simultaneously. 
+Notice that there are two coefficients for `verified_income` and also two coefficients for `issue_month`, since both are 3-level categorical variables.
+
+We estimate the parameters $\beta_0$, $\beta_1$, $\beta_2$, $\cdots$, $\beta_9$ in the same way as we did in the case of a single predictor.
+We select $b_0$, $b_1$, $b_2$, $\cdots$, $b_9$ that minimize the sum of the squared residuals: 
+
+$$SSE = e_1^2 + e_2^2 + \dots + e_{10000}^2 = \sum_{i=1}^{10000} e_i^2 = \sum_{i=1}^{10000} \left(y_i - \hat{y}_i\right)^2$$
+
+where $y_i$ and $\hat{y}_i$ represent the observed interest rates and their estimated values according to the model, respectively. 
+10,000 residuals are calculated, one for each observation. 
+We typically use a computer to minimize the sum of squares and compute point estimates, as shown in the sample output in
+Table \@ref(tab:loansFullModelOutput). 
+Using this output, we identify the point estimates $b_i$ of each $\beta_i$, just as we did in the one-predictor case.
+
+```{r loansFullModelOutput}
+m_full <- lm(interest_rate ~ ., data = loans)
+tidy(m_full) %>%
+  mutate(
+    p.value = as.character(round(p.value, 4)), 
+    p.value = if_else(p.value == "0", "<0.0001", p.value)
+    ) %>%
+  kable(caption = "Output for the regression model, where interest rate is the outcome and the variables listed are the predictors. Degrees of freedom for this model is 9990.") %>%
+  kable_styling(full_width = FALSE)
+```
+
+
+::: {.important}
+**Multiple regression model.** 
+
+A multiple regression model is a linear model with many predictors. In general, we write the model as
+
+$$\hat{y} = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_k x_k$$
+
+when there are $k$ predictors. 
+We always estimate the $\beta_i$ parameters using statistical software.
+:::
+
+
+::: {.example}
+Write out the regression model using the point estimates from Table \@ref(tab:loansFullModelOutput). 
+How many predictors are there in this model?
+
+---
+
+The fitted model for the interest rate is given by: 
+
+$$\begin{align*}
+\widehat{\texttt{interest_rate}}
+    &= 1.925 +
+        0.975 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
+    &\qquad\  +
+        2.537 \times \texttt{verified_income}_{\texttt{Verified}} \\
+    &\qquad\  +
+        0.021 \times \texttt{debt_to_income} \\
+    &\qquad\  +
+        4.896 \times \texttt{credit_util} \\
+    &\qquad\  +
+        0.386 \times \texttt{bankruptcy} \\
+    &\qquad\  +
+        0.154 \times \texttt{term} \\
+    &\qquad\  +
+        0.028 \times \texttt{issue_month}_{\texttt{Jan-2018}} \\
+    &\qquad\  -
+        0.040 \times \texttt{issue_month}_{\texttt{Mar-2018}} \\
+    &\qquad\  +
+        0.228 \times \texttt{credit_checks}
+\end{align*}$$ 
+  
+If we count up the number of predictor coefficients, we get the *effective* number of predictors in the model: $k = 9$.
+Notice that the categorical predictor counts as two, once for the two levels shown in the model. 
+In general, a categorical predictor with $p$ different levels will be represented by $p - 1$ terms in a multiple regression model.
+:::
+
+
+::: {.guidedpractice}
+What does $\beta_4$, the coefficient of variable , represent? What is the point estimate of $\beta_4$?^[$\beta_4$ represents the change in interest rate we would expect if someone's credit utilization was 0 and went to 1, all other factors held even. The point estimate is $b_4 = 4.90%$.]
+:::
+
+
+::: {.guidedpractice}
+Compute the residual of the first observation in Table \@ref(tab:loansDataMatrix) on page using the full model.^[To compute the residual, we first need the predicted value, which we compute by plugging values into the equation from earlier. For example,
+$\texttt{verified_income}_{\texttt{Source Verified}}$ takes a value of 0, $\texttt{verified_income}_{\texttt{Verified}}$ takes a value of 1 (since the borrower's income source and amount were verified), was 18.01, and so on. 
+This leads to a prediction of $\widehat{\texttt{interest_rate}}_1 = 18.09$. 
+The observed interest rate was 14.07%, which leads to a residual of $e_1 = 14.07 - 18.09 = -4.02$.]
+:::
+
+
+::: {.example}
+We estimated a coefficient for in Section \@ref(ind-and-cat-predictors) of $b_4 = 0.74$ with a standard error of $SE_{b_1} = 0.15$ when using simple linear regression. 
+Why is there a difference between that estimate and the estimated coefficient of 0.39 in the multiple regression setting?
+
+---
+
+If we examined the data carefully, we would see that some predictors are correlated. 
+For instance, when we estimated the connection of the outcome `interest_rate` and predictor `bankruptcy` using simple linear regression, we were unable to control for other variables like whether the borrower had her income verified, the borrower's debt-to-income ratio, and other variables. 
+That original model was constructed in a vacuum and did not consider the full context. 
+When we include all of the variables, underlying and unintentional bias that was missed by these other variables is reduced or eliminated. 
+Of course, bias can still exist from other confounding variables.
+:::
+
+The previous example describes a common issue in multiple regression: correlation among predictor variables. 
+We say the two predictor variables are (pronounced as *co-linear*) when they are correlated, and this collinearity complicates model estimation. 
+While it is impossible to prevent collinearity from arising in observational data, experiments are usually designed to prevent predictors from being collinear.
+
+
+::: {.guidedpractice}
+The estimated value of the intercept is 1.925, and one might be tempted to make some interpretation of this coefficient, such as, it is the model's predicted price when each of the variables take value zero: income source is not verified, the borrower has no debt (debt-to-income and credit utilization are zero), and so on. 
+Is this reasonable? 
+Is there any value gained by making this interpretation?^[Many of the variables do take a value 0 for at least one data point, and for those variables, it is reasonable. However, one variable never takes a value of zero: \texttt{term}, which describes the length of the loan, in months. If \texttt{term} is set to zero, then the loan must be paid back immediately; the borrower must give the money back as soon as she receives it, which means it is not a real loan. Ultimately, the interpretation of the intercept in this setting is not insightful.]
+:::
 
 ### Adjusted R-squared
 
@@ -273,7 +419,7 @@ If you're not sure what some of these terms mean, we recommend you go back in th
 We are purposefully presenting them in alphabetical order, instead of in order of appearance, so they will be a little more challenging to locate. 
 However you should be able to easily spot them as **bolded text**.
 
-```{r eval=FALSE}
+```{r}
 make_terms_table(terms_chp_4)
 ```
 
