@@ -30,42 +30,35 @@ Tentative outline:
 
 ### [Chp 2. Summarizing and visualizing data](https://openintro-ims.netlify.app/summarizing-visualizing-data.html)
 
-*Exercises to be added in*
+*Exercises to be added to effective data viz section*
 
 - Exploring numerical data
 - Exploring categorical data
+- Effective data visualization
 - Case study
 - Chapter review
 
 ### [Chp 3. Introduction to linear models](https://openintro-ims.netlify.app/intro-linear-models.html)
 
-*Awaiting completion*
+*Complete, exercises need to be formatted*
 
-- Visual summaries of data: scatterplot, side-by-side boxplots, histogram, density plot, box plot (lead out with multivariate, follow with univariate)
-- Describing distributions: correlation, central tendency, variability, skew, modality
-- Num vs. num - SLR
-	- correlation
-	- Line fitting, residuals, and correlation
-	- Fitting a line by least squares regression
-	- Types of outliers in linear regression
+- Fitting a line, residuals, and correlation
+- Least squares regression
+- Outliers in linear regression
 
 ### [Chp 4. Multivariable and logistic models](https://openintro-ims.netlify.app/multi-logistic-models.html)
 
 *In progress*
 
-- Num vs. whatever - MLR
-	- Introduction to multiple regression
-- Parallel slopes
-- Hint at interaction, planes, and parallel planes but not quantify
-	- Visualization of higher-dimensional models (rgl demo)
+- Regression with multiple predictors
+- Model selection
+- Model diagnostics
+- Case study: Mario Kart
 - Logistic regression
-	- Binary vs. num/whatever
-	- Three scales interpretation (e.g. probability, odds, log-odds)
-	- “parallel” logistic curves? 
 
 ### [Chp 5. Introduction to statistical inference](https://openintro-ims.netlify.app/intro-stat-inference.html)
 
-*Complete*
+*Complete, exercises need to be formatted*
 
 - Randomization tests
   - Case study: Gender discrimination
@@ -75,7 +68,7 @@ Tentative outline:
 
 ### [Chp 6. Inference for categorical responses](https://openintro-ims.netlify.app/inference-cat.html)
 
-*Complete*
+*Complete, exercises need to be formatted*
 
 - One proportion
   - Bootstrap test
@@ -92,7 +85,7 @@ Tentative outline:
   
 ### [Chp 7. Inference for numerical responses](https://openintro-ims.netlify.app/inference-num.html)
 
-*In progress*
+*Complete, exercises need to be formatted*
 
 - One mean
   - Bootstrap confidence interval
