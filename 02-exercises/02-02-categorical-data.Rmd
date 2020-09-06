@@ -1,72 +1,142 @@
-1.  **Antibiotic use in children** The bar plot and the pie chart below
-    show the distribution of pre-existing medical conditions of children
-    involved in a study on the optimal duration of antibiotic use in
-    treatment of tracheitis, which is an upper respiratory infection.
+1.  **Antibiotic use in children.** 
+The bar plot and the pie chart below show the distribution of pre-existing medical conditions of children involved in a study on the optimal duration of antibiotic use in treatment of tracheitis, which is an upper respiratory infection.^[The data used in this exercise can be found in the **openintro** package: [`antibiotics`](http://openintrostat.github.io/openintro/reference/antibiotics.html).]
 
-    ![](02-exercises/figures/antibiotic_use_children_bar){width="45%"}
-    ![](02-exercises/figures/antibiotic_use_children_pie){width="45%"}
+    ```{r}
+    library(ggplot2)
+    library(forcats)
+    library(patchwork)
+    
+    p_bar <- ggplot(antibiotics, aes(y = fct_rev(fct_infreq(condition)))) +
+      geom_bar(fill = COL["blue","full"]) +
+      theme_minimal() +
+      labs(x = "", y = "Condition")
+    
+    p_pie <- antibiotics %>%
+      count(condition) %>%
+      ggplot(aes(x = "", y = n, fill = condition)) +
+      geom_bar(width = 1, stat = "identity") +
+      coord_polar("y", start = 0) +
+      theme_minimal() +
+      labs(x = "", y = "")
+    
+    p_bar + p_pie
+    ```
 
-    1.  What features are apparent in the bar plot but not in the pie
-        chart?
+    a.  What features are apparent in the bar plot but not in the pie chart?
 
-    2.  What features are apparent in the pie chart but not in the bar
-        plot?
+    b.  What features are apparent in the pie chart but not in the bar plot?
 
-    3.  Which graph would you prefer to use for displaying these
-        categorical data?
+    c.  Which graph would you prefer to use for displaying these categorical data?
 
-1.  **Views on the DREAM Act** A random sample of registered voters from
-    Tampa, FL were asked if they support the DREAM Act, a proposed law
-    which would provide a path to citizenship for people brought
-    illegally to the US as children. The survey also collected
-    information on the political ideology of the respondents. Based on
-    the mosaic plot shown below, do views on the DREAM Act and political
-    ideology appear to be independent? Explain your reasoning.
-    [@survey:immigFL:2012]
+1.  **Black Lives Matter.** 
+A Washington Post-Schar School poll conducted in the United States in June 2020, among a random national sample of 1,006 adults, asked respondents whether they support or oppose protests following George Floyd's killing that have taken place in cities across the US. 
+The survey also collected information on the age of the respondents. [survey:blmWaPoScar:2020]
+The results are summarized in the stacked bar plot below.
 
-    ![](02-exercises/figures/dream_act_mosaic.png){width="80%"}
+    ```{r}
+    library(tidyverse)
+    library(scales)
+    
+    blm_survey <- tribble(
+       ~"Opinion",         ~"18-29", ~"30-39", ~"40-49", ~"50-64",	~"65+",
+       "Strongly support",  55,	     42,       51,       45,	    42,
+       "Somewhat support",  26,	     35,       26,       29,	    21,
+       "Somewhat oppose",   13,	     13,       9 ,       10,	    10,
+       "Strongly oppose",   5,       9 ,       13,       17,	    24,
+       "No opinion",        0,	     1,        1,	     0,         2 
+    )
+    
+    blm_survey %>%
+      pivot_longer(
+            cols = -Opinion,
+            names_to = "Age",
+            values_to = "Proportion"
+      ) %>%
+      mutate(Opinion = fct_rev(fct_relevel(Opinion, 
+                                           "Strongly oppose", 
+                                           "Somewhat oppose", 
+                                           "No opinion", 
+                                           "Somewhat support", 
+                                           "Strongly support"))) %>%
+      ggplot(aes(y = Age, x = Proportion, fill = Opinion)) +
+      geom_col() +
+      scale_fill_viridis_d() +
+      scale_x_continuous(labels = label_percent(scale = 1)) +
+      theme_minimal() +
+      labs(x = "")
+    ```
+    
+    a. Based on the stacked bar plot, do views on the protests and age appear to be independent? Explain your reasoning.
+    
+    b. What other variables might explain the potential relationship between these two variables?
 
-1.  **Views on immigration** 910 randomly sampled registered voters from
-    Tampa, FL were asked if they thought workers who have illegally
-    entered the US should be (i) allowed to keep their jobs and apply
-    for US citizenship, (ii) allowed to keep their jobs as temporary
-    guest workers but not allowed to apply for US citizenship, or (iii)
-    lose their jobs and have to leave the country. The results of the
-    survey by political ideology are shown below. [@survey:immigFL:2012]
+1.  **Views on immigration.** 
+910 randomly sampled registered voters from Tampa, FL were asked if they thought workers who have illegally entered the US should be (i) allowed to keep their jobs and apply for US citizenship, (ii) allowed to keep their jobs as temporary guest workers but not allowed to apply for US citizenship, or (iii) lose their jobs and have to leave the country. 
+The results of the survey by political ideology are shown below.^[The data used in this exercise can be found in the **openintro** package: [`immigration`](http://openintrostat.github.io/openintro/reference/immigration.html).] [@survey:immigFL:2012]
 
-      ------------------- ----------------------------- -------------- ---------- --------- -------
-                                                                                            
-                                                         Conservative   Moderate   Liberal   Total
-                          \(i\) Apply for citizenship         57          120        101      278
-                          \(ii\) Guest worker                121          113        28       262
-      \[0pt\]*Response*   \(iii\) Leave the country          179          126        45       350
-                          \(iv\) Not sure                     15           4          1       20
-                          Total                              372          363        175      910
-      ------------------- ----------------------------- -------------- ---------- --------- -------
+    ```{r}
+    library(tools)
+    library(openintro)
+    library(tidyverse)
+    library(janitor)
+    library(knitr)
+    library(kableExtra)
+    
+    immigration %>%
+      count(political, response) %>%
+      mutate(political = toTitleCase(as.character(political))) %>%
+      pivot_wider(names_from = political, values_from = n) %>%
+      rename(Response = response) %>%
+      adorn_totals(where = c("row", "col")) %>%
+      kable() %>%
+      kable_styling(full_width = FALSE)
+    ```
 
-    1.  What percent of these Tampa, FL voters identify themselves as
-        conservatives?
+    a.  What percent of these Tampa, FL voters identify themselves as conservatives?
 
-    2.  What percent of these Tampa, FL voters are in favor of the
-        citizenship option?
+    b.  What percent of these Tampa, FL voters are in favor of the citizenship option?
 
-    3.  What percent of these Tampa, FL voters identify themselves as
-        conservatives and are in favor of the citizenship option?
+    c.  What percent of these Tampa, FL voters identify themselves as conservatives and are in favor of the citizenship option?
 
-    4.  What percent of these Tampa, FL voters who identify themselves
-        as conservatives are also in favor of the citizenship option?
-        What percent of moderates share this view? What percent of
-        liberals share this view?
+    d.  What percent of these Tampa, FL voters who identify themselves as conservatives are also in favor of the citizenship option? What percent of moderates share this view? What percent of liberals share this view?
 
-    5.  Do political ideology and views on immigration appear to be
-        independent? Explain your reasoning.
+    e.  Do political ideology and views on immigration appear to be independent? Explain your reasoning.
+    
+    f.  What other variables might explain the potential relationship between these two variables.
 
-1.  **Raise taxes** A random sample of registered voters nationally were
-    asked whether they think it's better to raise taxes on the rich or
-    raise taxes on the poor. The survey also collected information on
-    the political party affiliation of the respondents. Based on the
-    mosaic plot shown below, do views on raising taxes and political
-    affiliation appear to be independent? Explain your reasoning.
-    [@survey:raiseTaxes:2015]
+1.  **Raise taxes.** 
+A random sample of registered voters nationally were asked whether they think it's better to raise taxes on the rich or raise taxes on the poor. 
+The survey also collected information on the political party affiliation of the respondents. [survey:raiseTaxes:2015]
 
-    ![](02-exercises/figures/raise_taxes_mosaic.png){width="75%"}
+    ```{r}
+    library(tidyverse)
+    library(scales)
+    
+    raise_taxes_survey <- tribble(
+       ~"Opinion",                ~"Democrat", ~"Republican", ~"Independent/Other",
+       "Raise taxes on the rich", 91,	       47,            49,
+       "Raise taxes on the poor",  4,	       10,            11,
+       "Not sure",                 5,	       43,            40
+    )
+    
+    raise_taxes_survey %>%
+      pivot_longer(
+            cols = -Opinion,
+            names_to = "Party",
+            values_to = "Proportion"
+      ) %>%
+      mutate(Opinion = fct_relevel(Opinion, 
+                                   "Raise taxes on the rich", 
+                                   "Raise taxes on the poor", 
+                                   "Not sure")) %>%
+      ggplot(aes(y = Party, x = Proportion, fill = Opinion)) +
+      geom_col() +
+      scale_fill_viridis_d(option = "E") +
+      scale_x_continuous(labels = label_percent(scale = 1)) +
+      theme_minimal() +
+      labs(x = "")
+    ```
+
+    a. Based on the stacked bar plot shown above, do views on raising taxes and political affiliation appear to be independent? Explain your reasoning.
+
+    b. What other variables might explain the potential relationship between these two variables?
