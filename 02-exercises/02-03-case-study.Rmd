@@ -1,76 +1,57 @@
-1.  **Side effects of Avandia** Rosiglitazone is the active ingredient
-    in the controversial type 2 diabetes medicine Avandia and has been
-    linked to an increased risk of serious cardiovascular problems such
-    as stroke, heart failure, and death. A common alternative treatment
-    is pioglitazone, the active ingredient in a diabetes medicine called
-    Actos. In a nationwide retrospective observational study of 227,571
-    Medicare beneficiaries aged 65 years or older, it was found that
-    2,593 of the 67,593 patients using rosiglitazone and 5,386 of the
-    159,978 using pioglitazone had serious cardiovascular problems.
-    These data are summarized in the contingency table below.
-    [@Graham:2010]
+1.  **Side effects of Avandia.** 
+Rosiglitazone is the active ingredient in the controversial type 2 diabetes medicine Avandia and has been linked to an increased risk of serious cardiovascular problems such as stroke, heart failure, and death. A common alternative treatment is pioglitazone, the active ingredient in a diabetes medicine called Actos. In a nationwide retrospective observational study of 227,571 Medicare beneficiaries aged 65 years or older, it was found that 2,593 of the 67,593 patients using rosiglitazone and 5,386 of the 159,978 using pioglitazone had serious cardiovascular problems. These data are summarized in the contingency table below.^[The data used in this exercise can be found in the **openintro** package: [`avandia`](http://openintrostat.github.io/openintro/reference/avandia.html).]
 
-      -- --------------- ------- --------- ---------
-                                           
-                           Yes      No       Total
-         Rosiglitazone    2,593   65,000    67,593
-         Pioglitazone     5,386   154,592   159,978
-         Total            7,979   219,592   227,571
-      -- --------------- ------- --------- ---------
+    ```{r}
+    library(tools)
+    library(openintro)
+    library(tidyverse)
+    library(janitor)
+    library(knitr)
+    library(kableExtra)
+    
+    avandia %>%
+      count(treatment, cardiovascular_problems) %>%
+      mutate(cardiovascular_problems = toTitleCase(as.character(cardiovascular_problems))) %>%
+      pivot_wider(names_from = cardiovascular_problems, values_from = n) %>%
+      adorn_totals(where = c("row", "col")) %>%
+      kable() %>%
+      kable_styling(full_width = FALSE)
+    ```
 
-    1.  Determine if each of the following statements is true or false.
-        If false, explain why. *Be careful:* The reasoning may be wrong
-        even if the statement's conclusion is correct. In such cases,
-        the statement should be considered false.
+    a.  Determine if each of the following statements is true or false. If false, explain why. *Be careful:* The reasoning may be wrong even if the statement's conclusion is correct. In such cases, the statement should be considered false. *(i)* Since more patients on pioglitazone had cardiovascular problems (5,386 vs. 2,593), we can conclude that the rate of cardiovascular problems for those on a pioglitazone treatment is higher. *(ii)* The data suggest that diabetic patients who are taking rosiglitazone are more likely to have cardiovascular problems since the rate of incidence was (2,593 / 67,593 = 0.038) 3.8\% for patients on this treatment, while it was only (5,386 / 159,978 = 0.034) 3.4\% for patients on pioglitazone. *(iii)* The fact that the rate of incidence is higher for the rosiglitazone group proves that Rosiglitazone causes serious cardiovascular problems. *(iv)* Based on the information provided so far, we cannot tell if the difference between the rates of incidences is due to a relationship between the two variables or due to chance.
 
-    2.  What proportion of all patients had cardiovascular problems?
+    b.  What proportion of all patients had cardiovascular problems?
 
-    3.  If the type of treatment and having cardiovascular problems were
-        independent, about how many patients in the rosiglitazone group
-        would we expect to have had cardiovascular problems?
+    c.  If the type of treatment and having cardiovascular problems were independent, about how many patients in the Rosiglitazone group would we expect to have had cardiovascular problems?
 
-    4.  We can investigate the relationship between outcome and
-        treatment in this study using a randomization technique. While
-        in reality we would carry out the simulations required for
-        randomization using statistical software, suppose we actually
-        simulate using index cards. In order to simulate from the
-        independence model, which states that the outcomes were
-        independent of the treatment, we write whether or not each
-        patient had a cardiovascular problem on cards, shuffled all the
-        cards together, then deal them into two groups of size 67,593
-        and 159,978. We repeat this simulation 1,000 times and each time
-        record the number of people in the rosiglitazone group who had
-        cardiovascular problems. Use the relative frequency histogram of
-        these counts to answer (i)-(iii).
+    d.  We can investigate the relationship between outcome and treatment in this study using a randomization technique. While in reality we would carry out the simulations required for randomization using statistical software, suppose we actually simulate using index cards. In order to simulate from the independence model, which states that the outcomes were independent of the treatment, we write whether or not each patient had a cardiovascular problem on cards, shuffled all the cards together, then deal them into two groups of size 67,593 and 159,978. We repeat this simulation 100 times and each time record the difference between the proportions of cards that say "Yes" in the Rosiglitazone and Pioglitazone groups. Use the relative frequency histogram of these counts to answer (i)-(iii): *(i)* What are the claims being tested? *(ii)* Compared to the number calculated in part (b), which would provide more support for the alternative hypothesis, *higher* or *lower* proportion of patients with cardiovascular problems in the Rosiglitazone group? *(iii)* What do the simulation results suggest about the relationship between taking Rosiglitazone and having cardiovascular problems in diabetic patients?
+    
+    ```{r}
+    library(infer)
+    set.seed(19)
+    avandia %>%
+      specify(response = cardiovascular_problems, explanatory = treatment, success = "yes") %>%
+      hypothesize(null = "independence") %>%
+      generate(reps = 100, type = "permute") %>%
+      calculate(stat = "diff in props", order = c("Rosiglitazone", "Pioglitazone")) %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(fill = COL["blue","full"]) +
+      theme_minimal() +
+      labs(y = NULL, x = "Difference in infection rates")
+    ```
 
-    ![](02-exercises/figures/randomization_avandia.png){width="\\textwidth"}\
-
-1.  **Heart transplants** The Stanford University Heart Transplant Study
-    was conducted to determine whether an experimental heart transplant
-    program increased lifespan. Each patient entering the program was
-    designated an official heart transplant candidate, meaning that he
-    was gravely ill and would most likely benefit from a new heart. Some
-    patients got a transplant and some did not. The variable
-    `transplant` indicates which group the patients were in; patients in
-    the treatment group got a transplant and those in the control group
-    did not. Of the 34 patients in the control group, 30 died. Of the 69
-    people in the treatment group, 45 died. Another variable called
-    `survived` was used to indicate whether or not the patient was alive
-    at the end of the study. [@Turnbull+Brown+Hu:1974]
+1.  **Heart transplants** 
+The Stanford University Heart Transplant Study was conducted to determine whether an experimental heart transplant program increased lifespan. Each patient entering the program was designated an official heart transplant candidate, meaning that he was gravely ill and would most likely benefit from a new heart. Some patients got a transplant and some did not. The variable `transplant` indicates which group the patients were in; patients in the treatment group got a transplant and those in the control group did not. Of the 34 patients in the control group, 30 died. Of the 69 people in the treatment group, 45 died. Another variable called `survived` was used to indicate whether or not the patient was alive at the end of the study. [@Turnbull+Brown+Hu:1974]
 
     ![](02-exercises/figures/randomization_heart_transplants_mosaic.png){width="48%"}
     ![](02-exercises/figures/randomization_heart_transplants_box.png){width="48%"}
 
-    1.  Based on the mosaic plot, is survival independent of whether or
-        not the patient got a transplant? Explain your reasoning.
+    a.  Based on the mosaic plot, is survival independent of whether or not the patient got a transplant? Explain your reasoning.
 
-    2.  What do the box plots below suggest about the efficacy
-        (effectiveness) of the heart transplant treatment.
+    b.  What do the box plots below suggest about the efficacy (effectiveness) of the heart transplant treatment.
 
-    3.  What proportion of patients in the treatment group and what
-        proportion of patients in the control group died?
+    c.  What proportion of patients in the treatment group and what proportion of patients in the control group died?
 
-    4.  One approach for investigating whether or not the treatment is
-        effective is to use a randomization technique.
+    d.  One approach for investigating whether or not the treatment is effective is to use a randomization technique.
 
     ![](02-exercises/figures/randomization_heart_transplants_rando.png){width="60%"}

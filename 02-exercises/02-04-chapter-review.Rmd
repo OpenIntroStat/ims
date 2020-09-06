@@ -1,105 +1,137 @@
-1.  **Exam scores** The average on a history exam (scored out of 100
-    points) was 85, with a standard deviation of 15. Is the distribution
-    of the scores on this exam symmetric? If not, what shape would you
-    expect this distribution to have? Explain your reasoning.
+1.  **Exam scores.** 
+The average on a history exam (scored out of 100 points) was 85, with a standard deviation of 15. 
+Is the distribution of the scores on this exam symmetric? 
+If not, what shape would you expect this distribution to have? Explain your reasoning.
 
-1.  **Infant mortality** The infant mortality rate is defined as the
-    number of infant deaths per 1,000 live births. This rate is often
-    used as an indicator of the level of health in a country. The
-    relative frequency histogram below shows the distribution of
-    estimated infant death rates for 224 countries for which such data
-    were available in 2014. The data for this exercise can be found in the openintro package: `cia_factbook`.
+1.  **Infant mortality.** 
+The infant mortality rate is defined as the number of infant deaths per 1,000 live births. This rate is often used as an indicator of the level of health in a country. 
+The relative frequency histogram below shows the distribution of estimated infant death rates for 224 countries for which such data were available in 2014.^[The data used in this exercise can be found in the **openintro** package: [`cia_factbook`](http://openintrostat.github.io/openintro/reference/cia_factbook.html).]
 
-    1.  Estimate Q1, the median, and Q3 from the histogram.
+    ```{r}
+    library(ggplot2)
+    library(scales)
+    library(openintro)
+    
+    ggplot(cia_factbook, aes(x = infant_mortality_rate)) +
+      geom_histogram(aes(y = stat(count) / sum(count)), 
+                     binwidth = 10, 
+                     fill = COL["blue", "full"]) +
+      theme_minimal() +
+      labs(x = "Infant mortality (per 1000 live births)", y = "Relative frequency") +
+    ylim(0, 0.35)
+    ```
 
-    2.  Would you expect the mean of this data set to be smaller or
-        larger than the median? Explain your reasoning.
+    a.  Estimate Q1, the median, and Q3 from the histogram.
 
-     
+    b.  Would you expect the mean of this data set to be smaller or larger than the median? Explain your reasoning.
 
-    ![](02-exercises/figures/infant_mortality_rel_freq_hist.png){width="85%"}
+1.  **Make-up exam.** 
+In a class of 25 students, 24 of them took an exam in class and 1 student took a make-up exam the following day. The professor graded the first batch of 24 exams and found an average score of 74 points with a standard deviation of 8.9 points. The student who took the make-up the following day scored 64 points on the exam.
 
-1.  **Make-up exam** In a class of 25 students, 24 of them took an exam
-    in class and 1 student took a make-up exam the following day. The
-    professor graded the first batch of 24 exams and found an average
-    score of 74 points with a standard deviation of 8.9 points. The
-    student who took the make-up the following day scored 64 points on
-    the exam.
+    a.  Does the new student's score increase or decrease the average score?
 
-    1.  Does the new student's score increase or decrease the average
-        score?
+    b.  What is the new average?
 
-    2.  What is the new average?
+    c.  Does the new student's score increase or decrease the standard deviation of the scores?
 
-    3.  Does the new student's score increase or decrease the standard
-        deviation of the scores?
+1.  **Marathon winners.** 
+The histogram and box plots below show the distribution of finishing times for male and female winners of the New York Marathon between 1970 and 1999.^[The data used in this exercise can be found in the **openintro** package: [`marathon`](http://openintrostat.github.io/openintro/reference/marathon.html).]
 
-1.  **Marathon winners** The histogram and box plots below show the
-    distribution of finishing times for male and female winners of the
-    New York Marathon between 1970 and 1999.
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(patchwork)
+    
+    p_hist <- ggplot(marathon, aes(x = time)) +
+      geom_histogram(binwidth = 0.1, fill = COL["blue","full"]) +
+      labs(x = "Marathon times", y = "Frequency") +
+      theme_minimal() +
+      scale_x_continuous(limits = c(2, 3.2), breaks = seq(2, 3.2, 0.4))
+    
+    p_box <- ggplot(marathon, aes(x = time)) +
+      geom_boxplot(outlier.colour = COL["blue","full"], outlier.alpha = 0.8) +
+      labs(x = "Marathon times") +
+      theme_minimal() +
+      theme(
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text.y = element_blank()
+      ) +
+      scale_x_continuous(limits = c(2, 3.2), breaks = seq(2, 3.2, 0.4))
+    
+    p_hist / p_box
+    ```
 
-    ![](02-exercises/figures/marathon_winners_hist_box.png){width="56%"}
+    a.  What features of the distribution are apparent in the histogram and not the box plot? What features are apparent in the box plot but not in the histogram?
 
-    1.  What features of the distribution are apparent in the histogram
-        and not the box plot? What features are apparent in the box plot
-        but not in the histogram?
+    b.  What may be the reason for the bimodal distribution? Explain.
 
-    2.  What may be the reason for the bimodal distribution? Explain.
+    c.  Compare the distribution of marathon times for men and women based on the box plot shown below.
+    
+    ```{r}
+    marathon %>%
+      mutate(gender = if_else(gender == "m", "Men", "Women")) %>%
+      ggplot(aes(x = time, y = gender)) +
+      geom_boxplot(outlier.colour = COL["blue","full"], outlier.alpha = 0.8) +
+      labs(x = "Marathon times", y = NULL) +
+      theme_minimal() +
+      scale_x_continuous(limits = c(2, 3.2), breaks = seq(2, 3.2, 0.4))
+    ```
 
-    3.  Compare the distribution of marathon times for men and women
-        based on the box plot shown below.
+    d.  The time series plot shown below is another way to look at these data. Describe what is visible in this plot but not in the others.
+    
+    ```{r out.width="100%"}
+    marathon %>%
+      mutate(gender = if_else(gender == "m", "Men", "Women")) %>%
+      ggplot(aes(x = year, y = time, color = gender, shape = gender)) +
+      geom_point() +
+      labs(y = "Marathon times", x = "Years") +
+      theme_minimal() +
+      scale_color_manual(values = c(COL["blue","full"], COL["green","full"]))
+    ```
 
-        ![](02-exercises/figures/marathon_winners_gender_box.png){width="56%"}
+1.  **A new statistic.** 
+The statistic $\frac{\bar{x}}{median}$ can be used as a measure of skewness. 
+Suppose we have a distribution where all observations are greater than 0, $x_i > 0$. 
+What is the expected shape of the distribution under the following conditions? Explain your reasoning.
 
-    4.  The time series plot shown below is another way to look at these
-        data. Describe what is visible in this plot but not in the
-        others.
+    a.  $\frac{\bar{x}}{median} = 1$
 
-    ![](02-exercises/figures/marathon_winners_time_series.png){width="60%"}\
+    b.  $\frac{\bar{x}}{median} < 1$
 
-1.  **A new statistic** The statistic $\frac{\bar{x}}{median}$ can be
-    used as a measure of skewness. Suppose we have a distribution where
-    all observations are greater than 0, $x_i > 0$. What is the expected
-    shape of the distribution under the following conditions? Explain
-    your reasoning.
+    c.  $\frac{\bar{x}}{median} > 1$
 
-    1.  $\frac{\bar{x}}{median} = 1$
+1.  **Oscar winners.** 
+The first Oscar awards for best actor and best actress were given out in 1929. 
+The histograms below show the age distribution for all of the best actor and best actress winners from 1929 to 2019. 
+Summary statistics for these distributions are also provided. Compare the distributions of ages of best actor and actress winners.^[The data used in this exercise can be found in the **openintro** package: [`oscars`](http://openintrostat.github.io/openintro/reference/oscars.html).]
 
-    2.  $\frac{\bar{x}}{median} < 1$
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(knitr)
+    library(kableExtra)
+    
+    ggplot(oscars, aes(x = age)) +
+      geom_histogram(binwidth = 10, fill = COL["blue","full"], size = 0.3) +
+      facet_wrap(~fct_rev(award), ncol = 1) +
+      theme_minimal() +
+      labs(x = "Age (in years)", y = NULL)
+    ```
+    
+    ```{r}
+    oscars %>%
+      group_by(award) %>%
+      summarise(
+        Mean = mean(age),
+        SD = sd(age),
+        n = n()
+      ) %>%
+      kable(col.names = c("", "Mean", "SD", "n"), digits = 1) %>%
+      kable_styling(full_width = FALSE)
+    ```
+    
 
-    3.  $\frac{\bar{x}}{median} > 1$
-
-1.  **Oscar winners** The first Oscar awards for best actor and best
-    actress were given out in 1929. The histograms below show the age
-    distribution for all of the best actor and best actress winners from
-    1929 to 2018. Summary statistics for these distributions are also
-    provided. Compare the distributions of ages of best actor and
-    actress winners. [@data:oscars]\
-
-              Best Actress
-      ------ --------------
-      Mean        36.2
-      SD          11.9
-      n            92
-             
-             
-             
-             
-             
-               Best Actor
-      Mean        43.8
-      SD          8.83
-      n            92
-
-1.  **Stats scores** Below are the final exam scores of twenty
-    introductory statistics students.
-
-    57, 66, 69, 71, 72, 73, 74, 77, 78, 78, 79, 79, 81, 81, 82, 83, 83,
-    88, 89, 94
-
-    Create a box plot of the distribution of these scores. The five
-    number summary provided below may be useful.
-
-       Min    Q1    Q2 (Median)    Q3    Max
-      ----- ------ ------------- ------ -----
-       57    72.5      78.5       82.5   94
+1.  **Stats scores.** 
+The final exam scores of twenty introductory statistics students, arranged in ascending order, as as follows: 57, 66, 69, 71, 72, 73, 74, 77, 78, 78, 79, 79, 81, 81, 82, 83, 83, 88, 89, 94.
+Suppose students who score above the 75th percentile on the final exam get an A in the class. How many students will get an A in this class?
