@@ -1,0 +1,112 @@
+1.  **Side effects of Avandia.** 
+Rosiglitazone is the active ingredient in the controversial type 2 diabetes medicine Avandia and has been linked to an increased risk of serious cardiovascular problems such as stroke, heart failure, and death. A common alternative treatment is Pioglitazone, the active ingredient in a diabetes medicine called Actos. In a nationwide retrospective observational study of 227,571 Medicare beneficiaries aged 65 years or older, it was found that 2,593 of the 67,593 patients using Rosiglitazone and 5,386 of the 159,978 using Pioglitazone had serious cardiovascular problems. These data are summarized in the contingency table below.^[The data used in this exercise can be found in the **openintro** package: [`avandia`](http://openintrostat.github.io/openintro/reference/avandia.html).]
+
+    ```{r}
+    library(tools)
+    library(openintro)
+    library(tidyverse)
+    library(janitor)
+    library(knitr)
+    library(kableExtra)
+    
+    avandia %>%
+      count(treatment, cardiovascular_problems) %>%
+      mutate(cardiovascular_problems = toTitleCase(as.character(cardiovascular_problems))) %>%
+      pivot_wider(names_from = cardiovascular_problems, values_from = n) %>%
+      adorn_totals(where = c("row", "col")) %>%
+      kable() %>%
+      kable_styling(full_width = FALSE)
+    ```
+
+    a.  Determine if each of the following statements is true or false. If false, explain why. *Be careful:* The reasoning may be wrong even if the statement's conclusion is correct. In such cases, the statement should be considered false.
+    
+        i. Since more patients on pioglitazone had cardiovascular problems (5,386 vs. 2,593), we can conclude that the rate of cardiovascular problems for those on a pioglitazone treatment is higher.
+        
+        ii. The data suggest that diabetic patients who are taking rosiglitazone are more likely to have cardiovascular problems since the rate of incidence was (2,593 / 67,593 = 0.038) 3.8\% for patients on this treatment, while it was only (5,386 / 159,978 = 0.034) 3.4\% for patients on pioglitazone. 
+        
+        iii. The fact that the rate of incidence is higher for the rosiglitazone group proves that Rosiglitazone causes serious cardiovascular problems. 
+        
+        iv. Based on the information provided so far, we cannot tell if the difference between the rates of incidences is due to a relationship between the two variables or due to chance.
+        
+    b.  What proportion of all patients had cardiovascular problems?
+
+    c.  If the type of treatment and having cardiovascular problems were independent, about how many patients in the Rosiglitazone group would we expect to have had cardiovascular problems?
+
+    d.  We can investigate the relationship between outcome and treatment in this study using a randomization technique. While in reality we would carry out the simulations required for randomization using statistical software, suppose we actually simulate using index cards. In order to simulate from the independence model, which states that the outcomes were independent of the treatment, we write whether or not each patient had a cardiovascular problem on cards, shuffled all the cards together, then deal them into two groups of size 67,593 and 159,978. We repeat this simulation 100 times and each time record the difference between the proportions of cards that say "Yes" in the Rosiglitazone and Pioglitazone groups. Use the histogram of these differences in proportions to answer the following questions.
+    
+        i. What are the claims being tested? 
+        
+        ii. Compared to the number calculated in part (b), which would provide more support for the alternative hypothesis, *higher* or *lower* proportion of patients with cardiovascular problems in the Rosiglitazone group? 
+        
+        iii. What do the simulation results suggest about the relationship between taking Rosiglitazone and having cardiovascular problems in diabetic patients?
+    
+    ```{r}
+    library(infer)
+    set.seed(25)
+    avandia %>%
+      specify(response = cardiovascular_problems, explanatory = treatment, success = "yes") %>%
+      hypothesize(null = "independence") %>%
+      generate(reps = 100, type = "permute") %>%
+      calculate(stat = "diff in props", order = c("Rosiglitazone", "Pioglitazone")) %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.001/4, fill = COL["blue","full"], color = "#4287aa") +
+      theme_minimal() +
+      labs(y = NULL, x = "Difference in cardiovascular problem rates (Rosiglitazone - Pioglitazone)") +
+      scale_y_continuous(breaks = seq(0, 16, 2))
+    ```
+
+1.  **Heart transplants.** 
+The Stanford University Heart Transplant Study was conducted to determine whether an experimental heart transplant program increased lifespan. Each patient entering the program was designated an official heart transplant candidate, meaning that he was gravely ill and would most likely benefit from a new heart. Some patients got a transplant and some did not. The variable `transplant` indicates which group the patients were in; patients in the treatment group got a transplant and those in the control group did not. Of the 34 patients in the control group, 30 died. Of the 69 people in the treatment group, 45 died. Another variable called `survived` was used to indicate whether or not the patient was alive at the end of the study.^[The data used in this exercise can be found in the **openintro** package: [`heart_transplant`](http://openintrostat.github.io/openintro/reference/heart_transplant.html).]
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(patchwork)
+    
+    heart_transplant <- heart_transplant %>%
+      mutate(survived_better_wording = if_else(survived == "dead", "deceased", as.character(survived)))
+    
+    p_bar <- ggplot(heart_transplant, aes(x = transplant, fill = survived_better_wording)) +
+      geom_bar(position = "fill") +
+      theme_minimal() +
+      scale_fill_manual(values = c(COL["green", "full"], COL["blue","full"])) +
+      labs(x = NULL, y = NULL, fill = "Outcome")
+    
+    p_box <- ggplot(heart_transplant, aes(x = transplant, y = survtime)) +
+      geom_boxplot(outlier.color = COL["blue","full"]) +
+      theme_minimal() +
+      labs(x = NULL, y = "Survival time (days)")
+    
+    p_bar + p_box
+    ```
+
+    a.  Based on the stacked bar plot, is survival independent of whether or not the patient got a transplant? Explain your reasoning.
+
+    b.  What do the box plots below suggest about the efficacy (effectiveness) of the heart transplant treatment.
+
+    c.  What proportion of patients in the treatment group and what proportion of patients in the control group died?
+
+    d.  One approach for investigating whether or not the treatment is effective is to use a randomization technique.
+    
+        i. What are the claims being tested?
+        
+        ii. The paragraph below describes the set up for such approach, if we were  to do it without using statistical software. Fill in the blanks with a number  or phrase, whichever is appropriate.
+        
+        > We write *alive* on $\rule{2cm}{0.5pt}$ cards representing patients who were  alive at the end of the study, and *deceased* on $\rule{2cm}{0.5pt}$ cards  representing patients who were not. Then, we shuffle these cards and split them into two groups: one group of size $\rule{2cm}{0.5pt}$ representing treatment, and another group of size $\rule{2cm}{0.5pt}$ representing control. We calculate the difference between the proportion of \textit{deceased} cards in the treatment and control groups (treatment - control) and record this value. We repeat this 100 times to build a distribution centered at $\rule{2cm}{0.5pt}$. Lastly, we calculate the fraction of simulations where the simulated differences in proportions are $\rule{2cm}{0.5pt}$. If this fraction is low, we conclude that it is unlikely to have observed such an outcome by chance and that the null hypothesis should be rejected in favor of the alternative.
+
+         iii. What do the simulation results shown below suggest about the effectiveness  of the transplant program?
+         
+    ```{r}
+    library(infer)
+    set.seed(40)
+    heart_transplant %>%
+      specify(response = survived_better_wording, explanatory = transplant, success = "deceased") %>%
+      hypothesize(null = "independence") %>%
+      generate(reps = 100, type = "permute") %>%
+      calculate(stat = "diff in props", order = c("treatment", "control")) %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.05, fill = COL["blue","full"], color = "#4287aa") +
+      theme_minimal() +
+      labs(y = NULL, x = "Difference in proportions of deceased (treatment - control)") +
+      scale_y_continuous(breaks = seq(0, 24, 4), minor_breaks = seq(0, 24, 2))
+    ```
