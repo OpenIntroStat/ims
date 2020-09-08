@@ -1,7 +1,6 @@
-
 ##  R code for the dotplot in two proportion bootstrap
+library(openintro)
 
-```{r}
 set.seed(47)
 nsim = 150
 n1  = 7
@@ -47,8 +46,3 @@ for(i in 1:8){
     propdiff[i,j] = (i-1)/7 - (j-1)/8
   }
 }
-
-
-```
-
-
