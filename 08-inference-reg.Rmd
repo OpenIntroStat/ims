@@ -224,13 +224,71 @@ Therefore, we believe that the slope observed on the original data is not just d
 ### Bootstrap confidence interval for $\beta_1$ {#bootbeta1}
 
 
-As we have seen in previous chapters, we can use bootstrapping to estimate the sampling distribution of the statistic of interest (here, the slope) without any assumption of no relationship (which was the condition in the randomization test).  Because interest is now in creating a CI, there is no null hypothesis, so there won't be any reason to permute either of the variables.
+As we have seen in previous chapters, we can use bootstrapping to estimate the sampling distribution of the statistic of interest (here, the slope) without the null assumption of no relationship (which was the condition in the randomization test).  Because interest is now in creating a CI, there is no null hypothesis, so there won't be any reason to permute either of the variables.
 
 
 #### Observed data {-}
 
+Returning to the crop data, we may want to consider the relationship between `peas` and `wheat`.  Are `peas` a good predictor of `wheat`?  And if so, what is their relationship?  That is, what is the slope that models `average wheat yield` as a function of `peas`?
+
+```{r echo = FALSE}
+set.seed(4747)
+crops4 <- crops_USA %>% 
+  sample_n(size=58, replace = TRUE) 
+crops5 <- crops_USA %>%
+  sample_n(size=58, replace = TRUE)
+crops_many_BS <- crops_USA %>%
+  rep_sample_n(size = 58, replace = TRUE, reps = 50)
+```
+
+
+```{r echo = FALSE, fig.cap = "Original data: wheat yield as a linear model of peas yield, in tonnes per hectare."}
+ggplot(crops_USA) +
+  geom_point(aes(x = peas, y = wheat)) +
+  geom_smooth(aes(x = peas, y = wheat), method = "lm", se = FALSE,color=COL[1,1]) 
+```
+
+
+
+
 #### Variability of the statistic {-}
 
+Because we are not focused on a null distribution, we sample with replacement $n=58$ observations from the original dataset.  Recall that with bootstrapping we always resample the same number of observations as we start with in order to mimic the process of taking a sample from the population.  When sampling in the linear model case, consider each observation to be a single dot.  If the dot is resampled, both the `wheat` and the `peas` measurement are observed.  The measurements are linked to the dot (i.e., to the year in which the measurements were taken).
+
+```{r crop2BS, echo = FALSE, fig.cap = "Two bootstrap samples of the crop data.  Note that it is difficult to differentiate the two plots, as (within a single bootstrap sample) the observations which have been resampled twice are plotted as points on top of one another."  fig.show = 'hold', out.width = '47%', fig_ncol = 2}
+
+ggplot(crops4) +
+  geom_point(aes(x = maize, y = wheat)) +
+  geom_smooth(aes(x = maize, y = wheat), method = "lm", se = FALSE,col=COL[4,1]) +
+  ggtitle("First bootstrap sample from the crop data.")
+
+
+ggplot(crops5) +
+  geom_point(aes(x = maize, y = wheat)) +
+  geom_smooth(aes(x = maize, y = wheat), method = "lm", se = FALSE,col=COL[1,1]) +
+  ggtitle("Second bootstrap sample from the crop data.")
+```
+
+
+```{r echo = FALSE, fig.cap = "Repeated bootstrap resamples of size 58 are taken from the original data.  Each linear model is slightly different."}
+ggplot(crops_many_BS, aes(x=peas, y=wheat, group=replicate)) + 
+  geom_point() + 
+  geom_smooth(method="lm", se=FALSE, color=COL[1,1])
+```  
+
+
+The distribution of slopes (for samples of size $n=20$) can be seen in a histogram.
+
+```{r echo = FALSE}
+crops_many_lm_BS <- crops_many_BS %>% 
+  group_by(replicate) %>% 
+  do(tidy(lm(wheat ~ peas, data=.))) %>%
+  filter(term=="peas")
+
+ggplot(crops_many_lm, aes(x=estimate)) + 
+  geom_histogram() +
+  xlab("slope estimates for different bootstrap resamples")
+```
 
 
 ### Mathematical model {#mathslope}
