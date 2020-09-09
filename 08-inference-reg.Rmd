@@ -26,7 +26,7 @@ Additionally, we will build confidence intervals which quantify the slope of the
 
 Consider the data on Global Crop Yields compiled by [Our World in Data](https://ourworldindata.org/crop-yields) and presented as part of the [TidyTuesday](https://github.com/rfordatascience/tidytuesday/trunk/data/2020/2020-09-01) series.  The scientific research interest at hand will be in determining the linear relationship between wheat yield (for a country-year) and other crop yields.  The dataset is quite rich and deserves exploring, but for this example, we will focus only on the annual crop yield in the United States.  
 
-```{r echo = FALSE}
+```{r echo = FALSE, fig.cap = "Yield (in tonnes per hectare) for six different crops in the US.  The color of the dot indicates the year."}
 key_crop_yields <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-01/key_crop_yields.csv') %>%
   rename(wheat = `Wheat (tonnes per hectare)`,
          rice = `Rice (tonnes per hectare)`,
@@ -68,7 +68,7 @@ crops_many <- crops_USA %>%
 ```
 
 
-```{r echo = FALSE}
+```{r echo = FALSE, fig.cap = "Wheat yield as a linear model of maize yield, in tonnes per hectare."}
 ggplot(crops_USA) +
   geom_point(aes(x = maize, y = wheat)) +
   geom_smooth(aes(x = maize, y = wheat), method = "lm", se = FALSE,color=COL[1,1]) 
@@ -78,7 +78,7 @@ ggplot(crops_USA) +
 A subset of size 20 items shows a similar positive trend between maize and wheat, despite having fewer observations on the plot.
 
 
-```{r echo = FALSE}
+```{r echo = FALSE, fig.cap = "A random sample of 20 years from the original dataset. A linear trend between `maize` and `wheat` continues to be observed."}
 ggplot(crops2) +
   geom_point(aes(x = maize, y = wheat)) +
   geom_smooth(aes(x = maize, y = wheat), method = "lm", se = FALSE, color = COL[1,1]) 
@@ -87,7 +87,8 @@ ggplot(crops2) +
 
 A second sample of size 20 also shows a positive trend!
 
-```{r echo = FALSE}
+```{r echo = FALSE, fig.cap = "A different random sample of 20 years from the original dataset. Again, a linear trend between `maize` and `wheat` is observed."}
+
 ggplot(crops3) +
   geom_point(aes(x = maize, y = wheat)) +
   geom_smooth(aes(x = maize, y = wheat), method = "lm", se = FALSE,color=COL[4,1]) 
@@ -96,7 +97,7 @@ ggplot(crops3) +
 
 But the line is slightly different!
 
-```{r echo = FALSE}
+```{r echo = FALSE, fig.cap = "The linear models from the two different random samples are quite similar, but they are not the same line."}
 ggplot(crops2, aes(x = maize, y = wheat)) + geom_point(color=COL[1,1]) + 
   geom_smooth(method="lm", se=FALSE, color=COL[1,1]) + 
   geom_point(data=crops3, color=COL[4,1]) +
@@ -104,9 +105,9 @@ ggplot(crops2, aes(x = maize, y = wheat)) + geom_point(color=COL[1,1]) +
 ```
 
 
-That is, there is variability in the regression line from sample to sample.  The concept of the sampling variability is something you've seen before, but in this lesson, you will focus on the variability of the line instead of the variability of a single statistic.
+That is, there is variability in the regression line from sample to sample.  The concept of the sampling variability is something you've seen before, but in this lesson, you will focus on the variability of the line often measured through the variability of a single statistic:  the slope of the line.
 
-```{r echo = FALSE}
+```{r echo = FALSE, fig.cap = "If repeated samples of size 20 are taken from the original data, each linear model will be slightly different."}
 ggplot(crops_many, aes(x=maize, y=wheat, group=replicate)) + 
   geom_point() + 
   ggtitle("maize vs. wheat for annual crop yield in the US (n=20)") + 
@@ -114,32 +115,180 @@ ggplot(crops_many, aes(x=maize, y=wheat, group=replicate)) +
 ```  
 
 
+The distribution of slopes (for samples of size $n=20$) can be seen in a histogram.
 
+```{r echo = FALSE}
+crops_many_lm <- crops_many %>% 
+  group_by(replicate) %>% 
+  do(tidy(lm(wheat ~ maize, data=.))) %>%
+  filter(term=="maize")
+
+ggplot(crops_many_lm, aes(x=estimate)) + 
+  geom_histogram() +
+  xlab("slope estimates for different samples of size n=20")
+```
+
+We have seen variability in samples throughout this text, so it should not come as a surprise that different samples will produce different linear models.
+However, it is nice to visually consider the linear models produced by different slopes.
+Additionally, as with measuring the variability of previous statistics (e.g., $\overline{X}_1 - \overline{X}_2$ or $\hat{p}_1 - \hat{p}-2$), the histogram of the sample statistics can provide information related to inferential considerations.
+
+In the following sections, the distribution (i.e., histogram) of $b_1$ (the estimated slope coefficient) will be constructed in the same three ways that, by now, may be familiar to you.
+First (in Section \@ref(randslope)), the distribution of $b_1$ when $\beta_1 = 0$ is constructed by randomizing (permuting) the response variable.
+Next (in Section \@ref(bootbeta1)), we can bootstrap the data by taking random samples of size n from the original dataset.
+And last (in Section \@ref(mathslope)), we use mathematical tools to describe the variability using the $t$-distribution that was first encountered in Section \@ref(one-mean-math).  
 
 ### Randomization test for $H_0: \beta_1= 0$ {#randslope}
+
+As you have seen previously, statistical inference typically relies on setting a null hypothesis which is hoped to be subsequently rejected.  In the linear model setting, we might hope to have a linear relationship between `maize` and `wheat` in settings where `maize` production is known and `wheat` production needs to be predicted.  
+
+The relevant hypotheses for the linear model setting can be written in terms of the population slope parameter.  Here the population refers to a larger set of years where `maize` and `wheat` are both grown in the US.
+
+* $H_0: \beta_1= 0$, there is no linear relationship between `wheat` and `maize`.  
+* $H_A: \beta_1 \ne 0$, there is some linear relationship between `wheat` and `maize`.
+
+Recall that for the randomization test, we permute one variables to eliminate any existing relationship between the variables.  That is, we set the null hypothesis to be true, and we measure the natural variability in the data due to sampling but **not** due to variables being correlated.  Figure \@ref(fig:permwheatScatter) shows the observed data and a scatterplot of one permutation of the `wheat` variable.  The careful observer can see that each of the observed the values for `wheat` (and for `maize`) exist in both the original data plot as well as the permuted `wheat` plot, but the given `wheat` and `maize` yields are no longer matched for a given year.  That is, each `wheat` yield is randomly assigned to a new `maize` yield.
+
+```{r permwheatScatter, fig.cap = "Original (left) and permuted (right) data.  The permutation removes the linear relationship between `wheat` and `maize`.  Repeated permutations allow for quantifying the variability in the slope under the condition that there is no linear relationship (i.e., that the null hypothesis is true).", fig.show = 'hold', out.width='47%', fig.ncol = 2}
+set.seed(4747)
+ggplot(crops_USA) +
+  geom_point(aes(x = maize, y = wheat)) +
+  ggtitle("Original Data")
+
+ggplot(crops_USA) +
+  geom_point(aes(x = maize, y = sample(wheat))) +
+  ylab("permuted wheat") +
+  ggtitle("Permuted Data")
+```
+
 
 By repeatedly permuting the response variable any pattern in the linear model that is observed is due only to random chance (and not an underlying relationship).  The randomization test compares the slopes calculated from the permuted response variable with the observed slope.  If the observed slope is inconsistent with the slopes from permuting, we can conclude that there is some underlying relationship (and that the slope is not merely due to random chance).
 
 #### Observed data {-}
 
+We will continue to use the crop data to investigate the linear relationship between `wheat` and `maize`.  Note that the least squares model (see Chapter \@ref(intro-linear-models) ) describing the relationship is given in Table \@ref(tab:lsCrops).  The columns in Table \@ref(tab:lsCrops) are further described in Section \@ref(mathslope).
+
+```{r lsCrops}
+lm(wheat ~ maize, data = crops_USA) %>% 
+  tidy() %>%
+ kable(caption = "The least squares estimates of the intercept and slope are given in the `estimate` column.  The observed slope is 0.195.") %>%
+ kable_styling() 
+```
+
 #### Variability of the statistic {-}
+
+After permuting the data, the least squares estimate of the line can be computed.  Repeated permutations and slope calculations describe the variability in the line (i.e., in the slope) due only to the natural variability and not due to a relationship between `wheat` and `maize`.  Figure \@ref(fig:permwheatlm) shows two different permutations of `wheat` and the resulting linear models.
+
+```{r permwheatlm, fig.cap = "Two different permutations of the wheat variable with slightly different least squares regression lines.", fig.show = 'hold', fig.ncol = 2, out.width='47%'}
+set.seed(47)
+ggplot(crops_USA, aes(x = maize, y = sample(wheat))) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, col = COL[1,1]) +
+  ylab("permuted wheat") +
+  ggtitle("First Permutation of Wheat")
+
+ggplot(crops_USA, aes(x = maize, y = sample(wheat))) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, col = COL[4,1]) +
+  ylab("permuted wheat") +
+  ggtitle("Second Permutation of Wheat")
+```
+
 
 As you can see, sometimes the slope of the permuted data is positive, sometimes it is negative.  Because the randomization happens under the condition of no underlying relationship (because the response variable is completely mixed with the explanatory variable), we expect to see the center of the randomized slope distribution to be zero.
 
-
 #### Observed statistic vs. null statistics {-}
+
+```{r nulldistCrop, echo=FALSE, fig.cap = "Histogram of slopes given different permutations of the wheat variable.  The vertical red line is at the observed value of the slope, 0.195."}
+perm_slope <- crops_USA %>%
+   specify(wheat ~ maize) %>%
+   hypothesize(null = "independence") %>%
+   generate(reps = 1000, type = "permute") %>%
+   calculate(stat = "slope") 
+ 
+obs_slope <- crops_USA %>%
+   specify(wheat ~ maize) %>%
+   calculate(stat = "slope") %>% pull()
+  
+ggplot(data=perm_slope, aes(x=stat)) + 
+   geom_histogram() +
+  geom_vline(xintercept = obs_slope, col = COL[4,1])
+```
+
+As we can see from Figure \@ref(fig:nulldistCrop), a slope estimate as extreme as the observed slope estimate (the red line) never happened in many repeated permutations of the `wheat` variable.
+That is, if indeed there were no linear relationship between `wheat` and `maize`, the natural variability of the slopes would produce estimates between approximately -0.1 and +0.1.
+We reject the null hypothesis.
+Therefore, we believe that the slope observed on the original data is not just due to natural variability and indeed, there is a linear relationship between `wheat` and `maize` crop yield in the US.
+
 
 
 ### Bootstrap confidence interval for $\beta_1$ {#bootbeta1}
 
 
-As we have seen in previous chapters, we can use bootstrapping to estimate the sampling distribution of the statistic of interest (here, the slope) without any assumption of no relationship (which was the condition in the randomization test).  Because interest is now in creating a CI, there is no null hypothesis, so there won't be any reason to permute either of the variables.
+As we have seen in previous chapters, we can use bootstrapping to estimate the sampling distribution of the statistic of interest (here, the slope) without the null assumption of no relationship (which was the condition in the randomization test).  Because interest is now in creating a CI, there is no null hypothesis, so there won't be any reason to permute either of the variables.
 
 
 #### Observed data {-}
 
+Returning to the crop data, we may want to consider the relationship between `peas` and `wheat`.  Are `peas` a good predictor of `wheat`?  And if so, what is their relationship?  That is, what is the slope that models `average wheat yield` as a function of `peas`?
+
+```{r echo = FALSE}
+set.seed(4747)
+crops4 <- crops_USA %>% 
+  sample_n(size=58, replace = TRUE) 
+crops5 <- crops_USA %>%
+  sample_n(size=58, replace = TRUE)
+crops_many_BS <- crops_USA %>%
+  rep_sample_n(size = 58, replace = TRUE, reps = 50)
+```
+
+
+```{r echo = FALSE, fig.cap = "Original data: wheat yield as a linear model of peas yield, in tonnes per hectare."}
+ggplot(crops_USA) +
+  geom_point(aes(x = peas, y = wheat)) +
+  geom_smooth(aes(x = peas, y = wheat), method = "lm", se = FALSE,color=COL[1,1]) 
+```
+
+
+
+
 #### Variability of the statistic {-}
 
+Because we are not focused on a null distribution, we sample with replacement $n=58$ observations from the original dataset.  Recall that with bootstrapping we always resample the same number of observations as we start with in order to mimic the process of taking a sample from the population.  When sampling in the linear model case, consider each observation to be a single dot.  If the dot is resampled, both the `wheat` and the `peas` measurement are observed.  The measurements are linked to the dot (i.e., to the year in which the measurements were taken).
+
+```{r crop2BS, echo = FALSE, fig.cap = "Two bootstrap samples of the crop data.  Note that it is difficult to differentiate the two plots, as (within a single bootstrap sample) the observations which have been resampled twice are plotted as points on top of one another.", fig.show = 'hold', out.width = '47%', fig_ncol = 2}
+
+ggplot(crops4) +
+  geom_point(aes(x = maize, y = wheat)) +
+  geom_smooth(aes(x = maize, y = wheat), method = "lm", se = FALSE,col=COL[4,1]) +
+  ggtitle("First bootstrap sample from the crop data.")
+
+
+ggplot(crops5) +
+  geom_point(aes(x = maize, y = wheat)) +
+  geom_smooth(aes(x = maize, y = wheat), method = "lm", se = FALSE,col=COL[1,1]) +
+  ggtitle("Second bootstrap sample from the crop data.")
+```
+
+
+```{r echo = FALSE, fig.cap = "Repeated bootstrap resamples of size 58 are taken from the original data.  Each linear model is slightly different."}
+ggplot(crops_many_BS, aes(x=peas, y=wheat, group=replicate)) + 
+  geom_point() + 
+  geom_smooth(method="lm", se=FALSE, color=COL[1,1])
+```  
+
+
+The distribution of slopes (for samples of size $n=20$) can be seen in a histogram.
+
+```{r echo = FALSE}
+crops_many_lm_BS <- crops_many_BS %>% 
+  group_by(replicate) %>% 
+  do(tidy(lm(wheat ~ peas, data=.))) %>%
+  filter(term=="peas")
+
+ggplot(crops_many_lm, aes(x=estimate)) + 
+  geom_histogram() +
+  xlab("slope estimates for different bootstrap resamples")
+```
 
 
 ### Mathematical model {#mathslope}
@@ -285,7 +434,7 @@ We will rely on statistical software to compute the standard error and
 leave the explanation of how this standard error is determined to a
 second or third statistics course.
 Table \@ref(tab:midtermUnempRegTable) shows software output for the least
-squares regression line in Figure \@ref(fig:unemploymentAndChangeInHouse). The row labeled *unemp* includes the point estimate and other hypothesis test information for
+squares regression line in Figure \@ref(fig:unemploymentAndChangeInHouse). The row labeled `unemp` includes the point estimate and other hypothesis test information for
 the slope, which is the coefficient of the unemployment variable.
 
 
@@ -655,7 +804,7 @@ Elmhurst data in Figure \@ref(fig:elmhurstScatterW2Lines)?^[The trend appears to
 
 The technical conditions are often remembered using the **LINE** mnemonic.
 The linearity, normality, and equality of variance conditions usually can be assessed through residual plots, as seen in  Figure \@ref(fig:whatCanGoWrongWithLinearModel).
-A careful consideration of the experimental design should be undertaken to confrim that the observed values are indeed independent.
+A careful consideration of the experimental design should be undertaken to confirm that the observed values are indeed independent.
 
 * L: __linear__ model 
 * I: __independent__ observations 
