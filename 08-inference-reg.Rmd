@@ -242,7 +242,7 @@ crops_many_BS <- crops_USA %>%
 ```
 
 
-```{r echo = FALSE, fig.cap = "Original data: wheat yield as a linear model of peas yield, in tonnes per hectare."}
+```{r peasPlot, echo = FALSE, fig.cap = "Original data: wheat yield as a linear model of peas yield, in tonnes per hectare.  Notice that the relationship between `peas` and `wheat` is not as strong as the relationship we saw previously between `maize` and `wheat`."}
 ggplot(crops_USA) +
   geom_point(aes(x = peas, y = wheat)) +
   geom_smooth(aes(x = peas, y = wheat), method = "lm", se = FALSE,color=COL[1,1]) 
@@ -255,7 +255,7 @@ ggplot(crops_USA) +
 
 Because we are not focused on a null distribution, we sample with replacement $n=58$ observations from the original dataset.  Recall that with bootstrapping we always resample the same number of observations as we start with in order to mimic the process of taking a sample from the population.  When sampling in the linear model case, consider each observation to be a single dot.  If the dot is resampled, both the `wheat` and the `peas` measurement are observed.  The measurements are linked to the dot (i.e., to the year in which the measurements were taken).
 
-```{r crop2BS, echo = FALSE, fig.cap = "Two bootstrap samples of the crop data.  Note that it is difficult to differentiate the two plots, as (within a single bootstrap sample) the observations which have been resampled twice are plotted as points on top of one another."  fig.show = 'hold', out.width = '47%', fig_ncol = 2}
+```{r crop2BS, echo = FALSE, fig.cap = "Two bootstrap samples of the crop data.  Note that it is difficult to differentiate the two plots, as (within a single bootstrap sample) the observations which have been resampled twice are plotted as points on top of one another.",  fig.show = 'hold', out.width = '47%', fig.ncol = 2}
 
 ggplot(crops4) +
   geom_point(aes(x = maize, y = wheat)) +
@@ -269,26 +269,71 @@ ggplot(crops5) +
   ggtitle("Second bootstrap sample from the crop data.")
 ```
 
+Figure \@ref(fig:crop2BS) shows two different bootstrapped resamples and resulting (slightly) different linear models.  By repeatedly resampling, we can see dozens of bootstrapped slopes on the same plot in Figure \@ref(fig:cropBS).
 
-```{r echo = FALSE, fig.cap = "Repeated bootstrap resamples of size 58 are taken from the original data.  Each linear model is slightly different."}
+
+```{r cropBS, echo = FALSE, fig.cap = "Repeated bootstrap resamples of size 58 are taken from the original data.  Each of the bootstrapped linear model is slightly different."}
 ggplot(crops_many_BS, aes(x=peas, y=wheat, group=replicate)) + 
   geom_point() + 
   geom_smooth(method="lm", se=FALSE, color=COL[1,1])
 ```  
 
 
-The distribution of slopes (for samples of size $n=20$) can be seen in a histogram.
+Recall that in order to create a confidence interval for the slope, we need to find the range of values that the statistic (here the slope) takes on from different bootstrap samples.
+Figure \@ref(fig:peasBSslopes) is a histogram of the relevant bootstrapped slopes.
+We can see that a 95% bootstrap percentile interval for the true population slope is given by (0.061, 0.52).
+We are 95% confident that for the model describing the population of crops of `peas` and `wheat`, a one unit increase in `peas` yield (in tonnes per hectare) will be associated with an increase in predicted average `wheat` yield of between 0.061 and 0.52 tonnes per hectare.
 
-```{r echo = FALSE}
+
+```{r peasBSslopes, fig.cap="The original Awesome Auto data is bootstrapped 1,000 times. The histogram provides a sense for the variability of the standard deviation of the car prices from sample to sample.", warning=FALSE, fig.width=15}
+
+set.seed(4747)
 crops_many_lm_BS <- crops_many_BS %>% 
   group_by(replicate) %>% 
   do(tidy(lm(wheat ~ peas, data=.))) %>%
-  filter(term=="peas")
+  filter(term=="peas") %>%
+  select(estimate) %>%
+  pull()
 
-ggplot(crops_many_lm, aes(x=estimate)) + 
-  geom_histogram() +
-  xlab("slope estimates for different bootstrap resamples")
+bsq1 <- quantile(crops_many_lm_BS, probs = c(0.005, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.995))
+
+bsmeans_up <- crops_many_lm_BS[crops_many_lm_BS >= bsq1[7]]
+bsmeans_low <- crops_many_lm_BS[crops_many_lm_BS <= bsq1[2]]
+
+umeans <- sort(unique(crops_many_lm_BS))
+bin.width <- (umeans[length(umeans)] - umeans[1])/15
+#breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
+breaks <- seq(umeans[1]-.01, umeans[length(umeans)] + bin.width, by = bin.width)
+  
+
+histPlot(crops_many_lm_BS, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
+     xlab = "", ylab="")
+#histPlot(bsmeans_up, breaks = breaks, col = COL[1], add = TRUE)
+#histPlot(bsmeans_low, breaks = breaks, col = COL[1], add = TRUE)
+axis(1)
+#axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
+#lines(c(bsq1[6], bsq1[6]), c(0, 125), lty = 3, lwd = 3)
+#lines(c(bsq1[3], bsq1[3]), c(0, 125), lty = 3, lwd = 3)
+lines(c(bsq1[7], bsq1[7]), c(0, 2), lty = 3, lwd = 3)
+lines(c(bsq1[2], bsq1[2]), c(0, 2), lty = 3, lwd = 3)
+#lines(c(bsq1[8], bsq1[8]), c(0, 55), lty = 3, lwd = 3)
+#lines(c(bsq1[1], bsq1[1]), c(0, 55), lty = 3, lwd = 3)
+#text(bsq1[6], 140, "95 percentile", pos = 3)
+#text(bsq1[3], 140, "5 percentile", pos = 3)
+text(bsq1[7], 4, "97.5 percentile", pos = 3, cex = 2)
+text(bsq1[2], 4, "2.5 percentile", pos = 3, cex = 2)
+#text(bsq1[8], 70, "99.5 percentile", pos = 3)
+#text(bsq1[1], 70, "0.5 percentile", pos = 3)
+#text(bsq1[6], 130, round(bsq1[6],1), pos = 3)
+#text(bsq1[3], 130, round(bsq1[3],1), pos = 3)
+text(bsq1[7], 3.5, round(bsq1[7],3), pos = 3, cex = 2)
+text(bsq1[2], 3.5, round(bsq1[2],3), pos = 3, cex = 2)
+#text(bsq1[8], 60, round(bsq1[8],1), pos = 3)
+#text(bsq1[1], 60, round(bsq1[1],1), pos = 3)
+par(las = 0)
+mtext("Bootstrapped values of the slope statistic describing wheat and peas.", 1, 2.5)
 ```
+
 
 
 ### Mathematical model {#mathslope}
@@ -511,10 +556,9 @@ formal hypothesis test would reject the claim that the true slope of the
 line should be zero?
 
 ---
-While the relationship
-between the variables is not perfect, there is an evident decreasing
-trend in the data. This suggests the hypothesis test will reject the
-null claim that the slope is zero.
+
+While the relationship between the variables is not perfect, there is an evident decreasing trend in the data.
+This suggests the hypothesis test will reject the null claim that the slope is zero.
 :::
 
 
