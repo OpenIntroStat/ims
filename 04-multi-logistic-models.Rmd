@@ -5,29 +5,32 @@ This chapter is currently under construction.
 :::
 
 ::: {.chapterintro}
-The principles of simple linear regression lay the foundation for more sophisticated regression models used in a wide range of challenging settings. 
+The principles of simple linear regression lay the foundation for more sophisticated regression models used in a wide range of challenging settings.
 In this chapter, we explore multiple regression, which introduces the possibility of more than one predictor in a linear model, and logistic regression, a technique for predicting categorical outcomes with two levels.
 :::
 
 ## Regression with multiple predictors {#regression-multiple-predictors}
 
-Multiple regression extends simple two-variable regression to the case that still has one response but many predictors (denoted $x_1$, $x_2$, $x_3$, \...). The method is motivated by scenarios where many variables may be simultaneously connected to an output.
+Multiple regression extends simple two-variable regression to the case that still has one response but many predictors (denoted $x_1$, $x_2$, $x_3$, ...).
+The method is motivated by scenarios where many variables may be simultaneously connected to an output.
 
-We will consider data about loans from the peer-to-peer lender, Lending Club, which is a data set we first encountered in Chapters \@ref(getting-started-with-data). 
-The loan data includes terms of the loan as well as information about the borrower. 
-The outcome variable we would like to better understand is the interest rate assigned to the loan. 
-For instance, all other characteristics held constant, does it matter how much debt someone already has? Does it matter if their income has been verified? 
+We will consider data about loans from the peer-to-peer lender, Lending Club, which is a data set we first encountered in Chapters \@ref(getting-started-with-data).
+The loan data includes terms of the loan as well as information about the borrower.
+The outcome variable we would like to better understand is the interest rate assigned to the loan.
+For instance, all other characteristics held constant, does it matter how much debt someone already has?
+Does it matter if their income has been verified?
 Multiple regression will help us answer these and other questions.
 
-The data set includes results from 10,000 loans, and we'll be looking at a subset of the available variables, some of which will be new from those we saw in earlier chapters. 
-The first six observations in the data set are shown in Table \@ref(tab:loansDataMatrix), and descriptions for each variable are shown in Table \@ref(tab:loansVariables). 
-Notice that the past bankruptcy variable (`bankruptcy`) is an indicator variable, where it takes the value 1 if the borrower had a past bankruptcy in their record and 0 if not. 
-Using an indicator variable in place of a category name allows for these variables to be
-directly used in regression. 
-Two of the other variables are categorical (`verified_income` and `issue_month`), each of which can take one of a few different non-numerical values; we'll discuss how these are handled in the model in Section \@ref(ind-and-cat-predictors). 
+The data set includes results from 10,000 loans, and we'll be looking at a subset of the available variables, some of which will be new from those we saw in earlier chapters.
+The first six observations in the data set are shown in Table \@ref(tab:loansDataMatrix), and descriptions for each variable are shown in Table \@ref(tab:loansVariables).
+Notice that the past bankruptcy variable (`bankruptcy`) is an indicator variable, where it takes the value 1 if the borrower had a past bankruptcy in their record and 0 if not.
+Using an indicator variable in place of a category name allows for these variables to be directly used in regression.
+Two of the other variables are categorical (`verified_income` and `issue_month`), each of which can take one of a few different non-numerical values; we'll discuss how these are handled in the model in Section \@ref(ind-and-cat-predictors).
 
 ::: {.data}
-The data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`loans_full_schema`](http://openintrostat.github.io/openintro/reference/loans_full_schema.html). Based on the data in this dataset we have created to new variables: `credit_util` which is calculated as the total credit utilized divided by the total credit limit and `bankruptcy` which turns the number of bankruptcies to an indicator variable (0 for no bankrupties and 1 for at least 1 bankruptcies). We will refer to this modified dataset as `loans`.
+The data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`loans_full_schema`](http://openintrostat.github.io/openintro/reference/loans_full_schema.html).
+Based on the data in this dataset we have created to new variables: `credit_util` which is calculated as the total credit utilized divided by the total credit limit and `bankruptcy` which turns the number of bankruptcies to an indicator variable (0 for no bankrupties and 1 for at least 1 bankruptcies).
+We will refer to this modified dataset as `loans`.
 :::
 
 ```{r loansDataMatrix}
@@ -66,10 +69,9 @@ loans_var_def %>%
                 latex_options = "striped")
 ```
 
-
 ### Indicator and categorical predictors {#ind-and-cat-predictors}
 
-Let's start by fitting a linear regression model for interest rate with a single predictor indicating whether or not a person has a bankruptcy in their record: 
+Let's start by fitting a linear regression model for interest rate with a single predictor indicating whether or not a person has a bankruptcy in their record:
 
 $$\widehat{\texttt{interest_rate}} = 12.33 + 0.74 \times bankruptcy$$
 
@@ -84,22 +86,21 @@ tidy(m_bankruptcy) %>%
 ```
 
 ::: {.example}
-Interpret the coefficient for the past bankruptcy variable in the model. Is this coefficient significantly different from 0? 
+Interpret the coefficient for the past bankruptcy variable in the model.
+Is this coefficient significantly different from 0?
 
----
+------------------------------------------------------------------------
 
-The variable takes one of two values: 1 when the borrower has a bankruptcy in their history and 0 otherwise. A slope of 0.74 means that the model predicts a 0.74%
-higher interest rate for those borrowers with a bankruptcy in their
-record. 
-(See Section \@ref(categprical-predictor-two-levels) for a review of the interpretation for two-level categorical predictor variables.) 
-Examining the regression output in Table \@ref(tab:intRateVsPastBankrModel), we can see that the p-value for is very close to zero, indicating there is strong evidence the coefficient is different from zero when using this simple one-predictor model.
+The variable takes one of two values: 1 when the borrower has a bankruptcy in their history and 0 otherwise.
+A slope of 0.74 means that the model predicts a 0.74% higher interest rate for those borrowers with a bankruptcy in their record.
+(See Section \@ref(categprical-predictor-two-levels) for a review of the interpretation for two-level categorical predictor variables.) Examining the regression output in Table \@ref(tab:intRateVsPastBankrModel), we can see that the p-value for is very close to zero, indicating there is strong evidence the coefficient is different from zero when using this simple one-predictor model.
 :::
 
-Suppose we had fit a model using a 3-level categorical variable, such as `verified_income`. 
-The output from software is shown in Table \@ref(tab:intRateVsVerIncomeModel). 
-This regression output provides multiple rows for the variable. 
-Each row represents the relative difference for each level of `verified_income`. 
-However, we are missing one of the levels: `Not Verified`. 
+Suppose we had fit a model using a 3-level categorical variable, such as `verified_income`.
+The output from software is shown in Table \@ref(tab:intRateVsVerIncomeModel).
+This regression output provides multiple rows for the variable.
+Each row represents the relative difference for each level of `verified_income`.
+However, we are missing one of the levels: `Not Verified`.
 The missing level is called the **reference level** and it represents the default level that other levels are measured against.
 
 ```{r include=FALSE}
@@ -117,40 +118,37 @@ tidy(m_verified_income) %>%
 ::: {.example}
 How would we write an equation for this regression model?
 
----
+------------------------------------------------------------------------
 
-The equation for the regression model may be written as a model with two predictors: 
+The equation for the regression model may be written as a model with two predictors:
 
-$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times \text{verified_income}_{\text{Source Verified}} + 3.25 \times \text{verified_income}_{\text{Verified}}$$ 
+$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times \text{verified_income}_{\text{Source Verified}} + 3.25 \times \text{verified_income}_{\text{Verified}}$$
 
-We use the notation $\text{variable}_{\text{level}}$ to represent indicator variables for when the categorical variable takes a particular value. 
-For example, $\text{verified_income}_{\text{Source Verified}}$ would take a value of 1 if
-was for a loan, and it would take a value of 0 otherwise. 
-Likewise, $\text{verified_income}_{\text{Verified}}$ would take a value of 1 if took a
-value of `verified` and 0 if it took any other value.
+We use the notation $\text{variable}_{\text{level}}$ to represent indicator variables for when the categorical variable takes a particular value.
+For example, $\text{verified_income}_{\text{Source Verified}}$ would take a value of 1 if was for a loan, and it would take a value of 0 otherwise.
+Likewise, $\text{verified_income}_{\text{Verified}}$ would take a value of 1 if took a value of `verified` and 0 if it took any other value.
 :::
 
-The notation $\text{variable}_{\text{level}}$ may feel a bit confusing. 
+The notation $\text{variable}_{\text{level}}$ may feel a bit confusing.
 Let's figure out how to use the equation for each level of the `verified_income` variable.
 
 ::: {.example}
-Using the model for predicting interest rate from income verification type, compute the average interest rate for borrowers whose income source and amount are both unverified. 
+Using the model for predicting interest rate from income verification type, compute the average interest rate for borrowers whose income source and amount are both unverified.
 
----
+------------------------------------------------------------------------
 
 When `verified_income` takes a value of `Not Verified`, then both indicator functions in the equation for the linear model are set to 0:
 
 $$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times 0 + 3.25 \times 0 = 11.10$$
 
-The average interest rate for these borrowers is 11.1%. 
+The average interest rate for these borrowers is 11.1%.
 Because the level does not have its own coefficient and it is the reference value, the indicators for the other levels for this variable all drop out.
 :::
 
-
 ::: {.example}
-Using the model for predicting interest rate from income verification type, compute the average interest rate for borrowers whose income source and amount are both unverified. 
+Using the model for predicting interest rate from income verification type, compute the average interest rate for borrowers whose income source and amount are both unverified.
 
----
+------------------------------------------------------------------------
 
 When `verified_income` takes a value of `Source Verified`, then the corresponding variable takes a value of 1 while the other ($\text{verified_income}_{\text{Verified}}$) is 0:
 
@@ -159,43 +157,46 @@ $$\widehat{\texttt{interest_rate}} = = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 1
 The average interest rate for these borrowers is 12.52%.
 :::
 
-
 ::: {.guidedpractice}
-Compute the average interest rate for borrowers whose income source and amount are both verified.^[When `verified_income` takes a value of `Verified`, then the corresponding variable takes a value of 1 while the other is 0: $$11.10 + 1.42 \times 0 + 3.25 \times 1 = 14.35$$ The average interest rate for these borrowers is 14.35%.]
+Compute the average interest rate for borrowers whose income source and amount are both verified.[^multi-logistic-models-1]
 :::
 
+[^multi-logistic-models-1]: When `verified_income` takes a value of `Verified`, then the corresponding variable takes a value of 1 while the other is 0: $$11.10 + 1.42 \times 0 + 3.25 \times 1 = 14.35$$ The average interest rate for these borrowers is 14.35%.
 
 ::: {.important}
 **Predictors with several categories.**
 
-When fitting a regression model with a categorical variable that has $k$ levels where $k > 2$, software will provide a coefficient for $k - 1$ of those levels. 
+When fitting a regression model with a categorical variable that has $k$ levels where $k > 2$, software will provide a coefficient for $k - 1$ of those levels.
 For the last level that does not receive a coefficient, this is the , and the coefficients listed for the other levels are all considered relative to this reference level.
 :::
 
-
 ::: {.guidedpractice}
-Interpret the coefficients in the model.^[Each of the coefficients gives the incremental interest rate for the corresponding level relative to the `Not Verified` level, which is the reference level. For example, for a borrower whose income source and amount have been verified, the model predicts that they will have a 3.25% higher interest rate than a borrower who has not had their income source or amount verified.]
+Interpret the coefficients in the model.[^multi-logistic-models-2]
 :::
 
-The higher interest rate for borrowers who have verified their income source or amount is surprising. 
-Intuitively, we'd think that a loan would look *less* risky if the borrower's income has been verified. 
-However, note that the situation may be more complex, and there may be confounding variables that we didn't account for. 
-For example, perhaps lender require borrowers with poor credit to verify their income. 
-That is, verifying income in our data set might be a signal of some concerns about the borrower rather than a reassurance that the borrower will pay back the loan. 
-For this reason, the borrower could be deemed higher risk, resulting in a higher interest rate. 
+[^multi-logistic-models-2]: Each of the coefficients gives the incremental interest rate for the corresponding level relative to the `Not Verified` level, which is the reference level.
+    For example, for a borrower whose income source and amount have been verified, the model predicts that they will have a 3.25% higher interest rate than a borrower who has not had their income source or amount verified.
+
+The higher interest rate for borrowers who have verified their income source or amount is surprising.
+Intuitively, we'd think that a loan would look *less* risky if the borrower's income has been verified.
+However, note that the situation may be more complex, and there may be confounding variables that we didn't account for.
+For example, perhaps lender require borrowers with poor credit to verify their income.
+That is, verifying income in our data set might be a signal of some concerns about the borrower rather than a reassurance that the borrower will pay back the loan.
+For this reason, the borrower could be deemed higher risk, resulting in a higher interest rate.
 (What other confounding variables might explain this counter-intuitive relationship suggested by the model?)
 
-
 ::: {.guidedpractice}
-How much larger of an interest rate would we expect for a borrower who has verified their income source and amount vs a borrower whose income source has only been verified?^[Relative to the `Not Verified` category, the `Verified` category has an interest rate of 3.25% higher, while the `Source Verified` category is only 1.42% higher. Thus, `Verified` borrowers will tend to get an interest rate about $3.25% - 1.42% = 1.83%$ higher than `Source Verified` borrowers.]
+How much larger of an interest rate would we expect for a borrower who has verified their income source and amount vs a borrower whose income source has only been verified?[^multi-logistic-models-3]
 :::
 
+[^multi-logistic-models-3]: Relative to the `Not Verified` category, the `Verified` category has an interest rate of 3.25% higher, while the `Source Verified` category is only 1.42% higher.
+    Thus, `Verified` borrowers will tend to get an interest rate about $3.25% - 1.42% = 1.83%$ higher than `Source Verified` borrowers.
 
 ### Many predictors in a model
 
-The world is complex, and it can be helpful to consider many factors at once in statistical modeling. 
-For example, we might like to use the full context of borrower to predict the interest rate they receive rather than using a single variable. 
-This is the strategy used in **multiple regression**. 
+The world is complex, and it can be helpful to consider many factors at once in statistical modeling.
+For example, we might like to use the full context of borrower to predict the interest rate they receive rather than using a single variable.
+This is the strategy used in **multiple regression**.
 While we remain cautious about making any causal interpretations using multiple regression on observational data, such models are a common first step in gaining insights or providing some evidence of a causal connection.
 
 ```{r include=FALSE}
@@ -222,20 +223,19 @@ $$\begin{align*}
         \beta_8 \times \texttt{issue_month}_{\texttt{Mar-2018}} \\
     &\qquad\  +
         \beta_9 \times \texttt{credit_checks}
-\end{align*}$$ 
+\end{align*}$$
 
-This equation represents a holistic approach for modeling all of the variables simultaneously. 
+This equation represents a holistic approach for modeling all of the variables simultaneously.
 Notice that there are two coefficients for `verified_income` and also two coefficients for `issue_month`, since both are 3-level categorical variables.
 
 We estimate the parameters $\beta_0$, $\beta_1$, $\beta_2$, $\cdots$, $\beta_9$ in the same way as we did in the case of a single predictor.
-We select $b_0$, $b_1$, $b_2$, $\cdots$, $b_9$ that minimize the sum of the squared residuals: 
+We select $b_0$, $b_1$, $b_2$, $\cdots$, $b_9$ that minimize the sum of the squared residuals:
 
 $$SSE = e_1^2 + e_2^2 + \dots + e_{10000}^2 = \sum_{i=1}^{10000} e_i^2 = \sum_{i=1}^{10000} \left(y_i - \hat{y}_i\right)^2$$
 
-where $y_i$ and $\hat{y}_i$ represent the observed interest rates and their estimated values according to the model, respectively. 
-10,000 residuals are calculated, one for each observation. 
-We typically use a computer to minimize the sum of squares and compute point estimates, as shown in the sample output in
-Table \@ref(tab:loansFullModelOutput). 
+where $y_i$ and $\hat{y}_i$ represent the observed interest rates and their estimated values according to the model, respectively.
+10,000 residuals are calculated, one for each observation.
+We typically use a computer to minimize the sum of squares and compute point estimates, as shown in the sample output in Table \@ref(tab:loansFullModelOutput).
 Using this output, we identify the point estimates $b_i$ of each $\beta_i$, just as we did in the one-predictor case.
 
 ```{r loansFullModelOutput}
@@ -249,26 +249,25 @@ tidy(m_full) %>%
   kable_styling(full_width = FALSE)
 ```
 
-
 ::: {.important}
-**Multiple regression model.** 
+**Multiple regression model.**
 
-A multiple regression model is a linear model with many predictors. In general, we write the model as
+A multiple regression model is a linear model with many predictors.
+In general, we write the model as
 
 $$\hat{y} = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_k x_k$$
 
-when there are $k$ predictors. 
+when there are $k$ predictors.
 We always estimate the $\beta_i$ parameters using statistical software.
 :::
 
-
 ::: {.example}
-Write out the regression model using the point estimates from Table \@ref(tab:loansFullModelOutput). 
+Write out the regression model using the point estimates from Table \@ref(tab:loansFullModelOutput).
 How many predictors are there in this model?
 
----
+------------------------------------------------------------------------
 
-The fitted model for the interest rate is given by: 
+The fitted model for the interest rate is given by:
 
 $$\begin{align*}
 \widehat{\texttt{interest_rate}}
@@ -290,116 +289,124 @@ $$\begin{align*}
         0.040 \times \texttt{issue_month}_{\texttt{Mar-2018}} \\
     &\qquad\  +
         0.228 \times \texttt{credit_checks}
-\end{align*}$$ 
-  
+\end{align*}$$
+
 If we count up the number of predictor coefficients, we get the *effective* number of predictors in the model: $k = 9$.
-Notice that the categorical predictor counts as two, once for the two levels shown in the model. 
+Notice that the categorical predictor counts as two, once for the two levels shown in the model.
 In general, a categorical predictor with $p$ different levels will be represented by $p - 1$ terms in a multiple regression model.
 :::
 
-
 ::: {.guidedpractice}
-What does $\beta_4$, the coefficient of variable , represent? What is the point estimate of $\beta_4$?^[$\beta_4$ represents the change in interest rate we would expect if someone's credit utilization was 0 and went to 1, all other factors held even. The point estimate is $b_4 = 4.90%$.]
+What does $\beta_4$, the coefficient of variable , represent?
+What is the point estimate of $\beta_4$?[^multi-logistic-models-4]
 :::
 
+[^multi-logistic-models-4]: $\beta_4$ represents the change in interest rate we would expect if someone's credit utilization was 0 and went to 1, all other factors held even.
+    The point estimate is $b_4 = 4.90%$.
 
 ::: {.guidedpractice}
-Compute the residual of the first observation in Table \@ref(tab:loansDataMatrix) on page using the full model.^[To compute the residual, we first need the predicted value, which we compute by plugging values into the equation from earlier. For example,
-$\texttt{verified_income}_{\texttt{Source Verified}}$ takes a value of 0, $\texttt{verified_income}_{\texttt{Verified}}$ takes a value of 1 (since the borrower's income source and amount were verified), was 18.01, and so on. 
-This leads to a prediction of $\widehat{\texttt{interest_rate}}_1 = 18.09$. 
-The observed interest rate was 14.07%, which leads to a residual of $e_1 = 14.07 - 18.09 = -4.02$.]
+Compute the residual of the first observation in Table \@ref(tab:loansDataMatrix) on page using the full model.[^multi-logistic-models-5]
 :::
 
+[^multi-logistic-models-5]: To compute the residual, we first need the predicted value, which we compute by plugging values into the equation from earlier.
+    For example, $\texttt{verified_income}_{\texttt{Source Verified}}$ takes a value of 0, $\texttt{verified_income}_{\texttt{Verified}}$ takes a value of 1 (since the borrower's income source and amount were verified), was 18.01, and so on.
+    This leads to a prediction of $\widehat{\texttt{interest_rate}}_1 = 18.09$.
+    The observed interest rate was 14.07%, which leads to a residual of $e_1 = 14.07 - 18.09 = -4.02$.
 
 ::: {.example}
-We estimated a coefficient for in Section \@ref(ind-and-cat-predictors) of $b_4 = 0.74$ with a standard error of $SE_{b_1} = 0.15$ when using simple linear regression. 
+We estimated a coefficient for in Section \@ref(ind-and-cat-predictors) of $b_4 = 0.74$ with a standard error of $SE_{b_1} = 0.15$ when using simple linear regression.
 Why is there a difference between that estimate and the estimated coefficient of 0.39 in the multiple regression setting?
 
----
+------------------------------------------------------------------------
 
-If we examined the data carefully, we would see that some predictors are correlated. 
-For instance, when we estimated the connection of the outcome `interest_rate` and predictor `bankruptcy` using simple linear regression, we were unable to control for other variables like whether the borrower had her income verified, the borrower's debt-to-income ratio, and other variables. 
-That original model was constructed in a vacuum and did not consider the full context. 
-When we include all of the variables, underlying and unintentional bias that was missed by these other variables is reduced or eliminated. 
+If we examined the data carefully, we would see that some predictors are correlated.
+For instance, when we estimated the connection of the outcome `interest_rate` and predictor `bankruptcy` using simple linear regression, we were unable to control for other variables like whether the borrower had her income verified, the borrower's debt-to-income ratio, and other variables.
+That original model was constructed in a vacuum and did not consider the full context.
+When we include all of the variables, underlying and unintentional bias that was missed by these other variables is reduced or eliminated.
 Of course, bias can still exist from other confounding variables.
 :::
 
-The previous example describes a common issue in multiple regression: correlation among predictor variables. 
-We say the two predictor variables are (pronounced as *co-linear*) when they are correlated, and this collinearity complicates model estimation. 
+The previous example describes a common issue in multiple regression: correlation among predictor variables.
+We say the two predictor variables are (pronounced as *co-linear*) when they are correlated, and this collinearity complicates model estimation.
 While it is impossible to prevent collinearity from arising in observational data, experiments are usually designed to prevent predictors from being collinear.
 
-
 ::: {.guidedpractice}
-The estimated value of the intercept is 1.925, and one might be tempted to make some interpretation of this coefficient, such as, it is the model's predicted price when each of the variables take value zero: income source is not verified, the borrower has no debt (debt-to-income and credit utilization are zero), and so on. 
-Is this reasonable? 
-Is there any value gained by making this interpretation?^[Many of the variables do take a value 0 for at least one data point, and for those variables, it is reasonable. However, one variable never takes a value of zero: \texttt{term}, which describes the length of the loan, in months. If \texttt{term} is set to zero, then the loan must be paid back immediately; the borrower must give the money back as soon as she receives it, which means it is not a real loan. Ultimately, the interpretation of the intercept in this setting is not insightful.]
+The estimated value of the intercept is 1.925, and one might be tempted to make some interpretation of this coefficient, such as, it is the model's predicted price when each of the variables take value zero: income source is not verified, the borrower has no debt (debt-to-income and credit utilization are zero), and so on.
+Is this reasonable?
+Is there any value gained by making this interpretation?[^multi-logistic-models-6]
 :::
+
+[^multi-logistic-models-6]: Many of the variables do take a value 0 for at least one data point, and for those variables, it is reasonable.
+    However, one variable never takes a value of zero: \texttt{term}, which describes the length of the loan, in months.
+    If \texttt{term} is set to zero, then the loan must be paid back immediately; the borrower must give the money back as soon as she receives it, which means it is not a real loan.
+    Ultimately, the interpretation of the intercept in this setting is not insightful.
 
 ### Adjusted R-squared
 
-We first used $R^2$ in Section \@ref(r-squared) to determine the amount of variability in the response that was explained by the model: 
-$$\begin{aligned}
+We first used $R^2$ in Section \@ref(r-squared) to determine the amount of variability in the response that was explained by the model: $$\begin{aligned}
 R^2 =
     1 - \frac{\text{variability in residuals}}
         {\text{variability in the outcome}}
     = 1 - \frac{Var(e_i)}{Var(y_i)}
-\end{aligned}$$ 
-where $e_i$ represents the residuals of the model and $y_i$ the outcomes. 
+\end{aligned}$$ where $e_i$ represents the residuals of the model and $y_i$ the outcomes.
 This equation remains valid in the multiple regression framework, but a small enhancement can make it even more informative when comparing models.
 
 ::: {.guidedpractice}
-The variance of the residuals for the model given in the earlier Guided Practice is 18.53, and the variance of the total price in all the auctions is 25.01. 
-Calculate $R^2$ for this model.^[$R^2 = 1 - \frac{18.53}{25.01} = 0.2591$.]
+The variance of the residuals for the model given in the earlier Guided Practice is 18.53, and the variance of the total price in all the auctions is 25.01.
+Calculate $R^2$ for this model.[^multi-logistic-models-7]
 :::
 
-This strategy for estimating $R^2$ is acceptable when there is just a single variable. 
-However, it becomes less helpful when there are many variables. 
+[^multi-logistic-models-7]: $R^2 = 1 - \frac{18.53}{25.01} = 0.2591$.
+
+This strategy for estimating $R^2$ is acceptable when there is just a single variable.
+However, it becomes less helpful when there are many variables.
 The regular $R^2$ is a biased estimate of the amount of variability explained by the model when applied to a new sample of data.
 To get a better estimate, we use the adjusted $R^2$.
 
-Adjusted $\pmb{R^2}$ as a tool for model assessment The is computed as
-$$\begin{aligned}
+Adjusted $\pmb{R^2}$ as a tool for model assessment The is computed as $$\begin{aligned}
   R_{adj}^{2}
     = 1 - \frac{s_{\text{residuals}}^2 / (n-k-1)}
         {s_{\text{outcome}}^2 / (n-1)}
     = 1 - \frac{s_{\text{residuals}}^2}{s_{\text{outcome}}^2}
         \times \frac{n-1}{n-k-1}
-\end{aligned}$$ 
-where $n$ is the number of cases used to fit the model and $k$ is the number of predictor variables in the model. 
+\end{aligned}$$ where $n$ is the number of cases used to fit the model and $k$ is the number of predictor variables in the model.
 Remember that a categorical predictor with $p$ levels will contribute $p - 1$ to the number of variables in the model.
 
-Because $k$ is never negative, the adjusted $R^2$ will be smaller -- often times just a little smaller -- than the unadjusted $R^2$. 
-The reasoning behind the adjusted $R^2$ lies in the associated with each variance, which is equal to $n - k - 1$ for the multiple regression context. 
+Because $k$ is never negative, the adjusted $R^2$ will be smaller -- often times just a little smaller -- than the unadjusted $R^2$.
+The reasoning behind the adjusted $R^2$ lies in the associated with each variance, which is equal to $n - k - 1$ for the multiple regression context.
 If we were to make predictions for *new data* using our current model, we would find that the unadjusted $R^2$ would tend to be slightly overly optimistic, while the adjusted $R^2$ formula helps correct this bias.
 
 ::: {.guidedpractice}
-There were $n=10000$ auctions in the data set and $k=9$ predictor variables in the model. 
-Use $n$, $k$, and the variances from the earlier Guided Practice to calculate $R_{adj}^2$ for the interest rate model.^[$R_{adj}^2 = 1 - \frac{18.53}{25.01}\times \frac{10000-1}{1000-9-1} = 0.2584$. While the difference is very small, it will be important when we fine tune the model in the next section.]
+There were $n=10000$ auctions in the data set and $k=9$ predictor variables in the model.
+Use $n$, $k$, and the variances from the earlier Guided Practice to calculate $R_{adj}^2$ for the interest rate model.[^multi-logistic-models-8]
 :::
+
+[^multi-logistic-models-8]: $R_{adj}^2 = 1 - \frac{18.53}{25.01}\times \frac{10000-1}{1000-9-1} = 0.2584$.
+    While the difference is very small, it will be important when we fine tune the model in the next section.
 
 ::: {.guidedpractice}
-Suppose you added another predictor to the model, but the variance of the errors $Var(e_i)$ didn't go down. 
+Suppose you added another predictor to the model, but the variance of the errors $Var(e_i)$ didn't go down.
 What would happen to the $R^2$?
-What would happen to the adjusted $R^2$?^[The unadjusted $R^2$ would stay the same and the adjusted $R^2$ would go down.]
+What would happen to the adjusted $R^2$?[^multi-logistic-models-9]
 :::
 
-Adjusted $R^2$ could have been used in Chapter \@ref(intro-linear-models). 
-However, when there is only $k = 1$ predictors, adjusted $R^2$ is very close to regular $R^2$, so this nuance isn't typically important when the model has only one predictor.
+[^multi-logistic-models-9]: The unadjusted $R^2$ would stay the same and the adjusted $R^2$ would go down.
 
+Adjusted $R^2$ could have been used in Chapter \@ref(intro-linear-models).
+However, when there is only $k = 1$ predictors, adjusted $R^2$ is very close to regular $R^2$, so this nuance isn't typically important when the model has only one predictor.
 
 ### Exercises {#multiple-regression-exercises}
 
 ::: {.sectionexercise}
-
 ```{r intro, child="04-exercises/04-01-regression-multiple-predictors.Rmd"}
 ```
-
 :::
 
 ## Model selection {#model-selection}
 
-The best model is not always the most complicated. Sometimes including variables that are not evidently important can actually reduce the accuracy of predictions. 
-In this section, we discuss model selection strategies, which will help us eliminate variables from the model that are found to be less important. 
+The best model is not always the most complicated.
+Sometimes including variables that are not evidently important can actually reduce the accuracy of predictions.
+In this section, we discuss model selection strategies, which will help us eliminate variables from the model that are found to be less important.
 It's common (and hip, at least in the statistical world) to refer to models that have undergone such variable pruning as **parsimonious**.
 
 ```{r include=FALSE}
@@ -413,12 +420,9 @@ terms_chp_4 <- c(terms_chp_4, "parsimonious")
 ### Exercises {#model-selection-exercises}
 
 ::: {.sectionexercise}
-
 ```{r intro, child="04-exercises/04-02-model-selection.Rmd"}
 ```
-
 :::
-
 
 ## Model diagnostics {#model-diagnostics}
 
@@ -429,12 +433,9 @@ terms_chp_4 <- c(terms_chp_4, "parsimonious")
 ### Exercises {#model-diagnostics-exercises}
 
 ::: {.sectionexercise}
-
 ```{r intro, child="04-exercises/04-03-model-diagnostics.Rmd"}
 ```
-
 :::
-
 
 ## Case study: Mario Kart {#case-study-mario-kart}
 
@@ -445,7 +446,6 @@ terms_chp_4 <- c(terms_chp_4, "parsimonious")
 ### Checking model conditions
 
 ### Exercises {#case-study-mario-kart-exercises}
-
 
 ## Logistic regression {#logistic-regression}
 
@@ -462,21 +462,17 @@ terms_chp_4 <- c(terms_chp_4, "parsimonious")
 ### Exercises {#logistic-regression-exercises}
 
 ::: {.sectionexercise}
-
 ```{r intro, child="04-exercises/04-05-logistic-regression.Rmd"}
 ```
-
 :::
-
-
 
 ## Chapter review {#chp4-review}
 
 ### Terms
 
-We introduced the following terms in the chapter. 
+We introduced the following terms in the chapter.
 If you're not sure what some of these terms mean, we recommend you go back in the text and review their definitions.
-We are purposefully presenting them in alphabetical order, instead of in order of appearance, so they will be a little more challenging to locate. 
+We are purposefully presenting them in alphabetical order, instead of in order of appearance, so they will be a little more challenging to locate.
 However you should be able to easily spot them as **bolded text**.
 
 ```{r}
@@ -486,15 +482,13 @@ make_terms_table(terms_chp_4)
 ### Chapter exercises {#chp4-review-exercises}
 
 ::: {.sectionexercise}
-
 ```{r intro, child="04-exercises/04-06-chapter-review.Rmd"}
 ```
-
 :::
 
 ### Interactive R tutorials
 
-Navigate the concepts you've learned in this chapter in R using the following self-paced tutorials. 
+Navigate the concepts you've learned in this chapter in R using the following self-paced tutorials.
 All you need is your browser to get started!
 
 ::: {.alltutorials}
