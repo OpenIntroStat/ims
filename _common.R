@@ -6,6 +6,7 @@ options(digits = 3)
 
 suppressMessages(library(broom))
 suppressMessages(library(gghighlight))
+suppressMessages(library(glue))
 suppressMessages(library(ggmosaic))
 suppressMessages(library(ggridges))
 suppressMessages(library(gridExtra))
@@ -38,6 +39,10 @@ knitr::opts_chunk$set(
   fig.asp = 0.618,  # 1 / phi
   fig.show = "hold"
 )
+
+# knit options -----------------------------------------------------------------
+
+options(knitr.kable.NA = "")
 
 # kableExtra options -----------------------------------------------------------
 

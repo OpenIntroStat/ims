@@ -37,11 +37,11 @@ We will refer to this modified dataset as `loans`.
 loans <- loans_full_schema %>%
   mutate(
     credit_util = total_credit_utilized / total_credit_limit,
-    bankruptcy  = if_else(public_record_bankrupt == 0, 0, 1),
+    bankruptcy  = as.factor(if_else(public_record_bankrupt == 0, 0, 1)),
     verified_income = droplevels(verified_income)
     ) %>%
   rename(credit_checks = inquiries_last_12m) %>%
-  select(interest_rate, verified_income, debt_to_income, credit_util, bankruptcy, term, issue_month, credit_checks) 
+  select(interest_rate, verified_income, debt_to_income, credit_util, bankruptcy, term, credit_checks, issue_month) 
 
 loans %>%
   slice_head(n = 6) %>%
@@ -363,14 +363,24 @@ However, it becomes less helpful when there are many variables.
 The regular $R^2$ is a biased estimate of the amount of variability explained by the model when applied to a new sample of data.
 To get a better estimate, we use the adjusted $R^2$.
 
-Adjusted $\pmb{R^2}$ as a tool for model assessment The is computed as $$\begin{aligned}
+::: {.important}
+**Adjusted R-squared as a tool for model assessment**
+
+The **adjusted R-squared** is computed as $$\begin{aligned}
   R_{adj}^{2}
     = 1 - \frac{s_{\text{residuals}}^2 / (n-k-1)}
         {s_{\text{outcome}}^2 / (n-1)}
     = 1 - \frac{s_{\text{residuals}}^2}{s_{\text{outcome}}^2}
         \times \frac{n-1}{n-k-1}
-\end{aligned}$$ where $n$ is the number of cases used to fit the model and $k$ is the number of predictor variables in the model.
+\end{aligned}$$
+
+where $n$ is the number of cases used to fit the model and $k$ is the number of predictor variables in the model.
 Remember that a categorical predictor with $p$ levels will contribute $p - 1$ to the number of variables in the model.
+:::
+
+```{r include=FALSE}
+terms_chp_4 <- c(terms_chp_4, "adjusted R-squared")
+```
 
 Because $k$ is never negative, the adjusted $R^2$ will be smaller -- often times just a little smaller -- than the unadjusted $R^2$.
 The reasoning behind the adjusted $R^2$ lies in the associated with each variance, which is equal to $n - k - 1$ for the multiple regression context.
@@ -426,18 +436,60 @@ Let's consider two models, which are shown in Table \@ref(tab:loansFullModelMode
 The first table summarizes the full model since it includes all predictors, while the second does not include the `issue_month` variable.
 
 ```{r loansFullModelModelSelectionSection}
+
+options(digits = 6) # to get more digits
+m_full_r_sq_adj <- glance(m_full)$adj.r.squared %>% round(4)
+options(digits = 3) # to get back to default set in _common.R
+m_full_df_residual <- glance(m_full)$df.residual
+
+
 tidy(m_full) %>%
   mutate(
     p.value = as.character(round(p.value, 4)), 
     p.value = if_else(p.value == "0", "<0.0001", p.value)
     ) %>%
-  add_row(term = "Adjusted $R^2$ = 0.26") %>%
-  add_row(term = "df = 9973") %>%
+  add_row(term = glue("Adjusted $R^2$ = {m_full_r_sq_adj}")) %>%
+  add_row(term = glue("df = {m_full_df_residual}")) %>%
   kable(caption = "The fit for the full regression model, including the adjusted $R^2$.") %>%
-  kable_styling(full_width = FALSE)
+  kable_styling(full_width = FALSE) %>%
+  pack_rows("", 11, 12) %>%
+  add_indent(11:12) %>%
+  row_spec(11:12, italic = TRUE)
 ```
 
-### Assessing helpfulness of predictors
+```{r loansModelAllButIssueMonth}
+m_full_minus_issue_month <- lm(interest_rate ~ . - issue_month, data = loans)
+
+options(digits = 6) # to get more digits
+m_full_minus_issue_month_r_sq_adj <- glance(m_full_minus_issue_month)$adj.r.squared %>% round(4)
+options(digits = 3) # to get back to default set in _common.R
+m_full_minus_issue_month_df_residual <- glance(m_full_minus_issue_month)$df.residual
+
+tidy(m_full_minus_issue_month) %>%
+  mutate(
+    p.value = as.character(round(p.value, 4)), 
+    p.value = if_else(p.value == "0", "<0.0001", p.value)
+    ) %>%
+  add_row(term = glue("Adjusted $R^2$ = {m_full_minus_issue_month_r_sq_adj}")) %>%
+  add_row(term = glue("df = {m_full_minus_issue_month_df_residual}")) %>%
+  kable(caption = "The fit for the full regression model, including the adjusted $R^2$.") %>%
+  kable_styling(full_width = FALSE) %>%
+  pack_rows("", 9, 10) %>%
+  add_indent(9:10) %>%
+  row_spec(9:10, italic = TRUE)
+```
+
+::: {.example}
+Which of the two models is better?
+
+------------------------------------------------------------------------
+
+We compare the adjusted $R^2$ of each model to determine which to choose.
+Since the second model has a higher $R^2_{adj}$ compared to the first model, we prefer the second model to the first.
+:::
+
+Will the model without `issue_month` be better than the model with `issue_month`?
+We cannot know for sure, but based on the adjusted $R^2$, this is our best assessment.
 
 ### Model selection strategies
 
