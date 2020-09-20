@@ -104,12 +104,16 @@ ggplot(sandwich2, aes(x = ad, y = rev)) + geom_point(color=COL[1,1]) +
 
 That is, there is **variability** in the regression line from sample to sample.  The concept of the sampling variability is something you've seen before, but in this lesson, you will focus on the variability of the line often measured through the variability of a single statistic:  **the slope of the line**.
 
-```{r echo = FALSE, fig.cap = "If repeated samples of size 20 are taken from the entire population, each linear model will be slightly different."}
+```{r slopes, echo = FALSE, fig.cap = "If repeated samples of size 20 are taken from the entire population, each linear model will be slightly different."}
 ggplot(sandwich_many, aes(x=ad, y=rev, group=replicate)) + 
   geom_point() + 
-  geom_smooth(method="lm", se=FALSE, color=COL[1,1], fullrange = TRUE)
+  geom_smooth(method="lm", se=FALSE, color=COL[1,1], fullrange = TRUE) +
+  xlab("amount spent on advertising in thousands of dollars") +
+  ylab("revenue in thousands of dollars")
 ```  
 
+
+You might notice in Figure \@ref(fig:slopes) that the $\hat{y}$ values given by the lines are much more consistent in the middle of the dataset than at the ends.  The reason is that the data itself anchors the lines in such a way that the line must pass through the center of the data cloud.  The effect of the fan-shaped lines is that predicted revenue for advertising close to \$4,000 will be much more precise than the revenue predictions made for \$1,000 or \$7,000 of advertising.
 
 The distribution of slopes (for samples of size $n=20$) can be seen in a histogram, as in Figure \@ref(fig:sand20lm).
 
@@ -378,7 +382,7 @@ mtext("Bootstrapped values of the slope statistic describing wheat and peas.", 1
 
 ### Mathematical model {#mathslope}
 
-When certain technical assumptions apply, it is convenient to use mathematical approximations to test and estimate the slope parameter. 
+When certain technical conditions apply, it is convenient to use mathematical approximations to test and estimate the slope parameter. 
 The approximations will build on the t-distribution which were described in Chapter \@ref(inference-num). 
 The mathematical model is often correct and is usually easy to implement computationally.
 The validity of the technical conditions will be considered in detail in Section \@ref(tech-cond-linmod). 
@@ -399,14 +403,15 @@ Elections for members of the United States House of Representatives
 occur every two years, coinciding every four years with the U.S.
 Presidential election. The set of House elections occurring during the
 middle of a Presidential term are called midterm elections. In America's two-party
-system, one political theory suggests the higher the unemployment rate,
-the worse the President's party will do in the midterm elections.
+system (the vast majority of House members through history have been either Republicans or Democrats), one political theory suggests the higher the unemployment rate,
+the worse the President's party will do in the midterm elections.  In 2020 there were 232 Democrats, 198 Republicans, and 1 Libertarian in the House.
 
 \indexthis{midterm elections}{midterm election}
 
 To assess the validity of this claim, we can compile historical data and
 look for a connection. We consider every midterm election from 1898 to
 2018, with the exception of those elections during the Great Depression.
+The House of Representatives is made up of 435 voting members
 
 Figure \@ref(fig:unemploymentAndChangeInHouse) shows these data and the
 least-squares regression line: 
@@ -417,11 +422,8 @@ We consider the percent change in the number of seats of the President's
 party (e.g. percent change in the number of seats for Republicans in
 2018) against the unemployment rate.
 
-Examining the data, there are no clear deviations from linearity, the
-constant variance condition, or substantial outliers. While the data are
-collected sequentially, a separate analysis was used to check for any
-apparent correlation between successive observations; no such
-correlation was found.
+Examining the data, there are no clear deviations from linearity or substantial outliers (see Section \@ref(resids) for a discussion on using residuals to visualize how well a linear model fits the data).
+While the data are collected sequentially, a separate analysis was used to check for any apparent correlation between successive observations; no such correlation was found.
 
 ```{r unemploymentAndChangeInHouse, fig.cap="The percent change in House seats for the President's party in each election from 1898 to 2010 plotted against the unemployment rate. The two points for the Great Depression have been removed, and a least squares regression line has been fit to the data.", warning=FALSE, fig.width=15}
 
@@ -478,7 +480,7 @@ legend('topright',
 ::: {.guidedpractice}
 The data for the Great Depression (1934 and 1938) were removed because
 the unemployment rate was 21% and 18%, respectively. Do you agree that
-they should be removed for this investigation? Why or why not?^[We will provide two considerations.
+they should be removed for this investigation? Why or why not?^[The answer to this question relies on the idea that statistical data analysis is somewhat of an art. That is, in many situations, there is no "right" answer. As you do more and more analyses on your own, you will come to recognize the nuanced understanding which is needed for a particular dataset.  In terms of the Great Depression, we will provide two contrasting considerations.
   Each of these points would have very high leverage on any
   least-squares regression line, and years with such high
   unemployment may not help us understand what would happen
@@ -519,9 +521,7 @@ We will rely on statistical software to compute the standard error and
 leave the explanation of how this standard error is determined to a
 second or third statistics course.
 Table \@ref(tab:midtermUnempRegTable) shows software output for the least
-squares regression line in Figure \@ref(fig:unemploymentAndChangeInHouse). The row labeled `unemp` includes the point estimate and other hypothesis test information for
-the slope, which is the coefficient of the unemployment variable.
-
+squares regression line in Figure \@ref(fig:unemploymentAndChangeInHouse). The row labeled `unemp` includes all relevant information about the slope estimate (i.e., the coefficient of the unemployment variable).
 
 
 ```{r midtermUnempRegTable}
@@ -535,26 +535,28 @@ lm(house_change ~ unemp, d[th,]) %>%
  kable_styling() 
 ```
 
+::: {.example}
+What do the first and second columns of Table \@ref(tab:midtermUnempRegTable)  represent?
 
-What do the first and second columns of Table \@ref(tab:midtermUnempRegTable)  represent? The entries in the first
-column represent the least squares estimates, $b_0$ and $b_1$, and the
-values in the second column correspond to the standard errors of each
+---
+
+The entries in the first column represent the least squares estimates, $b_0$ and $b_1$, and the values in the second column correspond to the standard errors of each
 estimate. Using the estimates, we could write the equation for the least
 square regression line as $$\begin{aligned}
-  \hat{y} = -7.3644 - 0.8897 x
+  \hat{y} = -7.36 - 0.89 x
   \end{aligned}$$ where $\hat{y}$ in this case represents the predicted
 change in the number of seats for the president's party, and $x$
 represents the unemployment rate.
-
+:::
 
 We previously used a $t$-test statistic for hypothesis testing in the
 context of numerical data. Regression is very similar. In the hypotheses
 we consider, the null value for the slope is 0, so we can compute the
-test statistic using the T (or Z) score formula: 
+test statistic using the T-score formula: 
 $$\begin{aligned}
 T
   = \frac{\text{estimate} - \text{null value}}{\text{SE}}
-  = \frac{-0.8897 - 0}{0.8350}
+  = \frac{-0.88 - 0}{0.835}
   = -1.07\end{aligned}$$ This corresponds to the third column of
 Table \@ref(tab:midtermUnempRegTable) .
 
@@ -578,15 +580,8 @@ midterm elections.
 
 ##### Observed statistic vs. null statistics {-}
 
+As the final step in a mathematical hypothesis test for the slope, we use the information provided to make a conclusion about whether or not the data could have come from a population where the true slope was zero (i.e., $\beta_1 = 0$).    Before evaluating the formal hypothesis claim, sometimes it is important to check your intuition.  Based on everything we've seen in the examples above describing the variability of a line from sample to sample, as yourself if the linear relationship given by the data could have come from a population in which the slope was truly zero.
 
-::: {.important}
-**Inference for regression**
-We usually rely on statistical software to
-identify point estimates, standard errors, test statistics, and p-values
-in practice. However, be aware that software will not generally check
-whether the method is appropriate, meaning we must still verify
-conditions are met.
-:::
 
 ::: {.example}
 Examine Figure \@ref(fig:elmhurstScatterWLSROnly-CLTsection), which relates the Elmhurst College
@@ -602,6 +597,7 @@ This suggests the hypothesis test will reject the null claim that the slope is z
 :::
 
 
+The point of the tools in this section are to go beyond a visual interpretation of the linear relationship toward a formal mathematical claim about the statistical significance of the slope estimate.
 
 ```{r rOutputForIncomeAidLSRLineInInferenceSection}
 d <- elmhurst
@@ -634,6 +630,18 @@ evaluate the following hypotheses.
   correlated and the true slope parameter is indeed less than 0,
   just as we believed in our analysis of Figure \@ref(fig:elmhurstScatterWLSROnly-CLTsection).]
 :::  
+
+
+
+::: {.important}
+**Inference for regression**
+We usually rely on statistical software to
+identify point estimates, standard errors, test statistics, and p-values
+in practice. However, be aware that software will not generally check
+whether the method is appropriate, meaning we must still verify
+conditions are met.  See Section \@ref(tech-cond-linmod).
+:::
+
 
 #### Confidence interval for a coefficient {-}
 
@@ -671,7 +679,7 @@ $$\begin{aligned}
 **Confidence intervals for coefficients** 
 
 Confidence intervals for model
-coefficients can be computed using the $t$-distribution:
+coefficients (e.g., the intercept or the slope) can be computed using the $t$-distribution:
 $$\begin{aligned}
   b_i \ \pm\ t_{df}^{\star} \times SE_{b_{i}}
   \end{aligned}$$ where $t_{df}^{\star}$ is the appropriate $t$-value
@@ -702,9 +710,9 @@ are introduced in an online extra that you may download at
 Exercises for this section are under construction.
 :::
 
-## Checking model assumptions {#tech-cond-linmod}
+## Checking model conditions {#tech-cond-linmod}
 
-In the previous sections, we used randomization and bootstrapping to perform inference when the mathematical model was not valid due to violations of the technical conditions.  In this section, we'll provide details for when the mathematical model is appropriate.
+In the previous sections, we used randomization and bootstrapping to perform inference when the mathematical model was not valid due to violations of the technical conditions.  In this section, we'll provide details for when the mathematical model is appropriate and a discussion of technical conditions needed for the randomization and bootstrapping procedures.  .
 
 #### What are the technical conditions? {-}
 
@@ -741,7 +749,7 @@ When fitting a least squares line, we generally require
     variability of $y$ is larger when $x$ is larger.
 
 
-```{r whatCanGoWrongWithLinearModel, fig.cap="Four examples showing when the methods in this chapter are insufficient to apply to the data. First panel: linearity fails. Second panel: there are outliers, most especially one point that is very far away from the line. Third panel: the variability of the errors is related to the value of $x$. Fourth panel: a time series data set is shown, where successive observations are highly correlated.", warning=FALSE, fig.asp = 1.2}
+```{r whatCanGoWrongWithLinearModel, fig.cap="Four examples showing when the methods in this chapter are insufficient to apply to the data. The top set of graphs represents the $x$ and $y$ relationship.  The bottom set of graphs is a residual plot.  First panel: linearity fails. Second panel: there are outliers, most especially one point that is very far away from the line. Third panel: the variability of the errors is related to the value of $x$. Fourth panel: a time series data set is shown, where successive observations are highly correlated.", warning=FALSE, fig.asp = 1.2}
 
 source("08/figures/makeTubeAdv.R")
 pch <- 20
@@ -896,15 +904,65 @@ A careful consideration of the experimental design should be undertaken to confi
 * E: __equal__ variability around the line for all values of the explanatory variable 
 
 
+#### Why do we need technical conditions? {-}
+
+As with other inferential techniques we have covered in this text, if the technical conditions above don't hold, then it is not possible to make concluding claims about the population.
+That is, without the technical conditions, the T-score (or Z-score) will not have the assumed t-distribution (or standard normal Z distribution).
+That said, it is almost always impossible to check the conditions precisely, so we look for large deviations from the conditions.
+If there are large deviations, we will be unable to trust the calculated p-value or the endpoints of the resulting confidence interval.
+
+##### What about **L**inearity? {-}
+
+The linearity condition is among the most important if your goal is to understand a linear model between $x$ and $y$.
+For example, the value of the slope will not be at all meaningful if the true relationship between $x$ and $y$ is quadratic, as in Figure \@ref(fig:notGoodAtAllForALinearModel).
+Not only should we be cautious about the inference, but the model *itself* is also not an accurate portrayal of the relationship between the variables.
+
+In Section \@ref(inf-mult-reg) we discuss model modifications that can often lead to an excellent fit of strong relationships other than linear ones.
+However, an extended discussion on the different methods for modeling functional forms other than linear is outside the scope of this text.
+
+##### What about **I**ndependence? {-}
+
+The technical condition describing the independence of the observations is often the most crucial but also the most difficult to diagnose.  It is also extremely difficult to gather a dataset which is a true random sample from the population of interest.  (Note: a true randomized experiment from a fixed set of individuals is much easier to implement, and indeed, randomized experiments are done in most medical studies these days.)  
+
+Dependent observations can bias results in ways that produce fundamentally flawed analyses.  That is, if you hang out at the gym measuring height and weight, your linear model is surely not a representation of all students at your university.  At best it is a model describing students who use the gym (but also who are willing to talk to you, that use the gym at the times you were there measuring, etc.).  
+
+In lieu of trying to answer whether or not your observations are a true random sample, you might instead focus on whether or not you believe your observations are representative of the populations.
+Humans are notoriously bad at implementing random procedures, so you should be wary of any process that used human intuition to balance the data with respect to, for example, the demographics of the individuals in the sample.
+
+##### What about **N**ormality?  {-}
+
+The normality condition requires that points vary symmetrically around the line, spreading out in a bell-shaped fashion.  You should consider the "bell" of the normal distribution as sitting on top of the line (coming off the paper in a 3-D sense) so as to indicate that the points are dense close to the line and disperse gradually as they get farther from the line.
+
+The normality condition is less important than linearity or independence for a few reasons.
+First, the linear model fit with least squares will still be an unbiased estimate of the true population model.
+However, the standard errors associated with variability of the line will not be well estimated.
+Fortunately the Central Limit Theorem tells us that most of the analyses (e.g., SEs, p-values, confidence intervals) done using the mathematical model will still hold (even if the data are not normally distributed around the line) as long as the sample size is large enough.
+One analysis method that *does* require normality, regardless of sample size, is creating intervals which predict the response of individual outcomes at a given $x$ value, using the linear model.
+On additional reason to worry slightly less about normality is that neither the randomization test nor the bootstrapping procedures require the data to be normal around the line.
+
+##### What about **E**qual variability? {-}
+
+As with normality, the equal variability condition (that points are spread out in similar ways around the line for all values of $x$) will not cause problems for the estimate of the linear model, for a randomization test, or for a bootstrap confidence interval.
+
+When the equal variability condition is violated and a mathematical analysis (e.g., p-value from T-score) is needed, there are existing methods which can easily handle the unequal variance (e.g., weighted least squares analysis).
+
+Although randomization tests and bootstrapping allow us to analyze data using fewer conditions, some technical conditions are required for all methods described in this text.
+We will discuss some of the extended modeling and associated inference in Section \@ref(inf-mult-reg) and Section \@ref(inf-log-reg).
+However, many of the techniques used to deal with technical condition violations are outside the scope of this text, but they are taught in universities in the very next class after this one.
+If you are working with linear models or curious to learn more, we recommend that you continue learning about statistical methods applicable to a larger class of datasets.  
 
 ### Exercises {#checking-model-assumptions-exercises}
 
-## Inference for multiple regression
+## Inference for multiple regression {#inf-mult-reg}
 
 
 Discussion will focus on interpreting coefficients (and their signs) in relationship to other variables.  We will note that the significance of a variable may change as other variables are included or removed from the model.  We will briefly mention both p-values and cross validation as methods for model building, but we will not use strict rules or algorithms for selecting variables based primarily on p-values.
 
 For assessing model fit, as is necessary, we will create residual plots of residual vs. fitted (instead of residual vs. X as we saw previously).  
+
+Give another example here with a quadratic relationship and the wonky things that can happen with the p-values.
+
+The inferential model should also focus on the interpretation of the coefficients which is done while *everything else* is held constant.  In situations of multicollinearity, it is often difficult to hold everything else constant.  See coin example.
 
 ### Exercises {#inference-multiple-regression-exercises}
 
@@ -912,7 +970,7 @@ For assessing model fit, as is necessary, we will create residual plots of resid
 Exercises for this section are under construction.
 :::
 
-## Inference for logistic regression
+## Inference for logistic regression {#inf-log-reg}
 
 As with multiple linear regression, the inference aspect for logistic regression will focus on interpretation of coefficients and relationships between explanatory variables.  Both p-values and cross validation will be used for model fitting.  
 
