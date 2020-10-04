@@ -24,9 +24,12 @@ Additionally, we will build confidence intervals which quantify the slope of the
 
 #### Observed data {-}
 
-We start this chapter with a hypothetical example describing the linear relationship between dollars spent advertising for a chain sandwich restaurant and monthly revenue.  The hypothetical example serves the purpose of illustrating how a linear model varies from sample to sample.  Because we have made up the example and the data (and the entire population), we can take many many samples from the population to visualize the variability.  Note that in real life, we always have exactly one sample (that is, one dataset), and through the inference process, we imagine what might have happened had we taken a different sample.  The change from sample to sample leads to an understanding of how the single observed dataset is different from the population of values, which is the fundamental inference goal. 
+We start the chapter with a hypothetical example describing the linear relationship between dollars spent advertising for a chain sandwich restaurant and monthly revenue.  The hypothetical example serves the purpose of illustrating how a linear model varies from sample to sample.  Because we have made up the example and the data (and the entire population), we can take many many samples from the population to visualize the variability.  Note that in real life, we always have exactly one sample (that is, one dataset), and through the inference process, we imagine what might have happened had we taken a different sample.  The change from sample to sample leads to an understanding of how the single observed dataset is different from the population of values, which is typically the fundamental goal of inference. 
 
-Consider the following hypothetical population of all of the sandwich stores of a particular chain seen in Figure \@ref(fig:sandpop).  There appears to be linear relationship between advertising dollars and revenue (both in $000).
+Consider the following hypothetical population of all of the sandwich stores of a particular chain seen in Figure \@ref(fig:sandpop).
+In this made-up world, the CEO actually has all the relevant data, which is why they can plot it here.
+The CEO is omniscient and can write down the population model which describes the true population relationship between the advertising dollars and revenue.
+There appears to be linear relationship between advertising dollars and revenue (both in $000).
 
 ```{r sandpop, fig.cap = "Revenue as a linear model of advertising dollars for a population of sandwich stores, in $000.", echo = FALSE, message = FALSE, warning = FALSE}
 set.seed(4747)
@@ -36,20 +39,29 @@ rev <- 12 + 4.7 * ad + rnorm(popsize, 0, 8)
 sandwich <- data.frame(ad, rev)
 
 
+#lm(rev ~ ad, data = sandwich) %>% tidy()
+
 ggplot(sandwich, aes(x = ad, y = rev)) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, col = COL[1,1]) + 
+  geom_smooth(method = "lm", se = FALSE, col = COL[1,1], fullrange = TRUE) + 
   xlab("amount spent on advertising in thousands of dollars") +
   ylab("revenue in thousands of dollars")+
-  ggtitle("Hypothetical population, chain sandwich store")
+  ggtitle("Hypothetical population, chain sandwich store") +
+  ylim(c(0,65))
 ```
 
 You may remember from Chapter \@ref(intro-linear-models) that the population model is: $$y = \beta_0 + \beta_1 x + \varepsilon.$$
 
+Again, the omniscient CEO (with the full population information) can write down the true population model as: $$\mbox{expected revenue} = 11.23 + 4.8 \cdot \mbox{advertising}.$$
+
 
 #### Variability of the statistic {-}
 
-As with any numerical characteristic which describes a subset of the population, the estimated slope of a sample will vary from sample to sample.  Consider the linear model which describes revenue (in \$000) based on advertising dollars (in \$0000).  
+Unfortunately, in our scenario, the CEO is not willing to part with the full set of data, but they will allow potential franchise buyers to see a small sample of the data in order to help the potential buyer decide whether or not set up a new franchise.
+The CEO is willing to give each potential franchise buyer a random sample of data from 20 stores.
+
+As with any numerical characteristic which describes a subset of the population, the estimated slope of a sample will vary from sample to sample.
+Consider the linear model which describes revenue (in \$000) based on advertising dollars (in \$0000).  
 
 The least squares regression model uses the data to find a sample linear fit:  $$\hat{y} = b_0 + b_1 x.$$
 
@@ -72,9 +84,11 @@ sandwich_many <- sandwich %>%
 ```{r echo = FALSE, fig.cap = "A random sample of 20 stores from the entire population. A linear trend between advertising and revenue continues to be observed."}
 ggplot(sandwich2) +
   geom_point(aes(x = ad, y = rev)) +
-  geom_smooth(aes(x = ad, y = rev), method = "lm", se = FALSE, color = COL[1,1]) +
+  geom_smooth(aes(x = ad, y = rev), method = "lm", se = FALSE, 
+              color = COL[1,1], fullrange = TRUE) +
   xlab("amount spent on advertising in thousands of dollars") +
-  ylab("revenue in thousands of dollars")
+  ylab("revenue in thousands of dollars") +
+  ylim(c(0,65))
 ```
 
 
@@ -84,9 +98,11 @@ A second sample of size 20 also shows a positive trend!
 
 ggplot(sandwich3) +
   geom_point(aes(x = ad, y = rev)) +
-  geom_smooth(aes(x = ad, y = rev), method = "lm", se = FALSE, color = COL[4,1]) +
+  geom_smooth(aes(x = ad, y = rev), method = "lm", se = FALSE, 
+              color = COL[4,1], fullrange = TRUE) +
   xlab("amount spent on advertising in thousands of dollars") +
-  ylab("revenue in thousands of dollars")
+  ylab("revenue in thousands of dollars") +
+  ylim(c(0,65))
 ```
 
 
@@ -98,18 +114,23 @@ ggplot(sandwich2, aes(x = ad, y = rev)) + geom_point(color=COL[1,1]) +
   geom_point(data=sandwich3, color=COL[4,1]) +
   geom_smooth(data=sandwich3, method="lm", se=FALSE, color=COL[4,1], fullrange = TRUE) +
   xlab("amount spent on advertising in thousands of dollars") +
-  ylab("revenue in thousands of dollars")
+  ylab("revenue in thousands of dollars") +
+  ylim(c(0,65))
 ```
 
 
 That is, there is **variability** in the regression line from sample to sample.  The concept of the sampling variability is something you've seen before, but in this lesson, you will focus on the variability of the line often measured through the variability of a single statistic:  **the slope of the line**.
 
-```{r slopes, echo = FALSE, fig.cap = "If repeated samples of size 20 are taken from the entire population, each linear model will be slightly different."}
-ggplot(sandwich_many, aes(x=ad, y=rev, group=replicate)) + 
-  geom_point() + 
-  geom_smooth(method="lm", se=FALSE, color=COL[1,1], fullrange = TRUE) +
+```{r slopes, echo = FALSE, fig.cap = "If repeated samples of size 20 are taken from the entire population, each linear model will be slightly different. The red line provides the linear fit to the entire population."}
+ggplot() + 
+ # geom_point() + 
+  geom_smooth(data = sandwich_many, aes(x=ad, y=rev, group = replicate), 
+              method="lm", se=FALSE, color=COL[1,1], fullrange = TRUE) +
+  geom_smooth(data = sandwich, aes(x=ad, y=rev), method = "lm", se = FALSE, 
+              fullrange = TRUE, col = COL[4,1]) + 
   xlab("amount spent on advertising in thousands of dollars") +
-  ylab("revenue in thousands of dollars")
+  ylab("revenue in thousands of dollars") +
+  ylim(c(0,65))
 ```  
 
 
@@ -169,7 +190,8 @@ crops_USA_long <- crops_USA %>%
 
 ggplot(crops_USA_long)   +
     geom_point(aes(x = yield, y = wheat, color = Year)) +
-  facet_wrap(~crop)
+  facet_wrap(~crop) + 
+  ylim(c(1.4, 3.6))
 ```
 
 
@@ -186,12 +208,14 @@ Recall that for the randomization test, we permute one variables to eliminate an
 set.seed(4747)
 ggplot(crops_USA) +
   geom_point(aes(x = maize, y = wheat)) +
-  ggtitle("Original Data")
+  ggtitle("Original Data") + 
+  ylim(c(1.4, 3.6))
 
 ggplot(crops_USA) +
   geom_point(aes(x = maize, y = sample(wheat))) +
   ylab("permuted wheat") +
-  ggtitle("Permuted Data")
+  ggtitle("Permuted Data") + 
+  ylim(c(1.4, 3.6))
 ```
 
 
@@ -216,15 +240,17 @@ After permuting the data, the least squares estimate of the line can be computed
 set.seed(47)
 ggplot(crops_USA, aes(x = maize, y = sample(wheat))) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, col = COL[1,1]) +
+  geom_smooth(method = "lm", se = FALSE, col = COL[1,1], fullrange = TRUE) +
   ylab("permuted wheat") +
-  ggtitle("First Permutation of Wheat")
+  ggtitle("First Permutation of Wheat") + 
+  ylim(c(1.4, 3.6))
 
 ggplot(crops_USA, aes(x = maize, y = sample(wheat))) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, col = COL[4,1]) +
+  geom_smooth(method = "lm", se = FALSE, col = COL[4,1], fullrange = TRUE) +
   ylab("permuted wheat") +
-  ggtitle("Second Permutation of Wheat")
+  ggtitle("Second Permutation of Wheat") + 
+  ylim(c(1.4, 3.6))
 ```
 
 
@@ -279,7 +305,9 @@ crops_many_BS <- crops_USA %>%
 ```{r peasPlot, echo = FALSE, fig.cap = "Original data: wheat yield as a linear model of peas yield, in tonnes per hectare.  Notice that the relationship between `peas` and `wheat` is not as strong as the relationship we saw previously between `maize` and `wheat`."}
 ggplot(crops_USA) +
   geom_point(aes(x = peas, y = wheat)) +
-  geom_smooth(aes(x = peas, y = wheat), method = "lm", se = FALSE,color=COL[1,1]) 
+  geom_smooth(aes(x = peas, y = wheat), method = "lm", se = FALSE,
+              color=COL[1,1], fullrange = TRUE) + 
+  ylim(c(1.4, 3.6))
 ```
 
 
@@ -293,20 +321,24 @@ Because we are not focused on a null distribution, we sample with replacement $n
 
 ggplot(crops_USA) +
   geom_point(aes(x = maize, y = wheat), alpha = 0.4) +
-  geom_smooth(aes(x = maize, y = wheat), method = "lm", se = FALSE,col=COL[1,1]) +
+  geom_smooth(aes(x = maize, y = wheat), method = "lm", se = FALSE,
+              col=COL[1,1], fullrange = TRUE) +
   ggtitle("Original crop data.") +
   geom_point(x = 8.38, y = 2.89, col = COL[2,1], pch = 1, size=8) +
   geom_point(x = 4.15, y = 1.7, col = COL[4,1], pch = 1, size=8) +
-  geom_point(x = 5.53, y = 2.28, col = COL[1,1], pch = 1, size=8)
+  geom_point(x = 5.53, y = 2.28, col = COL[1,1], pch = 1, size=8) + 
+  ylim(c(1.4, 3.6))
 
 
 ggplot(crops5) +
   geom_point(aes(x = maize, y = wheat), alpha = 0.4) +
-  geom_smooth(aes(x = maize, y = wheat), method = "lm", se = FALSE,col=COL[1,1]) +
+  geom_smooth(aes(x = maize, y = wheat), method = "lm", se = FALSE,
+              col=COL[1,1], fullrange = TRUE) +
   ggtitle("Bootstrap sample from the crop data.") +
   geom_point(x = 8.38, y = 2.89, col = COL[2,1], pch = 1, size=8) +
   geom_point(x = 4.15, y = 1.7, col = COL[4,1], pch = 1, size=8) +
-  geom_point(x = 5.53, y = 2.28, col = COL[1,1], pch = 1, size=8)
+  geom_point(x = 5.53, y = 2.28, col = COL[1,1], pch = 1, size=8) + 
+  ylim(c(1.4, 3.6))
 ```
 
 Figure \@ref(fig:crop2BS) shows the original data as compared with a single bootstrap sample, resulting in (slightly) different linear models.
@@ -318,8 +350,9 @@ By repeatedly resampling, we can see dozens of bootstrapped slopes on the same p
 
 ```{r cropBS, echo = FALSE, fig.cap = "Repeated bootstrap resamples of size 58 are taken from the original data.  Each of the bootstrapped linear model is slightly different."}
 ggplot(crops_many_BS, aes(x=peas, y=wheat, group=replicate)) + 
-  geom_point() + 
-  geom_smooth(method="lm", se=FALSE, color=COL[1,1])
+  #geom_point() + 
+  geom_smooth(method="lm", se=FALSE, color=COL[1,1], fullrange = TRUE) + 
+  ylim(c(1.4, 3.6))
 ```  
 
 
@@ -329,7 +362,7 @@ We can see that a 95% bootstrap percentile interval for the true population slop
 We are 95% confident that for the model describing the population of crops of `peas` and `wheat`, a one unit increase in `peas` yield (in tonnes per hectare) will be associated with an increase in predicted average `wheat` yield of between 0.061 and 0.52 tonnes per hectare.
 
 
-```{r peasBSslopes, fig.cap="The original Awesome Auto data is bootstrapped 1,000 times. The histogram provides a sense for the variability of the standard deviation of the car prices from sample to sample.", warning=FALSE, fig.width=15}
+```{r peasBSslopes, fig.cap="The original crop data on wheat and peas is bootstrapped 1,000 times. The histogram provides a sense for the variability of the standard deviation of the linear model slope from sample to sample.", warning=FALSE, fig.width=15}
 
 set.seed(4747)
 crops_many_lm_BS <- crops_many_BS %>% 
@@ -943,6 +976,7 @@ On additional reason to worry slightly less about normality is that neither the 
 ##### What about **E**qual variability? {-}
 
 As with normality, the equal variability condition (that points are spread out in similar ways around the line for all values of $x$) will not cause problems for the estimate of the linear model, for a randomization test, or for a bootstrap confidence interval.
+However, data that exhibit non-equal variance across the range of x-values will have the potential to seriously mis-estimate the variability of the slope which will have consequences for the inference results (i.e., hypothesis tests and confidence intervals).
 
 When the equal variability condition is violated and a mathematical analysis (e.g., p-value from T-score) is needed, there are existing methods which can easily handle the unequal variance (e.g., weighted least squares analysis).
 
