@@ -541,7 +541,7 @@ evidence that the true slope parameter is different than zero. To assess
 the hypotheses, we identify a standard error for the estimate, compute
 an appropriate test statistic, and identify the p-value.
 
-#### Understanding regression output from software {-}
+#### Regression output from software {-}
 
 
 ##### Variability of the statistic {-}
@@ -989,14 +989,176 @@ If you are working with linear models or curious to learn more, we recommend tha
 
 ## Inference for multiple regression {#inf-mult-reg}
 
+In Chapter \@ref(multi-logistic-models), the least squares regression method was used to estimate linear models which predicted a particular response variable given more than one explanatory variable.
+Here, we discuss whether each of the variables individually is a significant predictor or whether the model might be just as strong without that variable.
+That is, as before, we apply inferentially methods to ask whether a variable could have come from a population where the particular coefficient at hand was zero.
+If one of the linear model coefficients is truly zero (in the population), then the estimate of the coefficient (using least squares) will vary around zero.
+The inference task at hand is to decide whether the coefficient's difference from zero is large enough to decide that the data cannot possibly have come from a model where the true population coefficient is zero.
+Both the derivations from the mathematical model and the randomization model are beyond the scope of this book, but we are able to calculate p-values using statistical software.
+We will discuss interpreting p-values in the multiple regression setting and note some scenarios where careful understanding of the context and the relationship between variables is important.
 
-Discussion will focus on interpreting coefficients (and their signs) in relationship to other variables.  We will note that the significance of a variable may change as other variables are included or removed from the model.  We will briefly mention both p-values and cross validation as methods for model building, but we will not use strict rules or algorithms for selecting variables based primarily on p-values.
 
-For assessing model fit, as is necessary, we will create residual plots of residual vs. fitted (instead of residual vs. X as we saw previously).  
 
-Give another example here with a quadratic relationship and the wonky things that can happen with the p-values.
+### Multiple regression output from software {-}
 
-The inferential model should also focus on the interpretation of the coefficients which is done while *everything else* is held constant.  In situations of multicollinearity, it is often difficult to hold everything else constant.  See coin example.
+Recall the loans data from Chapter \@ref(multi-logistic-models).  
+
+::: {.data}
+The data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`loans_full_schema`](http://openintrostat.github.io/openintro/reference/loans_full_schema.html).
+Based on the data in this dataset we have created to new variables: `credit_util` which is calculated as the total credit utilized divided by the total credit limit and `bankruptcy` which turns the number of bankruptcies to an indicator variable (0 for no bankruptcies and 1 for at least 1 bankruptcies).
+We will refer to this modified dataset as `loans`.
+:::
+
+Now, our goal is to create a model where `interest_rate` can be predicted using the variables `debt_to_income`, `term`, and `credit_checks`.  
+As learned in Chapter \@ref(multi-logistic-models), least squares can be used to find the coefficient estimates for the linear model.
+The equation for the regression model may be written as a model with three predictor variables:
+
+$$\widehat{\texttt{interest_rate}} = 4.31 + 0.041 \times \text{debt_to_income} + 0.16 \times \text{term} + 0.25 \times \text{credit_checks}$$
+
+```{r loansmodel}
+loans <- loans_full_schema %>%
+  mutate(
+    credit_util = total_credit_utilized / total_credit_limit,
+    bankruptcy  = as.factor(if_else(public_record_bankrupt == 0, 0, 1)),
+    verified_income = droplevels(verified_income)
+    ) %>%
+  rename(credit_checks = inquiries_last_12m) %>%
+  select(interest_rate, verified_income, debt_to_income, credit_util, bankruptcy, term, credit_checks, issue_month) 
+
+
+lm(interest_rate ~ debt_to_income + term + credit_checks, data = loans) %>%
+  tidy() %>%
+  mutate(p.value = "<0.0001") %>%
+  kable(caption = "Summary of a linear model for predicting interest rate based on the variables debt_to_income, term, and credit_checks. Each of the variables has its own coefficient estimate as well as p-value significance.") %>%
+  kable_styling(full_width = FALSE)
+```
+
+Not only does Table \@ref(tab:loansmodel) provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
+In Section \@ref(inferenceForLinearRegression), we learned that the hypothesis test for a linear model with one predictor could be written as:
+
+$$\mbox{if only one predictor }  H_0: \beta_1 = 0.$$
+
+That is, if the true population slope is zero, the p-value measures how likely it would be to select data which produced the observed slope ($b_1$) value.
+
+With multiple predictors, the hypothesis is similar, however, it is now conditioned on each of the other variables remaining in the model.
+
+$$\mbox{if multiple predictors } H_0: \beta_i = 0 \mbox{ given other variables in the model}$$
+
+Using the example above and focusing on each of the variable p-values (here we won't discuss the p-value associated with the intercept), we can write out the three different hypotheses:
+
+\begin{eqnarray*}
+H_0: \beta_1 = 0 && \mbox{ given term and credit_checks are included in the model}\\
+H_0: \beta_2 = 0 &&\mbox{ given debt_to_income and credit_checks are included in the model}\\
+H_0: \beta_3 = 0 &&\mbox{ given debt_to_income and term and are included in the model}
+\end{eqnarray*}
+
+The very low p-values from the software output tell us that each of the variables acts as an important predictor in the model, despite the inclusion of the other two.
+Consider the p-value on $H_0: \beta_1$.
+The low p-value says that it would be extremely unlikely to see data that produce a coefficient on `debt_to_income` as large as 0.041 (yes, that number is large in the units of the problem, it's all about context!!) if the true relationship between `debt_to_income` was non-existent (i.e., if $\beta_1 = 0$) and the model also included `term` and `credit_checks`.
+The p-values on `term` and on `credit_checks` can be interpreted similarly.
+
+Sometimes a set of predictor variables can impact the model in unusual ways, often due to the predictor variables themselves being correlated.
+
+### Multicollinearity {-}
+
+In practice, there will almost always be some degree of correlation between the explanatory variables in a multiple regression model.
+For regression models, it is important to understand the entire context of the model, particularly for correlated variables.
+Our discussion will focus on interpreting coefficients (and their signs) in relationship to other variables as well as the significance (i.e., the p-value) of each coefficient.  
+
+Consider an example where we'd like to predict how much money is in a coin dish based only on the number of coins in the dish.
+We ask 26 students to tell us about their individual coin dishes, collecting data on the total dollar amount, the total number of coins, and the total number of low coins.^[In all honesty, this particular dataset is fabricated, and the original idea for the problem comes from Jeff Witmer at Oberlin College.]
+The number of low coins is the number of coins minus the number of quarters (a quarter is the largest commonly used US coin, at US\$ 0.25).
+The collected data is given in Figure \@ref(fig:coinfig) and shows that the total amount of money is more highly correlated with the total number of coins than it is with the number of low coins.
+We also note that the number of high coins and the number of low coins are positively correlated.  
+
+```{r coinfig, fig.cap = "Plot describing the amount of money (US$) as a fucntion of the number of coins and the number of low coins.  As you might expect, the amount of money is more highly correlated with the total number of coins than with the number of low coins."}
+# note, i just made up this data
+amount <- c(1.37, 1.01, 1.5, 0.56, 0.61, 3.06, 5.42, 1.75, 5.4, 0.56, 0.34, 2.33, 
+            3.34, 1.3, 1.2, 1.7, 0.86, 0.61, 2.96, 5.52, 8.95, 5.2, 1.56, 0.74, 1.83, 3.74)
+num.coins <- c(9,10,3,5,10,37,28,9,11,4,6,17,15,7,9,1,5,9,36,30,47,13,5,7,18,16)
+num.lowcoins <- c(4,8,0,4,9,34,9,3,2,2,5,12,11,4,8,0,4,9,34,9,3,2,2,5,12,11)
+
+money <- data.frame(`number of coins` = num.coins, 
+                    `number of low coins` = num.lowcoins,
+                    `total amount` = amount)
+
+GGally::ggpairs(money, diag = list(continuous = "barDiag"),
+                upper = list(continuous = function(data,mapping){
+                  ggally_cor(data = data, mapping = mapping, stars = FALSE) } ))
+```
+
+
+Using the total number of coins as the predictor variable, Table \@ref(tab:coinhigh) provides the least squares estimate of the coefficient is 0.13.
+For every additional coin in the dish, we would predict that the student had US\$0.13 more.
+The $b_1 = 0.13$ coefficient is highly significant, suggesting we would not have seen data like this if number of coins and amount of money were not linearly related.
+
+$$\widehat{\texttt{amount}} = 0.55 + 0.13 \times \text{number of coins} $$
+
+
+```{r coinhigh}
+lm(amount ~ number.of.coins, data = money) %>%
+  tidy() %>%
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
+  kable(caption = ".", digits = 4) %>%
+  kable_styling(full_width = FALSE)
+```
+
+
+Using the number of low coins as the predictor variable, Table \@ref(tab:coinlow) provides the least squares estimate of the coefficient is 0.02.
+For every additional coin in the dish, we would predict that the student had US\$0.02 more.
+The $b_1 = 0.02$ coefficient is not at all significant, suggesting we could easily have seen data like ours even if the number of low coins and amount of money are not at all linearly related.
+
+$$\widehat{\texttt{amount}} = 2.28 + 0.02 \times \text{number of low coins} $$
+
+```{r coinlow}
+lm(amount ~ number.of.low.coins, data = money) %>%
+  tidy() %>%
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
+  kable(caption = ".", digits = 4) %>%
+  kable_styling(full_width = FALSE)
+```
+
+
+Using both the total number of coins and the number of low coins as predictor variables, Table \@ref(tab:coinhighlow) provides the least squares estimates of both coefficients as 0.21 and -0.16.
+Now, with two variables in the model, the interpretation is more nuanced.
+The coefficient indicates a change in one variable while keeping the other variable constant.
+For every additional coin in the dish **while** the number of low coins stays constant, we would predict that the student had US\$0.21 more.
+Re-considering the phrase "every additional coin in the dish **while** the number of low coins stays constant" makes us realize that each increase is a single additional quarter (larger samples sizes would have led to a $b_1$ coefficient closer to 0.25 because of the deterministic relationship described here).
+For every additional low coin in the dish **while** the number of total coins stays constant, we would predict that the student had US\$ 0.16 less.
+Re-considering the phrase "every additional low coin in the dish **while** the number of total coins stays constant" makes us realize that a quarter is being swapped out for a penny, nickel, or dime.
+
+Considering the coefficients across Tables \@ref(tab:coinhigh), \@ref(tab:coinlow), and @\ref(tab:coinhighlow) within the context and knowledge we have of US coins allows us to understand the correlation between variables and why the signs of the coefficients would change depending on the model.
+Note also, however, that the significance on the low coin coefficient changed from Table \@ref(tab:coinlow) to Table \@ref(tab:coinhighlow).
+It makes sense that the variable describing the number of low coins provides more information about the amount of money when it is part of a model which also includes the total number of coins than it does when it is used as a single variable in a simple linear regression model.
+
+$$\widehat{\texttt{amount}} = 0.80 + 0.21 \times \text{number of coins} - 0.16 \times \text{number of low coins}$$
+
+```{r coinhighlow}
+lm(amount ~ number.of.coins + number.of.low.coins, data = money) %>%
+  tidy() %>%
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
+  kable(caption = ".", digits = 4) %>%
+  kable_styling(full_width = FALSE)
+```
+
+
+When working with multiple regression models, understanding the significance and sign of the coefficient is not always as straightforward as it was with the coin example.  However, we encourage you to always think carefully about the variables in the model, consider how they might be correlated among themselves, and work through different models to see how using different sets of variables might produce different relationships for predicting the response variable of interest.
+
+Although diving into the details are beyond the scope of this text, we will provide one more reflection about multicollinearity.  If the predictor variables have some degree of correlation, it can be quite difficult to interpret the value of the coefficient or its significance.  However, even a model that suffers from high multicollinearity will likely lead to unbiased predictions of the response variable.  So if the task at hand is only to do prediction, mutlicollinearity is likely to not cause you substantial problems.
+
+
+<!--
+Things I didn't talk about but could:
+
+* add R^2 and R^2_adj to the coin model
+* For assessing model fit, as is necessary, we will create residual plots of residual vs. fitted (instead of residual vs. X as we saw previously).  
+* Give another example here with a quadratic relationship and the wonky things that can happen with the p-values.
+-->
+
+
+#### Cross validation {-}
+
+Cross validation is a computational technique used to understand 
 
 ### Exercises {#inference-multiple-regression-exercises}
 
