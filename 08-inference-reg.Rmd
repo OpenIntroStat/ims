@@ -1180,12 +1180,88 @@ The predictions that will allow us to distinguish between models A and B must be
 So, using cross validation, we remove part of the data before running the least squares calculations.
 For ease of explanation, here we use a 4-fold cross validation (meaning that one quarter of the data is removed each time) to produce four different versions of each model.
 
+* Model $A_1$ built on 3/4 of the data, after the first random quarter of observations has been removed.
+* Model $A_2$ built on 3/4 of the data, after the secopnd random quarter of observations has been removed.
+* Model $A_3$ built on 3/4 of the data, after the third random quarter of observations has been removed.
+* Model $A_4$ built on 3/4 of the data, after the fourth random quarter of observations has been removed.
+
 \begin{eqnarray*}
-\mbox{Model } A_1 && \widehat{\texttt{age}} = \beta_0 + \beta_1 \times \text{weight}\\
-\mbox{Model } A_2 && \widehat{\texttt{age}} = \beta_0 + \beta_1 \times \text{weight}\\
-\mbox{Model } A_3 && \widehat{\texttt{age}} = \beta_0 + \beta_1 \times \text{weight}\\
-\mbox{Model } A_4 && \widehat{\texttt{age}} = \beta_0 + \beta_1 \times \text{weight}\\
+\mbox{Model } A_1 && \widehat{\texttt{bst}} = 99.42 + 0.16 \times \text{weight}\\
+\mbox{Model } A_2 && \widehat{\texttt{bst}} = 101.36 + 0.14 \times \text{weight}\\
+\mbox{Model } A_3 && \widehat{\texttt{bst}} = 104.52 + 0.12 \times \text{weight}\\
+\mbox{Model } A_4 && \widehat{\texttt{bst}} = 103.54 + 0.12 \times \text{weight}\\
 \end{eqnarray*}
+
+
+```{r}
+set.seed(47)
+babyfolds <- caret::createFolds(babies$bwt, k = 4)
+
+data.frame(predicted = lm(bwt ~gestation, data = babies[babyfolds$Fold1,]) %>% 
+             predict(newdata = babies[babyfolds$Fold1,"gestation"]) ,
+           babies[babyfolds$Fold1,"bwt"],
+           fold = rep("Fold 1", length(babyfolds$Fold1))) %>%
+  rbind(data.frame(predicted = lm(bwt ~gestation, data = babies[babyfolds$Fold2,]) %>% 
+             predict(newdata = babies[babyfolds$Fold2,"gestation"]) ,
+           babies[babyfolds$Fold2,"bwt"],
+           fold = rep("Fold 2", length(babyfolds$Fold2))) ) %>%
+  rbind(data.frame(predicted = lm(bwt ~gestation, data = babies[babyfolds$Fold3,]) %>% 
+             predict(newdata = babies[babyfolds$Fold3,"gestation"]) ,
+           babies[babyfolds$Fold3,"bwt"],
+           fold = rep("Fold 3", length(babyfolds$Fold3))) ) %>%
+  rbind(data.frame(predicted = lm(bwt ~gestation, data = babies[babyfolds$Fold4,]) %>% 
+             predict(newdata = babies[babyfolds$Fold4,"gestation"]) ,
+           babies[babyfolds$Fold4,"bwt"],
+           fold = rep("Fold 4", length(babyfolds$Fold4))) ) %>%
+  ggplot(aes(x = bwt, y = predicted )) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) +
+  facet_wrap(~fold) +
+  xlab("Observed birthweight (oz)") +
+  ylab("Predicted birthweight (oz)") 
+```
+
+* Model $B_1$ built on 3/4 of the data, after the first random quarter of observations has been removed.
+* Model $B_2$ built on 3/4 of the data, after the secopnd random quarter of observations has been removed.
+* Model $B_3$ built on 3/4 of the data, after the third random quarter of observations has been removed.
+* Model $B_4$ built on 3/4 of the data, after the fourth random quarter of observations has been removed.
+
+
+\begin{eqnarray*}
+\mbox{Model } B_1 && \widehat{\texttt{bwt}} = 99.69 + 0.15 \times \text{weight} + 0.03 \times \text{age}\\
+\mbox{Model } B_2 && \widehat{\texttt{bwt}} = 100.79 + 0.14 \times \text{weight} + 0.03 \times \text{age}\\
+\mbox{Model } B_3 && \widehat{\texttt{bwt}} = 102.57 + 0.11 \times \text{weight} + 0.08 \times \text{age}\\
+\mbox{Model } B_4 && \widehat{\texttt{bwt}} = 103.41 + 0.12 \times \text{weight} + 0.06\times \text{age}\\
+\end{eqnarray*}
+
+
+```{r}
+set.seed(47)
+babyfolds <- caret::createFolds(babies$bwt, k = 4)
+
+data.frame(predicted = lm(bwt ~gestation + age, data = babies[-babyfolds$Fold1,]) %>% 
+             predict(newdata = babies[babyfolds$Fold1,c("gestation", "age")]) ,
+           babies[babyfolds$Fold1,"bwt"],
+           fold = rep("Fold 1", length(babyfolds$Fold1))) %>%
+  rbind(data.frame(predicted = lm(bwt ~gestation + age, data = babies[-babyfolds$Fold2,]) %>% 
+             predict(newdata = babies[babyfolds$Fold2,c("gestation", "age")]) ,
+           babies[babyfolds$Fold2,"bwt"],
+           fold = rep("Fold 2", length(babyfolds$Fold2))) ) %>%
+  rbind(data.frame(predicted = lm(bwt ~gestation + age, data = babies[-babyfolds$Fold3,]) %>% 
+             predict(newdata = babies[babyfolds$Fold3,c("gestation", "age")]) ,
+           babies[babyfolds$Fold3,"bwt"],
+           fold = rep("Fold 3", length(babyfolds$Fold3))) ) %>%
+  rbind(data.frame(predicted = lm(bwt ~gestation + age, data = babies[-babyfolds$Fold4,]) %>% 
+             predict(newdata = babies[babyfolds$Fold4,c("gestation", "age")]) ,
+           babies[babyfolds$Fold4,"bwt"],
+           fold = rep("Fold 4", length(babyfolds$Fold4))) ) %>%
+  ggplot(aes(x = bwt, y = predicted )) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) +
+  facet_wrap(~fold) +
+  xlab("Predicted birthweight (oz)") +
+  ylab("Observed birthweight (oz)") 
+```
 
 
 <!--
