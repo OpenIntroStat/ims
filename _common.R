@@ -24,6 +24,7 @@ suppressMessages(library(skimr))
 suppressMessages(library(threed))
 suppressMessages(library(ggthreed))
 suppressMessages(library(GGally))
+suppressMessages(library(magick))
 
 # knitr chunk options ----------------------------------------------------------
 

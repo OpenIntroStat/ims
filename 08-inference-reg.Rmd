@@ -1162,11 +1162,31 @@ Cross validation is a computational technique which removes some observations be
 By removing some observations, we provide ourselves with an independent evaluation of the model.
 Cross validation can be used in many different ways (as an independent assessment), and here we will just scratch the surface with respect to one way the technique can be used for model building.
 
-Recall the `babies` data (described in the Exercises of Chapter \@ref(multi-logistic-models) ).  The goal is to be able to predict the birth weight (`bwt` in oz) of the baby as a function of the `weight` gained (in lbs) by the mother and the `age` of the mother (in years).   The multiple linear model shows that `weight` is statistically significant and `age` is not.
+Recall the `babies` data (described in the Exercises of Chapter \@ref(multi-logistic-models) ).
+The goal is to be able to predict the birth weight (`bwt` in oz) of the baby as a function of the `weight` gained (in lbs) by the mother and the `age` of the mother (in years).
+The multiple linear model shows that `weight` is statistically significant and `age` is not.
+As an alternative approach, however, let's see if the predictions with the model on `weight` only are better or worse than the predictions using the model with `weight` and `age`.  
 
 ```{r babieslm}
 lm(bwt ~weight+ age, data = babies) %>% tidy()
 ```
+
+\begin{eqnarray*}
+\mbox{Model } A && E[\texttt{age}] = \beta_0 + \beta_1 \times \text{weight}\\
+\mbox{Model } B && E[\texttt{age}] = \beta_0 + \beta_1 \times \text{weight} + \beta_2 \times \text{age}
+\end{eqnarray*}
+
+The predictions that will allow us to distinguish between models A and B must be independent of the data which were used to build the model.
+So, using cross validation, we remove part of the data before running the least squares calculations.
+For ease of explanation, here we use a 4-fold cross validation (meaning that one quarter of the data is removed each time) to produce four different versions of each model.
+
+\begin{eqnarray*}
+\mbox{Model } A_1 && \widehat{\texttt{age}} = \beta_0 + \beta_1 \times \text{weight}\\
+\mbox{Model } A_2 && \widehat{\texttt{age}} = \beta_0 + \beta_1 \times \text{weight}\\
+\mbox{Model } A_3 && \widehat{\texttt{age}} = \beta_0 + \beta_1 \times \text{weight}\\
+\mbox{Model } A_4 && \widehat{\texttt{age}} = \beta_0 + \beta_1 \times \text{weight}\\
+\end{eqnarray*}
+
 
 <!--
 I should create a visualization of cross validation.  Maybe Will can? 
