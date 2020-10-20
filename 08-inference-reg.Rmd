@@ -747,13 +747,13 @@ Exercises for this section are under construction.
 
 In the previous sections, we used randomization and bootstrapping to perform inference when the mathematical model was not valid due to violations of the technical conditions.  In this section, we'll provide details for when the mathematical model is appropriate and a discussion of technical conditions needed for the randomization and bootstrapping procedures.  .
 
-#### What are the technical conditions? {-}
+#### What are the technical conditions for the mathematical model? {-}
 
 
 When fitting a least squares line, we generally require
 
 * **Linearity.**  The data should show a linear trend. If there is a nonlinear trend
-    (e.g. first panel of Figure \@ref(fig:whatCanGoWrongWithLinearModel), an advanced regression
+    (e.g. first panel of Figure \@ref(fig:whatCanGoWrongWithLinearModel)) an advanced regression
     method from another book or later course should be applied.
 
 * **Independent observations.**  Be cautious about applying regression to data, which are sequential
@@ -769,7 +769,7 @@ When fitting a least squares line, we generally require
 * **Nearly normal residuals.**  Generally, the residuals must be nearly normal. When this condition
     is found to be unreasonable, it is usually because of outliers or
     concerns about influential points, which we'll talk about more in
-    Section \2ref(outliers-in-regression). An example of a
+    Section \@ref(outliers-in-regression). An example of a
     residual that would be a potentially concern is shown in
     Figure \@ref(fig:whatCanGoWrongWithLinearModel), where one observation is
     clearly much further from the regression line than the others.
@@ -971,7 +971,7 @@ First, the linear model fit with least squares will still be an unbiased estimat
 However, the standard errors associated with variability of the line will not be well estimated.
 Fortunately the Central Limit Theorem tells us that most of the analyses (e.g., SEs, p-values, confidence intervals) done using the mathematical model will still hold (even if the data are not normally distributed around the line) as long as the sample size is large enough.
 One analysis method that *does* require normality, regardless of sample size, is creating intervals which predict the response of individual outcomes at a given $x$ value, using the linear model.
-On additional reason to worry slightly less about normality is that neither the randomization test nor the bootstrapping procedures require the data to be normal around the line.
+One additional reason to worry slightly less about normality is that neither the randomization test nor the bootstrapping procedures require the data to be normal around the line.
 
 ##### What about **E**qual variability? {-}
 
@@ -1001,7 +1001,7 @@ We will discuss interpreting p-values in the multiple regression setting and not
 
 ### Multiple regression output from software 
 
-Recall the loans data from Chapter \@ref(multi-logistic-models).  
+Recall the `loans` data from Chapter \@ref(multi-logistic-models).  
 
 ::: {.data}
 The data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`loans_full_schema`](http://openintrostat.github.io/openintro/reference/loans_full_schema.html).
@@ -1011,7 +1011,10 @@ We will refer to this modified dataset as `loans`.
 
 Now, our goal is to create a model where `interest_rate` can be predicted using the variables `debt_to_income`, `term`, and `credit_checks`.  
 As learned in Chapter \@ref(multi-logistic-models), least squares can be used to find the coefficient estimates for the linear model.
-The equation for the regression model may be written as a model with three predictor variables:
+The unknown population model can be written as:
+$$E[\texttt{interest_rate}] = \beta_0 + \beta_1\times \text{debt_to_income} + \beta_2 \times \text{term} + \beta_3 \times \text{credit_checks}$$
+
+The estimated equation for the regression model may be written as a model with three predictor variables:
 
 $$\widehat{\texttt{interest_rate}} = 4.31 + 0.041 \times \text{debt_to_income} + 0.16 \times \text{term} + 0.25 \times \text{credit_checks}$$
 
@@ -1034,13 +1037,15 @@ lm(interest_rate ~ debt_to_income + term + credit_checks, data = loans) %>%
 ```
 
 Not only does Table \@ref(tab:loansmodel) provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
-In Section \@ref(inferenceForLinearRegression), we learned that the hypothesis test for a linear model with one predictor could be written as:
+
+
+In Section \@ref(inferenceForLinearRegression), we learned that the hypothesis test for a linear model with **one predictor** can be written as:
 
 $$\mbox{if only one predictor }  H_0: \beta_1 = 0.$$
 
 That is, if the true population slope is zero, the p-value measures how likely it would be to select data which produced the observed slope ($b_1$) value.
 
-With multiple predictors, the hypothesis is similar, however, it is now conditioned on each of the other variables remaining in the model.
+With **multiple predictors**, the hypothesis is similar, however, it is now conditioned on each of the other variables remaining in the model.
 
 $$\mbox{if multiple predictors } H_0: \beta_i = 0 \mbox{ given other variables in the model}$$
 
@@ -1071,20 +1076,26 @@ The number of low coins is the number of coins minus the number of quarters (a q
 The collected data is given in Figure \@ref(fig:coinfig) and shows that the total amount of money is more highly correlated with the total number of coins than it is with the number of low coins.
 We also note that the number of high coins and the number of low coins are positively correlated.  
 
-```{r coinfig, fig.cap = "Plot describing the amount of money (US$) as a fucntion of the number of coins and the number of low coins.  As you might expect, the amount of money is more highly correlated with the total number of coins than with the number of low coins."}
+```{r coinfig, fig.cap = "Plot describing the amount of money (US$) as a fucntion of the number of coins and the number of low coins.  As you might expect, the amount of money is more highly postively correlated with the total number of coins than with the number of low coins.", fig.show = 'hold', out.width='47%', fig.ncol = 2}
 # note, i just made up this data
 amount <- c(1.37, 1.01, 1.5, 0.56, 0.61, 3.06, 5.42, 1.75, 5.4, 0.56, 0.34, 2.33, 
             3.34, 1.3, 1.2, 1.7, 0.86, 0.61, 2.96, 5.52, 8.95, 5.2, 1.56, 0.74, 1.83, 3.74)
 num.coins <- c(9,10,3,5,10,37,28,9,11,4,6,17,15,7,9,1,5,9,36,30,47,13,5,7,18,16)
 num.lowcoins <- c(4,8,0,4,9,34,9,3,2,2,5,12,11,4,8,0,4,9,34,9,3,2,2,5,12,11)
 
-money <- data.frame(`number of coins` = num.coins, 
-                    `number of low coins` = num.lowcoins,
-                    `total amount` = amount)
+money <- data.frame('number of coins' = num.coins, 
+                    'number of low coins' = num.lowcoins,
+                    'total amount' = amount)
 
-GGally::ggpairs(money, diag = list(continuous = "barDiag"),
-                upper = list(continuous = function(data,mapping){
-                  ggally_cor(data = data, mapping = mapping, stars = FALSE) } ))
+ggplot(money, aes(y=total.amount, x = number.of.coins)) + 
+  geom_point() +
+  xlab("Number of coins") +
+  ylab("Total amount ($)")
+ggplot(money, aes(y=total.amount, x = number.of.low.coins)) + 
+  geom_point() +
+  xlab("Number of low coins") +
+  ylab("Total amount ($)")
+
 ```
 
 
@@ -1120,14 +1131,14 @@ lm(amount ~ number.of.low.coins, data = money) %>%
 
 
 Using both the total number of coins and the number of low coins as predictor variables, Table \@ref(tab:coinhighlow) provides the least squares estimates of both coefficients as 0.21 and -0.16.
-Now, with two variables in the model, the interpretation is more nuanced.
-The coefficient indicates a change in one variable while keeping the other variable constant.
+Now, with two variables in the model, the interpretation is more nuanced.  
+* The coefficient indicates a change in one variable while keeping the other variable constant.
 For every additional coin in the dish **while** the number of low coins stays constant, we would predict that the student had US\$0.21 more.
-Re-considering the phrase "every additional coin in the dish **while** the number of low coins stays constant" makes us realize that each increase is a single additional quarter (larger samples sizes would have led to a $b_1$ coefficient closer to 0.25 because of the deterministic relationship described here).
-For every additional low coin in the dish **while** the number of total coins stays constant, we would predict that the student had US\$ 0.16 less.
+Re-considering the phrase "every additional coin in the dish **while** the number of low coins stays constant" makes us realize that each increase is a single additional quarter (larger samples sizes would have led to a $b_1$ coefficient closer to 0.25 because of the deterministic relationship described here).  
+* For every additional low coin in the dish **while** the number of total coins stays constant, we would predict that the student had US\$ 0.16 less.
 Re-considering the phrase "every additional low coin in the dish **while** the number of total coins stays constant" makes us realize that a quarter is being swapped out for a penny, nickel, or dime.
 
-Considering the coefficients across Tables \@ref(tab:coinhigh), \@ref(tab:coinlow), and @\ref(tab:coinhighlow) within the context and knowledge we have of US coins allows us to understand the correlation between variables and why the signs of the coefficients would change depending on the model.
+Considering the coefficients across Tables \@ref(tab:coinhigh), \@ref(tab:coinlow), and \@ref(tab:coinhighlow) within the context and knowledge we have of US coins allows us to understand the correlation between variables and why the signs of the coefficients would change depending on the model.
 Note also, however, that the significance on the low coin coefficient changed from Table \@ref(tab:coinlow) to Table \@ref(tab:coinhighlow).
 It makes sense that the variable describing the number of low coins provides more information about the amount of money when it is part of a model which also includes the total number of coins than it does when it is used as a single variable in a simple linear regression model.
 
@@ -1161,6 +1172,11 @@ Things I didn't talk about but could:
 Cross validation is a computational technique which removes some observations before a model is run, then assesses the model accuracy on the held-out sample.
 By removing some observations, we provide ourselves with an independent evaluation of the model.
 Cross validation can be used in many different ways (as an independent assessment), and here we will just scratch the surface with respect to one way the technique can be used for model building.
+See Figure \@ref(fig:cv) for an image describing how cross validation works.
+
+```{r cv, fig.cap = "This isn't the right picture, but I'd love to keep CV in the book and be able to explain it in a straightforward way.}
+include_graphics("08/figures/CV.jpg")
+```
 
 Recall the `babies` data (described in the Exercises of Chapter \@ref(multi-logistic-models) ).
 The goal is to be able to predict the birth weight (`bwt` in oz) of the baby as a function of the `weight` gained (in lbs) by the mother and the `age` of the mother (in years).
@@ -1195,21 +1211,24 @@ For ease of explanation, here we use a 4-fold cross validation (meaning that one
 
 ```{r}
 set.seed(47)
+babies <- babies %>%
+  na.omit()
+
 babyfolds <- caret::createFolds(babies$bwt, k = 4)
 
-data.frame(predicted = lm(bwt ~gestation, data = babies[babyfolds$Fold1,]) %>% 
+data.frame(predicted = lm(bwt ~gestation, data = babies[-babyfolds$Fold1,]) %>% 
              predict(newdata = babies[babyfolds$Fold1,"gestation"]) ,
            babies[babyfolds$Fold1,"bwt"],
            fold = rep("Fold 1", length(babyfolds$Fold1))) %>%
-  rbind(data.frame(predicted = lm(bwt ~gestation, data = babies[babyfolds$Fold2,]) %>% 
+  rbind(data.frame(predicted = lm(bwt ~gestation, data = babies[-babyfolds$Fold2,]) %>% 
              predict(newdata = babies[babyfolds$Fold2,"gestation"]) ,
            babies[babyfolds$Fold2,"bwt"],
            fold = rep("Fold 2", length(babyfolds$Fold2))) ) %>%
-  rbind(data.frame(predicted = lm(bwt ~gestation, data = babies[babyfolds$Fold3,]) %>% 
+  rbind(data.frame(predicted = lm(bwt ~gestation, data = babies[-babyfolds$Fold3,]) %>% 
              predict(newdata = babies[babyfolds$Fold3,"gestation"]) ,
            babies[babyfolds$Fold3,"bwt"],
            fold = rep("Fold 3", length(babyfolds$Fold3))) ) %>%
-  rbind(data.frame(predicted = lm(bwt ~gestation, data = babies[babyfolds$Fold4,]) %>% 
+  rbind(data.frame(predicted = lm(bwt ~gestation, data = babies[-babyfolds$Fold4,]) %>% 
              predict(newdata = babies[babyfolds$Fold4,"gestation"]) ,
            babies[babyfolds$Fold4,"bwt"],
            fold = rep("Fold 4", length(babyfolds$Fold4))) ) %>%
@@ -1259,8 +1278,8 @@ data.frame(predicted = lm(bwt ~gestation + age, data = babies[-babyfolds$Fold1,]
   geom_point() +
   geom_abline(intercept = 0, slope = 1) +
   facet_wrap(~fold) +
-  xlab("Predicted birthweight (oz)") +
-  ylab("Observed birthweight (oz)") 
+  ylab("Predicted birthweight (oz)") +
+  xlab("Observed birthweight (oz)") 
 ```
 
 

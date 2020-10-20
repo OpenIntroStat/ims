@@ -23,8 +23,6 @@ suppressMessages(library(scales))
 suppressMessages(library(skimr))
 suppressMessages(library(threed))
 suppressMessages(library(ggthreed))
-suppressMessages(library(GGally))
-suppressMessages(library(magick))
 suppressMessages(library(caret))
 
 # knitr chunk options ----------------------------------------------------------
