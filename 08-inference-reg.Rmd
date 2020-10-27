@@ -1006,7 +1006,7 @@ We will discuss interpreting p-values in the multiple regression setting and not
 
 
 
-### Multiple regression output from software 
+### Multiple regression output from software {#inf-mult-reg-soft}
 
 Recall the `loans` data from Chapter \@ref(multi-logistic-models).  
 
@@ -1174,9 +1174,9 @@ Things I didn't talk about but could:
 -->
 
 
-## Cross validation for prediction error
+### Cross validation for prediction error
 
-In Section \@ref(inf-mult-reg), p-values were calculated on each of the model coefficients.
+In Section \@ref(inf-mult-reg-soft), p-values were calculated on each of the model coefficients.
 The p-value gives a sense of which variables are important to the model (with the caveat that a longer treatment of variable selection is waranted in a follow-up course or textbook).
 We use cross validation prediction error to focus on which variable(s) are important for predicting the response variable of interest.  We continue to encourage you to take up further study on the topic of cross validation, as it is among the most important ideas in modern data analysis, and we are only able to scratch the surface here.
 
@@ -1222,35 +1222,39 @@ For ease of explanation, here we use a 4-fold cross validation (meaning that one
 
 ```{r}
 set.seed(47)
-babies <- babies %>%
+data(penguins)
+penguins <- penguins %>%
+  filter(species == "Adelie") %>%
   na.omit()
 
-babyfolds <- caret::createFolds(babies$bwt, k = 4)
+penguinfolds <- caret::createFolds(penguins$body_mass_g, k = 4)
 
-data.frame(predicted = lm(bwt ~age, data = babies[-babyfolds$Fold1,]) %>% 
-             predict(newdata = babies[babyfolds$Fold1,"age"]) ,
-           babies[babyfolds$Fold1,"bwt"],
-           fold = rep("Fold 1", length(babyfolds$Fold1))) %>%
-  rbind(data.frame(predicted = lm(bwt ~age, data = babies[-babyfolds$Fold2,]) %>% 
-             predict(newdata = babies[babyfolds$Fold2,"age"]) ,
-           babies[babyfolds$Fold2,"bwt"],
-           fold = rep("Fold 2", length(babyfolds$Fold2))) ) %>%
-  rbind(data.frame(predicted = lm(bwt ~age, data = babies[-babyfolds$Fold3,]) %>% 
-             predict(newdata = babies[babyfolds$Fold3,"age"]) ,
-           babies[babyfolds$Fold3,"bwt"],
-           fold = rep("Fold 3", length(babyfolds$Fold3))) ) %>%
-  rbind(data.frame(predicted = lm(bwt ~age, data = babies[-babyfolds$Fold4,]) %>% 
-             predict(newdata = babies[babyfolds$Fold4,"age"]) ,
-           babies[babyfolds$Fold4,"bwt"],
-           fold = rep("Fold 4", length(babyfolds$Fold4))) ) %>%
-  mutate(error = bwt - predicted) %>%
+data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-penguinfolds$Fold1,]) %>% 
+             predict(newdata = penguins[penguinfolds$Fold1,c("bill_length_mm")]) ,
+           obs = penguins[penguinfolds$Fold1,]$body_mass_g,
+           fold = rep("Fold 1", length(penguinfolds$Fold1))) %>%
+  rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-penguinfolds$Fold2,]) %>% 
+             predict(newdata = penguins[penguinfolds$Fold2,c("bill_length_mm")]) ,
+           obs = penguins[penguinfolds$Fold2,]$body_mass_g,
+           fold = rep("Fold 2", length(penguinfolds$Fold2))) ) %>%
+  rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-penguinfolds$Fold3,]) %>% 
+             predict(newdata = penguins[penguinfolds$Fold3,c("bill_length_mm")]) ,
+           obs = penguins[penguinfolds$Fold3,]$body_mass_g,
+           fold = rep("Fold 3", length(penguinfolds$Fold3))) ) %>%
+  rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-penguinfolds$Fold4,]) %>% 
+             predict(newdata = penguins[penguinfolds$Fold4,c("bill_length_mm")]) ,
+           obs = penguins[penguinfolds$Fold4,]$body_mass_g,
+           fold = rep("Fold 4", length(penguinfolds$Fold4))) ) %>%
+  mutate(error = obs - predicted) %>%
   ggplot(aes(x = predicted, y = error )) +
   geom_point() +
   geom_hline(yintercept = 0) +
+  geom_hline(yintercept = 500, lty = 2, color = "grey") +
+  geom_hline(yintercept = -500, lty = 2, color = "grey") +
   facet_wrap(~fold) +
-  ylim(c(-80,80)) +
-  xlab("Predicted Birthweight (oz)") +
-  ylab("Prediction Error (oz)") 
+  ylim(c(-1000,1000)) +
+  xlab("Predicted Body Mass (g)") +
+  ylab("Prediction Error (g)") 
 ```
 
 * Model $B_1$ built on 3/4 of the data, after the first random quarter of observations has been removed.
@@ -1268,33 +1272,32 @@ data.frame(predicted = lm(bwt ~age, data = babies[-babyfolds$Fold1,]) %>%
 
 
 ```{r}
-set.seed(47)
-babyfolds <- caret::createFolds(babies$bwt, k = 4)
-
-data.frame(predicted = lm(bwt ~gestation + weight, data = babies[-babyfolds$Fold1,]) %>% 
-             predict(newdata = babies[babyfolds$Fold1,c("gestation", "weight")]) ,
-           babies[babyfolds$Fold1,"bwt"],
-           fold = rep("Fold 1", length(babyfolds$Fold1))) %>%
-  rbind(data.frame(predicted = lm(bwt ~gestation + weight, data = babies[-babyfolds$Fold2,]) %>% 
-             predict(newdata = babies[babyfolds$Fold2,c("gestation", "weight")]) ,
-           babies[babyfolds$Fold2,"bwt"],
-           fold = rep("Fold 2", length(babyfolds$Fold2))) ) %>%
-  rbind(data.frame(predicted = lm(bwt ~gestation + weight, data = babies[-babyfolds$Fold3,]) %>% 
-             predict(newdata = babies[babyfolds$Fold3,c("gestation", "weight")]) ,
-           babies[babyfolds$Fold3,"bwt"],
-           fold = rep("Fold 3", length(babyfolds$Fold3))) ) %>%
-  rbind(data.frame(predicted = lm(bwt ~gestation + weight, data = babies[-babyfolds$Fold4,]) %>% 
-             predict(newdata = babies[babyfolds$Fold4,c("gestation", "weight")]) ,
-           babies[babyfolds$Fold4,"bwt"],
-           fold = rep("Fold 4", length(babyfolds$Fold4))) ) %>%
-  mutate(error = bwt - predicted) %>%
+data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex, data = penguins[-penguinfolds$Fold1,]) %>% 
+             predict(newdata = penguins[penguinfolds$Fold1,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex")]) ,
+           obs = penguins[penguinfolds$Fold1,]$body_mass_g,
+           fold = rep("Fold 1", length(penguinfolds$Fold1))) %>%
+  rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex, data = penguins[-penguinfolds$Fold2,]) %>% 
+             predict(newdata = penguins[penguinfolds$Fold2,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex")]) ,
+           obs = penguins[penguinfolds$Fold2,]$body_mass_g,
+           fold = rep("Fold 2", length(penguinfolds$Fold2))) ) %>%
+  rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex, data = penguins[-penguinfolds$Fold3,]) %>% 
+             predict(newdata = penguins[penguinfolds$Fold3,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex")]) ,
+           obs = penguins[penguinfolds$Fold3,]$body_mass_g,
+           fold = rep("Fold 3", length(penguinfolds$Fold3))) ) %>%
+  rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex, data = penguins[-penguinfolds$Fold4,]) %>% 
+             predict(newdata = penguins[penguinfolds$Fold4,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex")]) ,
+           obs = penguins[penguinfolds$Fold4,]$body_mass_g,
+           fold = rep("Fold 4", length(penguinfolds$Fold4))) ) %>%
+  mutate(error = obs - predicted) %>%
   ggplot(aes(x = predicted, y = error )) +
   geom_point() +
   geom_hline(yintercept = 0) +
+  geom_hline(yintercept = 500, lty = 2, color = "grey") +
+  geom_hline(yintercept = -500, lty = 2, color = "grey") +
   facet_wrap(~fold) +
-  ylim(c(-50,50)) +
-  xlab("Predicted Birthweight (oz)") +
-  ylab("Prediction Error (oz)") 
+  ylim(c(-1000,1000)) +
+  xlab("Predicted Body Mass (g)") +
+  ylab("Prediction Error (g)") 
 ```
 
 
