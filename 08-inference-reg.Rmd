@@ -770,7 +770,7 @@ When fitting a least squares line, we generally require
     is found to be unreasonable, it is usually because of outliers or
     concerns about influential points, which we'll talk about more in
     Section \@ref(outliers-in-regression). An example of a
-    residual that would be a potentially concern is shown in
+    residual that would be a potentially concern is shown in the second panel of
     Figure \@ref(fig:whatCanGoWrongWithLinearModel), where one observation is
     clearly much further from the regression line than the others.
 
@@ -944,7 +944,7 @@ That is, without the technical conditions, the T-score (or Z-score) will not hav
 That said, it is almost always impossible to check the conditions precisely, so we look for large deviations from the conditions.
 If there are large deviations, we will be unable to trust the calculated p-value or the endpoints of the resulting confidence interval.
 
-##### What about **L**inearity? {-}
+##### The model based on **L**inearity {-}
 
 The linearity condition is among the most important if your goal is to understand a linear model between $x$ and $y$.
 For example, the value of the slope will not be at all meaningful if the true relationship between $x$ and $y$ is quadratic, as in Figure \@ref(fig:notGoodAtAllForALinearModel).
@@ -953,7 +953,7 @@ Not only should we be cautious about the inference, but the model *itself* is al
 In Section \@ref(inf-mult-reg) we discuss model modifications that can often lead to an excellent fit of strong relationships other than linear ones.
 However, an extended discussion on the different methods for modeling functional forms other than linear is outside the scope of this text.
 
-##### What about **I**ndependence? {-}
+##### The importance of **I**ndependence {-}
 
 The technical condition describing the independence of the observations is often the most crucial but also the most difficult to diagnose.  It is also extremely difficult to gather a dataset which is a true random sample from the population of interest.  (Note: a true randomized experiment from a fixed set of individuals is much easier to implement, and indeed, randomized experiments are done in most medical studies these days.)  
 
@@ -962,7 +962,7 @@ Dependent observations can bias results in ways that produce fundamentally flawe
 In lieu of trying to answer whether or not your observations are a true random sample, you might instead focus on whether or not you believe your observations are representative of the populations.
 Humans are notoriously bad at implementing random procedures, so you should be wary of any process that used human intuition to balance the data with respect to, for example, the demographics of the individuals in the sample.
 
-##### What about **N**ormality?  {-}
+##### Some thoughts on **N**ormality  {-}
 
 The normality condition requires that points vary symmetrically around the line, spreading out in a bell-shaped fashion.  You should consider the "bell" of the normal distribution as sitting on top of the line (coming off the paper in a 3-D sense) so as to indicate that the points are dense close to the line and disperse gradually as they get farther from the line.
 
@@ -973,16 +973,23 @@ Fortunately the Central Limit Theorem tells us that most of the analyses (e.g., 
 One analysis method that *does* require normality, regardless of sample size, is creating intervals which predict the response of individual outcomes at a given $x$ value, using the linear model.
 One additional reason to worry slightly less about normality is that neither the randomization test nor the bootstrapping procedures require the data to be normal around the line.
 
-##### What about **E**qual variability? {-}
+##### **E**qual variability for prediction in particular {-}
 
-As with normality, the equal variability condition (that points are spread out in similar ways around the line for all values of $x$) will not cause problems for the estimate of the linear model, for a randomization test, or for a bootstrap confidence interval.
-However, data that exhibit non-equal variance across the range of x-values will have the potential to seriously mis-estimate the variability of the slope which will have consequences for the inference results (i.e., hypothesis tests and confidence intervals).
+As with normality, the equal variability condition (that points are spread out in similar ways around the line for all values of $x$) will not cause problems for the estimate of the linear model. That said, the **inference** on the model (e.g., computing p-values) will be incorrect if the variability around the line is heterogeneous.
+Data that exhibit non-equal variance across the range of x-values will have the potential to seriously mis-estimate the variability of the slope which will have consequences for the inference results (i.e., hypothesis tests and confidence intervals).
 
-When the equal variability condition is violated and a mathematical analysis (e.g., p-value from T-score) is needed, there are existing methods which can easily handle the unequal variance (e.g., weighted least squares analysis).
+The inference results for both a randomization test or a bootstrap confidence interval are robust to the equal variability condition, so they give the analyst methods to use when the data are heteroskedastic (that is, exhibit unequal variability around the regression line).
+Although randomization tests and bootstrapping allow us to analyze data using fewer conditions, some technical conditions are required for all methods described in this text (e.g., independent observation).
+When the equal variability condition is violated and a mathematical analysis (e.g., p-value from T-score) is needed, there are other existing methods (outside the scope of this text) which can easily handle the unequal variance (e.g., weighted least squares analysis).
 
-Although randomization tests and bootstrapping allow us to analyze data using fewer conditions, some technical conditions are required for all methods described in this text.
+#### What if all the technical conditions are met?  {-}
+
+When the technical conditions are met, the least squares regression model and inference is provided by virtually all statistical software.
+In addition to being ubiquitous, however, an additional advantage to the least squares regression model (and related inference) is that the linear model has important extensions (which are not trivial to implement with bootstrapping and randomization tests).
+In particular, random effects models, repeated measures, and interaction are all linear model extensions which require the above technical conditions.
+When the technical conditions hold, the extensions to the linear model can provide important insight into the data and research question at hand.
 We will discuss some of the extended modeling and associated inference in Section \@ref(inf-mult-reg) and Section \@ref(inf-log-reg).
-However, many of the techniques used to deal with technical condition violations are outside the scope of this text, but they are taught in universities in the very next class after this one.
+Many of the techniques used to deal with technical condition violations are outside the scope of this text, but they are taught in universities in the very next class after this one.
 If you are working with linear models or curious to learn more, we recommend that you continue learning about statistical methods applicable to a larger class of datasets.  
 
 ### Exercises {#checking-model-assumptions-exercises}
@@ -1167,7 +1174,11 @@ Things I didn't talk about but could:
 -->
 
 
-#### Cross validation 
+## Cross validation for prediction error
+
+In Section \@ref(inf-mult-reg), p-values were calculated on each of the model coefficients.
+The p-value gives a sense of which variables are important to the model (with the caveat that a longer treatment of variable selection is waranted in a follow-up course or textbook).
+We use cross validation prediction error to focus on which variable(s) are important for predicting the response variable of interest.  We continue to encourage you to take up further study on the topic of cross validation, as it is among the most important ideas in modern data analysis, and we are only able to scratch the surface here.
 
 Cross validation is a computational technique which removes some observations before a model is run, then assesses the model accuracy on the held-out sample.
 By removing some observations, we provide ourselves with an independent evaluation of the model.
@@ -1179,12 +1190,12 @@ include_graphics("08/figures/CV.jpg")
 ```
 
 Recall the `babies` data (described in the Exercises of Chapter \@ref(multi-logistic-models) ).
-The goal is to be able to predict the birth weight (`bwt` in oz) of the baby as a function of the `weight` gained (in lbs) by the mother and the `age` of the mother (in years).
-The multiple linear model shows that `weight` is statistically significant and `age` is not.
-As an alternative approach, however, let's see if the predictions with the model on `weight` only are better or worse than the predictions using the model with `weight` and `age`.  
+The goal is to be able to predict the birth weight (`bwt` in oz) of the baby as a function of the `weight` gained (in lbs) by the mother and the `gestation` time (in days) of the pregnancy.
+The multiple linear model shows that both `weight` and `gestation` are statistically significant predictors of `bwt`, but our cross validation analysis will be independent of the calculated p-values.
+The question we will seek to answer is wehter the predictions of `bwt` are substantially better when both `weight` and `gestation` are used in the model, as compared with the predictions from only `weight`.
 
 ```{r babieslm}
-lm(bwt ~weight+ age, data = babies) %>% tidy()
+lm(bwt ~ weight + gestation, data = babies) %>% tidy()
 ```
 
 \begin{eqnarray*}
@@ -1197,7 +1208,7 @@ So, using cross validation, we remove part of the data before running the least 
 For ease of explanation, here we use a 4-fold cross validation (meaning that one quarter of the data is removed each time) to produce four different versions of each model.
 
 * Model $A_1$ built on 3/4 of the data, after the first random quarter of observations has been removed.
-* Model $A_2$ built on 3/4 of the data, after the secopnd random quarter of observations has been removed.
+* Model $A_2$ built on 3/4 of the data, after the second random quarter of observations has been removed.
 * Model $A_3$ built on 3/4 of the data, after the third random quarter of observations has been removed.
 * Model $A_4$ built on 3/4 of the data, after the fourth random quarter of observations has been removed.
 
@@ -1216,32 +1227,34 @@ babies <- babies %>%
 
 babyfolds <- caret::createFolds(babies$bwt, k = 4)
 
-data.frame(predicted = lm(bwt ~gestation, data = babies[-babyfolds$Fold1,]) %>% 
-             predict(newdata = babies[babyfolds$Fold1,"gestation"]) ,
+data.frame(predicted = lm(bwt ~age, data = babies[-babyfolds$Fold1,]) %>% 
+             predict(newdata = babies[babyfolds$Fold1,"age"]) ,
            babies[babyfolds$Fold1,"bwt"],
            fold = rep("Fold 1", length(babyfolds$Fold1))) %>%
-  rbind(data.frame(predicted = lm(bwt ~gestation, data = babies[-babyfolds$Fold2,]) %>% 
-             predict(newdata = babies[babyfolds$Fold2,"gestation"]) ,
+  rbind(data.frame(predicted = lm(bwt ~age, data = babies[-babyfolds$Fold2,]) %>% 
+             predict(newdata = babies[babyfolds$Fold2,"age"]) ,
            babies[babyfolds$Fold2,"bwt"],
            fold = rep("Fold 2", length(babyfolds$Fold2))) ) %>%
-  rbind(data.frame(predicted = lm(bwt ~gestation, data = babies[-babyfolds$Fold3,]) %>% 
-             predict(newdata = babies[babyfolds$Fold3,"gestation"]) ,
+  rbind(data.frame(predicted = lm(bwt ~age, data = babies[-babyfolds$Fold3,]) %>% 
+             predict(newdata = babies[babyfolds$Fold3,"age"]) ,
            babies[babyfolds$Fold3,"bwt"],
            fold = rep("Fold 3", length(babyfolds$Fold3))) ) %>%
-  rbind(data.frame(predicted = lm(bwt ~gestation, data = babies[-babyfolds$Fold4,]) %>% 
-             predict(newdata = babies[babyfolds$Fold4,"gestation"]) ,
+  rbind(data.frame(predicted = lm(bwt ~age, data = babies[-babyfolds$Fold4,]) %>% 
+             predict(newdata = babies[babyfolds$Fold4,"age"]) ,
            babies[babyfolds$Fold4,"bwt"],
            fold = rep("Fold 4", length(babyfolds$Fold4))) ) %>%
-  ggplot(aes(x = bwt, y = predicted )) +
+  mutate(error = bwt - predicted) %>%
+  ggplot(aes(x = predicted, y = error )) +
   geom_point() +
-  geom_abline(intercept = 0, slope = 1) +
+  geom_hline(yintercept = 0) +
   facet_wrap(~fold) +
-  xlab("Observed birthweight (oz)") +
-  ylab("Predicted birthweight (oz)") 
+  ylim(c(-80,80)) +
+  xlab("Predicted Birthweight (oz)") +
+  ylab("Prediction Error (oz)") 
 ```
 
 * Model $B_1$ built on 3/4 of the data, after the first random quarter of observations has been removed.
-* Model $B_2$ built on 3/4 of the data, after the secopnd random quarter of observations has been removed.
+* Model $B_2$ built on 3/4 of the data, after the second random quarter of observations has been removed.
 * Model $B_3$ built on 3/4 of the data, after the third random quarter of observations has been removed.
 * Model $B_4$ built on 3/4 of the data, after the fourth random quarter of observations has been removed.
 
@@ -1258,28 +1271,30 @@ data.frame(predicted = lm(bwt ~gestation, data = babies[-babyfolds$Fold1,]) %>%
 set.seed(47)
 babyfolds <- caret::createFolds(babies$bwt, k = 4)
 
-data.frame(predicted = lm(bwt ~gestation + age, data = babies[-babyfolds$Fold1,]) %>% 
-             predict(newdata = babies[babyfolds$Fold1,c("gestation", "age")]) ,
+data.frame(predicted = lm(bwt ~gestation + weight, data = babies[-babyfolds$Fold1,]) %>% 
+             predict(newdata = babies[babyfolds$Fold1,c("gestation", "weight")]) ,
            babies[babyfolds$Fold1,"bwt"],
            fold = rep("Fold 1", length(babyfolds$Fold1))) %>%
-  rbind(data.frame(predicted = lm(bwt ~gestation + age, data = babies[-babyfolds$Fold2,]) %>% 
-             predict(newdata = babies[babyfolds$Fold2,c("gestation", "age")]) ,
+  rbind(data.frame(predicted = lm(bwt ~gestation + weight, data = babies[-babyfolds$Fold2,]) %>% 
+             predict(newdata = babies[babyfolds$Fold2,c("gestation", "weight")]) ,
            babies[babyfolds$Fold2,"bwt"],
            fold = rep("Fold 2", length(babyfolds$Fold2))) ) %>%
-  rbind(data.frame(predicted = lm(bwt ~gestation + age, data = babies[-babyfolds$Fold3,]) %>% 
-             predict(newdata = babies[babyfolds$Fold3,c("gestation", "age")]) ,
+  rbind(data.frame(predicted = lm(bwt ~gestation + weight, data = babies[-babyfolds$Fold3,]) %>% 
+             predict(newdata = babies[babyfolds$Fold3,c("gestation", "weight")]) ,
            babies[babyfolds$Fold3,"bwt"],
            fold = rep("Fold 3", length(babyfolds$Fold3))) ) %>%
-  rbind(data.frame(predicted = lm(bwt ~gestation + age, data = babies[-babyfolds$Fold4,]) %>% 
-             predict(newdata = babies[babyfolds$Fold4,c("gestation", "age")]) ,
+  rbind(data.frame(predicted = lm(bwt ~gestation + weight, data = babies[-babyfolds$Fold4,]) %>% 
+             predict(newdata = babies[babyfolds$Fold4,c("gestation", "weight")]) ,
            babies[babyfolds$Fold4,"bwt"],
            fold = rep("Fold 4", length(babyfolds$Fold4))) ) %>%
-  ggplot(aes(x = bwt, y = predicted )) +
+  mutate(error = bwt - predicted) %>%
+  ggplot(aes(x = predicted, y = error )) +
   geom_point() +
-  geom_abline(intercept = 0, slope = 1) +
+  geom_hline(yintercept = 0) +
   facet_wrap(~fold) +
-  ylab("Predicted birthweight (oz)") +
-  xlab("Observed birthweight (oz)") 
+  ylim(c(-50,50)) +
+  xlab("Predicted Birthweight (oz)") +
+  ylab("Prediction Error (oz)") 
 ```
 
 
