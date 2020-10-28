@@ -25,6 +25,7 @@ suppressMessages(library(threed))
 suppressMessages(library(ggthreed))
 suppressMessages(library(caret))
 suppressMessages(library(palmerpenguins))
+suppressMessages(library(survival))
 
 # knitr chunk options ----------------------------------------------------------
 
