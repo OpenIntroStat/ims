@@ -1177,31 +1177,61 @@ Things I didn't talk about but could:
 ### Cross validation for prediction error
 
 In Section \@ref(inf-mult-reg-soft), p-values were calculated on each of the model coefficients.
-The p-value gives a sense of which variables are important to the model (with the caveat that a longer treatment of variable selection is waranted in a follow-up course or textbook).
-We use cross validation prediction error to focus on which variable(s) are important for predicting the response variable of interest.  We continue to encourage you to take up further study on the topic of cross validation, as it is among the most important ideas in modern data analysis, and we are only able to scratch the surface here.
+The p-value gives a sense of which variables are important to the model; however, a more extensive treatment of variable selection is waranted in a follow-up course or textbook.
+Here, we use cross validation prediction error to focus on which variable(s) are important for predicting the response variable of interest.
+We continue to encourage you to take up further study on the topic of cross validation, as it is among the most important ideas in modern data analysis, and we are only able to scratch the surface here.
 
 Cross validation is a computational technique which removes some observations before a model is run, then assesses the model accuracy on the held-out sample.
-By removing some observations, we provide ourselves with an independent evaluation of the model.
-Cross validation can be used in many different ways (as an independent assessment), and here we will just scratch the surface with respect to one way the technique can be used for model building.
+By removing some observations, we provide ourselves with an independent evaluation of the model (that is, the removed observations do not contribute to finding the parameters which minimize the least squares equation).
+Cross validation can be used in many different ways (as an independent assessment), and here we will just scratch the surface with respect to one way the technique can be used to compare models.
 See Figure \@ref(fig:cv) for an image describing how cross validation works.
 
 ```{r cv, fig.cap = "This isn't the right picture, but I'd love to keep CV in the book and be able to explain it in a straightforward way."}
 include_graphics("08/figures/CV.jpg")
 ```
 
-Recall the `babies` data (described in the Exercises of Chapter \@ref(multi-logistic-models) ).
-The goal is to be able to predict the birth weight (`bwt` in oz) of the baby as a function of the `weight` gained (in lbs) by the mother and the `gestation` time (in days) of the pregnancy.
-The multiple linear model shows that both `weight` and `gestation` are statistically significant predictors of `bwt`, but our cross validation analysis will be independent of the calculated p-values.
-The question we will seek to answer is wehter the predictions of `bwt` are substantially better when both `weight` and `gestation` are used in the model, as compared with the predictions from only `weight`.
+Consider the `penguins` dataset which comes from the palmerpenguins package.  The observations of three different penguin species include measurements on body size and sex.  The data were collected by [Dr. Kristen Gorman](https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php) and the [Palmer Station, Antarctica LTER](https://pal.lternet.edu/) as part of the [Long Term Ecological Research Network](https://lternet.edu/).
 
-```{r babieslm}
-lm(bwt ~ weight + gestation, data = babies) %>% tidy()
-```
+
+Our goal in this section is to compare two different regression models which both seek to predict the mass of an individual penguin in grams.
+The first model will predict `body_mass_g` by using only the `bill_length_mm`, a variable denoting the length of a penguin's bill, in mm.
+The second model will predict `body_mass_g` by using `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species`.
+
+The presentation below (see the comparison of Figures \@ref(fig:peng_mass1) and \@ref(fig:peng_mass2)) shows that the model with more variables predicts `body_mass_g` with much smaller errors (predicted minus actual body mass) than the model which uses only `bill_length_g`.
+We have deliberate used a model that intuitively makes sense (the more body measurements, the more predictable mass is).
+However, in many settings, it is not obvious which variables or which models contribute most to accurate predictions.
+Cross validation is one way to get accurate independent predictions with which to compare different models.
+
+
+##### Comparing two models to predict `body_mass_g` in penguins {-}
+
+The question we will seek to answer is whether the predictions of `body_mass_g` are substantially better when `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` are used in the model, as compared with a model on `bill_length_mm` only.  
+
+The population model $A$ is given below, and the estimates of the parameters (on the entire dataset) are provided in Table \@ref(tab:peng_lm_bill).
+The population model $B$ is given below, and the estimates of the parameters (on the entire dataset) are provided in Table \@ref(tab:peng_lm_all).
+Given what we know about high correlations between body measurements, it is somewhat unsurprising that all of the variables are significant (small p-values) predictors of `body_mass_g`.
+
 
 \begin{eqnarray*}
-\mbox{Model } A && E[\texttt{age}] = \beta_0 + \beta_1 \times \texttt{weight}\\
-\mbox{Model } B && E[\texttt{age}] = \beta_0 + \beta_1 \times \texttt{weight} + \beta_2 \times \texttt{age}
+\mbox{Model } A && E[\texttt{body_mass_g}] = \beta_0 + \beta_1 \times \texttt{bill_length_mm}\\
+\mbox{Model } B && E[\texttt{body_mass_g}] = \beta_0 + \beta_1 \times \texttt{bill_length_mm}\\
 \end{eqnarray*}
+
+```{r peng_lm_bill, echo = FALSE}
+lm(body_mass_g ~ bill_length_mm, data = penguins) %>% 
+  tidy() %>%
+   kable(caption = "The least squares estimates of the regression model predicting `body_mass_g` from `bill_length_mm`.") %>%
+ kable_styling() 
+```
+
+```{r peng_lm_all, echo = FALSE}
+lm(body_mass_g ~ bill_length_mm + bill_depth_mm  + flipper_length_mm + sex + species, data = penguins) %>% 
+  tidy()%>%
+   kable(caption = "The least squares estimates of the regression model predicting `body_mass_g` from `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species`.") %>%
+ kable_styling() 
+```
+
+
 
 The predictions that will allow us to distinguish between models A and B must be independent of the data which were used to build the model.
 So, using cross validation, we remove part of the data before running the least squares calculations.
@@ -1220,11 +1250,10 @@ For ease of explanation, here we use a 4-fold cross validation (meaning that one
 \end{eqnarray*}
 
 
-```{r}
+```{r peng_mass1, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted.  The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only.  The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value).", warning=FALSE, fig.width=15}
 set.seed(47)
 data(penguins)
 penguins <- penguins %>%
-  #filter(species == "Adelie") %>%
   na.omit()
 
 penguinfolds <- caret::createFolds(penguins$body_mass_g, k = 4)
@@ -1232,19 +1261,19 @@ penguinfolds <- caret::createFolds(penguins$body_mass_g, k = 4)
 data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-penguinfolds$Fold1,]) %>% 
              predict(newdata = penguins[penguinfolds$Fold1,c("bill_length_mm")]) ,
            obs = penguins[penguinfolds$Fold1,]$body_mass_g,
-           fold = rep("Fold 1", length(penguinfolds$Fold1))) %>%
+           fold = rep("1st quarter", length(penguinfolds$Fold1))) %>%
   rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-penguinfolds$Fold2,]) %>% 
              predict(newdata = penguins[penguinfolds$Fold2,c("bill_length_mm")]) ,
            obs = penguins[penguinfolds$Fold2,]$body_mass_g,
-           fold = rep("Fold 2", length(penguinfolds$Fold2))) ) %>%
+           fold = rep("2nd quarter", length(penguinfolds$Fold2))) ) %>%
   rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-penguinfolds$Fold3,]) %>% 
              predict(newdata = penguins[penguinfolds$Fold3,c("bill_length_mm")]) ,
            obs = penguins[penguinfolds$Fold3,]$body_mass_g,
-           fold = rep("Fold 3", length(penguinfolds$Fold3))) ) %>%
+           fold = rep("3rd quarter", length(penguinfolds$Fold3))) ) %>%
   rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-penguinfolds$Fold4,]) %>% 
              predict(newdata = penguins[penguinfolds$Fold4,c("bill_length_mm")]) ,
            obs = penguins[penguinfolds$Fold4,]$body_mass_g,
-           fold = rep("Fold 4", length(penguinfolds$Fold4))) ) %>%
+           fold = rep("4th quarter", length(penguinfolds$Fold4))) ) %>%
   mutate(error = obs - predicted) %>%
   ggplot(aes(x = predicted, y = error )) +
   geom_point() +
@@ -1271,7 +1300,7 @@ data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-pengui
 \end{eqnarray*}
 
 
-```{r}
+```{r peng_mass2, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted.  The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only.  The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value).", warning=FALSE, fig.width=15}
 data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1,]) %>% 
              predict(newdata = penguins[penguinfolds$Fold1,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]) ,
            obs = penguins[penguinfolds$Fold1,]$body_mass_g,
