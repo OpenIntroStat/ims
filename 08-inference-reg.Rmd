@@ -1177,7 +1177,7 @@ Things I didn't talk about but could:
 ### Cross validation for prediction error
 
 In Section \@ref(inf-mult-reg-soft), p-values were calculated on each of the model coefficients.
-The p-value gives a sense of which variables are important to the model; however, a more extensive treatment of variable selection is waranted in a follow-up course or textbook.
+The p-value gives a sense of which variables are important to the model; however, a more extensive treatment of variable selection is warranted in a follow-up course or textbook.
 Here, we use cross validation prediction error to focus on which variable(s) are important for predicting the response variable of interest.
 We continue to encourage you to take up further study on the topic of cross validation, as it is among the most important ideas in modern data analysis, and we are only able to scratch the surface here.
 
@@ -1214,7 +1214,7 @@ Given what we know about high correlations between body measurements, it is some
 
 \begin{eqnarray*}
 \mbox{Model } A && E[\texttt{body_mass_g}] = \beta_0 + \beta_1 \times \texttt{bill_length_mm}\\
-\mbox{Model } B && E[\texttt{body_mass_g}] = \beta_0 + \beta_1 \times \texttt{bill_length_mm}\\
+\mbox{Model } B && E[\texttt{body_mass_g}] = \beta_0 + \beta_1 \times \texttt{bill_length_mm} + \beta_2 \times \texttt{bill_depth_mm} + \beta_3 \times \texttt{flipper_length_mm} + \beta_4 \times \texttt{sex} + \beta_5 \times \texttt{species}\\
 \end{eqnarray*}
 
 ```{r peng_lm_bill, echo = FALSE}
@@ -1234,13 +1234,20 @@ lm(body_mass_g ~ bill_length_mm + bill_depth_mm  + flipper_length_mm + sex + spe
 
 
 The predictions that will allow us to distinguish between models A and B must be independent of the data which were used to build the model.
-So, using cross validation, we remove part of the data before running the least squares calculations.
-For ease of explanation, here we use a 4-fold cross validation (meaning that one quarter of the data is removed each time) to produce four different versions of each model.
+So, using cross validation, we remove one quarter of the data before running the least squares calculations.
+Here we use a 4-fold cross validation (meaning that one quarter of the data is removed each time) to produce four different versions of each model (other times it might be more appropriate to use 2-fold or 10-fold or even run the model separately after removing each individual data point one at a time).
 
 * Model $A_1$ built on 3/4 of the data, after the first random quarter of observations has been removed.
 * Model $A_2$ built on 3/4 of the data, after the second random quarter of observations has been removed.
 * Model $A_3$ built on 3/4 of the data, after the third random quarter of observations has been removed.
 * Model $A_4$ built on 3/4 of the data, after the fourth random quarter of observations has been removed.
+
+::: {.underconstruction}
+The text below is old.  I have a few different ways I could compare the 4 models (as equations, as plots, as R output...).  I'd like to talk through how to display before doing the work to create the display.
+
+Note that to compare apples to apples (for model A vs B) we can't do an x-y plot (it would have to be predicted vs error or predicted vs observed which we sort of already have).
+:::
+
 
 \begin{eqnarray*}
 \mbox{Model } A_1 && \widehat{\texttt{bst}} = 99.42 + 0.16 \times \texttt{weight}\\
@@ -1291,6 +1298,12 @@ data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-pengui
 * Model $B_3$ built on 3/4 of the data, after the third random quarter of observations has been removed.
 * Model $B_4$ built on 3/4 of the data, after the fourth random quarter of observations has been removed.
 
+::: {.underconstruction}
+The text below is old.  I have a few different ways I could compare the 4 models (as equations, as plots, as R output...).  I'd like to talk through how to display before doing the work to create the display.
+
+Note that to compare apples to apples (for model A vs B) we can't do an x-y plot (it would have to be predicted vs error or predicted vs observed which we sort of already have).
+:::
+
 
 \begin{eqnarray*}
 \mbox{Model } B_1 && \widehat{\texttt{bwt}} = 99.69 + 0.15 \times \texttt{weight} + 0.03 \times \texttt{age}\\
@@ -1304,19 +1317,19 @@ data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-pengui
 data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1,]) %>% 
              predict(newdata = penguins[penguinfolds$Fold1,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]) ,
            obs = penguins[penguinfolds$Fold1,]$body_mass_g,
-           fold = rep("Fold 1", length(penguinfolds$Fold1))) %>%
+           fold = rep("1st auarter", length(penguinfolds$Fold1))) %>%
   rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold2,]) %>% 
              predict(newdata = penguins[penguinfolds$Fold2,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]) ,
            obs = penguins[penguinfolds$Fold2,]$body_mass_g,
-           fold = rep("Fold 2", length(penguinfolds$Fold2))) ) %>%
+           fold = rep("2nd quarter", length(penguinfolds$Fold2))) ) %>%
   rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold3,]) %>% 
              predict(newdata = penguins[penguinfolds$Fold3,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]) ,
            obs = penguins[penguinfolds$Fold3,]$body_mass_g,
-           fold = rep("Fold 3", length(penguinfolds$Fold3))) ) %>%
+           fold = rep("3rd quarter", length(penguinfolds$Fold3))) ) %>%
   rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold4,]) %>% 
              predict(newdata = penguins[penguinfolds$Fold4,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]) ,
            obs = penguins[penguinfolds$Fold4,]$body_mass_g,
-           fold = rep("Fold 4", length(penguinfolds$Fold4))) ) %>%
+           fold = rep("4th quarter", length(penguinfolds$Fold4))) ) %>%
   mutate(error = obs - predicted) %>%
   ggplot(aes(x = predicted, y = error )) +
   geom_point() +
@@ -1329,10 +1342,14 @@ data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper
   ylab("Prediction Error (g)") 
 ```
 
+Figure \@ref(fig:peng_mass1) shows that the independent predictions are centered around the true values (i.e., errors are centered around zero), but that the predictions can be as much as 1000g off when using only `bill_length_mm` to predict `body_mass_g`.
+On the other hand, when using `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species`  to predict `body_mass_g`, the prediction errors seem to be about half as big, as seen in Figure \@ref(fig:peng_mass2).
 
-<!--
-I should create a visualization of cross validation.  Maybe Will can? 
--->
+We have provided a very brief overview to and example using cross validation.
+Cross validation is a computational approach to model building and model validation as an alternative to reliance on p-values.
+While p-values have a role to play in understanding model coefficients, throughout this text, we have continued to present computational methods that broaden statistical approaches to data analysis.
+Cross validation will be used again in Section \@ref(inf-log-reg) with logistic regression.
+We encourage you to consider both standard inferential methods (such as p-values) and computational approaches (such as cross validation) as you build and use multivariable models of all varieties.
 
 ### Exercises {#inference-multiple-regression-exercises}
 
@@ -1342,7 +1359,7 @@ Exercises for this section are under construction.
 
 ## Inference for logistic regression {#inf-log-reg}
 
-As with multiple linear regression, the inference aspect for logistic regression will focus on interpretation of coefficients and relationships between explanatory variables.  Both p-values and cross validation will be used for model fitting.  
+As with multiple linear regression, the inference aspect for logistic regression will focus on interpretation of coefficients and relationships between explanatory variables.  Both p-values and cross validation will be used for assessing a logistic regression model.
 
 ### Exercises {#inference-logistic-regression-exercises}
 
