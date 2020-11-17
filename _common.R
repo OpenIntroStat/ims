@@ -4,7 +4,7 @@ options(digits = 3)
 
 # packages ---------------------------------------------------------------------
 
-suppressMessages(library(broom))
+suppressMessages(library(tidymodels))
 suppressMessages(library(gghighlight))
 suppressMessages(library(glue))
 suppressMessages(library(ggmosaic))

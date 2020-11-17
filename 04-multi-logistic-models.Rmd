@@ -569,13 +569,33 @@ Finally, they randomly assigned a name to each resume, where the name would impl
     We did not worry about this blocking aspect, since accounting for the blocking would *reduce* the standard error without notably changing the point estimates for the `race` and `sex` variables versus the analysis performed in the section.
     That is, the most interesting conclusions in the study are unaffected even when completing a more sophisticated analysis.
 
+::: {.data}
+The data from this study can be found in the [openintro](http://openintrostat.github.io/openintro) package: [resume](http://openintrostat.github.io/openintro/reference/resume.html).
+:::
+
+```{r resume-data-prep}
+resume <- resume %>%
+  rename(sex = gender) %>%
+  mutate(
+    sex = if_else(sex == "m", "man", "woman"),
+    sex = fct_relevel(sex, "woman", "man"),
+    received_callback = as.factor(received_callback),
+    college_degree = as.factor(college_degree),
+    honors = as.factor(honors),
+    military = as.factor(military),
+    has_email_address = as.factor(has_email_address)
+    ) %>%
+  select(received_callback, job_city, college_degree, years_experience,
+         honors, military, has_email_address, race, sex)
+```
+
 The first names that were used and randomly assigned in this experiment were selected so that they would predominantly be recognized as belonging to Black or White individuals; other races were not considered in this study.
 While no name would definitively be inferred as pertaining to a Black individual or to a White individual, the researchers conducted a survey to check for racial association of the names; names that did not pass this survey check were excluded from usage in the experiment.
 You can find the full set of names that did pass the survey test and were ultimately used in the study in Table \@ref(tab:resume-names).
 For example, Lakisha was a name that their survey indicated would be interpreted as a Black woman, while Greg was a name that would generally be interpreted to be associated with a White male.
 
 ```{r resume-names}
-names <- tribble(
+resume_names <- tribble(
   ~first_name, ~race, ~sex,
   "Aisha", "black", "female",
   "Allison", "white", "female",
@@ -614,7 +634,7 @@ names <- tribble(
   "Tremayne", "black", "male",
   "Tyrone", "black", "male"
 )
-kable(names, 
+kable(resume_names, 
       caption = "List of all 36 unique names along with the commonly inferred race and sex associated with these names.")
 ```
 
@@ -624,19 +644,19 @@ The full set of attributes considered is provided in Table \@ref(tab:resume-vari
 
 ```{r resume-variables}
 resume_variables <- tribble(
-  ~variable,          ~description,
-  "`callback`",         "Specifies whether the employer called the applicant following submission of the application for the job.",
-  "`job city`",         "City where the job was located: Boston or Chicago.",
-  "`college degree`",   "An indicator for whether the resume listed a college degree.",
-  "`years experience`", "Number of years of experience listed on the resume.",
-  "`honors`",           "Indicator for the resume listing some sort of honors, e.g. employee of the month.",
-  "`military`",         "Indicator for if the resume listed any military experience.",
-  "`email address`",    "Indicator for if the resume listed an email address for the applicant.",
-  "`race`",             "Race of the applicant, implied by their first name listed on the resume.",
-  "`sex`",              "Sex of the applicant (limited to only and in this study), implied by the first name listed on the resume."
+  ~variable,             ~description,
+  "`received_callback`", "Specifies whether the employer called the applicant following submission of the application for the job.",
+  "`job_city`",          "City where the job was located: Boston or Chicago.",
+  "`college_degree`",    "An indicator for whether the resume listed a college degree.",
+  "`years_experience`",  "Number of years of experience listed on the resume.",
+  "`honors`",            "Indicator for the resume listing some sort of honors, e.g. employee of the month.",
+  "`military`",          "Indicator for if the resume listed any military experience.",
+  "`has_email_address`", "Indicator for if the resume listed an email address for the applicant.",
+  "`race`",              "Race of the applicant, implied by their first name listed on the resume.",
+  "`sex`",               "Sex of the applicant (limited to only and in this study), implied by the first name listed on the resume."
 )
 kable(resume_variables,
-      caption = "Descriptions for the `callback` variable along with 8 other variables in the `resume` data set. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.")
+      caption = "Descriptions for the `received_callback` variable along with 8 other variables in the `resume` data set. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.")
 ```
 
 All of the attributes listed on each resume were randomly assigned.
@@ -647,7 +667,7 @@ Our analysis will allow us to compare the practical importance of each of the va
 ### Modelling the probability of an event {#modelingTheProbabilityOfAnEvent}
 
 Logistic regression is a generalized linear model where the outcome is a two-level categorical variable.
-The outcome, $Y_i$, takes the value 1 (in our application, this represents a callback for the resume) with probability \$p_i\$ and the value 0 with probability $1 - p_i$.
+The outcome, $Y_i$, takes the value 1 (in our application, this represents a callback for the resume) with probability $p_i$ and the value 0 with probability $1 - p_i$.
 Because each observation has a slightly different context, e.g. different education level or a different number of years of experience, the probability $p_i$ will differ for each observation.
 Ultimately, it is this probability that we model in relation to the predictor variables: we will examine which resume characteristics correspond to higher or lower callback rates.
 
@@ -730,13 +750,15 @@ While the precise choice of a logit function isn't intuitive, it is based on the
 Fortunately, once we fit a model using software, it will start to feel like we're back in the multiple regression context, even if the interpretation of the coefficients is more complex.
 
 ::: {.workedexample}
-We start by fitting a model with a single predictor: .
+We start by fitting a model with a single predictor: `honors`.
 This variable indicates whether the applicant had any type of honors listed on their resume, such as employee of the month.
 The following logistic regression model was fit using statistical software:
 
-$$\log_e \left( \frac{p_i}{1-p_i} \right) = -2.4998 + 0.8668 \times\text{\var{honors}}$$(a) If a resume is randomly selected from the study and it does not have any honors listed, what is the probability resulted in a callback?
+$$\log_e \left( \frac{p_i}{1-p_i} \right) = -2.4998 + 0.8668 \times\text{\texttt{honors}}$$
 
-(b) What would the probability be if the resume did list some honors?
+a.  If a resume is randomly selected from the study and it does not have any honors listed, what is the probability resulted in a callback?
+
+b.  What would the probability be if the resume did list some honors?
 
 ------------------------------------------------------------------------
 
@@ -772,7 +794,107 @@ While knowing whether a resume listed honors provides some signal when predictin
 
 ### Logistic model with many variables
 
+We used statistical software to fit the logistic regression model with all 8 predictors described in Table \@ref(tab:resume-variables).
+Like multiple regression, the result may be presented in a summary table, which is shown in Table \@ref(tab:resume-full-fit).
+The structure of this table is almost identical to that of multiple regression; the only notable difference is that the p-values are calculated using the normal distribution rather than the $t$-distribution.
+
+```{r resume-full-fit}
+resume_full_fit <- logistic_reg() %>%
+  set_engine("glm") %>%
+  fit(received_callback ~ job_city + college_degree + years_experience + honors + military + has_email_address + race + sex, data = resume, family = "binomial")
+
+resume_full_fit %>%
+  tidy() %>%
+  kable(caption = "Summary table for the full logistic regression model for the resume callback example.")
+```
+
+Just like multiple regression, we could trim some variables from the model.
+Here we'll use a statistic called **Akaike information criterion (AIC)**, which is an analogue to how we used adjusted R-squared in multiple regression, and we look for models with a lower AIC through a backward elimination strategy.
+After using this criteria, the variable `college_degree` is eliminated, giving the smaller model summarized in Table \@ref(tab:resume-fit), which is what we'll rely on for the remainder of this section.
+
+```{r resume-fit}
+resume_fit <- logistic_reg() %>%
+  set_engine("glm") %>%
+  fit(received_callback ~ job_city + years_experience + honors + military + has_email_address + race + sex, data = resume, family = "binomial")
+
+resume_fit %>%
+  tidy() %>%
+  kable(caption = "Summary table for the logistic regression model for the resume callback example, where variable selection has been performed using AIC.", digits = 4)
+```
+
+::: {.workedexample}
+The `race` variable had taken only two levels: `black` and `white`.
+Based on the model results, was race a meaningful factor for if a prospective employer would call back?
+
+------------------------------------------------------------------------
+
+We see that the p-value for this coefficient is very small (very nearly zero), which implies that race played a statistically significant role in whether a candidate received a callback.
+Additionally, we see that the coefficient shown corresponds to the level of `white`, and it is positive.
+This positive coefficient reflects a positive gain in callback rate for resumes where the candidate's first name implied they were White.
+The data provide very strong evidence of racism by prospective employers that favours resumes where the first name is typically interpreted to be White.
+:::
+
+The coefficient of $\texttt{race}_{\texttt{white}}$ in the full model in Table \@ref(tab:resume-full-fit), is nearly identical to the model shown in Table \@ref(tab:resume-fit).
+The predictors in this experiment were thoughtfully laid out so that the coefficient estimates would typically not be much influenced by which other predictors were in the model, which aligned with the motivation of the study to tease out which effects were important to getting a callback.
+In most observational data, it's common for point estimates to change a little, and sometimes a lot, depending on which other variables are included in the model.
+
+::: {.workedexample}
+Use the model summarized in Table \@ref(tab:resume-fit) to estimate the probability of receiving a callback for a job in Chicago where the candidate lists 14 years experience, no honors, no military experience, includes an email address, and has a first name that implies they are a White male.
+
+------------------------------------------------------------------------
+
+We can start by writing out the equation using the coefficients from the model, then we can add in the corresponding values of each variable for this individual:
+
+$$
+\begin{aligned}  &log_e \left(\frac{p}{1 - p}\right) \\    &\quad= - 2.7162        - 0.4364 \times \texttt{job_city}_{\texttt{Chicago}}        + 0.0206 \times \texttt{years_experience}        + 0.7634 \times \texttt{honors} \\      &\quad\qquad          - 0.3443 \times \texttt{military}          + 0.2221 \times \texttt{email}          + 0.4429 \times \texttt{race}_{\texttt{white}}          - 0.1959 \times \texttt{sex}_{\texttt{man}} \\    &\quad= - 2.7162        - 0.4364 \times 1        + 0.0206 \times 14        + 0.7634 \times 0 \\      &\quad\qquad          - 0.3443 \times 0          + 0.2221 \times 1          + 0.4429 \times 1          - 0.1959 \times 1 \\    &\quad= - 2.3955  \end{aligned}
+$$
+
+We can now back-solve for $p$: the chance such an individual will receive a callback is about 8.35%.
+:::
+
+::: {.workedexample}
+Compute the probability of a callback for an individual with a name commonly inferred to be from a Black male but who otherwise has the same characteristics as the one described in the previous example.
+
+------------------------------------------------------------------------
+
+We can complete the same steps for an individual with the same characteristics who is Black, where the only difference in the calculation is that the indicator variable $\texttt{race}_{\texttt{white}}$ will take a value of 0.
+Doing so yields a probability of 0.0553.
+Let's compare the results with those of the previous example..
+
+In practical terms, an individual perceived as White based on their first name would need to apply to $\frac{1}{0.0835} \approx 12$ jobs on average to receive a callback, while an individual perceived as Black based on their first name would need to apply to $\frac{1}{0.0553} \approx 18$ jobs on average to receive a callback.
+That is, applicants who are perceived as Black need to apply to 50% more employers to receive a callback than someone who is perceived as White based on their first name for jobs like those in the study.
+:::
+
+What we've quantified in this section is alarming and disturbing.
+However, one aspect that makes this racism so difficult to address is that the experiment, as well-designed as it is, cannot send us much signal about which employers are discriminating.
+It is only possible to say that discrimination is happening, even if we cannot say which particular callbacks --- or non-callbacks --- represent discrimination.
+Finding strong evidence of racism for individual cases is a persistent challenge in enforcing anti-discrimination laws.
+
 ### Model diagnostics
+
+::: {.important}
+**Logistic regression conditions.** There are two key conditions for fitting a logistic regression model:
+
+1.  Each outcome $Y_i$ is independent of the other outcomes.
+2.  Each predictor $x_i$ is linearly related to logit$(p_i)$ if all other predictors are held constant.
+:::
+
+The first logistic regression model condition --- independence of the outcomes --- is reasonable for the experiment since characteristics of resumes were randomly assigned to the resumes that were sent out.
+
+The second condition of the logistic regression model is not easily checked without a fairly sizable amount of data.
+Luckily, we have 4870 resume submissions in the data set!
+Let's first visualize these data by plotting the true classification of the resumes against the model's fitted probabilities, as shown in Figure \@ref(fig:resume-predict).
+
+```{r resume-predict, fig.cap = "The predicted probability that each of the 4870 resumes results in a callback. Noise (small, random vertical shifts) have been added to each point so points with nearly identical values aren’t plotted exactly on top of one another."}
+resume_pred <- predict(resume_fit, new_data = resume, type = "prob") %>%
+  bind_cols(resume %>% select(received_callback))
+
+ggplot(resume_pred, aes(x = .pred_1, y = received_callback)) +
+  geom_jitter(color = COL["blue", "full"], alpha = 0.15) +
+  coord_cartesian(xlim = c(0, 1))
+```
+
+<!--# Omitting bucket diagram for diagnostics since it uses 95% CI which we haven't discussed yet. Should it go in the final chapter? -->
 
 ### Groups of different sizes
 
