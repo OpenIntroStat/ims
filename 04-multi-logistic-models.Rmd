@@ -122,14 +122,14 @@ How would we write an equation for this regression model?
 
 The equation for the regression model may be written as a model with two predictors:
 
-$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times \text{verified_income}_{\text{Source Verified}} + 3.25 \times \text{verified_income}_{\text{Verified}}$$
+$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times \texttt{verified_income}_{\texttt{Source Verified}} + 3.25 \times \texttt{verified_income}_{\texttt{Verified}}$$
 
-We use the notation $\text{variable}_{\text{level}}$ to represent indicator variables for when the categorical variable takes a particular value.
-For example, $\text{verified_income}_{\text{Source Verified}}$ would take a value of 1 if was for a loan, and it would take a value of 0 otherwise.
-Likewise, $\text{verified_income}_{\text{Verified}}$ would take a value of 1 if took a value of `verified` and 0 if it took any other value.
+We use the notation $\texttt{variable}_{\texttt{level}}$ to represent indicator variables for when the categorical variable takes a particular value.
+For example, $\texttt{verified_income}_{\texttt{Source Verified}}$ would take a value of 1 if was for a loan, and it would take a value of 0 otherwise.
+Likewise, $\texttt{verified_income}_{\texttt{Verified}}$ would take a value of 1 if took a value of `verified` and 0 if it took any other value.
 :::
 
-The notation $\text{variable}_{\text{level}}$ may feel a bit confusing.
+The notation $\texttt{variable}_{\texttt{level}}$ may feel a bit confusing.
 Let's figure out how to use the equation for each level of the `verified_income` variable.
 
 ::: {.workedexample}
@@ -150,7 +150,7 @@ Using the model for predicting interest rate from income verification type, comp
 
 ------------------------------------------------------------------------
 
-When `verified_income` takes a value of `Source Verified`, then the corresponding variable takes a value of 1 while the other ($\text{verified_income}_{\text{Verified}}$) is 0:
+When `verified_income` takes a value of `Source Verified`, then the corresponding variable takes a value of 1 while the other ($\texttt{verified_income}_{\texttt{Verified}}$) is 0:
 
 $$\widehat{\texttt{interest_rate}} = = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 12.52$$
 
@@ -546,9 +546,229 @@ To check, we fit models that each drop a different predictor, and we record the 
 
 ## Logistic regression {#logistic-regression}
 
+In this section we introduce **logistic regression** as a tool for building models when there is a categorical response variable with two levels, e.g. yes and no.
+Logistic regression is a type of **generalized linear model (GLM)** for response variables where regular multiple regression does not work very well.
+In particular, the response variable in these settings often takes a form where residuals look completely different from the normal distribution.
+
+GLMs can be thought of as a two-stage modeling approach.
+We first model the response variable using a probability distribution, such as the binomial or Poisson distribution.
+Second, we model the parameter of the distribution using a collection of predictors and a special form of multiple regression.
+Ultimately, the application of a GLM will feel very similar to multiple regression, even if some of the details are different.
+
+```{r include=FALSE}
+terms_chp_4 <- c(terms_chp_4, "logistic regression", "generalized linear model")
+```
+
 ### Resume data
 
-### Modeling the probability of an event
+We will consider experiment data from a study that sought to understand the effect of race and sex on job application callback rates.[@bertrand2003] To evaluate which factors were important, job postings were identified in Boston and Chicago for the study, and researchers created many fake resumes to send off to these jobs to see which would elicit a callback.[^multi-logistic-models-10]
+The researchers enumerated important characteristics, such as years of experience and education details, and they used these characteristics to randomly generate the resumes.
+Finally, they randomly assigned a name to each resume, where the name would imply the applicant's sex and race.
+
+[^multi-logistic-models-10]: We did omit discussion of some structure in the data for the analysis presented: the experiment design included blocking, where typically four resumes were sent to each job: one for each inferred race/sex combination (as inferred based on the first name).
+    We did not worry about this blocking aspect, since accounting for the blocking would *reduce* the standard error without notably changing the point estimates for the `race` and `sex` variables versus the analysis performed in the section.
+    That is, the most interesting conclusions in the study are unaffected even when completing a more sophisticated analysis.
+
+The first names that were used and randomly assigned in this experiment were selected so that they would predominantly be recognized as belonging to Black or White individuals; other races were not considered in this study.
+While no name would definitively be inferred as pertaining to a Black individual or to a White individual, the researchers conducted a survey to check for racial association of the names; names that did not pass this survey check were excluded from usage in the experiment.
+You can find the full set of names that did pass the survey test and were ultimately used in the study in Table \@ref(tab:resume-names).
+For example, Lakisha was a name that their survey indicated would be interpreted as a Black woman, while Greg was a name that would generally be interpreted to be associated with a White male.
+
+```{r resume-names}
+names <- tribble(
+  ~first_name, ~race, ~sex,
+  "Aisha", "black", "female",
+  "Allison", "white", "female",
+  "Anne", "white", "female",
+  "Brad", "white", "male",
+  "Brendan", "white", "male",
+  "Brett", "white", "male",
+  "Carrie", "white", "female",
+  "Darnell", "black", "male",
+  "Ebony", "black", "female",
+  "Emily", "white", "female",
+  "Geoffrey", "white", "male",
+  "Greg", "white", "male",
+  "Hakim", "black", "male",
+  "Jamal", "black", "male",
+  "Jay", "white", "male",
+  "Jermaine", "black", "male",
+  "Jill", "white", "female",
+  "Kareem", "black", "male",
+  "Keisha", "black", "female",
+  "Kenya", "black", "female",
+  "Kristen", "white", "female",
+  "Lakisha", "black", "female",
+  "Latonya", "black", "female",
+  "Latoya", "black", "female",
+  "Laurie", "white", "female",
+  "Leroy", "black", "male",
+  "Matthew", "white", "male",
+  "Meredith", "white", "female",
+  "Neil", "white", "male",
+  "Rasheed", "black", "male",
+  "Sarah", "white", "female",
+  "Tamika", "black", "female",
+  "Tanisha", "black", "female",
+  "Todd", "white", "male",
+  "Tremayne", "black", "male",
+  "Tyrone", "black", "male"
+)
+kable(names, 
+      caption = "List of all 36 unique names along with the commonly inferred race and sex associated with these names.")
+```
+
+The response variable of interest is whether or not there was a callback from the employer for the applicant, and there were 8 attributes that were randomly assigned that we'll consider, with special interest in the race and sex variables.
+Race and sex are in the United States, meaning they are not legally permitted factors for hiring or employment decisions.
+The full set of attributes considered is provided in Table \@ref(tab:resume-variables).
+
+```{r resume-variables}
+resume_variables <- tribble(
+  ~variable,          ~description,
+  `callback`,         "Specifies whether the employer called the applicant following submission of the application for the job.",
+  `job city`,         "City where the job was located: Boston or Chicago.",
+  `college degree`,   "An indicator for whether the resume listed a college degree.",
+  `years experience`, "Number of years of experience listed on the resume.",
+  `honors`,           "Indicator for the resume listing some sort of honors, e.g. employee of the month.",
+  `military`,         "Indicator for if the resume listed any military experience.",
+  `email address`,    "Indicator for if the resume listed an email address for the applicant.",
+  `race`,             "Race of the applicant, implied by their first name listed on the resume.",
+  `sex`,              "Sex of the applicant (limited to only and in this study), implied by the first name listed on the resume."
+)
+kable(resume_variables,
+      caption = "Descriptions for the `callback` variable along with 8 other variables in the `resume` data set. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.")
+```
+
+All of the attributes listed on each resume were randomly assigned.
+This means that no attributes that might be favourable or detrimental to employment would favour one demographic over another on these resumes.
+Importantly, due to the experimental nature of this study, we can infer causation between these variables and the callback rate, if the variable is statistically significant.
+Our analysis will allow us to compare the practical importance of each of the variables relative to each other.
+
+### Modelling the probability of an event {#modelingTheProbabilityOfAnEvent}
+
+Logistic regression is a generalized linear model where the outcome is a two-level categorical variable.
+The outcome, $Y_i$, takes the value 1 (in our application, this represents a callback for the resume) with probability \$p_i\$ and the value 0 with probability $1 - p_i$.
+Because each observation has a slightly different context, e.g. different education level or a different number of years of experience, the probability $p_i$ will differ for each observation.
+Ultimately, it is this probability that we model in relation to the predictor variables: we will examine which resume characteristics correspond to higher or lower callback rates.
+
+::: {.important}
+**Notation for a logistic regression model.** The outcome variable for a GLM is denoted by $Y_i$, where the index $i$ is used to represent observation $i$.
+In the resume application, $Y_i$ will be used to represent whether resume $i$ received a callback ($Y_i=1$) or not ($Y_i=0$).
+:::
+
+The predictor variables are represented as follows: $x_{1,i}$ is the value of variable 1 for observation $i$, $x_{2,i}$ is the value of variable 2 for observation $i$, and so on.
+
+$$
+transformation(p_i) = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \cdots + \beta_k x_{k,i}
+$$
+
+We want to choose a transformation in the equation that makes practical and mathematical sense.
+For example, we want a transformation that makes the range of possibilities on the left hand side of the equation equal to the range of possibilities for the right hand side; if there was no transformation for this equation, the left hand side could only take values between 0 and 1, but the right hand side could take values outside of this range.
+
+A common transformation for \$p_i\$ is the logit transformation, which may be written as
+
+$$
+logit(p_i) = \log_{e}\left( \frac{p_i}{1-p_i} \right)
+$$
+
+The logit transformation is shown in Figure \@ref(fig:logit-transformation).
+Below, we rewrite the equation relating $Y_i$ to its predictors using the logit transformation of $p_i$:
+
+$$
+\log_{e}\left( \frac{p_i}{1-p_i} \right) = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \cdots + \beta_k x_{k,i}
+$$
+
+```{r logit-transformation, fig.cap = "Values of $p_i$ against values of $logit(p_i)$."}
+p <- seq(0.0001, 0.9999, 0.0002)
+lp <- log(p / (1 - p))
+
+pts <- seq(0.01, 0.99, length.out = 25)
+R <- c(-6, 6)
+adj <- 0.07
+adj1 <- 0.02
+
+plot(lp, p,
+  xlab = expression(logit(p[i])),
+  ylab = "",
+  xlim = c(-5.8, 6.5),
+  ylim = c(-0.05, 1.1),
+  type = "n"
+)
+lines(lp, p,
+  type = "l",
+  col = COL[5],
+  lwd = 1.5
+)
+mtext(expression(p[i]), 2, 2.4)
+abline(
+  h = 0:1,
+  lty = 2,
+  col = COL[1],
+  lwd = 1.5
+)
+this <- which.min(abs(p - 0.2))
+LP <- c(seq(6, -5, -1))
+P <- exp(LP) / (1 + exp(LP))
+POS <- c(3, 1, 3, 1, 2, 2, 2, 2, 4, 3, 1, 3)
+xOFF <- c()
+Round <- c(3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 3, 3)
+for (i in 1:length(LP)) {
+  points(LP[i], P[i], col = COL[4], lwd = 2)
+  t1 <- format(round(c(LP, 0.9), Round[i]))[i]
+  t2 <- format(round(P, Round[i]))[i]
+  text(LP[i], P[i],
+    paste0("(", t1, ", ", t2, ")"),
+    cex = 0.6,
+    pos = POS[i],
+    col = COL[5]
+  )
+}
+```
+
+In our resume example, there are 8 predictor variables, so $k = 8$.
+While the precise choice of a logit function isn't intuitive, it is based on theory that underpins generalized linear models, which is beyond the scope of this book.
+Fortunately, once we fit a model using software, it will start to feel like we're back in the multiple regression context, even if the interpretation of the coefficients is more complex.
+
+::: {.workedexample}
+We start by fitting a model with a single predictor: .
+This variable indicates whether the applicant had any type of honors listed on their resume, such as employee of the month.
+The following logistic regression model was fit using statistical software:
+
+$$\log_e \left( \frac{p_i}{1-p_i} \right) = -2.4998 + 0.8668 \times\text{\var{honors}}$$(a) If a resume is randomly selected from the study and it does not have any honors listed, what is the probability resulted in a callback?
+
+(b) What would the probability be if the resume did list some honors?
+
+------------------------------------------------------------------------
+
+(a) If a randomly chosen resume from those sent out is considered, and it does not list honors, then takes value 0 and the right side of the model equation equals -2.4998.
+Solving for $p_i$: $\frac{e^{-2.4998}}{1 + e^{-2.4998}} = 0.076$.
+Just as we labelled a fitted value of $y_i$ with a "hat" in single-variable and multiple regression, we do the same for this probability: $\hat{p}_i = 0.076{}$.
+
+(b) If the resume had listed some honors, then the right side of the model equation is $-2.4998{} + 0.8668 \times 1 = -1.6330$, which corresponds to a probability $\hat{p}_i = 0.163$.
+
+Notice that we could examine -2.4998 and -1.6330 in Figure \@ref(fig:logit-transformation) to estimate the probability before formally calculating the value.
+:::
+
+To convert from values on the logistic regression scale (e.g. -2.4998 and -1.6330), use the following formula,
+
+which is the result of solving for \$p_i\$ in the regression model:
+
+$$
+p_i = \frac{e^{\beta_0 + \beta_1 x_{1,i}+\cdots+\beta_k x_{k,i}}}{1 + e^{\beta_0 + \beta_1 x_{1,i}+\cdots+\beta_k x_{k,i}}}
+$$
+
+As with most applied data problems, we substitute the point estimates for the parameters (the $\beta_i$) so that we can make use of this formula.
+The probabilities can be calculated as follows.
+
+$$
+\frac{e^{-2.4998}}{1 + e^{-2.4998}}= 0.076
+$$
+
+$$
+\frac{e^{-2.4998 + 0.8668}}{1 + e^{-2.4998 + 0.8668}} = 0.163
+$$
+
+While knowing whether a resume listed honors provides some signal when predicting whether or not the employer would call, we would like to account for many different variables at once to understand how each of the different resume characteristics affected the chance of a callback.
 
 ### Logistic model with many variables
 
