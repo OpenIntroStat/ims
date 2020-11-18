@@ -22,7 +22,7 @@ Does it matter if their income has been verified?
 Multiple regression will help us answer these and other questions.
 
 The data set includes results from 10,000 loans, and we'll be looking at a subset of the available variables, some of which will be new from those we saw in earlier chapters.
-The first six observations in the data set are shown in Table \@ref(tab:loansDataMatrix), and descriptions for each variable are shown in Table \@ref(tab:loansVariables).
+The first six observations in the data set are shown in Table \@ref(tab:loans-data-matrix), and descriptions for each variable are shown in Table \@ref(tab:loans-variables).
 Notice that the past bankruptcy variable (`bankruptcy`) is an indicator variable, where it takes the value 1 if the borrower had a past bankruptcy in their record and 0 if not.
 Using an indicator variable in place of a category name allows for these variables to be directly used in regression.
 Two of the other variables are categorical (`verified_income` and `issue_month`), each of which can take one of a few different non-numerical values; we'll discuss how these are handled in the model in Section \@ref(ind-and-cat-predictors).
@@ -33,7 +33,7 @@ Based on the data in this dataset we have created to new variables: `credit_util
 We will refer to this modified dataset as `loans`.
 :::
 
-```{r loansDataMatrix}
+```{r loans-data-matrix}
 loans <- loans_full_schema %>%
   mutate(
     credit_util = total_credit_utilized / total_credit_limit,
@@ -49,7 +49,7 @@ loans %>%
   kable_styling(full_width = FALSE, bootstrap_options = "striped", latex_options = "striped")
 ```
 
-```{r loansVariables}
+```{r loans-variables}
 loans_var_def <- tribble(
   ~variable,         ~description,
   "interest_rate",   "Interest rate on the loan, in an annual percentage.",
@@ -75,13 +75,13 @@ Let's start by fitting a linear regression model for interest rate with a single
 
 $$\widehat{\texttt{interest_rate}} = 12.33 + 0.74 \times bankruptcy$$
 
-Results of this model are shown in Table \@ref(tab:intRateVsPastBankrModel).
+Results of this model are shown in Table \@ref(tab:int-rate-bankruptcy).
 
-```{r intRateVsPastBankrModel}
+```{r int-rate-bankruptcy}
 m_bankruptcy <- lm(interest_rate ~ bankruptcy, data = loans)
 tidy(m_bankruptcy) %>%
   mutate(p.value = "<0.0001") %>%
-  kable(caption = "Summary of a linear model for predicting interest rate based on whether the borrower has a bankruptcy in their record. Degrees of freedom for this model is 9998.") %>%
+  kable(caption = "Summary of a linear model for predicting interest rate based on whether the borrower has a bankruptcy in their record. Degrees of freedom for this model is 9998.", digits = 4) %>%
   kable_styling(full_width = FALSE)
 ```
 
@@ -93,11 +93,11 @@ Is this coefficient significantly different from 0?
 
 The variable takes one of two values: 1 when the borrower has a bankruptcy in their history and 0 otherwise.
 A slope of 0.74 means that the model predicts a 0.74% higher interest rate for those borrowers with a bankruptcy in their record.
-(See Section \@ref(categorical-predictor-two-levels) for a review of the interpretation for two-level categorical predictor variables.) Examining the regression output in Table \@ref(tab:intRateVsPastBankrModel), we can see that the p-value for is very close to zero, indicating there is strong evidence the coefficient is different from zero when using this simple one-predictor model.
+(See Section \@ref(categorical-predictor-two-levels) for a review of the interpretation for two-level categorical predictor variables.) Examining the regression output in Table \@ref(tab:int-rate-bankruptcy), we can see that the p-value for is very close to zero, indicating there is strong evidence the coefficient is different from zero when using this simple one-predictor model.
 :::
 
 Suppose we had fit a model using a 3-level categorical variable, such as `verified_income`.
-The output from software is shown in Table \@ref(tab:intRateVsVerIncomeModel).
+The output from software is shown in Table \@ref(tab:int-rate-ver-income).
 This regression output provides multiple rows for the variable.
 Each row represents the relative difference for each level of `verified_income`.
 However, we are missing one of the levels: `Not Verified`.
@@ -107,7 +107,7 @@ The missing level is called the **reference level** and it represents the defaul
 terms_chp_4 <- c("reference level")
 ```
 
-```{r intRateVsVerIncomeModel}
+```{r int-rate-ver-income}
 m_verified_income <- lm(interest_rate ~ verified_income, data = loans)
 tidy(m_verified_income) %>%
   mutate(p.value = "<0.0001") %>%
@@ -235,10 +235,10 @@ $$SSE = e_1^2 + e_2^2 + \dots + e_{10000}^2 = \sum_{i=1}^{10000} e_i^2 = \sum_{i
 
 where $y_i$ and $\hat{y}_i$ represent the observed interest rates and their estimated values according to the model, respectively.
 10,000 residuals are calculated, one for each observation.
-We typically use a computer to minimize the sum of squares and compute point estimates, as shown in the sample output in Table \@ref(tab:loansFullModelOutput).
+We typically use a computer to minimize the sum of squares and compute point estimates, as shown in the sample output in Table \@ref(tab:loans-full).
 Using this output, we identify the point estimates $b_i$ of each $\beta_i$, just as we did in the one-predictor case.
 
-```{r loansFullModelOutput}
+```{r loans-full}
 m_full <- lm(interest_rate ~ ., data = loans)
 tidy(m_full) %>%
   mutate(
@@ -262,7 +262,7 @@ We always estimate the $\beta_i$ parameters using statistical software.
 :::
 
 ::: {.workedexample}
-Write out the regression model using the point estimates from Table \@ref(tab:loansFullModelOutput).
+Write out the regression model using the point estimates from Table \@ref(tab:loans-full).
 How many predictors are there in this model?
 
 ------------------------------------------------------------------------
@@ -305,7 +305,7 @@ What is the point estimate of $\beta_4$?[^multi-logistic-models-4]
     The point estimate is $b_4 = 4.90%$.
 
 ::: {.guidedpractice}
-Compute the residual of the first observation in Table \@ref(tab:loansDataMatrix) on page using the full model.[^multi-logistic-models-5]
+Compute the residual of the first observation in Table \@ref(tab:loans-data-matrix) on page using the full model.[^multi-logistic-models-5]
 :::
 
 [^multi-logistic-models-5]: To compute the residual, we first need the predicted value, which we compute by plugging values into the equation from earlier.
@@ -432,10 +432,10 @@ terms_chp_4 <- c(terms_chp_4, "full model")
 
 Adjusted $R^2$ describes the strength of a model fit, and it is a useful tool for evaluating which predictors are adding value to the model, where *adding value* means they are (likely) improving the accuracy in predicting future outcomes.
 
-Let's consider two models, which are shown in Table \@ref(tab:loansFullModelModelSelectionSection) and Table \@ref(tab:loansModelAllButIssueMonth).
+Let's consider two models, which are shown in Table \@ref(tab:loans-full-for-model-selection) and Table \@ref(tab:loans-full-except-issue-month).
 The first table summarizes the full model since it includes all predictors, while the second does not include the `issue_month` variable.
 
-```{r loansFullModelModelSelectionSection}
+```{r loans-full-for-model-selection}
 
 options(digits = 6) # to get more digits
 m_full_r_sq_adj <- glance(m_full)$adj.r.squared %>% round(4)
@@ -457,7 +457,7 @@ tidy(m_full) %>%
   row_spec(11:12, italic = TRUE)
 ```
 
-```{r loansModelAllButIssueMonth}
+```{r loans-full-except-issue-month}
 m_full_minus_issue_month <- lm(interest_rate ~ . - issue_month, data = loans)
 
 options(digits = 6) # to get more digits
@@ -505,7 +505,7 @@ terms_chp_4 <- c(terms_chp_4, "backward elimination")
 ```
 
 ::: {.workedexample}
-Results corresponding to the *full model* for the `loans` data are shown in Table \@ref(tab:loansFullModelModelSelectionSection).
+Results corresponding to the *full model* for the `loans` data are shown in Table \@ref(tab:loans-full-for-model-selection).
 How should we proceed under the backward elimination strategy?
 
 ------------------------------------------------------------------------
@@ -550,14 +550,14 @@ In this section we introduce **logistic regression** as a tool for building mode
 Logistic regression is a type of **generalized linear model (GLM)** for response variables where regular multiple regression does not work very well.
 In particular, the response variable in these settings often takes a form where residuals look completely different from the normal distribution.
 
+```{r include=FALSE}
+terms_chp_4 <- c(terms_chp_4, "logistic regression", "generalized linear model")
+```
+
 GLMs can be thought of as a two-stage modeling approach.
 We first model the response variable using a probability distribution, such as the binomial or Poisson distribution.
 Second, we model the parameter of the distribution using a collection of predictors and a special form of multiple regression.
 Ultimately, the application of a GLM will feel very similar to multiple regression, even if some of the details are different.
-
-```{r include=FALSE}
-terms_chp_4 <- c(terms_chp_4, "logistic regression", "generalized linear model")
-```
 
 ### Resume data
 
@@ -644,19 +644,23 @@ The full set of attributes considered is provided in Table \@ref(tab:resume-vari
 
 ```{r resume-variables}
 resume_variables <- tribble(
-  ~variable,             ~description,
-  "`received_callback`", "Specifies whether the employer called the applicant following submission of the application for the job.",
-  "`job_city`",          "City where the job was located: Boston or Chicago.",
-  "`college_degree`",    "An indicator for whether the resume listed a college degree.",
-  "`years_experience`",  "Number of years of experience listed on the resume.",
-  "`honors`",            "Indicator for the resume listing some sort of honors, e.g. employee of the month.",
-  "`military`",          "Indicator for if the resume listed any military experience.",
-  "`has_email_address`", "Indicator for if the resume listed an email address for the applicant.",
-  "`race`",              "Race of the applicant, implied by their first name listed on the resume.",
-  "`sex`",               "Sex of the applicant (limited to only and in this study), implied by the first name listed on the resume."
+  ~variable,           ~description,
+  "received_callback", "Specifies whether the employer called the applicant following submission of the application for the job.",
+  "job_city",          "City where the job was located: Boston or Chicago.",
+  "college_degree",    "An indicator for whether the resume listed a college degree.",
+  "years_experience",  "Number of years of experience listed on the resume.",
+  "honors",            "Indicator for the resume listing some sort of honors, e.g. employee of the month.",
+  "military",          "Indicator for if the resume listed any military experience.",
+  "has_email_address", "Indicator for if the resume listed an email address for the applicant.",
+  "race",              "Race of the applicant, implied by their first name listed on the resume.",
+  "sex",               "Sex of the applicant (limited to only and in this study), implied by the first name listed on the resume."
 )
-kable(resume_variables,
-      caption = "Descriptions for the `received_callback` variable along with 8 other variables in the `resume` data set. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.")
+
+resume_variables %>%
+  mutate(variable = cell_spec(variable, monospace = TRUE)) %>%
+  kable(escape = FALSE, caption = "Descriptions for the `received_callback` variable along with 8 other variables in the `resume` data set. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.") %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = "striped")
 ```
 
 All of the attributes listed on each resume were randomly assigned.
@@ -672,7 +676,9 @@ Because each observation has a slightly different context, e.g. different educat
 Ultimately, it is this probability that we model in relation to the predictor variables: we will examine which resume characteristics correspond to higher or lower callback rates.
 
 ::: {.important}
-**Notation for a logistic regression model.** The outcome variable for a GLM is denoted by $Y_i$, where the index $i$ is used to represent observation $i$.
+**Notation for a logistic regression model.**
+
+The outcome variable for a GLM is denoted by $Y_i$, where the index $i$ is used to represent observation $i$.
 In the resume application, $Y_i$ will be used to represent whether resume $i$ received a callback ($Y_i=1$) or not ($Y_i=0$).
 :::
 
@@ -805,12 +811,18 @@ resume_full_fit <- logistic_reg() %>%
 
 resume_full_fit %>%
   tidy() %>%
-  kable(caption = "Summary table for the full logistic regression model for the resume callback example.")
+  mutate(p.value = "<0.0001") %>%
+  kable(caption = "Summary table for the full logistic regression model for the resume callback example.") %>%
+  kable_styling(full_width = FALSE)
 ```
 
 Just like multiple regression, we could trim some variables from the model.
 Here we'll use a statistic called **Akaike information criterion (AIC)**, which is an analogue to how we used adjusted R-squared in multiple regression, and we look for models with a lower AIC through a backward elimination strategy.
 After using this criteria, the variable `college_degree` is eliminated, giving the smaller model summarized in Table \@ref(tab:resume-fit), which is what we'll rely on for the remainder of this section.
+
+```{r include=FALSE}
+terms_chp_4 <- c(terms_chp_4, "Akaike information criterion")
+```
 
 ```{r resume-fit}
 resume_fit <- logistic_reg() %>%
@@ -819,7 +831,9 @@ resume_fit <- logistic_reg() %>%
 
 resume_fit %>%
   tidy() %>%
-  kable(caption = "Summary table for the logistic regression model for the resume callback example, where variable selection has been performed using AIC.", digits = 4)
+  mutate(p.value = "<0.0001") %>%
+  kable(caption = "Summary table for the logistic regression model for the resume callback example, where variable selection has been performed using AIC.", digits = 4) %>%
+  kable_styling(full_width = FALSE)
 ```
 
 ::: {.workedexample}
@@ -873,7 +887,9 @@ Finding strong evidence of racism for individual cases is a persistent challenge
 ### Model diagnostics
 
 ::: {.important}
-**Logistic regression conditions.** There are two key conditions for fitting a logistic regression model:
+**Logistic regression conditions.**
+
+There are two key conditions for fitting a logistic regression model:
 
 1.  Each outcome $Y_i$ is independent of the other outcomes.
 2.  Each predictor $x_i$ is linearly related to logit$(p_i)$ if all other predictors are held constant.
