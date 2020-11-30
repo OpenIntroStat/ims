@@ -1069,13 +1069,13 @@ H_0: \beta_3 = 0 &&\mbox{ given \mbox{debt_to_income} and \mbox{term} and are in
 
 The very low p-values from the software output tell us that each of the variables acts as an important predictor in the model, despite the inclusion of the other two.
 Consider the p-value on $H_0: \beta_1$.
-The low p-value says that it would be extremely unlikely to see data that produce a coefficient on `debt_to_income` as large as 0.041 if the true relationship between `debt_to_income` was non-existent (i.e., if $\beta_1 = 0$) and the model also included `term` and `credit_checks`.
+The low p-value says that it would be extremely unlikely to see data that produce a coefficient on `debt_to_income` as large as 0.041 if the true relationship between `debt_to_income`and `interest_rate` was non-existent (i.e., if $\beta_1 = 0$) and the model also included `term` and `credit_checks`.
 You might have thought that the value 0.041 is a small number (i.e., close to zero), but in the units of the problem, 0.041 turns out to be far away from zero, it's all about context!
-The p-values on `term` and on `credit_checks` can be interpreted similarly.
+The p-values on `term` and on `credit_checks` are interpreted similarly.
 
 Sometimes a set of predictor variables can impact the model in unusual ways, often due to the predictor variables themselves being correlated.
 
-### Multicollinearity 
+### Multicollinearity {#inf-mult-reg-collin}
 
 In practice, there will almost always be some degree of correlation between the explanatory variables in a multiple regression model.
 For regression models, it is important to understand the entire context of the model, particularly for correlated variables.
@@ -1083,7 +1083,7 @@ Our discussion will focus on interpreting coefficients (and their signs) in rela
 
 Consider an example where we'd like to predict how much money is in a coin dish based only on the number of coins in the dish.
 We ask 26 students to tell us about their individual coin dishes, collecting data on the total dollar amount, the total number of coins, and the total number of low coins.^[In all honesty, this particular dataset is fabricated, and the original idea for the problem comes from Jeff Witmer at Oberlin College.]
-The number of low coins is the number of coins minus the number of quarters (a quarter is the largest commonly used US coin, at US\$ 0.25).
+The number of low coins is the number of coins minus the number of quarters (a quarter is the largest commonly used US coin, at US\$0.25).
 Figure \@ref(fig:money) illustrates a sample of U.S. coins, their total worth (amount), the number of total coins, and the number of low coins.
 
 ```{r money, fig.cap = "A sample of coins with 16 total coins, 10 low coins, and a net worth of $1.90.", fig.width = 10}
@@ -1153,7 +1153,7 @@ Now, with two variables in the model, the interpretation is more nuanced.
 * The coefficient indicates a change in one variable while keeping the other variable constant.  
 For every additional coin in the dish **while** the number of low coins stays constant, we would predict that the student had US\$0.21 more.
 Re-considering the phrase "every additional coin in the dish **while** the number of low coins stays constant" makes us realize that each increase is a single additional quarter (larger samples sizes would have led to a $b_1$ coefficient closer to 0.25 because of the deterministic relationship described here).   
-* For every additional low coin in the dish **while** the number of total coins stays constant, we would predict that the student had US\$ 0.16 less.
+* For every additional low coin in the dish **while** the number of total coins stays constant, we would predict that the student had US\$0.16 less.
 Re-considering the phrase "every additional low coin in the dish **while** the number of total coins stays constant" makes us realize that a quarter is being swapped out for a penny, nickel, or dime.
 
 Considering the coefficients across Tables \@ref(tab:coinhigh), \@ref(tab:coinlow), and \@ref(tab:coinhighlow) within the context and knowledge we have of US coins allows us to understand the correlation between variables and why the signs of the coefficients would change depending on the model.
@@ -1185,11 +1185,13 @@ Things I didn't talk about but could:
 -->
 
 
-### Cross validation for prediction error
+### Cross validation for prediction error {#inf-mult-reg-cv}
 
 In Section \@ref(inf-mult-reg-soft), p-values were calculated on each of the model coefficients.
 The p-value gives a sense of which variables are important to the model; however, a more extensive treatment of variable selection is warranted in a follow-up course or textbook.
 Here, we use cross validation prediction error to focus on which variable(s) are important for predicting the response variable of interest.
+In general, linear models are also used to make predictions of individual observations.
+In addition to model building, cross validation provides a method for generating predictions that are not overfit to the particular dataset at hand.
 We continue to encourage you to take up further study on the topic of cross validation, as it is among the most important ideas in modern data analysis, and we are only able to scratch the surface here.
 
 Cross validation is a computational technique which removes some observations before a model is run, then assesses the model accuracy on the held-out sample.
@@ -1201,8 +1203,10 @@ See Figure \@ref(fig:cv) for an image describing how cross validation works.
 include_graphics("08/figures/CV.jpg")
 ```
 
-Consider the `penguins` dataset which comes from the palmerpenguins package.  The observations of three different penguin species include measurements on body size and sex.  The data were collected by [Dr. Kristen Gorman](https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php) and the [Palmer Station, Antarctica LTER](https://pal.lternet.edu/) as part of the [Long Term Ecological Research Network](https://lternet.edu/).
-
+::: {.data}
+The data can be found in the [palmerpenguings](https://github.com/allisonhorst/palmerpenguins) package: [`penguins`](https://allisonhorst.github.io/palmerpenguins/articles/intro.html).
+The observations of three different penguin species include measurements on body size and sex.  The data were collected by [Dr. Kristen Gorman](https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php) and the [Palmer Station, Antarctica LTER](https://pal.lternet.edu/) as part of the [Long Term Ecological Research Network](https://lternet.edu/).
+:::
 
 Our goal in this section is to compare two different regression models which both seek to predict the mass of an individual penguin in grams.
 The first model will predict `body_mass_g` by using only the `bill_length_mm`, a variable denoting the length of a penguin's bill, in mm.
@@ -1226,7 +1230,7 @@ Given what we know about high correlations between body measurements, it is some
 \begin{eqnarray*}
 \mbox{Model } A: && E[\mbox{body_mass_g}] = \beta_0 + \beta_1 \times \mbox{bill_length_mm}\\
 \mbox{Model } B: && E[\mbox{body_mass_g}] = \beta_0 + \beta_1 \times \mbox{bill_length_mm} + \beta_2 \times \mbox{bill_depth_mm} + \\
-&& \beta_3 \times \mbox{flipper_length_mm} + \beta_4 \times \mbox{sex} + \\
+&& \beta_3 \times \mbox{flipper_length_mm} + \beta_4 \times \mbox{sex}_{male} + \\
 && \beta_5 \times \mbox{species}\\
 \end{eqnarray*}
 
@@ -1373,6 +1377,142 @@ Exercises for this section are under construction.
 ## Inference for logistic regression {#inf-log-reg}
 
 As with multiple linear regression, the inference aspect for logistic regression will focus on interpretation of coefficients and relationships between explanatory variables.  Both p-values and cross validation will be used for assessing a logistic regression model.
+
+We continue to work with the Palmer Penguins collected by [Dr. Kristen Gorman](https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php) and the [Palmer Station, Antarctica LTER](https://pal.lternet.edu/).
+Now, however, the research goal changes to focus on a model which would predict from which island a particular penguin came.
+The logistic model (see Section \@ref(logistic-regression)) can be used both as a way to understand which variables are most important for modeling island origin (inference on the logistic coefficients) as well as to predict island origin for individual penguins (cross validation).  
+
+### Multiple logistic regression output from software {#inf-log-reg-soft}
+
+Recall the `penguins` data from Chapter \@ref(inf-mult-reg-cv).  
+
+As learned in Chapter \@ref(multi-logistic-models), optimization can be used to find the coefficient estimates for the logistic model.
+The unknown population model can be written as:
+$$\log_e\bigg(\frac{p}{1-p}\bigg) =  \beta_0 + \beta_1\times \mbox{bill_length_mm} + \beta_2 \times \mbox{bill_depth_mm} + \beta_3 \times \mbox{flipper_length_mm} + \beta_4 \times \mbox{sex}_{male}$$
+
+The estimated equation for the regression model may be written as a model with four predictor variables:
+
+
+```{r penglogmodel}
+penguins2 <- penguins %>%
+  filter(island %in% c("Biscoe", "Dream"))
+
+glm(island ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex, data = penguins2, family = "binomial") %>% tidy() %>%
+  mutate(p.value = "<0.0001") %>%
+  kable(caption = "Summary of a logistic model for predicting island of origina based on the variables bill_length_mm, bill_depth_mm, flipper_length_mm, and sex. Each of the variables has its own coefficient estimate as well as p-value significance.", digits = 2) %>%
+  kable_styling(full_width = FALSE)
+```
+
+$$\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -0.75 + 0.22\times \mbox{bill_length_mm} + 0.76 \times \mbox{bill_depth_mm} - 0.11 \times \mbox{flipper_length_mm} - 1.29 \times \mbox{sex}_{male}$$
+
+
+
+Not only does Table \@ref(tab:penglogmodel) provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
+
+
+As in Section \@ref(inf-mult-reg), with **multiple predictors**, each hypothesis test (for each of the explanatory variables) is conditioned on each of the other variables remaining in the model.
+
+$$\mbox{if multiple predictors } H_0: \beta_i = 0 \mbox{ given other variables in the model}$$
+
+Using the example above and focusing on each of the variable p-values (here we won't discuss the p-value associated with the intercept), we can write out the three different hypotheses:
+
+\begin{eqnarray*}
+H_0: \beta_1 = 0 && \mbox{ given \mbox{bill_depth_mm} and \mbox{flipper_length_mm} and \mbox{sex} are included in the model}\\
+H_0: \beta_2 = 0 &&\mbox{ given \mbox{bill_length_mm} and \mbox{flipper_length_mm}  and \mbox{sex} are included in the model}\\
+H_0: \beta_3 = 0 &&\mbox{ given \mbox{bill_length_mm} and \mbox{bill_depth_mm} and \mbox{sex} and are included in the model}
+H_0: \beta_4 = 0 &&\mbox{ given \mbox{bill_length_mm} and \mbox{bill_depth_mm} and \mbox{flipper_length_mm} are included in the model}
+\end{eqnarray*}
+
+The very low p-values from the software output tell us that each of the variables acts as an important predictor in the model, despite the inclusion of any of the other three.
+Consider the p-value on $H_0: \beta_1$.
+The low p-value says that it would be extremely unlikely to see data that produce a coefficient on `bill_length_mm` as large as 0.22 if the true relationship between `bill_length_mm` and `island` was non-existent (i.e., if $\beta_1 = 0$) and the model also included ` `bill_depth_mm` and `flipper_length_mm` and `sex`.
+You might have thought that the value 0.22 is a small number (i.e., close to zero), but in the units of the problem, 0.22 turns out to be far away from zero, it's all about context!
+The p-values on the remaining variables are be interpreted similarly.
+
+As with linear regression (see Section \@ref(inf-mult-reg-collin)), correlated explanatory variables can impact both the coefficient estimates and the associated p-values.
+Investigating multicollinearity in a logistic regression model is saved for a text which provides more detail about logistic regression.
+Here, we revisit cross validation within the context of predicting island of origin for each of the individual penguins.  
+
+
+### Cross validation for prediction error {#inf-log-reg-cv}
+
+
+Not totally sure how this is being presented.  But, as expected, when using one variable the accuracy rates are much lower (~50%) than the prediction accuracy rates from a model that uses 4 variables (~80%).
+
+
+```{r peng-island, fig.cap = "One quarter at a time, the data were removed from the model building, and the location (island) of the removed penguins was predicted.  The logistic regression model was fit independently of the removed penguins.  Only bill_length_mm is used to predict the island of origin.", warning=FALSE, fig.width=20}
+
+penguins2 <- penguins %>%
+  filter(island %in% c("Biscoe", "Dream"))
+
+penguinfolds2 <- caret::createFolds(penguins2$island, k = 4)
+
+logCV <- data.frame(predicted = glm(island ~ bill_length_mm, data = penguins2[-penguinfolds2$Fold1,], family = "binomial") %>% 
+             predict(newdata = penguins2[penguinfolds2$Fold1,c("bill_length_mm")], type="response") ,
+           obs = penguins2[penguinfolds2$Fold1,]$island,
+           fold = rep("1st quarter", length(penguinfolds2$Fold1))) %>%
+  rbind(data.frame(predicted = glm(island ~ bill_length_mm , data = penguins2[-penguinfolds2$Fold2,], family = "binomial") %>% 
+             predict(newdata = penguins2[penguinfolds2$Fold2,c("bill_length_mm")], type="response") ,
+           obs = penguins2[penguinfolds2$Fold2,]$island,
+           fold = rep("2nd quarter", length(penguinfolds2$Fold2))) ) %>%
+  rbind(data.frame(predicted = glm(island ~ bill_length_mm , data = penguins2[-penguinfolds2$Fold3,], family = "binomial") %>% 
+             predict(newdata = penguins2[penguinfolds2$Fold3,c("bill_length_mm")], type="response") ,
+           obs = penguins2[penguinfolds2$Fold3,]$island,
+           fold = rep("3rd quarter", length(penguinfolds2$Fold3))) ) %>%
+  rbind(data.frame(predicted = glm(island ~ bill_length_mm , data = penguins2[-penguinfolds2$Fold4,], family = "binomial") %>% 
+             predict(newdata = penguins2[penguinfolds2$Fold4,c("bill_length_mm")], type="response") ,
+           obs = penguins2[penguinfolds2$Fold4,]$island,
+           fold = rep("4th quarter", length(penguinfolds2$Fold4))) ) %>%
+  mutate(predIsland = ifelse(predicted <= 0.5, "Biscoe", "Dream")) 
+
+logCV %>%
+  select(obs, predIsland, fold) %>%
+  table()
+
+logCV %>%
+  filter(!is.na(predIsland)) %>%
+  group_by(fold) %>%
+  summarize(count = n(), accuracy = sum(obs==predIsland) / n())
+
+```
+
+
+```{r peng-island2, fig.cap = "One quarter at a time, the data were removed from the model building, and the location (island) of the removed penguins was predicted.  The logistic regression model was fit independently of the removed penguins.", warning=FALSE, fig.width=20}
+
+penguins2 <- penguins %>%
+  filter(island %in% c("Biscoe", "Dream"))
+
+penguinfolds2 <- caret::createFolds(penguins2$island, k = 4)
+
+logCV <- data.frame(predicted = glm(island ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex, data = penguins2[-penguinfolds2$Fold1,], family = "binomial") %>% 
+             predict(newdata = penguins2[penguinfolds2$Fold1,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex")], type="response") ,
+           obs = penguins2[penguinfolds2$Fold1,]$island,
+           fold = rep("1st quarter", length(penguinfolds2$Fold1))) %>%
+  rbind(data.frame(predicted = glm(island ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex, data = penguins2[-penguinfolds2$Fold2,], family = "binomial") %>% 
+             predict(newdata = penguins2[penguinfolds2$Fold2,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex")], type="response") ,
+           obs = penguins2[penguinfolds2$Fold2,]$island,
+           fold = rep("2nd quarter", length(penguinfolds2$Fold2))) ) %>%
+  rbind(data.frame(predicted = glm(island ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex, data = penguins2[-penguinfolds2$Fold3,], family = "binomial") %>% 
+             predict(newdata = penguins2[penguinfolds2$Fold3,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex")], type="response") ,
+           obs = penguins2[penguinfolds2$Fold3,]$island,
+           fold = rep("3rd quarter", length(penguinfolds2$Fold3))) ) %>%
+  rbind(data.frame(predicted = glm(island ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex, data = penguins2[-penguinfolds2$Fold4,], family = "binomial") %>% 
+             predict(newdata = penguins2[penguinfolds2$Fold4,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex")], type="response") ,
+           obs = penguins2[penguinfolds2$Fold4,]$island,
+           fold = rep("4th quarter", length(penguinfolds2$Fold4))) ) %>%
+  mutate(predIsland = ifelse(predicted <= 0.5, "Biscoe", "Dream")) 
+
+logCV %>%
+  select(obs, predIsland, fold) %>%
+  table()
+
+logCV %>%
+  filter(!is.na(predIsland)) %>%
+  group_by(fold) %>%
+  summarize(count = n(), accuracy = sum(obs==predIsland) / n())
+
+```
+
 
 ### Exercises {#inference-logistic-regression-exercises}
 
