@@ -1376,142 +1376,193 @@ Exercises for this section are under construction.
 
 ## Inference for logistic regression {#inf-log-reg}
 
-As with multiple linear regression, the inference aspect for logistic regression will focus on interpretation of coefficients and relationships between explanatory variables.  Both p-values and cross validation will be used for assessing a logistic regression model.
+As with multiple linear regression, the inference aspect for logistic regression will focus on interpretation of coefficients and relationships between explanatory variables.
+Both p-values and cross validation will be used for assessing a logistic regression model.
 
-We continue to work with the Palmer Penguins collected by [Dr. Kristen Gorman](https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php) and the [Palmer Station, Antarctica LTER](https://pal.lternet.edu/).
-Now, however, the research goal changes to focus on a model which would predict from which island a particular penguin came.
-The logistic model (see Section \@ref(logistic-regression)) can be used both as a way to understand which variables are most important for modeling island origin (inference on the logistic coefficients) as well as to predict island origin for individual penguins (cross validation).  
+Consider the `email` data which describes email characteristics which can be used to predict whether a particular incoming email is SPAM (unsolicited bulk email).
+Without reading every incoming message, it might be nice to have an automated way to identify SPAM emails.
+Which of the variables describing each email are important for predicting the status of the email?
+
+
+::: {.data}
+The data from this study can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`email`](http://openintrostat.github.io/openintro/reference/email.html).
+:::
+
+
+```{r resume-variables}
+resume_variables <- tribble(
+  ~variable,           ~description,
+  "spam", "Indicator for whether the email was spam.",
+  "to_multiple",          "Indicator for whether the email was addressed to more than one recipient.",
+  "from",    "Whether the message was listed as from anyone (this is usually set by default for regular outgoing email).",
+  "cc",  "Number of people cc'ed.",
+  "sent_email",            "Indicator for whether the sender had been sent an email in the last 30 days.",
+  "attach",          "The number of attached files.",
+  "dollar", "The number of times a dollar sign or the word “dollar” appeared in the email.",
+  "winner",              "Indicates whether “winner” appeared in the email.",
+  "format",               "Indicates whether the email was written using HTML (e.g. may have included bolding or active links).",
+    "re_subj",               "Whether the subject started with “Re:”, “RE:”, “re:”, or “rE:”",
+    "exclaim_subj",               "Whether there was an exclamation point in the subject.",
+    "urgent_subj",               "Whether the word “urgent” was in the email subject.",
+    "exclaim_mess",               "The number of exclamation points in the email message.",
+    "number",               "Factor variable saying whether there was no number, a small number (under 1 million), or a big number."
+)
+
+resume_variables %>%
+  mutate(variable = cell_spec(variable, monospace = TRUE)) %>%
+  kable(escape = FALSE, caption = "Descriptions for the `spam` variable along with 13 other variables in the `email` data set. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.") %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = "striped")
+```
+
 
 ### Multiple logistic regression output from software {#inf-log-reg-soft}
 
-Recall the `penguins` data from Chapter \@ref(inf-mult-reg-cv).  
 
 As learned in Chapter \@ref(multi-logistic-models), optimization can be used to find the coefficient estimates for the logistic model.
 The unknown population model can be written as:
-$$\log_e\bigg(\frac{p}{1-p}\bigg) =  \beta_0 + \beta_1\times \mbox{bill_length_mm} + \beta_2 \times \mbox{bill_depth_mm} + \beta_3 \times \mbox{flipper_length_mm} + \beta_4 \times \mbox{sex}_{male}$$
+\begin{align}
+\log_e\bigg(\frac{p}{1-p}\bigg) =  \beta_0 + \beta_1\times \mbox{to_multiple} + \beta_2 \times \mbox{cc} + \beta_3 \times \mbox{dollar} + \beta_4 \times \mbox{urgent_subj}
+\end{align}
 
 The estimated equation for the regression model may be written as a model with four predictor variables:
 
 
-```{r penglogmodel}
-penguins2 <- penguins %>%
-  filter(island %in% c("Biscoe", "Dream"))
-
-glm(island ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex, data = penguins2, family = "binomial") %>% tidy() %>%
-  mutate(p.value = "<0.0001") %>%
-  kable(caption = "Summary of a logistic model for predicting island of origina based on the variables bill_length_mm, bill_depth_mm, flipper_length_mm, and sex. Each of the variables has its own coefficient estimate as well as p-value significance.", digits = 2) %>%
+```{r emaillogmodel}
+glm(spam ~ to_multiple + cc + dollar + urgent_subj, data = email, family = "binomial") %>% tidy() %>%
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 5))) %>%
+  kable(caption = "Summary of a logistic model for predicting whether an email is SPAM based on the variables to_multiple, cc, dollar, and urgent_subj. Each of the variables has its own coefficient estimate as well as p-value significance.", digits = 2) %>%
   kable_styling(full_width = FALSE)
 ```
 
-$$\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -0.75 + 0.22\times \mbox{bill_length_mm} + 0.76 \times \mbox{bill_depth_mm} - 0.11 \times \mbox{flipper_length_mm} - 1.29 \times \mbox{sex}_{male}$$
+\begin{align}
+\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -2.05 + -1.91\times \mbox{to_multiple} + 0.02 \times \mbox{cc} - 0.07 \times \mbox{dollar} + 2.66\times \mbox{urgent_subj}
+\end{align}
 
 
 
-Not only does Table \@ref(tab:penglogmodel) provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
+Not only does Table \@ref(tab:emaillogmodel) provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
 
 
 As in Section \@ref(inf-mult-reg), with **multiple predictors**, each hypothesis test (for each of the explanatory variables) is conditioned on each of the other variables remaining in the model.
 
 $$\mbox{if multiple predictors } H_0: \beta_i = 0 \mbox{ given other variables in the model}$$
 
-Using the example above and focusing on each of the variable p-values (here we won't discuss the p-value associated with the intercept), we can write out the three different hypotheses:
+Using the example above and focusing on each of the variable p-values (here we won't discuss the p-value associated with the intercept), we can write out the four different hypotheses (associated the p-value corresponding to each of the coefficients / row in Table \@ref(tab:emaillogmodel)):
 
 \begin{eqnarray*}
-H_0: \beta_1 = 0 && \mbox{ given \mbox{bill_depth_mm} and \mbox{flipper_length_mm} and \mbox{sex} are included in the model}\\
-H_0: \beta_2 = 0 &&\mbox{ given \mbox{bill_length_mm} and \mbox{flipper_length_mm}  and \mbox{sex} are included in the model}\\
-H_0: \beta_3 = 0 &&\mbox{ given \mbox{bill_length_mm} and \mbox{bill_depth_mm} and \mbox{sex} and are included in the model}
-H_0: \beta_4 = 0 &&\mbox{ given \mbox{bill_length_mm} and \mbox{bill_depth_mm} and \mbox{flipper_length_mm} are included in the model}
+H_0: \beta_1 = 0 && \mbox{ given \mbox{cc} and \mbox{dollar} and \mbox{urgent_subj} are included in the model}\\
+H_0: \beta_2 = 0 &&\mbox{ given \mbox{to_multiple} and \mbox{dollar}  and \mbox{urgent_subj} are included in the model}\\
+H_0: \beta_3 = 0 &&\mbox{ given \mbox{to_multiple} and \mbox{cc} and \mbox{urgent_subj} and are included in the model}
+H_0: \beta_4 = 0 &&\mbox{ given \mbox{to_multiple} and \mbox{cc} and \mbox{dollar} are included in the model}
 \end{eqnarray*}
 
-The very low p-values from the software output tell us that each of the variables acts as an important predictor in the model, despite the inclusion of any of the other three.
+The very low p-values from the software output tell us that three of the variables (that is, not `cc`) act as important predictors in the model, despite the inclusion of any of the other variables.
 Consider the p-value on $H_0: \beta_1$.
-The low p-value says that it would be extremely unlikely to see data that produce a coefficient on `bill_length_mm` as large as 0.22 if the true relationship between `bill_length_mm` and `island` was non-existent (i.e., if $\beta_1 = 0$) and the model also included ` `bill_depth_mm` and `flipper_length_mm` and `sex`.
-You might have thought that the value 0.22 is a small number (i.e., close to zero), but in the units of the problem, 0.22 turns out to be far away from zero, it's all about context!
+The low p-value says that it would be extremely unlikely to see data that produce a coefficient on `to_multiple` as large as -1.91 if the true relationship between `to_multiple` and `spam` was non-existent (i.e., if $\beta_1 = 0$) **and** the model also included ` `cc` and `dollar` and `urgent_subj`.
+Note also that the coefficient on `dollar` is quite significant, but the magnitude of the coefficient is small (0.07).
+It turns out that in units of standard errors (0.02 here), 0.07 is actually quite far from zero, it's all about context!
 The p-values on the remaining variables are be interpreted similarly.
+From the initial output (p-values) in Table  \@ref(tab:emaillogmodel) it seems as though `to_multiple`, `dollar`, and `urgent_subj` are important variables for modeling whether an email is SPAM.
+We remind you that although p-values provide some information about the model, there are many aspects to consider when choosing the best model.
 
 As with linear regression (see Section \@ref(inf-mult-reg-collin)), correlated explanatory variables can impact both the coefficient estimates and the associated p-values.
 Investigating multicollinearity in a logistic regression model is saved for a text which provides more detail about logistic regression.
-Here, we revisit cross validation within the context of predicting island of origin for each of the individual penguins.  
+Next, as a model building alternative (or enhancement) to p-values, we revisit cross validation within the context of predicting SPAM status for each of the individual emails.  
 
 
 ### Cross validation for prediction error {#inf-log-reg-cv}
 
+The p-value is a probability measure under a setting of no relationship.
+That p-value provides information about the degree of the relationship (e.g., above we measure the relationship between `spam` and `to_multipl` using a p-value), but the p-value does not measure how well the model will predict the individual emails (e.g., the accuracy of the model).
+Depending on the goal of the research project, you might be inclined to focus on variable importance (through p-values) or you might be inclined to focuse on prediction accuracy (through cross validation).
 
-Not totally sure how this is being presented.  But, as expected, when using one variable the accuracy rates are much lower (~50%) than the prediction accuracy rates from a model that uses 4 variables (~80%).
+Here we present a method for using cross validation accuracy to detrmine which variables (if any) should be used in a model which predicts whether an email is SPAM.
+A full treatment of cross validation and multiple regression models is beyond the scope of this text.
+The models below compare the predictions using first only one variable (see Table \@ref(tab:email-spam)) and then using seven variables (see Table \@ref(tab:email-spam2)) .
 
 
-```{r peng-island, fig.cap = "One quarter at a time, the data were removed from the model building, and the location (island) of the removed penguins was predicted.  The logistic regression model was fit independently of the removed penguins.  Only bill_length_mm is used to predict the island of origin.", warning=FALSE, fig.width=20}
 
-penguins2 <- penguins %>%
-  filter(island %in% c("Biscoe", "Dream"))
+```{r email-spam, fig.cap = "One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted.  The logistic regression model was fit independently of the removed emails. Only `to_multiple` is used to predict whether the email is spam.", warning=FALSE, fig.width=20}
 
-penguinfolds2 <- caret::createFolds(penguins2$island, k = 4)
+set.seed(47)
+data(email)
+emailfolds <- caret::createFolds(email$spam, k = 4)
 
-logCV <- data.frame(predicted = glm(island ~ bill_length_mm, data = penguins2[-penguinfolds2$Fold1,], family = "binomial") %>% 
-             predict(newdata = penguins2[penguinfolds2$Fold1,c("bill_length_mm")], type="response") ,
-           obs = penguins2[penguinfolds2$Fold1,]$island,
-           fold = rep("1st quarter", length(penguinfolds2$Fold1))) %>%
-  rbind(data.frame(predicted = glm(island ~ bill_length_mm , data = penguins2[-penguinfolds2$Fold2,], family = "binomial") %>% 
-             predict(newdata = penguins2[penguinfolds2$Fold2,c("bill_length_mm")], type="response") ,
-           obs = penguins2[penguinfolds2$Fold2,]$island,
-           fold = rep("2nd quarter", length(penguinfolds2$Fold2))) ) %>%
-  rbind(data.frame(predicted = glm(island ~ bill_length_mm , data = penguins2[-penguinfolds2$Fold3,], family = "binomial") %>% 
-             predict(newdata = penguins2[penguinfolds2$Fold3,c("bill_length_mm")], type="response") ,
-           obs = penguins2[penguinfolds2$Fold3,]$island,
-           fold = rep("3rd quarter", length(penguinfolds2$Fold3))) ) %>%
-  rbind(data.frame(predicted = glm(island ~ bill_length_mm , data = penguins2[-penguinfolds2$Fold4,], family = "binomial") %>% 
-             predict(newdata = penguins2[penguinfolds2$Fold4,c("bill_length_mm")], type="response") ,
-           obs = penguins2[penguinfolds2$Fold4,]$island,
-           fold = rep("4th quarter", length(penguinfolds2$Fold4))) ) %>%
-  mutate(predIsland = ifelse(predicted <= 0.5, "Biscoe", "Dream")) 
+logCV <- data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold1,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold1,c("to_multiple")], type="response") ,
+           obs = email[emailfolds$Fold1,]$spam,
+           fold = rep("1st quarter", length(emailfolds$Fold1))) %>%
+  rbind(data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold2,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold2,c("to_multiple")], type="response") ,
+           obs = email[emailfolds$Fold2,]$spam,
+           fold = rep("2nd quarter", length(emailfolds$Fold2))) )%>%
+  rbind(data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold3,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold3,c("to_multiple")], type="response") ,
+           obs = email[emailfolds$Fold3,]$spam,
+           fold = rep("3rd quarter", length(emailfolds$Fold3))) )%>%
+  rbind(data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold4,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold2,c("to_multiple")], type="response") ,
+           obs = email[emailfolds$Fold4,]$spam,
+           fold = rep("4th quarter", length(emailfolds$Fold4))) )%>%
+  mutate(predspam = ifelse(predicted <= 0.1, 0, 1)) 
+
+#logCV %>%
+#  select(obs, predspam, fold) %>%
+#  table()
 
 logCV %>%
-  select(obs, predIsland, fold) %>%
-  table()
-
-logCV %>%
-  filter(!is.na(predIsland)) %>%
   group_by(fold) %>%
-  summarize(count = n(), accuracy = sum(obs==predIsland) / n())
+  summarize(count = n(), accuracy = sum(obs==predspam) / n(), notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0), spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1))
+
+```
+
+Because the SPAM dataset has a ratio of 90% non-SPAM and 10% SPAM emails, a model which randomly guessed all non-SPAM would have an overall accuracy of 90%!
+Clearly, we'd like to capture the information with the SPAM emails, so our interest is in the percent of SPAM emails which are identified as SPAM (see Table \@ref(tab:email-spam)).
+Additionally, in the logistic regression model, we use a 10% cutoff to predict whether or not the email is SPAM.
+Fortunately, we've done a great job of predicting SPAM!
+However, the trade-off was that most of the non-SPAM emails are now predicted to be SPAM which is not acceptable for a SPAM prediction algorithm.
+Adding more variables to the model may help with both the SPAM and not-SPAM predictions.
+
+
+```{r email-spam2, fig.cap = "One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted.  The logistic regression model was fit independently of the removed emails.  Now, the variables `to_multiple`, `attach`, `winner`, `format`, `re_subj`, `exclaim_mess`, and `number` are used to predict whether the email is spam.", warning=FALSE, fig.width=20}
+
+set.seed(47)
+data(email)
+emailfolds <- caret::createFolds(email$spam, k = 4)
+
+logCV <- data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold1,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold1,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
+           obs = email[emailfolds$Fold1,]$spam,
+           fold = rep("1st quarter", length(emailfolds$Fold1))) %>%
+  rbind(data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold2,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold2,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
+           obs = email[emailfolds$Fold2,]$spam,
+           fold = rep("2nd quarter", length(emailfolds$Fold2))) )%>%
+  rbind(data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold3,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold3,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
+           obs = email[emailfolds$Fold3,]$spam,
+           fold = rep("3rd quarter", length(emailfolds$Fold3))) )%>%
+  rbind(data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold4,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold2,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
+           obs = email[emailfolds$Fold4,]$spam,
+           fold = rep("4th quarter", length(emailfolds$Fold4))) )%>%
+  mutate(predspam = ifelse(predicted <= 0.1, 0, 1)) 
+
+#logCV %>%
+#  select(obs, predspam, fold) %>%
+#  table()
+
+logCV %>%
+  group_by(fold) %>%
+  summarize(count = n(), accuracy = sum(obs==predspam) / n(), notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0), spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1))
 
 ```
 
 
-```{r peng-island2, fig.cap = "One quarter at a time, the data were removed from the model building, and the location (island) of the removed penguins was predicted.  The logistic regression model was fit independently of the removed penguins.", warning=FALSE, fig.width=20}
-
-penguins2 <- penguins %>%
-  filter(island %in% c("Biscoe", "Dream"))
-
-penguinfolds2 <- caret::createFolds(penguins2$island, k = 4)
-
-logCV <- data.frame(predicted = glm(island ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex, data = penguins2[-penguinfolds2$Fold1,], family = "binomial") %>% 
-             predict(newdata = penguins2[penguinfolds2$Fold1,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex")], type="response") ,
-           obs = penguins2[penguinfolds2$Fold1,]$island,
-           fold = rep("1st quarter", length(penguinfolds2$Fold1))) %>%
-  rbind(data.frame(predicted = glm(island ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex, data = penguins2[-penguinfolds2$Fold2,], family = "binomial") %>% 
-             predict(newdata = penguins2[penguinfolds2$Fold2,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex")], type="response") ,
-           obs = penguins2[penguinfolds2$Fold2,]$island,
-           fold = rep("2nd quarter", length(penguinfolds2$Fold2))) ) %>%
-  rbind(data.frame(predicted = glm(island ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex, data = penguins2[-penguinfolds2$Fold3,], family = "binomial") %>% 
-             predict(newdata = penguins2[penguinfolds2$Fold3,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex")], type="response") ,
-           obs = penguins2[penguinfolds2$Fold3,]$island,
-           fold = rep("3rd quarter", length(penguinfolds2$Fold3))) ) %>%
-  rbind(data.frame(predicted = glm(island ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex, data = penguins2[-penguinfolds2$Fold4,], family = "binomial") %>% 
-             predict(newdata = penguins2[penguinfolds2$Fold4,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex")], type="response") ,
-           obs = penguins2[penguinfolds2$Fold4,]$island,
-           fold = rep("4th quarter", length(penguinfolds2$Fold4))) ) %>%
-  mutate(predIsland = ifelse(predicted <= 0.5, "Biscoe", "Dream")) 
-
-logCV %>%
-  select(obs, predIsland, fold) %>%
-  table()
-
-logCV %>%
-  filter(!is.na(predIsland)) %>%
-  group_by(fold) %>%
-  summarize(count = n(), accuracy = sum(obs==predIsland) / n())
-
-```
+Somewhat expected, the larger model (see Table \@ref(tab:email-spam2)) was able to capture more nuance in the emails which lead to better predictions.
+However, it is not true that adding variables will always lead to better predictions, as correlated or noise variables may dampen the signal from those variables which truly predict the SPAM status.
+We encourage you to learn more about multiple variable models and cross validation in your future exploration of statistical topics.
 
 
 ### Exercises {#inference-logistic-regression-exercises}
