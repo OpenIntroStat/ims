@@ -1459,7 +1459,7 @@ H_0: \beta_4 = 0 &&\mbox{ given \mbox{to_multiple} and \mbox{cc} and \mbox{dolla
 
 The very low p-values from the software output tell us that three of the variables (that is, not `cc`) act as important predictors in the model, despite the inclusion of any of the other variables.
 Consider the p-value on $H_0: \beta_1$.
-The low p-value says that it would be extremely unlikely to see data that produce a coefficient on `to_multiple` as large as -1.91 if the true relationship between `to_multiple` and `spam` was non-existent (i.e., if $\beta_1 = 0$) **and** the model also included ` `cc` and `dollar` and `urgent_subj`.
+The low p-value says that it would be extremely unlikely to see data that produce a coefficient on `to_multiple` as large as -1.91 if the true relationship between `to_multiple` and `spam` was non-existent (i.e., if $\beta_1 = 0$) **and** the model also included `cc` and `dollar` and `urgent_subj`.
 Note also that the coefficient on `dollar` is quite significant, but the magnitude of the coefficient is small (0.07).
 It turns out that in units of standard errors (0.02 here), 0.07 is actually quite far from zero, it's all about context!
 The p-values on the remaining variables are be interpreted similarly.
@@ -1474,18 +1474,18 @@ Next, as a model building alternative (or enhancement) to p-values, we revisit c
 ### Cross validation for prediction error {#inf-log-reg-cv}
 
 The p-value is a probability measure under a setting of no relationship.
-That p-value provides information about the degree of the relationship (e.g., above we measure the relationship between `spam` and `to_multipl` using a p-value), but the p-value does not measure how well the model will predict the individual emails (e.g., the accuracy of the model).
-Depending on the goal of the research project, you might be inclined to focus on variable importance (through p-values) or you might be inclined to focuse on prediction accuracy (through cross validation).
+That p-value provides information about the degree of the relationship (e.g., above we measure the relationship between `spam` and `to_multiple` using a p-value), but the p-value does not measure how well the model will predict the individual emails (e.g., the accuracy of the model).
+Depending on the goal of the research project, you might be inclined to focus on variable importance (through p-values) or you might be inclined to focus on prediction accuracy (through cross validation).
 
-Here we present a method for using cross validation accuracy to detrmine which variables (if any) should be used in a model which predicts whether an email is SPAM.
+Here we present a method for using cross validation accuracy to determine which variables (if any) should be used in a model which predicts whether an email is SPAM.
 A full treatment of cross validation and multiple regression models is beyond the scope of this text.
 The models below compare the predictions using first only one variable (see Table \@ref(tab:email-spam)) and then using seven variables (see Table \@ref(tab:email-spam2)) .
 
 
 
-```{r email-spam, fig.cap = "One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted.  The logistic regression model was fit independently of the removed emails. Only `to_multiple` is used to predict whether the email is spam.", warning=FALSE, fig.width=20}
 
-set.seed(47)
+```{r echo = FALSE}
+set.seed(4747)
 data(email)
 emailfolds <- caret::createFolds(email$spam, k = 4)
 
@@ -1502,7 +1502,7 @@ logCV <- data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds
            obs = email[emailfolds$Fold3,]$spam,
            fold = rep("3rd quarter", length(emailfolds$Fold3))) )%>%
   rbind(data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold4,], family = "binomial") %>% 
-             predict(newdata = email[emailfolds$Fold2,c("to_multiple")], type="response") ,
+             predict(newdata = email[emailfolds$Fold4,c("to_multiple")], type="response") ,
            obs = email[emailfolds$Fold4,]$spam,
            fold = rep("4th quarter", length(emailfolds$Fold4))) )%>%
   mutate(predspam = ifelse(predicted <= 0.1, 0, 1)) 
@@ -1510,11 +1510,14 @@ logCV <- data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds
 #logCV %>%
 #  select(obs, predspam, fold) %>%
 #  table()
+```
 
+```{r email-spam}
 logCV %>%
   group_by(fold) %>%
-  summarize(count = n(), accuracy = sum(obs==predspam) / n(), notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0), spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1))
-
+  summarize(count = n(), accuracy = sum(obs==predspam) / n(), notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0), spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1)) %>%
+  kable(caption = "One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted.  The logistic regression model was fit independently of the removed emails. Only `to_multiple` is used to predict whether the email is spam.", digits = 2) %>%
+  kable_styling(full_width = FALSE)
 ```
 
 Because the SPAM dataset has a ratio of 90% non-SPAM and 10% SPAM emails, a model which randomly guessed all non-SPAM would have an overall accuracy of 90%!
@@ -1525,9 +1528,9 @@ However, the trade-off was that most of the non-SPAM emails are now predicted to
 Adding more variables to the model may help with both the SPAM and not-SPAM predictions.
 
 
-```{r email-spam2, fig.cap = "One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted.  The logistic regression model was fit independently of the removed emails.  Now, the variables `to_multiple`, `attach`, `winner`, `format`, `re_subj`, `exclaim_mess`, and `number` are used to predict whether the email is spam.", warning=FALSE, fig.width=20}
 
-set.seed(47)
+```{r}
+set.seed(4747)
 data(email)
 emailfolds <- caret::createFolds(email$spam, k = 4)
 
@@ -1544,7 +1547,7 @@ logCV <- data.frame(predicted = glm(spam ~ to_multiple + attach + winner + forma
            obs = email[emailfolds$Fold3,]$spam,
            fold = rep("3rd quarter", length(emailfolds$Fold3))) )%>%
   rbind(data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold4,], family = "binomial") %>% 
-             predict(newdata = email[emailfolds$Fold2,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
+             predict(newdata = email[emailfolds$Fold4,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
            obs = email[emailfolds$Fold4,]$spam,
            fold = rep("4th quarter", length(emailfolds$Fold4))) )%>%
   mutate(predspam = ifelse(predicted <= 0.1, 0, 1)) 
@@ -1552,11 +1555,14 @@ logCV <- data.frame(predicted = glm(spam ~ to_multiple + attach + winner + forma
 #logCV %>%
 #  select(obs, predspam, fold) %>%
 #  table()
+```
 
+```{r email-spam2}
 logCV %>%
   group_by(fold) %>%
-  summarize(count = n(), accuracy = sum(obs==predspam) / n(), notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0), spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1))
-
+  summarize(count = n(), accuracy = sum(obs==predspam) / n(), notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0), spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1)) %>%
+  kable(caption = "One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted.  The logistic regression model was fit independently of the removed emails.  Now, the variables `to_multiple`, `attach`, `winner`, `format`, `re_subj`, `exclaim_mess`, and `number` are used to predict whether the email is spam.", digits = 2) %>%
+  kable_styling(full_width = FALSE)
 ```
 
 
