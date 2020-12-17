@@ -1302,7 +1302,8 @@ Figure \@ref(fig:massCV1) displays how a model is fit to 3/4 of the data (note t
 include_graphics("08/figures/massCV1.png")
 ```
 
-
+By repeating the process for each holdout quarter sample, the residuals from the model can be plotted against the predicted values.
+We see that the predictions are scattered which shows a good model fit but that the prediction errors vary $\pm$ 1000g of the true body mass.  
 
 ```{r peng-mass1, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted.  The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only.  The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value).", warning=FALSE, out.width="100%"}
 set.seed(47)
@@ -1340,7 +1341,7 @@ data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-pengui
   ylab("Prediction Error (g)") +
   theme(text = element_text(size=20))
 ```
-```{r peng-mass1-output}
+```{r peng-mass1-output, eval = FALSE}
 # this code is used to create the powerpoint images above
 
 massCV1 <- data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-penguinfolds$Fold1,]) %>% 
@@ -1366,24 +1367,15 @@ massCV1 %>%
   ylab("Prediction Error (g)") +
   theme(text = element_text(size=20))
 ```
-* Model $B_1$ built on 3/4 of the data, after the first random quarter of observations has been removed.
-* Model $B_2$ built on 3/4 of the data, after the second random quarter of observations has been removed.
-* Model $B_3$ built on 3/4 of the data, after the third random quarter of observations has been removed.
-* Model $B_4$ built on 3/4 of the data, after the fourth random quarter of observations has been removed.
 
-::: {.underconstruction}
-The text below is old.  I have a few different ways I could compare the 4 models (as equations, as plots, as R output...).  I'd like to talk through how to display before doing the work to create the display.
+The same process is repeated for the larger number of explanatory variables.
+Note that the coefficients estimated for the first cross validation model (in Figure \@ref(fig:massCV2)) are slightly different from the estimates computed on the entire dataset (seen in Table \@ref(tab:peng-lm-all)).
+Figure \@ref(fig:massCV2) displays the cross validation process for the multivariable model with a full set of residual plots given in Figure \@ref(fig:peng-mass2).
+Note that the residuals are mostly within $\pm$ 500g, providing much more precise predictions for the independent body mass values of the individual penguins. 
 
-Note that to compare apples to apples (for model A vs B) we can't do an x-y plot (it would have to be predicted vs error or predicted vs observed which we sort of already have).
-:::
-
-
-\begin{eqnarray*}
-\mbox{Model } B_1 && \widehat{\mbox{bwt}} = 99.69 + 0.15 \times \mbox{weight} + 0.03 \times \mbox{age}\\
-\mbox{Model } B_2 && \widehat{\mbox{bwt}} = 100.79 + 0.14 \times \mbox{weight} + 0.03 \times \mbox{age}\\
-\mbox{Model } B_3 && \widehat{\mbox{bwt}} = 102.57 + 0.11 \times \mbox{weight} + 0.08 \times \mbox{age}\\
-\mbox{Model } B_4 && \widehat{\mbox{bwt}} = 103.41 + 0.12 \times \mbox{weight} + 0.06\times \mbox{age}\\
-\end{eqnarray*}
+```{r massCV2, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset.  Then predictions are made for the remaining 1/4 of the observations.  The y-axis in the scatterplot represents the residual:  true observed value minus the predicted value.  Note that the predictions are independent of the estimated model coefficients.", out.width="100%"}
+include_graphics("08/figures/massCV2.png")
+```
 
 
 ```{r peng-mass2, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted.  The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only.  The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value).", warning=FALSE, fig.width=20}
@@ -1412,8 +1404,39 @@ data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper
   facet_wrap(~fold) +
   ylim(c(-1000,1000)) +
   xlab("Predicted Body Mass (g)") +
-  ylab("Prediction Error (g)") 
+  ylab("Prediction Error (g)") +
+  theme(text = element_text(size=20))
 ```
+
+
+```{r peng-mass2-output}
+# this code is used to create the powerpoint images above
+
+massCV1 <- data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1,]) %>% 
+             predict(newdata = penguins[penguinfolds$Fold1,
+                                        c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]) ,
+           obs = penguins[penguinfolds$Fold1,]$body_mass_g,
+           fold = rep("1st quarter", length(penguinfolds$Fold1))) 
+
+lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1,]) %>% 
+  tidy() %>%
+  select(term, estimate) %>%
+  mutate(estimate = round(estimate, 2))
+
+massCV1 %>% 
+  mutate(error = obs - predicted) %>%
+  ggplot(aes(x = predicted, y = error )) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_hline(yintercept = 500, lty = 2, color = "grey") +
+  geom_hline(yintercept = -500, lty = 2, color = "grey") +
+  facet_wrap(~fold) +
+  ylim(c(-1000,1000)) +
+  xlab("Predicted Body Mass (g)") +
+  ylab("Prediction Error (g)") +
+  theme(text = element_text(size=20))
+```
+
 
 Figure \@ref(fig:peng-mass1) shows that the independent predictions are centered around the true values (i.e., errors are centered around zero), but that the predictions can be as much as 1000g off when using only `bill_length_mm` to predict `body_mass_g`.
 On the other hand, when using `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species`  to predict `body_mass_g`, the prediction errors seem to be about half as big, as seen in Figure \@ref(fig:peng-mass2).
