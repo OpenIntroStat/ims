@@ -1253,6 +1253,14 @@ Given what we know about high correlations between body measurements, it is some
 However, in this section, we will go beyond the use of p-values to consider independent predictions of `body_mass_g` as a way to compare the smaller and larger models.
 
 
+
+##### The smaller model: {-}
+\begin{align*}
+E[\mbox{body_mass_g}] =& \beta_0 + \beta_1 \times \mbox{bill_length_mm}\\
+\widehat{\mbox{body_mass_g}} =& 362.31 + 87.42 \times \mbox{bill_length_mm}\\
+\end{align*}
+
+
 ```{r peng-lm-bill, echo = FALSE}
 lm(body_mass_g ~ bill_length_mm, data = penguins) %>% 
   tidy() %>%
@@ -1261,10 +1269,16 @@ lm(body_mass_g ~ bill_length_mm, data = penguins) %>%
  kable_styling() 
 ```
 
-**The smaller model:**
+
+
+##### The larger model: {-}
 \begin{align*}
-E[\mbox{body_mass_g}] =& \beta_0 + \beta_1 \times \mbox{bill_length_mm}\\
-\widehat{\mbox{body_mass_g}} =& 362.31 + 87.42 \times \mbox{bill_length_mm}\\
+E[\mbox{body_mass_g}] =& \beta_0 + \beta_1 \times \mbox{bill_length_mm} + \beta_2 \times \mbox{bill_depth_mm} + \\
+& \beta_3 \times \mbox{flipper_length_mm} + \beta_4 \times \mbox{sex}_{male} + \\
+& \beta_5 \times \mbox{species}_{Chinstrap} + \beta_6 \times \mbox{species}_{Gentoo}\\
+\widehat{\mbox{body_mass_g}} =& -1460.99 + 18.20 \times \mbox{bill_length_mm} + 67.22 \times \mbox{bill_depth_mm} + \\
+& 15.95 \times \mbox{flipper_length_mm} + 389.89 \times \mbox{sex}_{male} + \\
+& -251.48 \times \mbox{species}_{Chinstrap} + 1014.63 \times \mbox{species}_{Gentoo}\\
 \end{align*}
 
 ```{r peng-lm-all, echo = FALSE}
@@ -1274,16 +1288,6 @@ lm(body_mass_g ~ bill_length_mm + bill_depth_mm  + flipper_length_mm + sex + spe
    kable(caption = "The larger model: least squares estimates of the regression model predicting `body_mass_g` from `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species`.", digits = 2) %>%
  kable_styling() 
 ```
-
-**The larger model:**
-\begin{align*}
-E[\mbox{body_mass_g}] =& \beta_0 + \beta_1 \times \mbox{bill_length_mm} + \beta_2 \times \mbox{bill_depth_mm} + \\
-& \beta_3 \times \mbox{flipper_length_mm} + \beta_4 \times \mbox{sex}_{male} + \\
-& \beta_5 \times \mbox{species}_{Chinstrap} + \beta_6 \times \mbox{species}_{Gentoo}\\
-\widehat{\mbox{body_mass_g}} =& -1460.99 + 18.20 \times \mbox{bill_length_mm} + 67.22 \times \mbox{bill_depth_mm} + \\
-& 15.95 \times \mbox{flipper_length_mm} + 389.89 \times \mbox{sex}_{male} + \\
-& -251.48 \times \mbox{species}_{Chinstrap} + 1014.63 \times \mbox{species}_{Gentoo}\\
-\end{align*}
 
 
 In order to compare the smaller and larger models in terms of their **ability to predict penguin mass**, we need to build models that can provide independent predictions based on the penguins in the holdout samples created by cross validation.  
@@ -1333,9 +1337,10 @@ data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-pengui
   facet_wrap(~fold) +
   ylim(c(-1000,1000)) +
   xlab("Predicted Body Mass (g)") +
-  ylab("Prediction Error (g)") 
+  ylab("Prediction Error (g)") +
+  theme(text = element_text(size=20))
 ```
-```{r peng-mass1-output, echo = FALSE, eval = TRUE}
+```{r peng-mass1-output}
 # this code is used to create the powerpoint images above
 
 massCV1 <- data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-penguinfolds$Fold1,]) %>% 
