@@ -1563,14 +1563,16 @@ A full treatment of cross validation and multiple regression models is beyond th
 The models below compare the predictions using first only one variable (see Table \@ref(tab:email-spam)) and then using seven variables (see Table \@ref(tab:email-spam2)) .
 
 
-
+```{r emailCV1, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset with a single predictor variable. Predictions are made on the remaining 1/4 of the observations. Note that the predictions are independent of the estimated model coefficients, and the prediction error rate is quite high.", out.width="100%"}
+include_graphics("08/figures/emailCV1.png")
+```
 
 ```{r echo = FALSE}
-set.seed(4747)
+set.seed(470)
 data(email)
 emailfolds <- caret::createFolds(email$spam, k = 4)
 
-logCV <- data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold1,], family = "binomial") %>% 
+logCV1 <- data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold1,], family = "binomial") %>% 
              predict(newdata = email[emailfolds$Fold1,c("to_multiple")], type="response") ,
            obs = email[emailfolds$Fold1,]$spam,
            fold = rep("1st quarter", length(emailfolds$Fold1))) %>%
@@ -1588,16 +1590,21 @@ logCV <- data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds
            fold = rep("4th quarter", length(emailfolds$Fold4))) )%>%
   mutate(predspam = ifelse(predicted <= 0.1, 0, 1)) 
 
-#logCV %>%
+#logCV1 %>%
 #  select(obs, predspam, fold) %>%
 #  table()
+
+#glm(spam ~ to_multiple, 
+#    data = email[-emailfolds$Fold1,], family = "binomial") %>% tidy() %>%
+#  select(term, estimate) %>%
+#  mutate(estimate = round(estimate,2))
 ```
 
 ```{r email-spam}
-logCV %>%
+logCV1 %>%
   group_by(fold) %>%
   summarize(count = n(), accuracy = sum(obs==predspam) / n(), notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0), spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1)) %>%
-  kable(caption = "One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted.  The logistic regression model was fit independently of the removed emails. Only `to_multiple` is used to predict whether the email is spam.", digits = 2) %>%
+  kable(caption = "One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted.  The logistic regression model was fit independently of the removed emails. Only `to_multiple` is used to predict whether the email is spam.  Because we used a cutoff designed to identify SPAM emails, the accuracy of the non-SPAM email predictions is very low.", digits = 2) %>%
   kable_styling(full_width = FALSE)
 ```
 
@@ -1608,14 +1615,16 @@ Fortunately, we've done a great job of predicting SPAM!
 However, the trade-off was that most of the non-SPAM emails are now predicted to be SPAM which is not acceptable for a SPAM prediction algorithm.
 Adding more variables to the model may help with both the SPAM and not-SPAM predictions.
 
-
+```{r emailCV2, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset with the seven specified predictor variables. Predictions are made on the remaining 1/4 of the observations. Note that the predictions are independent of the estimated model coefficients.  The predictions are now much better for both the SPAM and the non-SPAM emails (than they were with a single predictor variable).", out.width="100%"}
+include_graphics("08/figures/emailCV2.png")
+```
 
 ```{r}
-set.seed(4747)
+set.seed(470)
 data(email)
 emailfolds <- caret::createFolds(email$spam, k = 4)
 
-logCV <- data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold1,], family = "binomial") %>% 
+logCV2 <- data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold1,], family = "binomial") %>% 
              predict(newdata = email[emailfolds$Fold1,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
            obs = email[emailfolds$Fold1,]$spam,
            fold = rep("1st quarter", length(emailfolds$Fold1))) %>%
@@ -1633,13 +1642,18 @@ logCV <- data.frame(predicted = glm(spam ~ to_multiple + attach + winner + forma
            fold = rep("4th quarter", length(emailfolds$Fold4))) )%>%
   mutate(predspam = ifelse(predicted <= 0.1, 0, 1)) 
 
-#logCV %>%
+#logCV2 %>%
 #  select(obs, predspam, fold) %>%
 #  table()
+
+#glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, 
+#    data = email[-emailfolds$Fold1,], family = "binomial") %>% tidy() %>%
+#  select(term, estimate) %>%
+#  mutate(estimate = round(estimate,2))
 ```
 
 ```{r email-spam2}
-logCV %>%
+logCV2 %>%
   group_by(fold) %>%
   summarize(count = n(), accuracy = sum(obs==predspam) / n(), notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0), spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1)) %>%
   kable(caption = "One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted.  The logistic regression model was fit independently of the removed emails.  Now, the variables `to_multiple`, `attach`, `winner`, `format`, `re_subj`, `exclaim_mess`, and `number` are used to predict whether the email is spam.", digits = 2) %>%
