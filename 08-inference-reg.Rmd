@@ -1221,9 +1221,9 @@ We continue to encourage you to take up further study on the topic of cross vali
 Cross validation is a computational technique which removes some observations before a model is run, then assesses the model accuracy on the held-out sample.
 By removing some observations, we provide ourselves with an independent evaluation of the model (that is, the removed observations do not contribute to finding the parameters which minimize the least squares equation).
 Cross validation can be used in many different ways (as an independent assessment), and here we will just scratch the surface with respect to one way the technique can be used to compare models.
-See Figure \@ref(fig:cv) for an image describing how cross validation works.
+See Figure \@ref(fig:cv) for a visual representation of the cross validation process.
 
-```{r cv, fig.cap = "This isn't the right picture, but I'd love to keep CV in the book and be able to explain it in a straightforward way.", fig.width = 10}
+```{r cv, fig.cap = "The dataset is broken into k folds (here k=4).  One at a time, a model is built using k-1 of the folds, and predictions are calculated on the single held out sample which will be completely independent of the model estimation.", fig.width = 10}
 include_graphics("08/figures/CV.png")
 ```
 
@@ -1233,6 +1233,7 @@ The observations of three different penguin species include measurements on body
 :::
 
 Our goal in this section is to compare two different regression models which both seek to predict the mass of an individual penguin in grams.
+Although not exactly aligned with this research project, you might be able to imagine a setting where the dimensions of the penguin are known (through, for example, aerial photographs) but the mass is not known.
 The first model will predict `body_mass_g` by using only the `bill_length_mm`, a variable denoting the length of a penguin's bill, in mm.
 The second model will predict `body_mass_g` by using `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species`.
 
@@ -1246,42 +1247,56 @@ Cross validation is one way to get accurate independent predictions with which t
 
 The question we will seek to answer is whether the predictions of `body_mass_g` are substantially better when `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` are used in the model, as compared with a model on `bill_length_mm` only.  
 
-The population model $A$ is given below, and the estimates of the parameters (on the entire dataset) are provided in Table \@ref(tab:peng-lm-bill).
-The population model $B$ is given below, and the estimates of the parameters (on the entire dataset) are provided in Table \@ref(tab:peng-lm-all).
+We refer to the model given with only `bill_lengh_mm` as the **smaller** model.  It is seen in Table \@ref(tab:peng-lm-bill) with coefficient estimates of the parameters as well as standard errors and p-values.
+We refer to the model given with `bill_lengh_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` as the **larger** model.  It is seen in Table \@ref(tab:peng-lm-all) with coefficient estimates of the parameters as well as standard errors and p-values.
 Given what we know about high correlations between body measurements, it is somewhat unsurprising that all of the variables are significant (small p-values) predictors of `body_mass_g`.
+However, in this section, we will go beyond the use of p-values to consider independent predictions of `body_mass_g` as a way to compare the smaller and larger models.
 
-
-\begin{eqnarray*}
-\mbox{Model } A: && E[\mbox{body_mass_g}] = \beta_0 + \beta_1 \times \mbox{bill_length_mm}\\
-\mbox{Model } B: && E[\mbox{body_mass_g}] = \beta_0 + \beta_1 \times \mbox{bill_length_mm} + \beta_2 \times \mbox{bill_depth_mm} + \\
-&& \beta_3 \times \mbox{flipper_length_mm} + \beta_4 \times \mbox{sex}_{male} + \\
-&& \beta_5 \times \mbox{species}\\
-\end{eqnarray*}
 
 ```{r peng-lm-bill, echo = FALSE}
 lm(body_mass_g ~ bill_length_mm, data = penguins) %>% 
   tidy() %>%
-   kable(caption = "The least squares estimates of the regression model predicting `body_mass_g` from `bill_length_mm`.") %>%
+    mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 3))) %>%
+   kable(caption = "The smalller model: least squares estimates of the regression model predicting `body_mass_g` from `bill_length_mm`.", digits = 2) %>%
  kable_styling() 
 ```
+
+**The smaller model:**
+\begin{align*}
+E[\mbox{body_mass_g}] &=& \beta_0 + \beta_1 \times \mbox{bill_length_mm}\\
+\widehat{\mbox{body_mass_g}} &=& 362.31 + 87.42 \times \mbox{bill_length_mm}\\
+\end{align*}
 
 ```{r peng-lm-all, echo = FALSE}
 lm(body_mass_g ~ bill_length_mm + bill_depth_mm  + flipper_length_mm + sex + species, data = penguins) %>% 
   tidy()%>%
-   kable(caption = "The least squares estimates of the regression model predicting `body_mass_g` from `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species`.") %>%
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 3))) %>%
+   kable(caption = "The larger model: least squares estimates of the regression model predicting `body_mass_g` from `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species`.", digits = 2) %>%
  kable_styling() 
 ```
 
+**The larger model:**
+\begin{align*}
+E[\mbox{body_mass_g}] = \beta_0 + \beta_1 \times \mbox{bill_length_mm} + \beta_2 \times \mbox{bill_depth_mm} + \\
+&& \beta_3 \times \mbox{flipper_length_mm} + \beta_4 \times \mbox{sex}_{male} + \\
+&& \beta_5 \times \mbox{species}_{Chinstrap} + \beta_6 \times \mbox{species}_{Gentoo}\\
+\widehat{\mbox{body_mass_g}} = -1460.99 + 18.20 \times \mbox{bill_length_mm} + 67.22 \times \mbox{bill_depth_mm} + \\
+&& 15.95 \times \mbox{flipper_length_mm} + 389.89 \times \mbox{sex}_{male} + \\
+&& -251.48 \times \mbox{species}_{Chinstrap} + 1014.63 \times \mbox{species}_{Gentoo}\\
+\end{align*}
 
 
-The predictions that will allow us to distinguish between models A and B must be independent of the data which were used to build the model.
-So, using cross validation, we remove one quarter of the data before running the least squares calculations.
+In order to compare the smaller and larger models in terms of their **ability to predict penguin mass**, we need to build models that can provide independent predictions based on the penguins in the holdout samples created by cross validation.  
+To reiterate, each of the predictions that (when combined together) will allow us to distinguish between the smaller and larger are independent of the data which were used to build the model.
+In this example, using cross validation, we remove one quarter of the data before running the least squares calculations.
+Then the least squares model is used to predict the `body_mass_g` of the penguins in the holdout sample.
 Here we use a 4-fold cross validation (meaning that one quarter of the data is removed each time) to produce four different versions of each model (other times it might be more appropriate to use 2-fold or 10-fold or even run the model separately after removing each individual data point one at a time).
 
-* Model $A_1$ built on 3/4 of the data, after the first random quarter of observations has been removed.
-* Model $A_2$ built on 3/4 of the data, after the second random quarter of observations has been removed.
-* Model $A_3$ built on 3/4 of the data, after the third random quarter of observations has been removed.
-* Model $A_4$ built on 3/4 of the data, after the fourth random quarter of observations has been removed.
+Figure \@ref(fig:massCV1) displays how a model is fit to 3/4 of the data (note the slight differences in coefficients as compared to Table \@ref(tab:peng-lm-bill)), and then predictions are made on the holdout sample. 
+
+```{r massCV1, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset.  Then predictions are made for the remaining 1/4 of the observations.  The y-axis in the scatterplot represents the residual:  true observed value minus the predicted value.  Note that the predictions are independent of the estimated model coefficients.", fig.width = 10}
+include_graphics("08/figures/massCV1.png")
+```
 
 ::: {.underconstruction}
 The text below is old.  I have a few different ways I could compare the 4 models (as equations, as plots, as R output...).  I'd like to talk through how to display before doing the work to create the display.
@@ -1333,7 +1348,31 @@ data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-pengui
   xlab("Predicted Body Mass (g)") +
   ylab("Prediction Error (g)") 
 ```
+```{r peng-mass1-output, echo = FALSE, eval = FALSE}
+# this code is used to create the powerpoint images above
 
+massCV1 <- data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-penguinfolds$Fold1,]) %>% 
+             predict(newdata = penguins[penguinfolds$Fold1,c("bill_length_mm")]) ,
+           obs = penguins[penguinfolds$Fold1,]$body_mass_g,
+           fold = rep("1st quarter", length(penguinfolds$Fold1))) 
+
+lm(body_mass_g ~ bill_length_mm , data = penguins[-penguinfolds$Fold1,]) %>% 
+  tidy() %>%
+  select(term, estimate) %>%
+  mutate(estimate = round(estimate, 2))
+
+massCV1 %>% 
+  mutate(error = obs - predicted) %>%
+  ggplot(aes(x = predicted, y = error )) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_hline(yintercept = 500, lty = 2, color = "grey") +
+  geom_hline(yintercept = -500, lty = 2, color = "grey") +
+  facet_wrap(~fold) +
+  ylim(c(-1000,1000)) +
+  xlab("Predicted Body Mass (g)") +
+  ylab("Prediction Error (g)") 
+```
 * Model $B_1$ built on 3/4 of the data, after the first random quarter of observations has been removed.
 * Model $B_2$ built on 3/4 of the data, after the second random quarter of observations has been removed.
 * Model $B_3$ built on 3/4 of the data, after the third random quarter of observations has been removed.
