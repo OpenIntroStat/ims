@@ -449,8 +449,8 @@ The House of Representatives is made up of 435 voting members
 Figure \@ref(fig:unemploymentAndChangeInHouse) shows these data and the
 least-squares regression line: 
 $$\begin{aligned}
-&\texttt{% change in House seats for President's party}  \\
-&\qquad\qquad= -7.36 - 0.89 \times \texttt{(unemployment rate)}\end{aligned}$$
+&\mbox{% change in House seats for President's party}  \\
+&\qquad\qquad= -7.36 - 0.89 \times \mbox{(unemployment rate)}\end{aligned}$$
 We consider the percent change in the number of seats of the President's
 party (e.g. percent change in the number of seats for Republicans in
 2018) against the unemployment rate.
@@ -1012,18 +1012,17 @@ Recall the `loans` data from Chapter \@ref(multi-logistic-models).
 
 ::: {.data}
 The data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`loans_full_schema`](http://openintrostat.github.io/openintro/reference/loans_full_schema.html).
-Based on the data in this dataset we have created to new variables: `credit_util` which is calculated as the total credit utilized divided by the total credit limit and `bankruptcy` which turns the number of bankruptcies to an indicator variable (0 for no bankruptcies and 1 for at least 1 bankruptcies).
+Based on the data in this dataset we have created two new variables: `credit_util` which is calculated as the total credit utilized divided by the total credit limit and `bankruptcy` which turns the number of bankruptcies to an indicator variable (0 for no bankruptcies and 1 for at least 1 bankruptcies).
 We will refer to this modified dataset as `loans`.
 :::
 
 Now, our goal is to create a model where `interest_rate` can be predicted using the variables `debt_to_income`, `term`, and `credit_checks`.  
 As learned in Chapter \@ref(multi-logistic-models), least squares can be used to find the coefficient estimates for the linear model.
 The unknown population model can be written as:
-$$E[\texttt{interest_rate}] = \beta_0 + \beta_1\times \texttt{debt_to_income} + \beta_2 \times \texttt{term} + \beta_3 \times \texttt{credit_checks}$$
+$$E[\mbox{interest_rate}] = \beta_0 + \beta_1\times \mbox{debt_to_income} + \beta_2 \times \mbox{term} + \beta_3 \times \mbox{credit_checks}$$
 
 The estimated equation for the regression model may be written as a model with three predictor variables:
 
-$$\widehat{\texttt{interest_rate}} = 4.31 + 0.041 \times \texttt{debt_to_income} + 0.16 \times \texttt{term} + 0.25 \times \texttt{credit_checks}$$
 
 ```{r loansmodel}
 loans <- loans_full_schema %>%
@@ -1043,6 +1042,10 @@ lm(interest_rate ~ debt_to_income + term + credit_checks, data = loans) %>%
   kable_styling(full_width = FALSE)
 ```
 
+$$\widehat{\mbox{interest_rate}} = 4.31 + 0.041 \times \mbox{debt_to_income} + 0.16 \times \mbox{term} + 0.25 \times \mbox{credit_checks}$$
+
+
+
 Not only does Table \@ref(tab:loansmodel) provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
 
 
@@ -1059,19 +1062,20 @@ $$\mbox{if multiple predictors } H_0: \beta_i = 0 \mbox{ given other variables i
 Using the example above and focusing on each of the variable p-values (here we won't discuss the p-value associated with the intercept), we can write out the three different hypotheses:
 
 \begin{eqnarray*}
-H_0: \beta_1 = 0 && \mbox{ given \texttt{term} and \texttt{credit_checks} are included in the model}\\
-H_0: \beta_2 = 0 &&\mbox{ given \texttt{debt_to_income} and \texttt{credit_checks} are included in the model}\\
-H_0: \beta_3 = 0 &&\mbox{ given \texttt{debt_to_income} and \texttt{term} and are included in the model}
+H_0: \beta_1 = 0 && \mbox{ given \mbox{term} and \mbox{credit_checks} are included in the model}\\
+H_0: \beta_2 = 0 &&\mbox{ given \mbox{debt_to_income} and \mbox{credit_checks} are included in the model}\\
+H_0: \beta_3 = 0 &&\mbox{ given \mbox{debt_to_income} and \mbox{term} and are included in the model}
 \end{eqnarray*}
 
 The very low p-values from the software output tell us that each of the variables acts as an important predictor in the model, despite the inclusion of the other two.
 Consider the p-value on $H_0: \beta_1$.
-The low p-value says that it would be extremely unlikely to see data that produce a coefficient on `debt_to_income` as large as 0.041 (yes, that number is large in the units of the problem, it's all about context!!) if the true relationship between `debt_to_income` was non-existent (i.e., if $\beta_1 = 0$) and the model also included `term` and `credit_checks`.
-The p-values on `term` and on `credit_checks` can be interpreted similarly.
+The low p-value says that it would be extremely unlikely to see data that produce a coefficient on `debt_to_income` as large as 0.041 if the true relationship between `debt_to_income`and `interest_rate` was non-existent (i.e., if $\beta_1 = 0$) and the model also included `term` and `credit_checks`.
+You might have thought that the value 0.041 is a small number (i.e., close to zero), but in the units of the problem, 0.041 turns out to be far away from zero, it's all about context!
+The p-values on `term` and on `credit_checks` are interpreted similarly.
 
 Sometimes a set of predictor variables can impact the model in unusual ways, often due to the predictor variables themselves being correlated.
 
-### Multicollinearity 
+### Multicollinearity {#inf-mult-reg-collin}
 
 In practice, there will almost always be some degree of correlation between the explanatory variables in a multiple regression model.
 For regression models, it is important to understand the entire context of the model, particularly for correlated variables.
@@ -1079,7 +1083,13 @@ Our discussion will focus on interpreting coefficients (and their signs) in rela
 
 Consider an example where we'd like to predict how much money is in a coin dish based only on the number of coins in the dish.
 We ask 26 students to tell us about their individual coin dishes, collecting data on the total dollar amount, the total number of coins, and the total number of low coins.^[In all honesty, this particular dataset is fabricated, and the original idea for the problem comes from Jeff Witmer at Oberlin College.]
-The number of low coins is the number of coins minus the number of quarters (a quarter is the largest commonly used US coin, at US\$ 0.25).
+The number of low coins is the number of coins minus the number of quarters (a quarter is the largest commonly used US coin, at US\$0.25).
+Figure \@ref(fig:money) illustrates a sample of U.S. coins, their total worth (amount), the number of total coins, and the number of low coins.
+
+```{r money, fig.cap = "A sample of coins with 16 total coins, 10 low coins, and a net worth of $1.90.", fig.width = 10}
+include_graphics("08/figures/money.png")
+```
+
 The collected data is given in Figure \@ref(fig:coinfig) and shows that the total amount of money is more highly correlated with the total number of coins than it is with the number of low coins.
 We also note that the number of high coins and the number of low coins are positively correlated.  
 
@@ -1110,14 +1120,14 @@ Using the total number of coins as the predictor variable, Table \@ref(tab:coinh
 For every additional coin in the dish, we would predict that the student had US\$0.13 more.
 The $b_1 = 0.13$ coefficient is highly significant, suggesting we would not have seen data like this if number of coins and amount of money were not linearly related.
 
-$$\widehat{\texttt{amount}} = 0.55 + 0.13 \times \texttt{number of coins} $$
+$$\widehat{\mbox{amount}} = 0.55 + 0.13 \times \mbox{number of coins} $$
 
 
 ```{r coinhigh}
 lm(amount ~ number.of.coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
-  kable(caption = ".", digits = 4) %>%
+  kable(caption = "Linear model output predicting the total amount of money based on the total number of coins.", digits = 2) %>%
   kable_styling(full_width = FALSE)
 ```
 
@@ -1126,36 +1136,61 @@ Using the number of low coins as the predictor variable, Table \@ref(tab:coinlow
 For every additional coin in the dish, we would predict that the student had US\$0.02 more.
 The $b_1 = 0.02$ coefficient is not at all significant, suggesting we could easily have seen data like ours even if the number of low coins and amount of money are not at all linearly related.
 
-$$\widehat{\texttt{amount}} = 2.28 + 0.02 \times \texttt{number of low coins} $$
+$$\widehat{\mbox{amount}} = 2.28 + 0.02 \times \mbox{number of low coins} $$
 
 ```{r coinlow}
 lm(amount ~ number.of.low.coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
-  kable(caption = ".", digits = 4) %>%
+  kable(caption = "Linear model output predicting the total amount of money based on the number of low coins.", digits = 2) %>%
   kable_styling(full_width = FALSE)
 ```
 
 
+
+::: {.workedexample}
+
+Come up with an example of two observations that have the same number of low coins but the number of total coins differs by one.  What is the difference in amount?
+
+------------------------------------------------------------------------
+
+```{r lowsame, fig.cap = "Two samples of coins with the same number of low coins (3), but a different number of total coins (4 vs 5) and a different total amount ($0.41 vs $0.66).", fig.width = 10}
+include_graphics("08/figures/lowsame.png")
+```
+:::
+
+
+::: {.workedexample}
+
+Come up with an example of two observations that have the same total number of coins but a different number of low coins.  What is the difference in amount?
+
+------------------------------------------------------------------------
+
+```{r totalsame, fig.cap = "Two samples of coins with the same total number of coins (4), but a different number of low coins (3 vs 4) and a different total amount ($0.41 vs $0.17).", fig.width = 10}
+include_graphics("08/figures/totalsame.png")
+```
+:::
+
 Using both the total number of coins and the number of low coins as predictor variables, Table \@ref(tab:coinhighlow) provides the least squares estimates of both coefficients as 0.21 and -0.16.
 Now, with two variables in the model, the interpretation is more nuanced.  
-* The coefficient indicates a change in one variable while keeping the other variable constant.
+
+* The coefficient indicates a change in one variable while keeping the other variable constant.  
 For every additional coin in the dish **while** the number of low coins stays constant, we would predict that the student had US\$0.21 more.
-Re-considering the phrase "every additional coin in the dish **while** the number of low coins stays constant" makes us realize that each increase is a single additional quarter (larger samples sizes would have led to a $b_1$ coefficient closer to 0.25 because of the deterministic relationship described here).  
-* For every additional low coin in the dish **while** the number of total coins stays constant, we would predict that the student had US\$ 0.16 less.
+Re-considering the phrase "every additional coin in the dish **while** the number of low coins stays constant" makes us realize that each increase is a single additional quarter (larger samples sizes would have led to a $b_1$ coefficient closer to 0.25 because of the deterministic relationship described here).   
+* For every additional low coin in the dish **while** the number of total coins stays constant, we would predict that the student had US\$0.16 less.
 Re-considering the phrase "every additional low coin in the dish **while** the number of total coins stays constant" makes us realize that a quarter is being swapped out for a penny, nickel, or dime.
 
 Considering the coefficients across Tables \@ref(tab:coinhigh), \@ref(tab:coinlow), and \@ref(tab:coinhighlow) within the context and knowledge we have of US coins allows us to understand the correlation between variables and why the signs of the coefficients would change depending on the model.
 Note also, however, that the significance on the low coin coefficient changed from Table \@ref(tab:coinlow) to Table \@ref(tab:coinhighlow).
 It makes sense that the variable describing the number of low coins provides more information about the amount of money when it is part of a model which also includes the total number of coins than it does when it is used as a single variable in a simple linear regression model.
 
-$$\widehat{\texttt{amount}} = 0.80 + 0.21 \times \texttt{number of coins} - 0.16 \times \texttt{number of low coins}$$
+$$\widehat{\mbox{amount}} = 0.80 + 0.21 \times \mbox{number of coins} - 0.16 \times \mbox{number of low coins}$$
 
 ```{r coinhighlow}
 lm(amount ~ number.of.coins + number.of.low.coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
-  kable(caption = ".", digits = 4) %>%
+  kable(caption = "Linear model output predicting the total amount of money based on both the total number of coins and the number of low coins.", digits = 2) %>%
   kable_styling(full_width = FALSE)
 ```
 
@@ -1174,11 +1209,13 @@ Things I didn't talk about but could:
 -->
 
 
-### Cross validation for prediction error
+### Cross validation for prediction error {#inf-mult-reg-cv}
 
 In Section \@ref(inf-mult-reg-soft), p-values were calculated on each of the model coefficients.
 The p-value gives a sense of which variables are important to the model; however, a more extensive treatment of variable selection is warranted in a follow-up course or textbook.
 Here, we use cross validation prediction error to focus on which variable(s) are important for predicting the response variable of interest.
+In general, linear models are also used to make predictions of individual observations.
+In addition to model building, cross validation provides a method for generating predictions that are not overfit to the particular dataset at hand.
 We continue to encourage you to take up further study on the topic of cross validation, as it is among the most important ideas in modern data analysis, and we are only able to scratch the surface here.
 
 Cross validation is a computational technique which removes some observations before a model is run, then assesses the model accuracy on the held-out sample.
@@ -1187,18 +1224,20 @@ Cross validation can be used in many different ways (as an independent assessmen
 See Figure \@ref(fig:cv) for an image describing how cross validation works.
 
 ```{r cv, fig.cap = "This isn't the right picture, but I'd love to keep CV in the book and be able to explain it in a straightforward way.", fig.width = 10}
-include_graphics("08/figures/CV.jpg")
+include_graphics("08/figures/CV.png")
 ```
 
-Consider the `penguins` dataset which comes from the palmerpenguins package.  The observations of three different penguin species include measurements on body size and sex.  The data were collected by [Dr. Kristen Gorman](https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php) and the [Palmer Station, Antarctica LTER](https://pal.lternet.edu/) as part of the [Long Term Ecological Research Network](https://lternet.edu/).
-
+::: {.data}
+The data can be found in the [palmerpenguings](https://github.com/allisonhorst/palmerpenguins) package: [`penguins`](https://allisonhorst.github.io/palmerpenguins/articles/intro.html).
+The observations of three different penguin species include measurements on body size and sex.  The data were collected by [Dr. Kristen Gorman](https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php) and the [Palmer Station, Antarctica LTER](https://pal.lternet.edu/) as part of the [Long Term Ecological Research Network](https://lternet.edu/).
+:::
 
 Our goal in this section is to compare two different regression models which both seek to predict the mass of an individual penguin in grams.
 The first model will predict `body_mass_g` by using only the `bill_length_mm`, a variable denoting the length of a penguin's bill, in mm.
 The second model will predict `body_mass_g` by using `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species`.
 
 The presentation below (see the comparison of Figures \@ref(fig:peng-mass1) and \@ref(fig:peng-mass2)) shows that the model with more variables predicts `body_mass_g` with much smaller errors (predicted minus actual body mass) than the model which uses only `bill_length_g`.
-We have deliberate used a model that intuitively makes sense (the more body measurements, the more predictable mass is).
+We have deliberately used a model that intuitively makes sense (the more body measurements, the more predictable mass is).
 However, in many settings, it is not obvious which variables or which models contribute most to accurate predictions.
 Cross validation is one way to get accurate independent predictions with which to compare different models.
 
@@ -1213,10 +1252,10 @@ Given what we know about high correlations between body measurements, it is some
 
 
 \begin{eqnarray*}
-\mbox{Model } A: && E[\texttt{body_mass_g}] = \beta_0 + \beta_1 \times \texttt{bill_length_mm}\\
-\mbox{Model } B: && E[\texttt{body_mass_g}] = \beta_0 + \beta_1 \times \texttt{bill_length_mm} + \beta_2 \times \texttt{bill_depth_mm} + \\
-&& \beta_3 \times \texttt{flipper_length_mm} + \beta_4 \times \texttt{sex} + \\
-&& \beta_5 \times \texttt{species}\\
+\mbox{Model } A: && E[\mbox{body_mass_g}] = \beta_0 + \beta_1 \times \mbox{bill_length_mm}\\
+\mbox{Model } B: && E[\mbox{body_mass_g}] = \beta_0 + \beta_1 \times \mbox{bill_length_mm} + \beta_2 \times \mbox{bill_depth_mm} + \\
+&& \beta_3 \times \mbox{flipper_length_mm} + \beta_4 \times \mbox{sex}_{male} + \\
+&& \beta_5 \times \mbox{species}\\
 \end{eqnarray*}
 
 ```{r peng-lm-bill, echo = FALSE}
@@ -1252,10 +1291,10 @@ Note that to compare apples to apples (for model A vs B) we can't do an x-y plot
 
 
 \begin{eqnarray*}
-\mbox{Model } A_1 && \widehat{\texttt{bst}} = 99.42 + 0.16 \times \texttt{weight}\\
-\mbox{Model } A_2 && \widehat{\texttt{bst}} = 101.36 + 0.14 \times \texttt{weight}\\
-\mbox{Model } A_3 && \widehat{\texttt{bst}} = 104.52 + 0.12 \times \texttt{weight}\\
-\mbox{Model } A_4 && \widehat{\texttt{bst}} = 103.54 + 0.12 \times \texttt{weight}\\
+\mbox{Model } A_1 && \widehat{\mbox{bst}} = 99.42 + 0.16 \times \mbox{weight}\\
+\mbox{Model } A_2 && \widehat{\mbox{bst}} = 101.36 + 0.14 \times \mbox{weight}\\
+\mbox{Model } A_3 && \widehat{\mbox{bst}} = 104.52 + 0.12 \times \mbox{weight}\\
+\mbox{Model } A_4 && \widehat{\mbox{bst}} = 103.54 + 0.12 \times \mbox{weight}\\
 \end{eqnarray*}
 
 
@@ -1308,10 +1347,10 @@ Note that to compare apples to apples (for model A vs B) we can't do an x-y plot
 
 
 \begin{eqnarray*}
-\mbox{Model } B_1 && \widehat{\texttt{bwt}} = 99.69 + 0.15 \times \texttt{weight} + 0.03 \times \texttt{age}\\
-\mbox{Model } B_2 && \widehat{\texttt{bwt}} = 100.79 + 0.14 \times \texttt{weight} + 0.03 \times \texttt{age}\\
-\mbox{Model } B_3 && \widehat{\texttt{bwt}} = 102.57 + 0.11 \times \texttt{weight} + 0.08 \times \texttt{age}\\
-\mbox{Model } B_4 && \widehat{\texttt{bwt}} = 103.41 + 0.12 \times \texttt{weight} + 0.06\times \texttt{age}\\
+\mbox{Model } B_1 && \widehat{\mbox{bwt}} = 99.69 + 0.15 \times \mbox{weight} + 0.03 \times \mbox{age}\\
+\mbox{Model } B_2 && \widehat{\mbox{bwt}} = 100.79 + 0.14 \times \mbox{weight} + 0.03 \times \mbox{age}\\
+\mbox{Model } B_3 && \widehat{\mbox{bwt}} = 102.57 + 0.11 \times \mbox{weight} + 0.08 \times \mbox{age}\\
+\mbox{Model } B_4 && \widehat{\mbox{bwt}} = 103.41 + 0.12 \times \mbox{weight} + 0.06\times \mbox{age}\\
 \end{eqnarray*}
 
 
@@ -1319,7 +1358,7 @@ Note that to compare apples to apples (for model A vs B) we can't do an x-y plot
 data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1,]) %>% 
              predict(newdata = penguins[penguinfolds$Fold1,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]) ,
            obs = penguins[penguinfolds$Fold1,]$body_mass_g,
-           fold = rep("1st auarter", length(penguinfolds$Fold1))) %>%
+           fold = rep("1st quarter", length(penguinfolds$Fold1))) %>%
   rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold2,]) %>% 
              predict(newdata = penguins[penguinfolds$Fold2,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]) ,
            obs = penguins[penguinfolds$Fold2,]$body_mass_g,
@@ -1361,7 +1400,200 @@ Exercises for this section are under construction.
 
 ## Inference for logistic regression {#inf-log-reg}
 
-As with multiple linear regression, the inference aspect for logistic regression will focus on interpretation of coefficients and relationships between explanatory variables.  Both p-values and cross validation will be used for assessing a logistic regression model.
+As with multiple linear regression, the inference aspect for logistic regression will focus on interpretation of coefficients and relationships between explanatory variables.
+Both p-values and cross validation will be used for assessing a logistic regression model.
+
+Consider the `email` data which describes email characteristics which can be used to predict whether a particular incoming email is SPAM (unsolicited bulk email).
+Without reading every incoming message, it might be nice to have an automated way to identify SPAM emails.
+Which of the variables describing each email are important for predicting the status of the email?
+
+
+::: {.data}
+The data from this study can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`email`](http://openintrostat.github.io/openintro/reference/email.html).
+:::
+
+
+```{r resume-variables}
+resume_variables <- tribble(
+  ~variable,           ~description,
+  "spam", "Indicator for whether the email was spam.",
+  "to_multiple",          "Indicator for whether the email was addressed to more than one recipient.",
+  "from",    "Whether the message was listed as from anyone (this is usually set by default for regular outgoing email).",
+  "cc",  "Number of people cc'ed.",
+  "sent_email",            "Indicator for whether the sender had been sent an email in the last 30 days.",
+  "attach",          "The number of attached files.",
+  "dollar", "The number of times a dollar sign or the word “dollar” appeared in the email.",
+  "winner",              "Indicates whether “winner” appeared in the email.",
+  "format",               "Indicates whether the email was written using HTML (e.g. may have included bolding or active links).",
+    "re_subj",               "Whether the subject started with “Re:”, “RE:”, “re:”, or “rE:”",
+    "exclaim_subj",               "Whether there was an exclamation point in the subject.",
+    "urgent_subj",               "Whether the word “urgent” was in the email subject.",
+    "exclaim_mess",               "The number of exclamation points in the email message.",
+    "number",               "Factor variable saying whether there was no number, a small number (under 1 million), or a big number."
+)
+
+resume_variables %>%
+  mutate(variable = cell_spec(variable, monospace = TRUE)) %>%
+  kable(escape = FALSE, caption = "Descriptions for the `spam` variable along with 13 other variables in the `email` data set. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.") %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = "striped")
+```
+
+
+### Multiple logistic regression output from software {#inf-log-reg-soft}
+
+
+As learned in Chapter \@ref(multi-logistic-models), optimization can be used to find the coefficient estimates for the logistic model.
+The unknown population model can be written as:
+\begin{align}
+\log_e\bigg(\frac{p}{1-p}\bigg) =  \beta_0 + \beta_1\times \mbox{to_multiple} + \beta_2 \times \mbox{cc} + \beta_3 \times \mbox{dollar} + \beta_4 \times \mbox{urgent_subj}
+\end{align}
+
+The estimated equation for the regression model may be written as a model with four predictor variables:
+
+
+```{r emaillogmodel}
+glm(spam ~ to_multiple + cc + dollar + urgent_subj, data = email, family = "binomial") %>% tidy() %>%
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 5))) %>%
+  kable(caption = "Summary of a logistic model for predicting whether an email is SPAM based on the variables to_multiple, cc, dollar, and urgent_subj. Each of the variables has its own coefficient estimate as well as p-value significance.", digits = 2) %>%
+  kable_styling(full_width = FALSE)
+```
+
+\begin{align}
+\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -2.05 + -1.91\times \mbox{to_multiple} + 0.02 \times \mbox{cc} - 0.07 \times \mbox{dollar} + 2.66\times \mbox{urgent_subj}
+\end{align}
+
+
+
+Not only does Table \@ref(tab:emaillogmodel) provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
+
+
+As in Section \@ref(inf-mult-reg), with **multiple predictors**, each hypothesis test (for each of the explanatory variables) is conditioned on each of the other variables remaining in the model.
+
+$$\mbox{if multiple predictors } H_0: \beta_i = 0 \mbox{ given other variables in the model}$$
+
+Using the example above and focusing on each of the variable p-values (here we won't discuss the p-value associated with the intercept), we can write out the four different hypotheses (associated the p-value corresponding to each of the coefficients / row in Table \@ref(tab:emaillogmodel)):
+
+\begin{eqnarray*}
+H_0: \beta_1 = 0 && \mbox{ given \mbox{cc} and \mbox{dollar} and \mbox{urgent_subj} are included in the model}\\
+H_0: \beta_2 = 0 &&\mbox{ given \mbox{to_multiple} and \mbox{dollar}  and \mbox{urgent_subj} are included in the model}\\
+H_0: \beta_3 = 0 &&\mbox{ given \mbox{to_multiple} and \mbox{cc} and \mbox{urgent_subj} and are included in the model}
+H_0: \beta_4 = 0 &&\mbox{ given \mbox{to_multiple} and \mbox{cc} and \mbox{dollar} are included in the model}
+\end{eqnarray*}
+
+The very low p-values from the software output tell us that three of the variables (that is, not `cc`) act as important predictors in the model, despite the inclusion of any of the other variables.
+Consider the p-value on $H_0: \beta_1$.
+The low p-value says that it would be extremely unlikely to see data that produce a coefficient on `to_multiple` as large as -1.91 if the true relationship between `to_multiple` and `spam` was non-existent (i.e., if $\beta_1 = 0$) **and** the model also included `cc` and `dollar` and `urgent_subj`.
+Note also that the coefficient on `dollar` is quite significant, but the magnitude of the coefficient is small (0.07).
+It turns out that in units of standard errors (0.02 here), 0.07 is actually quite far from zero, it's all about context!
+The p-values on the remaining variables are be interpreted similarly.
+From the initial output (p-values) in Table  \@ref(tab:emaillogmodel) it seems as though `to_multiple`, `dollar`, and `urgent_subj` are important variables for modeling whether an email is SPAM.
+We remind you that although p-values provide some information about the model, there are many aspects to consider when choosing the best model.
+
+As with linear regression (see Section \@ref(inf-mult-reg-collin)), correlated explanatory variables can impact both the coefficient estimates and the associated p-values.
+Investigating multicollinearity in a logistic regression model is saved for a text which provides more detail about logistic regression.
+Next, as a model building alternative (or enhancement) to p-values, we revisit cross validation within the context of predicting SPAM status for each of the individual emails.  
+
+
+### Cross validation for prediction error {#inf-log-reg-cv}
+
+The p-value is a probability measure under a setting of no relationship.
+That p-value provides information about the degree of the relationship (e.g., above we measure the relationship between `spam` and `to_multiple` using a p-value), but the p-value does not measure how well the model will predict the individual emails (e.g., the accuracy of the model).
+Depending on the goal of the research project, you might be inclined to focus on variable importance (through p-values) or you might be inclined to focus on prediction accuracy (through cross validation).
+
+Here we present a method for using cross validation accuracy to determine which variables (if any) should be used in a model which predicts whether an email is SPAM.
+A full treatment of cross validation and multiple regression models is beyond the scope of this text.
+The models below compare the predictions using first only one variable (see Table \@ref(tab:email-spam)) and then using seven variables (see Table \@ref(tab:email-spam2)) .
+
+
+
+
+```{r echo = FALSE}
+set.seed(4747)
+data(email)
+emailfolds <- caret::createFolds(email$spam, k = 4)
+
+logCV <- data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold1,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold1,c("to_multiple")], type="response") ,
+           obs = email[emailfolds$Fold1,]$spam,
+           fold = rep("1st quarter", length(emailfolds$Fold1))) %>%
+  rbind(data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold2,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold2,c("to_multiple")], type="response") ,
+           obs = email[emailfolds$Fold2,]$spam,
+           fold = rep("2nd quarter", length(emailfolds$Fold2))) )%>%
+  rbind(data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold3,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold3,c("to_multiple")], type="response") ,
+           obs = email[emailfolds$Fold3,]$spam,
+           fold = rep("3rd quarter", length(emailfolds$Fold3))) )%>%
+  rbind(data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold4,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold4,c("to_multiple")], type="response") ,
+           obs = email[emailfolds$Fold4,]$spam,
+           fold = rep("4th quarter", length(emailfolds$Fold4))) )%>%
+  mutate(predspam = ifelse(predicted <= 0.1, 0, 1)) 
+
+#logCV %>%
+#  select(obs, predspam, fold) %>%
+#  table()
+```
+
+```{r email-spam}
+logCV %>%
+  group_by(fold) %>%
+  summarize(count = n(), accuracy = sum(obs==predspam) / n(), notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0), spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1)) %>%
+  kable(caption = "One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted.  The logistic regression model was fit independently of the removed emails. Only `to_multiple` is used to predict whether the email is spam.", digits = 2) %>%
+  kable_styling(full_width = FALSE)
+```
+
+Because the SPAM dataset has a ratio of 90% non-SPAM and 10% SPAM emails, a model which randomly guessed all non-SPAM would have an overall accuracy of 90%!
+Clearly, we'd like to capture the information with the SPAM emails, so our interest is in the percent of SPAM emails which are identified as SPAM (see Table \@ref(tab:email-spam)).
+Additionally, in the logistic regression model, we use a 10% cutoff to predict whether or not the email is SPAM.
+Fortunately, we've done a great job of predicting SPAM!
+However, the trade-off was that most of the non-SPAM emails are now predicted to be SPAM which is not acceptable for a SPAM prediction algorithm.
+Adding more variables to the model may help with both the SPAM and not-SPAM predictions.
+
+
+
+```{r}
+set.seed(4747)
+data(email)
+emailfolds <- caret::createFolds(email$spam, k = 4)
+
+logCV <- data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold1,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold1,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
+           obs = email[emailfolds$Fold1,]$spam,
+           fold = rep("1st quarter", length(emailfolds$Fold1))) %>%
+  rbind(data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold2,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold2,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
+           obs = email[emailfolds$Fold2,]$spam,
+           fold = rep("2nd quarter", length(emailfolds$Fold2))) )%>%
+  rbind(data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold3,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold3,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
+           obs = email[emailfolds$Fold3,]$spam,
+           fold = rep("3rd quarter", length(emailfolds$Fold3))) )%>%
+  rbind(data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold4,], family = "binomial") %>% 
+             predict(newdata = email[emailfolds$Fold4,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
+           obs = email[emailfolds$Fold4,]$spam,
+           fold = rep("4th quarter", length(emailfolds$Fold4))) )%>%
+  mutate(predspam = ifelse(predicted <= 0.1, 0, 1)) 
+
+#logCV %>%
+#  select(obs, predspam, fold) %>%
+#  table()
+```
+
+```{r email-spam2}
+logCV %>%
+  group_by(fold) %>%
+  summarize(count = n(), accuracy = sum(obs==predspam) / n(), notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0), spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1)) %>%
+  kable(caption = "One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted.  The logistic regression model was fit independently of the removed emails.  Now, the variables `to_multiple`, `attach`, `winner`, `format`, `re_subj`, `exclaim_mess`, and `number` are used to predict whether the email is spam.", digits = 2) %>%
+  kable_styling(full_width = FALSE)
+```
+
+
+Somewhat expected, the larger model (see Table \@ref(tab:email-spam2)) was able to capture more nuance in the emails which lead to better predictions.
+However, it is not true that adding variables will always lead to better predictions, as correlated or noise variables may dampen the signal from those variables which truly predict the SPAM status.
+We encourage you to learn more about multiple variable models and cross validation in your future exploration of statistical topics.
+
 
 ### Exercises {#inference-logistic-regression-exercises}
 
@@ -1370,6 +1602,10 @@ Exercises for this section are under construction.
 :::
 
 ## Chapter review {#chp8-review}
+
+Throughout the text, we have presented a modern view to introduction to statistics.  Early we presented graphical techniques which communicated relationships across multiple variables.  We also used modeling to formalize the relationships.  Many chapters were dedicated to inferential methods which allowed claims about the population to be made based on samples of data.  Not only did we present the mathematical model for each of the inferential techniques, but when appropriate, we also presented bootstrapping and permutation methods.  In Chapter \@ref{inference-reg} we brought many of the ideas together by considering inferential claims on models which include many variables.  
+
+As you might guess, this text has only scratched the surface of the world of statistical analyses that can be applied to different datasets.  In particular, to do justice to the topic, the linear models and generalized linear models we have introduced can each be covered with their own course or book.  Hierarchical models, alternative methods for fitting parameters (e.g., Ridge Regression or LASSO), and advanced computational methods applied to models (e.g., permuting the response variable? one explanatory variable? all the explanatory variables?) are all beyond the scope of this book.  However, your successful understanding of the ideas we have covered has set you up perfectly to move on to a higher level of statistical modeling and inference.  Enjoy!
 
 ### Terms
 
