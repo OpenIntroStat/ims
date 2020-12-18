@@ -1506,7 +1506,7 @@ The unknown population model can be written as:
 \log_e\bigg(\frac{p}{1-p}\bigg) =  \beta_0 + \beta_1\times \mbox{to_multiple} + \beta_2 \times \mbox{cc} + \beta_3 \times \mbox{dollar} + \beta_4 \times \mbox{urgent_subj}
 \end{align}
 
-The estimated equation for the regression model may be written as a model with four predictor variables:
+The estimated equation for the regression model may be written as a model with four predictor variables (where $\hat{p}$ is the estimated probability of being a SPAM email message):
 
 
 ```{r emaillogmodel}
@@ -1559,9 +1559,22 @@ That p-value provides information about the degree of the relationship (e.g., ab
 Depending on the goal of the research project, you might be inclined to focus on variable importance (through p-values) or you might be inclined to focus on prediction accuracy (through cross validation).
 
 Here we present a method for using cross validation accuracy to determine which variables (if any) should be used in a model which predicts whether an email is SPAM.
-A full treatment of cross validation and multiple regression models is beyond the scope of this text.
-The models below compare the predictions using first only one variable (see Table \@ref(tab:email-spam)) and then using seven variables (see Table \@ref(tab:email-spam2)) .
+A full treatment of cross validation and logistic regression models is beyond the scope of this text.
+Using cross validation, we can build $k$ different models which are used to predict the observations in each of the $k$ holdout samples.
+The smaller model uses only the `to_multiple` variable, see the complete dataset (not cross validated) model output in Table \@ref(tab:emaillogmodel1).
+The logistic regression model can be written as (where $\hat{p}$ is the estimated probability of being a SPAM email message):
+\begin{align}
+\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -2.12 + -1.81\times \mbox{to_multiple}
+\end{align}
 
+```{r emaillogmodel1}
+glm(spam ~ to_multiple, data = email, family = "binomial") %>% tidy() %>%
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 5))) %>%
+  kable(caption = "Summary of a logistic model for predicting whether an email is SPAM based on only the predictor variable to_multiple. Each of the variables has its own coefficient estimate as well as p-value significance.", digits = 2) %>%
+  kable_styling(full_width = FALSE)
+```
+For each cross validated model, the coefficients change slightly, and the model is used to make independent predictions on the holdout sample.
+The model from the first cross validation sample is given in Table \@ref(tab:emailCV1) and can be compared to the coefficients in Table \@ref(tab:emaillogmodel1).
 
 ```{r emailCV1, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset with a single predictor variable. Predictions are made on the remaining 1/4 of the observations. Note that the predictions are independent of the estimated model coefficients, and the prediction error rate is quite high.", out.width="100%"}
 include_graphics("08/figures/emailCV1.png")
@@ -1614,6 +1627,19 @@ Additionally, in the logistic regression model, we use a 10% cutoff to predict w
 Fortunately, we've done a great job of predicting SPAM!
 However, the trade-off was that most of the non-SPAM emails are now predicted to be SPAM which is not acceptable for a SPAM prediction algorithm.
 Adding more variables to the model may help with both the SPAM and not-SPAM predictions.
+
+The larger model uses `to_multiple`, `attach`, `winner`, `format`, `re_subj`, `exclaim_mess`, and `number` as the set of seven predictor variables, see the complete dataset (not cross validated) model output in Table \@ref(tab:emaillogmodel2).
+The logistic regression model can be written as (where $\hat{p}$ is the estimated probability of being a SPAM email message):
+\begin{align}
+\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -0.34 - 2.56\times \mbox{to_multiple} + 0.20 \times \mbox{attach} + 1.73 \times \mbox{winner}_{yes} - 1.28 \times \mbox{format} - 2.86 \times \mbox{re_subj} + 0 \times \mbox{exclaim_mess} - 1.07 \times \mbox{number}_{small} - 0.42 \times \mbox{number}_{big}
+\end{align}
+
+```{r emaillogmodel2}
+glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email, family = "binomial") %>% tidy() %>%
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 5))) %>%
+  kable(caption = "Summary of a logistic model for predicting whether an email is SPAM based on only the predictor variable to_multiple. Each of the variables has its own coefficient estimate as well as p-value significance.", digits = 2) %>%
+  kable_styling(full_width = FALSE)
+```
 
 ```{r emailCV2, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset with the seven specified predictor variables. Predictions are made on the remaining 1/4 of the observations. Note that the predictions are independent of the estimated model coefficients.  The predictions are now much better for both the SPAM and the non-SPAM emails (than they were with a single predictor variable).", out.width="100%"}
 include_graphics("08/figures/emailCV2.png")
