@@ -1,6 +1,8 @@
 on:
   push:
-    branches: master
+    branches:
+      - main
+      - master
 
 name: bookdown
 
@@ -14,13 +16,14 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Setup R
-        uses: r-lib/actions/setup-r@master
-        
-      - name: Setup pandoc
-        uses: r-lib/actions/setup-pandoc@master
+        uses: r-lib/actions/setup-r@v1
+
+      - name: Install pandoc
+        run: |
+          brew install pandoc
 
       - name: Cache Renv packages
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: $HOME/.local/share/renv
           key: r-${{ hashFiles('renv.lock') }}
@@ -35,15 +38,11 @@ jobs:
 
       - name: Install packages
         run: |
-          R -e 'install.packages("remotes")'
           R -e 'install.packages("renv")'
           R -e 'renv::restore()'
-
       - name: Build site
-        run: |
-         bookdown::render_book("index.Rmd", quiet = TRUE)
-        shell: Rscript {0}
-        
+        run: Rscript -e 'bookdown::render_book("index.Rmd", quiet = TRUE)'
+
       - name: Install npm
         uses: actions/setup-node@v1
 
@@ -55,3 +54,4 @@ jobs:
         run: |
           npm install netlify-cli -g
           netlify deploy --prod --dir _book
+          
