@@ -4,7 +4,7 @@ options(digits = 3)
 
 # packages ---------------------------------------------------------------------
 
-suppressMessages(library(broom))
+suppressMessages(library(tidymodels))
 suppressMessages(library(gghighlight))
 suppressMessages(library(glue))
 suppressMessages(library(ggmosaic))
@@ -24,6 +24,8 @@ suppressMessages(library(skimr))
 suppressMessages(library(threed))
 suppressMessages(library(ggthreed))
 suppressMessages(library(caret))
+suppressMessages(library(palmerpenguins))
+suppressMessages(library(survival))
 
 # knitr chunk options ----------------------------------------------------------
 

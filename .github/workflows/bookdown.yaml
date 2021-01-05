@@ -20,10 +20,8 @@ jobs:
         run: |
           brew install imagemagick@6
 
-      - name: Install pandoc and pandoc citeproc
-        run: |
-          brew install pandoc
-          brew install pandoc-citeproc
+      - name: Setup pandoc
+        uses: r-lib/actions/setup-pandoc@master
 
       - name: Cache Renv packages
         uses: actions/cache@v1
@@ -33,7 +31,7 @@ jobs:
           restore-keys: r-
 
       - name: Cache bookdown results
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: _bookdown_files
           key: bookdown-${{ hashFiles('**/*Rmd') }}
@@ -45,8 +43,13 @@ jobs:
           R -e 'renv::restore()'
 
       - name: Build site
-        run: Rscript -e 'bookdown::render_book("index.Rmd", quiet = TRUE)'
-
+        run: |
+         install.packages("devtools")
+         remotes::install_github("rstudio/bslib")
+         install.packages("downlit")
+         bookdown::render_book("index.Rmd", quiet = TRUE)
+        shell: Rscript {0}
+        
       - name: Install npm
         uses: actions/setup-node@v1
 
