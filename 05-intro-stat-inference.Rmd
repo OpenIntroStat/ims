@@ -315,7 +315,7 @@ gender_discrimination %>%
     axis.text.y = element_blank()
   ) +
   labs(
-    x = "Difference in promotion rates (male - female)",
+    x = "Simulated difference in promotion rates (male - female)",
     y = NULL
   )
 ```
@@ -435,7 +435,7 @@ ggplot(opportunity_cost, aes(y = fct_rev(group), fill = fct_rev(decision))) +
     )
 ```
 
-Another useful way to review the results from Table \@ref(tab:opportunity-cost-obs) is using row proportions, specifically considering the proportion of participants in each group who said they would buy or not buy the DVD.
+Another useful way to review the results from Table \@ref(tab:opportunity-cost-obs) is using row proportions, specifically considering the proportion of participants in each group who said they would buy or not buy the videod.
 These summaries are given in Table \@ref(tab:opportunity-cost-obs-row-prop).
 
 ```{r opportunity-cost-obs-row-prop}
@@ -448,8 +448,8 @@ opportunity_cost %>%
   add_header_above(c(" " = 1, "decision" = 2, " " = 1)) 
 ```
 
-We will define a **success**\index{success} in this study as a student who chooses not to buy the DVD.[^intro-stat-inference-8]
-Then, the value of interest is the change in DVD purchase rates that results by reminding students that not spending money now means they can spend the money later.
+We will define a **success**\index{success} in this study as a student who chooses not to buy the video.[^intro-stat-inference-8]
+Then, the value of interest is the change in video purchase rates that results by reminding students that not spending money now means they can spend the money later.
 
 [^intro-stat-inference-8]: Success is often defined in a study as the outcome of interest, and a "success" may or may not actually be a positive outcome.
     For example, researchers working on a study on COVID prevalence might define a "success" in the statistical sense as a patient who is COVID+.
@@ -487,133 +487,101 @@ Using the same randomization technique from the last section, let's see what hap
 
 While we would in reality do this simulation on a computer, it might be useful to think about how we would go about carrying out the simulation without a computer.
 We start with 150 index cards and label each card to indicate the distribution of our response variable: `decision`.
-That is, 53 cards will be labeled "not buy DVD" to represent the 53 students who opted not to buy, and 97 will be labeled "buy DVD" for the other 97 students.
+That is, 53 cards will be labeled "not buy video" to represent the 53 students who opted not to buy, and 97 will be labeled "buy video" for the other 97 students.
 Then we shuffle these cards thoroughly and divide them into two stacks of size 75, representing the simulated treatment and control groups.
-Any observed difference between the proportions of "not buy DVD" cards (what we earlier defined as *success*) can be attributed entirely to chance.
+Any observed difference between the proportions of "not buy video" cards (what we earlier defined as *success*) can be attributed entirely to chance.
 
 ::: {.workedexample}
-If we are randomly assigning the cards into the simulated treatment and control groups, how many "not buy DVD" cards would we expect to end up with in each simulated group?
-What would be the expected difference between the proportions of "not buy DVD" cards in each group?
+If we are randomly assigning the cards into the simulated treatment and control groups, how many "not buy video" cards would we expect to end up with in each simulated group?
+What would be the expected difference between the proportions of "not buy video" cards in each group?
 
 ------------------------------------------------------------------------
 
-Since the simulated groups are of equal size, we would expect $53 / 2 = 26.5$, i.e., 26 or 27, "not buy DVD" cards in each simulated group, yielding a simulated point estimate of 0% .
-However, due to random fluctuations, we might actually observe a number a little above or below 26 and 27.
+Since the simulated groups are of equal size, we would expect $53 / 2 = 26.5$, i.e., 26 or 27, "not buy video" cards in each simulated group, yielding a simulated point estimate of the difference in proportions of 0% .
+However, due to random chance, we might actually observe a number a little above or below 26 and 27.
 :::
 
-The results of a single randomization from chance alone is shown in Table \@ref(tab:opportunity-cost-obsSimulated).
+The results of a single randomization from chance alone is shown in Table \@ref(tab:opportunity-cost-obs-simulated).
+
+```{r opportunity-cost-obs-simulated}
+opportunity_cost_rand_1 <- tibble(
+  group = c(rep("control", 75), rep("treatment", 75)),
+  decision = c(
+    rep("buy video", 46), rep("not buy video", 29),
+    rep("buy video", 51), rep("not buy video", 24)
+  )
+) %>%
+  mutate(
+    group = as.factor(group),
+    decision = as.factor(decision)
+  )
+
+opportunity_cost_rand_1 %>% 
+  count(group, decision) %>% 
+  pivot_wider(names_from = decision, values_from = n) %>%
+  adorn_totals(where = c("col", "row")) %>% 
+  kable(caption = "Summary of student choices against their simulated groups. The group assignment had no connection to the student decisions, so any difference between the two groups is due to chance.") %>%
+  kable_styling(full_width = FALSE) %>%
+  add_header_above(c(" " = 1, "decision" = 2, " " = 1)) 
+```
+
 From this table, we can compute a difference that occurred from chance alone:
 
-$$\hat{p}_{trmt, sim} - \hat{p}_{ctrl, sim} = \frac{24}{75} - \frac{29}{75} = 0.32 - 0.387 = - 0.067$$
-
-```{r opportunity-cost-obsSimulated}
-temptbl <- tribble(
- ~variable,    ~col1, ~col2, ~col3, 
- "control group", "46", "29", "75",
- "treatment group", "51", "24","75",
- "Total", "97", "53", "150"
-)
-temptbl %>%
- kable(caption = "Summary of student choices against their simulated groups. The group assignment had no connection to the student decisions, so any difference between the two groups is due to chance.",
-    col.names = c( "", "buy DVD", "not buy DVD", "Total")) %>%
- kable_styling() %>%
- add_header_above(c( " ", "`decision`" = 2, " "))
-```
+$$\hat{p}_{treatment, sim} - \hat{p}_{control, sim} = \frac{24}{75} - \frac{29}{75} = 0.32 - 0.387 = - 0.067$$
 
 Just one simulation will not be enough to get a sense of what sorts of differences would happen from chance alone.
 
-We'll simulate another set of simulated groups and compute the new difference: 0.013.
+```{r opportunity-cost-rand-dist}
+set.seed(25)
+opportunity_cost_rand_dist <- opportunity_cost %>%
+  specify(decision ~ group, success = "not buy video") %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "diff in props", order = c("treatment", "control")) %>%
+  mutate(stat = round(stat, 3))
+```
 
-And again: 0.067.
+We'll simulate another set of simulated groups and compute the new difference: `r opportunity_cost_rand_dist$stat[1]`.
 
-And again: -0.173.
+And again: `r opportunity_cost_rand_dist$stat[2]`.
+
+And again: `r opportunity_cost_rand_dist$stat[3]`.
 
 We'll do this 1,000 times.
 
-The results are summarized in a dot plot in Figure \@ref(fig:OpportunityCostDiffsDotPlot), where each point represents a simulation.
+The results are summarized in a dot plot in Figure \@ref(fig:opportunity-cost-rand-dot-plot), where each point represents a simulation.
 
-Since there are so many points, it is more convenient to summarize the results in a histogram such as the one in Figure \@ref(fig:OpportunityCostDiffs), where the height of each histogram bar represents the fraction of observations in that group.
-
-```{r OpportunityCostDiffsDotPlot, fig.cap = "A stacked dot plot of 1,000 chance differences produced under the null hypothesis, $H_0$. Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study.", fig.width = 10}
-set.seed(41)
-DotPlotRegularized <- function(x,
-                         width = 5,
-                               col = "#569BBD",
-                               cex = 1, ...) {
-  x    <- sort(x)
-  xu   <- unique(x)
-  xlim <- range(x)
-  X    <- table(x)
-  height <- max(X) / width
-  plot(0, 0, xlim = xlim, ylim = c(0, height),
-       type = "n", axes = FALSE, ...)
-  axis(1)
-  
-  spread <- min(diff(xu)) / width / 2
-  for (i in seq_along(X)) {
-    val     <- xu[i]
-    num     <- X[i]
-    num.rep <- round(num / width) + 1
-    pos     <- rep(1:width, num.rep)
-    rel.pos <- (pos[1:num] - width / 2) * spread
-    ver.pos <- rep(1:num.rep, rep(width, num.rep))
-    ver.pos <- ver.pos[1:num]
-    points(val + rel.pos, ver.pos, pch = ".",
-           col = col, cex = cex)
-  }
-  abline(h = 0)
-}
-group   <- c(rep('control', 75), rep('treatment', 75))
-outcome <- c(rep(c('buy DVD', 'do not buy DVD'), c(56, 19)),
-             rep(c('buy DVD', 'do not buy DVD'), c(41, 34)))
-nsim  = 1000
-n     = length(group)
-group = group
-var1  = outcome
-success = "do not buy DVD"
-sim   = matrix(NA, nrow = n, ncol = nsim)
-n1    = n2 = 75
-Statistic <- function(var1, group){	
-  t1 <- var1 == success & group == levels(as.factor(group))[1]
-  t2 <- var1 == success & group == levels(as.factor(group))[2]
-  sum(t1)/n1 - sum(t2)/n2 
-}
-for(i in 1:nsim){
-  sim[,i] = sample(group, n, replace = FALSE)
-}
-sim_dist = apply(sim, 2, Statistic, var1 = outcome)
-diffs    = sim_dist
-pval     = sum(diffs >= 0.2) / nsim
-values  <- table(sim_dist)
-xlab <- paste0("Simulated difference in proportions ",
-               "of students who do not buy the DVD")
-DotPlotRegularized(diffs, xlab = xlab, ylab = "", cex = 2)
-text(0.2, 5, "observed\ndifference", pos = 3)
-lines(rep(0.2, 2), c(0, 5), lty = 2, col = COL[6])
+```{r opportunity-cost-rand-dot-plot, fig.cap = "A stacked dot plot of 1,000 chance differences produced under the null hypothesis, $H_0$. Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study."}
+ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
+  geom_dotplot(binwidth = 0.01, 
+               fill = COL["red", "full"], 
+               color = COL["red", "full"]) +
+  gghighlight(stat >= 0.20, 
+              unhighlighted_params = list(fill = "white", 
+                                          color = COL["blue", "full"], 
+                                          stroke = 1.5)) +
+  theme(
+    axis.ticks.y = element_blank(),
+    axis.text.y = element_blank()
+  ) +
+  labs(
+    x = "Difference in promotion rates (male - female)",
+    y = NULL
+  )
 ```
 
-```{r OpportunityCostDiffs, fig.cap = "A histogram of 1,000 chance differences produced under the null hypothesis, $H_0$. Histograms like this one are a more convenient representation of data or results when there are a large number of observations.", fig.width = 10}
-X <- c()
-Y <- c()
-udiffs <- sort(unique(diffs))
-for(i in 1:length(udiffs)){
- x  <- udiffs[i]
- rec <- sum(sim_dist == x)
- X  <- append(X, rep(x, rec))
- Y  <- append(Y, 1:rec)
-}
-bin.width <- diff(udiffs)[1]
-breaks <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
-histPlot(diffs, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
-     xlab = "", ylab = "Proportion of simulated scenarios        ")
-diffs.tmp <- diffs[diffs > 0.19]
-histPlot(diffs.tmp, breaks = breaks, col = COL[1], add = TRUE)
-axis(1)
-axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
-lines(c(0.2, 0.2), c(0, 30), lty = 3, lwd = 3)
-text(0.2, 30, "observed\ndifference", pos = 3)
-par(las = 0)
-mtext(xlab, 1, 2.5)
+Since there are so many points, it is more convenient to summarize the results in a histogram such as the one in Figure \@ref(fig:opportunity-cost-rand-hist), where the height of each histogram bar represents the fraction of observations in that group.
+
+```{r opportunity-cost-rand-hist, fig.cap = "A histogram of 1,000 chance differences produced under the null hypothesis, $H_0$. Histograms like this one are a more convenient representation of data or results when there are a large number of observations.", fig.width = 10}
+ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
+  geom_histogram(binwidth = 0.05, fill = COL["red", "full"], color = COL["blue", "full"], pad = TRUE) +
+  gghighlight(stat >= 0.20, 
+              unhighlighted_params = list(fill = "white", 
+                                          color = COL["blue", "full"])) +
+  labs(
+    x = "Simulated difference in proportions of students who\ndo not buy the video (treatment - control)",
+    y = "Number of simulated scenarios"
+  )
 ```
 
 If there was no treatment effect, then we'd only observe a difference of at least +20% about 0.6% of the time, or about 1-in-150 times.
@@ -689,7 +657,7 @@ The research question -- are females discriminated against in promotion decision
 -   $H_A$: Women are discriminated against in promotion decisions.
 
 The null hypothesis ($H_0$) was a perspective of no difference.
-The data on gender discrimination provided a point estimate of a 29.2% difference in recommended promotion rates between men and women.
+The data on gender discrimination provided a point estimate of a `r perc_diff` difference in recommended promotion rates between men and women.
 We determined that such a difference from chance alone would be rare: it would only happen about 2 in 100 times.
 When results like these are inconsistent with $H_0$, we reject $H_0$ in favor of $H_A$.
 Here, we concluded there was discrimination against women.
@@ -714,7 +682,7 @@ What was the test statistic in the opportunity cost study covered in Section \@r
 
 ------------------------------------------------------------------------
 
-The test statistic in the opportunity cost study was the difference in the proportion of students who decided against the DVD purchase in the treatment and control groups.
+The test statistic in the opportunity cost study was the difference in the proportion of students who decided against the video purchase in the treatment and control groups.
 In each of these examples, the **point estimate** of the difference in proportions was used as the test statistic.
 :::
 
@@ -730,14 +698,14 @@ We say that the data provide **statistically significant**\index{hypothesis test
 :::
 
 ::: {.workedexample}
-In the opportunity cost study in Section \@ref(caseStudyOpportunityCost), we analyzed an experiment where study participants had a 20% drop in likelihood of continuing with a DVD purchase if they were reminded that the money, if not spent on the DVD, could be used for other purchases in the future.
-We determined that such a large difference would only occur about 1-in-150 times if the reminder actually had no influence on student decision-making.
+In the opportunity cost study in Section \@ref(caseStudyOpportunityCost), we analyzed an experiment where study participants had a 20% drop in likelihood of continuing with a video purchase if they were reminded that the money, if not spent on the video, could be used for other purchases in the future.
+We determined that such a large difference would only occur 6-in-1000 times if the reminder actually had no influence on student decision-making.
 What is the p-value in this study?
 Was the result statistically significant?
 
 ------------------------------------------------------------------------
 
-The p-value was 0.006 (about 1/150).
+The p-value was 0.006.
 Since the p-value is less than 0.05, the data provide statistically significant evidence that US college students were actually influenced by the reminder.
 :::
 
@@ -750,13 +718,9 @@ Maybe we should use a bigger number, or maybe a smaller number.
 If you're a little puzzled, that probably means you're reading with a critical eye -- good job!
 We've made a video to help clarify *why 0.05*:
 
-<center>
-
 <https://www.openintro.org/book/stat/why05/>
 
-</center>
-
-<br> Sometimes it's also a good idea to deviate from the standard.
+Sometimes it's also a good idea to deviate from the standard.
 We'll discuss when to choose a threshold different than 0.05 in Section \@ref(two-prop-errors).
 :::
 
@@ -772,19 +736,11 @@ knitr::include_graphics("05/figures/fullrand.png")
 terms_chp_5 <- c(terms_chp_5, "randomization test")
 ```
 
-> **Frame the research question in terms of hypotheses.** Hypothesis tests are appropriate for research questions that can be summarized in two competing hypotheses.
-> The null hypothesis ($H_0$) usually represents a skeptical perspective or a perspective of no difference.
-> The alternative hypothesis ($H_A$) usually represents a new view or a difference.
-> **Collect data with an observational study or experiment.** If a research question can be formed into two hypotheses, we can collect data to run a hypothesis test.
-> If the research question focuses on associations between variables but does not concern causation, we would run an observational study.
-> If the research question seeks a causal connection between two or more variables, then an experiment should be used.
-> **Model the randomness as if the null hypothesis was true.** In the examples above, the variability has been modeled as if the treatment (e.g., gender, opportunity, blood thinner) allocation was independent of the outcome of the study.
-> The computer generated the null distribution from many different randomizations in order to quantify the null variability.
-> **Analyze the data.** Choose an analysis technique appropriate for the data and identify the p-value.
-> So far, we've only seen one analysis technique: randomization.
-> Throughout the rest of this textbook, we'll encounter several new methods suitable for many other contexts.
-> **Form a conclusion.** Using the p-value from the analysis, determine whether the data provide statistically significant evidence against the null hypothesis.
-> Also, be sure to write the conclusion in plain language so casual readers can understand the results.
+-   **Frame the research question in terms of hypotheses.** Hypothesis tests are appropriate for research questions that can be summarized in two competing hypotheses. The null hypothesis ($H_0$) usually represents a skeptical perspective or a perspective of no difference. The alternative hypothesis ($H_A$) usually represents a new view or a difference.
+-   **Collect data with an observational study or experiment.** If a research question can be formed into two hypotheses, we can collect data to run a hypothesis test. If the research question focuses on associations between variables but does not concern causation, we would run an observational study. If the research question seeks a causal connection between two or more variables, then an experiment should be used.
+-   **Model the randomness as if the null hypothesis was true.** In the examples above, the variability has been modeled as if the treatment (e.g., gender, opportunity, blood thinner) allocation was independent of the outcome of the study. The computer generated the null distribution from many different randomizations in order to quantify the null variability.
+-   **Analyze the data.** Choose an analysis technique appropriate for the data and identify the p-value. So far, we've only seen one analysis technique: randomization. Throughout the rest of this textbook, we'll encounter several new methods suitable for many other contexts.
+-   **Form a conclusion.** Using the p-value from the analysis, determine whether the data provide statistically significant evidence against the null hypothesis. Also, be sure to write the conclusion in plain language so casual readers can understand the results.
 
 ```{r chp5-1-summary}
 method_summary_table %>%
@@ -1235,13 +1191,13 @@ m.fact <- number.of.simulations / 1e3
 # _____ Opportunity Cost _____ #
 set.seed(2)
 group   <- c(rep('control', 75), rep('treatment', 75))
-outcome <- c(rep(c('buy DVD', 'do not buy DVD'), c(56, 19)),
-             rep(c('buy DVD', 'do not buy DVD'), c(41, 34)))
+outcome <- c(rep(c('buy video', 'do not buy video'), c(56, 19)),
+             rep(c('buy video', 'do not buy video'), c(41, 34)))
 nsim  = number.of.simulations
 n     = length(group)
 group = group
 var1  = outcome
-success = "do not buy DVD"
+success = "do not buy video"
 sim   = matrix(NA, nrow = n, ncol = nsim)
 n1    = n2 = 75
 Statistic <- function(var1, group){	
@@ -1389,7 +1345,7 @@ Below we introduce three new settings where the normal distribution will be usef
 
 ::: {.workedexample}
 The opportunity cost study determined that students are thriftier if they are reminded that saving money now means they can spend the money later.
-The study's point estimate for the estimated impact was 20%, meaning 20% fewer students would move forward with a DVD purchase in the study scenario.
+The study's point estimate for the estimated impact was 20%, meaning 20% fewer students would move forward with a video purchase in the study scenario.
 However, as we've learned, point estimates aren't perfect -- they only provide an approximation of the truth.
 
 ------------------------------------------------------------------------
@@ -2222,13 +2178,13 @@ Next, we'll use the normal distribution approach to compute the two-tailed p-val
 ```{r OpportunityCostDiffs-w-normal, fig.cap = "Null distribution of differences with an overlaid normal curve for the opportunity cost study. 10,000 simulations were run for this figure.", fig.width = 10}
 source("helpers/helper-dotplot.R")   # source helper
 group   <- c(rep('control', 75), rep('treatment', 75))
-outcome <- c(rep(c('buy DVD', 'do not buy DVD'), c(56, 19)),
-             rep(c('buy DVD', 'do not buy DVD'), c(41, 34)))
+outcome <- c(rep(c('buy video', 'do not buy video'), c(56, 19)),
+             rep(c('buy video', 'do not buy video'), c(41, 34)))
 nsim  = 10000
 n     = length(group)
 group = group
 var1  = outcome
-success = "do not buy DVD"
+success = "do not buy video"
 sim   = matrix(NA, nrow = n, ncol = nsim)
 n1    = n2 = 75
 Statistic <- function(var1, group){	
@@ -2244,7 +2200,7 @@ diffs    = sim_dist
 pval     = sum(diffs >= 0.29) / nsim
 values  <- table(sim_dist)
 xlab <- paste0("When $H_0$ is true, simulated difference in proportions ",
-               "of students who do not buy the DVD")
+               "of students who do not buy the video")
 X <- c()
 Y <- c()
 udiffs <- sort(unique(diffs))
@@ -2266,7 +2222,7 @@ lines(x0, 250 * y0)
 lines(c(0.2, 0.2), c(0, 300), lty = 3, lwd = 3)
 text(0.2, 300, "observed\ndifference", pos = 3)
 par(las = 0)
-mtext(expression('When H'[0]*' is true, simulated difference in proportions of students who do not buy the DVD'), 1, 2.5)
+mtext(expression('When H'[0]*' is true, simulated difference in proportions of students who do not buy the video'), 1, 2.5)
 ```
 
 ##### Observed statistic vs. null statistics {.unnumbered}
@@ -2400,7 +2356,7 @@ Compute the area between -1.96 and 1.96 for a normal distribution with mean 0 an
     This is where "1.96" comes from in the 95% confidence interval formula.
 
 ::: {.workedexample}
-The point estimate from the opportunity cost study was that 20% fewer students would buy a DVD if they were reminded that money not spent now could be spent later on something else.
+The point estimate from the opportunity cost study was that 20% fewer students would buy a video if they were reminded that money not spent now could be spent later on something else.
 The point estimate from this study can reasonably be modeled with a normal distribution, and a proper standard error for this point estimate is $SE = 0.078$.
 Construct a 95% confidence interval.[^intro-stat-inference-33]
 
@@ -2410,7 +2366,7 @@ Since the conditions for the normal approximation have already been verified, we
 
 $$\text{point estimate} \pm 1.96 \times SE = 0.20 \pm 1.96 \times 0.078 = (0.047, 0.353)$$
 
-We are 95% confident that the DVD purchase rate resulting from the treatment is between 4.7% and 35.3% lower than in the control group.
+We are 95% confident that the video purchase rate resulting from the treatment is between 4.7% and 35.3% lower than in the control group.
 Since this confidence interval does not contain 0, it is consistent with our earlier result where we rejected the notion of "no difference" using a hypothesis test.
 :::
 
