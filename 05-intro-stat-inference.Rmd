@@ -381,14 +381,6 @@ In this section, we'll explore an experiment conducted by researchers that inves
 
 #### Observed data {.unnumbered}
 
-```{=html}
-<!--Shane Frederick of Yale School of Management and his collaborators conducted an experiment exploring the rational behavior of consumers. 
-
-% Suppose when a person is about to spend money, we simply reminded them that they could spend the money on something else. Would it have any impact on the likelihood that they would continue with the purchase?
-%What would you do in this situation? Please circle one of the options below.
-
--->
-```
 One-hundred and fifty students were recruited for the study, and each was given the following statement:
 
 > Imagine that you have been saving some extra money on the side to make some purchases, and on your most recent visit to the video store you come across a special sale on a new video.
@@ -429,11 +421,6 @@ temptbl %>%
  add_header_above(c(" ", "`decision`" = 2, " "))
 ```
 
-```{=html}
-<!--
-%150 participants were asked whether they would buy a DVD under a particular circumstance. Participants in the control group were given two options, and participants in the treatment group were given the same options, except in the *not buy* option they were reminded that not spending the money meant the money could be used for a later purchase. This table summarizes the results from the study.}
--->
-```
 It might be a little easier to review the results using row proportions, specifically considering the proportion of participants in each group who said they would buy or not buy the DVD.
 These summaries are given in Table \@ref(tab:OpportunityCostTableRowProp).
 
@@ -452,11 +439,6 @@ temptbl %>%
  add_header_above(c( " ", "`decision`" = 2, " "))
 ```
 
-```{=html}
-<!--
-"The data from Table \@ref(tab:OpportunityCostTable) summarized using row proportions. Row proportions are particularly useful here since we can view the proportion of *buy* and *not buy* decisions in each group."
--->
-```
 We will define a **success**\index{success} in this study as a student who chooses not to buy the DVD.[^intro-stat-inference-8]
 Then, the value of interest is the change in DVD purchase rates that results by reminding students that not spending money now means they can spend the money later.
 
@@ -468,17 +450,16 @@ Then, the value of interest is the change in DVD purchase rates that results by 
 terms_chp_5 <- c(terms_chp_5, "success")
 ```
 
-```{=html}
-<!--
-%A first look at the data suggests that reminding students that not spending money means they can spend the money later has an impact. 
--->
-```
-We can construct a point estimate for this difference as \begin{align*}
+We can construct a point estimate for this difference as 
+
+\begin{align*}
 \hat{p}_{trmt} - \hat{p}_{ctrl}
  = \frac{34}{75} - \frac{19}{75}
  = 0.453 - 0.253
  = 0.200
-\end{align*} The proportion of students who chose not to buy the DVD was 20% higher in the treatment group than the control group.
+\end{align*} 
+
+The proportion of students who chose not to buy the DVD was 20% higher in the treatment group than the control group.
 However, is this result **statistically significant**\index{statistically significant}?
 In other words, is a 20% difference between the two groups so prominent that it is unlikely to have occurred from chance alone?
 
@@ -516,19 +497,29 @@ Since the simulated groups are of equal size, we would expect $53 / 2 = 26.5$, i
 However, due to random fluctuations, we might actually observe a number a little above or below 26 and 27.
 :::
 
-```{=html}
-<!--
-%We'll take the students and randomize them into two new groups, simulated-control and simulated-treatment groups, and then we'll look at the difference in the two groups. 
--->
-```
 The results of a single randomization from chance alone is shown in Table \@ref(tab:OpportunityCostTableSimulated).
-From this table, we can compute a difference that occurred from chance alone: \\begin{align\*} \\\\\hat{p}\\\\_{trmt, sim} - \\\\\hat{p}\\\\_{ctrl, sim} = \\\\\\\\frac{24}{75} - \\\\\\\\frac{29}{75} = 0.32 - 0.387 = - 0.067 \\\\\\\\end{align\\\\*} <!--
-%This difference of -6.7% is entirely due to chance.
--->
+From this table, we can compute a difference that occurred from chance alone: 
 
-```{r OpportunityCostTableSimulated} temptbl <- tribble( \\\~variable, \\\~col1, \\\~col2, \\\~col3, "control group", "46", "29", "75", "treatment group", "51", "24","75", "Total", "97", "53", "150" )
+\begin{align*}
+\hat{p}_{trmt, sim} - \hat{p}_{ctrl, sim}
+ = \frac{24}{75} - \frac{29}{75}
+ = 0.32 - 0.387
+ = - 0.067
+\end{align*}
 
-temptbl %>% kable(caption = "Summary of student choices against their simulated groups. The group assignment had no connection to the student decisions, so any difference between the two groups is due to chance.", col.names = c( "", "buy DVD", "not buy DVD", "Total")) %>% kable_styling() %>% add_header_above(c( " ", "\\\`decision\\\`" = 2, " ")) ```
+```{r OpportunityCostTableSimulated}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3, 
+ "control group", "46", "29", "75",
+ "treatment group", "51", "24","75",
+ "Total", "97", "53", "150"
+)
+temptbl %>%
+ kable(caption = "Summary of student choices against their simulated groups. The group assignment had no connection to the student decisions, so any difference between the two groups is due to chance.",
+    col.names = c( "", "buy DVD", "not buy DVD", "Total")) %>%
+ kable_styling() %>%
+ add_header_above(c( " ", "`decision`" = 2, " "))
+```
 
 Just one simulation will not be enough to get a sense of what sorts of differences would happen from chance alone.
 
@@ -544,34 +535,87 @@ The results are summarized in a dot plot in Figure \@ref(fig:OpportunityCostDiff
 
 Since there are so many points, it is more convenient to summarize the results in a histogram such as the one in Figure \@ref(fig:OpportunityCostDiffs), where the height of each histogram bar represents the fraction of observations in that group.
 
-```{r OpportunityCostDiffsDotPlot, fig.cap = "A stacked dot plot of 1,000 chance differences produced under the null hypothesis, $H_0$. Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study.", fig.width = 10}
+```{r OpportunityCostDiffsDotPlot, fig.cap="A stacked dot plot of 1,000 chance differences produced under the null hypothesis, $H_0$. Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study.", warning=FALSE, fig.width=10}
+set.seed(41)
+DotPlotRegularized <- function(x,
+                         width = 5,
+                               col = "#569BBD",
+                               cex = 1, ...) {
+  x    <- sort(x)
+  xu   <- unique(x)
+  xlim <- range(x)
+  X    <- table(x)
+  height <- max(X) / width
+  plot(0, 0, xlim = xlim, ylim = c(0, height),
+       type = "n", axes = FALSE, ...)
+  axis(1)
+  
+  spread <- min(diff(xu)) / width / 2
+  for (i in seq_along(X)) {
+    val     <- xu[i]
+    num     <- X[i]
+    num.rep <- round(num / width) + 1
+    pos     <- rep(1:width, num.rep)
+    rel.pos <- (pos[1:num] - width / 2) * spread
+    ver.pos <- rep(1:num.rep, rep(width, num.rep))
+    ver.pos <- ver.pos[1:num]
+    points(val + rel.pos, ver.pos, pch = ".",
+           col = col, cex = cex)
+  }
+  abline(h = 0)
+}
+group   <- c(rep('control', 75), rep('treatment', 75))
+outcome <- c(rep(c('buy DVD', 'do not buy DVD'), c(56, 19)),
+             rep(c('buy DVD', 'do not buy DVD'), c(41, 34)))
+nsim  = 1000
+n     = length(group)
+group = group
+var1  = outcome
+success = "do not buy DVD"
+sim   = matrix(NA, nrow = n, ncol = nsim)
+n1    = n2 = 75
+Statistic <- function(var1, group){	
+  t1 <- var1 == success & group == levels(as.factor(group))[1]
+  t2 <- var1 == success & group == levels(as.factor(group))[2]
+  sum(t1)/n1 - sum(t2)/n2 
+}
+for(i in 1:nsim){
+  sim[,i] = sample(group, n, replace = FALSE)
+}
+sim_dist = apply(sim, 2, Statistic, var1 = outcome)
+diffs    = sim_dist
+pval     = sum(diffs >= 0.2) / nsim
+values  <- table(sim_dist)
+xlab <- paste0("Simulated difference in proportions ",
+               "of students who do not buy the DVD")
+DotPlotRegularized(diffs, xlab = xlab, ylab = "", cex = 2)
+text(0.2, 5, "observed\ndifference", pos = 3)
+lines(rep(0.2, 2), c(0, 5), lty = 2, col = COL[6])
+```
 
-set.seed(41) DotPlotRegularized <- function(x, width = 5, col = "#569BBD", cex = 1, ...) { x <- sort(x) xu <- unique(x) xlim <- range(x) X <- table(x) height <- max(X) / width plot(0, 0, xlim = xlim, ylim = c(0, height), type = "n", axes = FALSE, ...) axis(1)
 
-spread <- min(diff(xu)) / width / 2 for (i in seq_along(X)) { val <- xu[i] num <- X[i] num.rep <- round(num / width) + 1 pos <- rep(1:width, num.rep) rel.pos <- (pos[1:num] - width / 2) * spread ver.pos <- rep(1:num.rep, rep(width, num.rep)) ver.pos <- ver.pos[1:num] points(val + rel.pos, ver.pos, pch = ".", col = col, cex = cex) } abline(h = 0) }
-
-group <- c(rep('control', 75), rep('treatment', 75)) outcome <- c(rep(c('buy DVD', 'do not buy DVD'), c(56, 19)), rep(c('buy DVD', 'do not buy DVD'), c(41, 34)))
-
-nsim = 1000 n = length(group) group = group var1 = outcome success = "do not buy DVD" sim = matrix(NA, nrow = n, ncol = nsim) n1 = n2 = 75
-
-Statistic <- function(var1, group){ t1 <- var1 == success & group == levels(as.factor(group))[1] t2 <- var1 == success & group == levels(as.factor(group))[2] sum(t1)/n1 - sum(t2)/n2 }
-
-for(i in 1:nsim){ sim[,i] = sample(group, n, replace = FALSE) }
-
-sim_dist = apply(sim, 2, Statistic, var1 = outcome) diffs = sim_dist pval = sum(diffs \\\>= 0.2) / nsim values <- table(sim_dist)
-
-xlab <- paste0("Simulated difference in proportions ", "of students who do not buy the DVD")
-
-DotPlotRegularized(diffs, xlab = xlab, ylab = "", cex = 2) text(0.2, 5, "observed\\\\ndifference", pos = 3) lines(rep(0.2, 2), c(0, 5), lty = 2, col = COL[6]) ```
-
-```{r OpportunityCostDiffs, fig.cap = "A histogram of 1,000 chance differences produced under the null hypothesis, $H_0$. Histograms like this one are a more convenient representation of data or results when there are a large number of observations.", fig.width = 10}
-
-X <- c() Y <- c() udiffs <- sort(unique(diffs)) for(i in 1:length(udiffs)){ x <- udiffs[i] rec <- sum(sim_dist == x) X <- append(X, rep(x, rec)) Y <- append(Y, 1:rec) }
-
-bin.width <- diff(udiffs)[1] breaks <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
-
-histPlot(diffs, breaks = breaks, axes = FALSE, col = rgb(1,1,1), xlab = "", ylab = "Proportion of simulated scenarios ") diffs.tmp <- diffs[diffs \\\> 0.19] histPlot(diffs.tmp, breaks = breaks, col = COL[1], add = TRUE) axis(1) axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim)) lines(c(0.2, 0.2), c(0, 30), lty = 3, lwd = 3) text(0.2, 30, "observed\\\\ndifference", pos = 3) par(las = 0) mtext(xlab, 1, 2.5)
-
+```{r OpportunityCostDiffs, fig.cap="A histogram of 1,000 chance differences produced under the null hypothesis, $H_0$. Histograms like this one are a more convenient representation of data or results when there are a large number of observations.", warning=FALSE, fig.width=10}
+X <- c()
+Y <- c()
+udiffs <- sort(unique(diffs))
+for(i in 1:length(udiffs)){
+ x  <- udiffs[i]
+ rec <- sum(sim_dist == x)
+ X  <- append(X, rep(x, rec))
+ Y  <- append(Y, 1:rec)
+}
+bin.width <- diff(udiffs)[1]
+breaks <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
+histPlot(diffs, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
+     xlab = "", ylab = "Proportion of simulated scenarios        ")
+diffs.tmp <- diffs[diffs > 0.19]
+histPlot(diffs.tmp, breaks = breaks, col = COL[1], add = TRUE)
+axis(1)
+axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
+lines(c(0.2, 0.2), c(0, 30), lty = 3, lwd = 3)
+text(0.2, 30, "observed\ndifference", pos = 3)
+par(las = 0)
+mtext(xlab, 1, 2.5)
 ```
 
 If there was no treatment effect, then we'd only observe a difference of at least +20% about 0.6% of the time, or about 1-in-150 times.
@@ -592,7 +636,9 @@ We also laid out an **alternative hypothesis**\index{alternative hypothesis}, wh
 
 The alternative hypothesis is usually the reason the scientists set out to do the research in the first place.
 
-```{r include = FALSE} terms_chp_5 <- c(terms_chp_5, "hypothesis test", "null hypothesis", "alternative hypothesis") ```
+```{r include=FALSE}
+terms_chp_5 <- c(terms_chp_5, "hypothesis test", "null hypothesis", "alternative hypothesis")
+```
 
 ::: {.important}
 **Null and alternative hypotheses.**
@@ -653,9 +699,6 @@ Here, we concluded there was discrimination against women.
 
 The 2-in-100 chance is what we call a **p-value**, which is a probability quantifying the strength of the evidence against the null hypothesis and in favor of the alternative. 
 
-<!--%Formally the p-value is a conditional probability, which is basically\footnote{Want to learn more probability? Check out Appendix \ref{probability}.}
--->
-
 ::: {.important}
 **p-value.**
 
@@ -689,13 +732,6 @@ Using a significance level of $\alpha = 0.05$ in the discrimination study, we ca
 We say that the data provide **statistically significant**\index{hypothesis testing!statistically significant|textbf} evidence against the null hypothesis if the p-value is less than some reference value, often $\alpha=0.05$.
 ::: 
 
-<!--
-%\begin{termBox}{\tBoxTitle{Significance Level}
-%If the null hypothesis is true, the significance level $\alpha$ defines the probability that we will make a Type 1 Error.}
-%\end{termBox}
--->
-
-
 ::: {.workedexample}
 In the opportunity cost study in Section \@ref(caseStudyOpportunityCost), we analyzed an experiment where study participants had a 20% drop in likelihood of continuing with a DVD purchase if they were reminded that the money, if not spent on the DVD, could be used for other purchases in the future. 
 We determined that such a large difference would only occur about 1-in-150 times if the reminder actually had no influence on student decision-making. 
@@ -726,13 +762,10 @@ We'll discuss when to choose a threshold different than 0.05 in Section \@ref(tw
 ::: 
 
 
-
-
-
 ### Randomization test summary
 
 ```{r fullrand, out.width="100%", fig.cap="An example of one simulation of the full randomization procedure.  We repeat the steps hundreds or thousands of times."}
-include_graphics("05/figures/fullrand.png")
+knitr::include_graphics("05/figures/fullrand.png")
 ```
 
 \index{randomization test}
@@ -752,8 +785,9 @@ terms_chp_5 <- c(terms_chp_5, "randomization test")
 method_summary_table %>%
   filter(variable != "What are the technical conditions?") %>%
   select(variable, col1) %>%
- kable(caption = "Summary of Randomization Tests as an inferential statistical method.", col.names = c("", "Randomization Test")) %>%
- kable_styling()
+  kable(caption = "Summary of Randomization Tests as an inferential statistical method.", 
+        col.names = c("", "Randomization Test")) %>%
+  kable_styling()
 ```
 
 ### Exercises {#randomization-test-exercises}
@@ -863,7 +897,8 @@ We typically estimate the parameter using a point estimate\index{point estimate}
 
 For example, we estimate the probability $p$ of a complication for a client of the medical consultant by examining the past complications rates of her clients:
 
-$$\hat{p} = 3 / 62 = 0.048\\\\qquad\\\\text{is used to estimate}\\\\qquad p$$
+$$\hat{p} = 3 / 62 = 0.048~text{is used to estimate}~p$$
+
 :::
 
 ```{r include=FALSE}
@@ -957,12 +992,12 @@ By drawing the marbles out of the bag with replacement, we depict the exact same
 Note in Figure \@ref(fig:boot4) that when sampling the original observations, a particular data point may end up in the new sample one time (evidenced by a circle around the observation), two times (evidenced by two circles around the observation), or not at all (no circles around the observation).
 
 ```{r boot4, fig.cap = "Taking repeated resamples from the sample data is the same process as creating an infinitely large estimate of the population.  It is computationally more feasible to take resamples directly from the sample.  Note that the resampling is now done with replacement (that is, the original sample does not ever change) so that the original sample and estimated hypothetical population are equivalent.", warning = FALSE,  out.width="75%"}
-include_graphics("05/figures/boot1prop4.png")
+knitr::include_graphics("05/figures/boot1prop4.png")
 ```
 
 
 ```{r boot1prop, fig.cap = "A comparison of the process of sampling from the estimate infinite population and resampling with replacement from the original sample.  Note that the histogram of bootstrapped proportions is the same because the process by which the statistics were estimated is equivalent.", warning = FALSE,  out.width="75%"}
-include_graphics("05/figures/boot1propboth.png")
+knitr::include_graphics("05/figures/boot1propboth.png")
 ```
 
 If we apply the bootstrap sampling process to the medical consultant example, we consider each client to be one of the marbles in the bag.
@@ -1048,7 +1083,6 @@ For example, we can start by simulating 5 tapper-listener pairs by sampling 5 ma
 | W | W | W | R | W |
 |:-----:|:-----:|:-----:|:-------:|:-----:|
 | Wrong | Wrong | Wrong | Correct | Wrong |
-
 
 After selecting 120 marbles, we counted 2 red for $\hat{p}_{BS1} = 0.0167$. 
 As we did with the randomization technique, seeing what would happen with one simulation isn't enough. 
