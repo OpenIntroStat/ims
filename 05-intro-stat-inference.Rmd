@@ -295,7 +295,7 @@ And another: 0.208.
 And so on until we repeat the simulation enough times that we have a good idea of the shape of the *distribution of differences from chance alone*.
 Figure \@ref(fig:gender-rand-dot-plot) shows a plot of the differences found from 100 simulations, where each dot represents a simulated difference between the proportions of male and female files recommended for promotion.
 
-```{r gender-rand-dot-plot, fig.cap = "A stacked dot plot of differences from 100 simulations produced under the null hypothesis, $H_0$, where the simulated gender and decision are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study, and are shown as solid red dots."}
+```{r gender-rand-dot-plot, fig.cap = "A stacked dot plot of differences from 100 simulations produced under the null hypothesis, $H_0$, where the simulated gender and decision are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study, and are shown as solid red dots.", fig.asp = 0.5}
 set.seed(35)
 gender_discrimination %>%
   specify(decision ~ gender, success = "promoted") %>%
@@ -303,9 +303,13 @@ gender_discrimination %>%
   generate(reps = 100, type = "permute") %>%
   calculate(stat = "diff in props", order = c("male", "female")) %>%
   ggplot(aes(x = stat)) +
-  geom_dotplot(binwidth = 0.01, fill = COL["red", "full"], color = COL["red", "full"]) +
+  geom_dotplot(binwidth = 0.01, 
+               fill = COL["red", "full"], 
+               color = COL["red", "full"]) +
   gghighlight(stat >= 0.292, 
-              unhighlighted_params = list(fill = "white", color = COL["blue", "full"], stroke = 1.5)) +
+              unhighlighted_params = list(fill = "white", 
+                                          color = COL["blue", "full"], 
+                                          stroke = 1.5)) +
   theme(
     axis.ticks.y = element_blank(),
     axis.text.y = element_blank()
@@ -366,11 +370,8 @@ In particular, we are interested in whether reminding students about this well-k
 A skeptic might think that such a reminder would have no impact.
 We can summarize the two different perspectives using the null and alternative hypothesis framework.
 
--   $H_0$: **Null hypothesis**.
-    Reminding students that they can save money for later purchases will not have any impact on students' spending decisions.
-
--   $H_A$: **Alternative hypothesis**.
-    Reminding students that they can save money for later purchases will reduce the chance they will continue with a purchase.
+-   $H_0$: **Null hypothesis**. Reminding students that they can save money for later purchases will not have any impact on students' spending decisions.
+-   $H_A$: **Alternative hypothesis**. Reminding students that they can save money for later purchases will reduce the chance they will continue with a purchase.
 
 In this section, we'll explore an experiment conducted by researchers that investigates this very question for students at a university in the southwestern United States.[^intro-stat-inference-7]
 
@@ -387,7 +388,6 @@ One-hundred and fifty students were recruited for the study, and each was given 
 > This video is one with your favorite actor or actress, and your favorite type of movie (such as a comedy, drama, thriller, etc.).
 > This particular video that you are considering is one you have been thinking about buying for a long time.
 > It is available for a special sale price of \$14.99.
-
 > What would you do in this situation?
 > Please circle one of the options below.
 
@@ -406,22 +406,36 @@ The remaining 75 students were placed in the treatment group, and they saw a sli
 Would the extra statement reminding students of an obvious fact impact the purchasing decision?
 Table \@ref(tab:OpportunityCostTable) summarizes the study results.
 
-```{r OpportunityCostTable}
-temptbl <- tribble(
- ~variable,    ~col1, ~col2, ~col3, 
- "control group", "56", "19", "75",
- "treatment group", "41", "34","75",
- "Total", "97", "53", "150"
-)
+::: {.data}
+The data from this study can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`opportunity_cost`](http://openintrostat.github.io/openintro/reference/opportunity_cost.html).
+:::
 
-temptbl %>%
- kable(caption = "Summary of student choices in the opportunity cost study.",
-    col.names = c("", "buy DVD", "not buy DVD", "Total")) %>%
- kable_styling() %>%
- add_header_above(c(" ", "`decision`" = 2, " "))
+```{r OpportunityCostTable}
+opportunity_cost %>% 
+  count(group, decision) %>% 
+  pivot_wider(names_from = decision, values_from = n) %>%
+  adorn_totals(where = c("col", "row")) %>% 
+  kable(caption = "Summary results of the opportunity cost study.") %>%
+  kable_styling(full_width = FALSE) %>%
+  add_header_above(c(" " = 1, "decision" = 2, " " = 1)) 
 ```
 
-It might be a little easier to review the results using row proportions, specifically considering the proportion of participants in each group who said they would buy or not buy the DVD.
+It might be a little easier to review the results using a visualisation.
+Figure \@ref(fig:opportunity-cost-obs-bar) shows that a higher proportion of students in the treatment group chose not to buy the video compared to those in the control group.
+
+```{r opportunity-cost-obs-bar, fig.cap = "Segmented bar plot of results of the opportunity cost study."}
+ggplot(opportunity_cost, aes(y = fct_rev(group), fill = fct_rev(decision))) +
+  geom_bar(position = "fill") +
+  scale_fill_manual(values = c(COL["red", "full"], COL["blue", "full"])) +
+  scale_x_continuous(labels = label_percent()) +
+  labs(
+    x = "Proportion",
+    y = "Group",
+    fill = "Decision"
+    )
+```
+
+Another useful way to review the results from Table \@ref(tab:OpportunityCostTable) is using row proportions, specifically considering the proportion of participants in each group who said they would buy or not buy the DVD.
 These summaries are given in Table \@ref(tab:OpportunityCostTableRowProp).
 
 ```{r OpportunityCostTableRowProp}
