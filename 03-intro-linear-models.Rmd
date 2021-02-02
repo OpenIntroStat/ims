@@ -374,7 +374,7 @@ It would be useful if we could quantify the strength of these linear relationshi
 
 ::: {.important}
 **Correlation: strength of a linear relationship.** **Correlation** which always takes values between -1 and 1, describes the strength of the linear relationship between two variables.
-We denote the correlation by $R$.
+We denote the correlation by $r$.
 :::
 
 ```{r include=FALSE}
@@ -389,7 +389,7 @@ If the relationship is strong and positive, the correlation will be near +1.
 If it is strong and negative, it will be near -1.
 If there is no apparent linear relationship between the variables, then the correlation will be near zero.
 
-[^intro-linear-models-3]: Formally, we can compute the correlation for observations $(x_1, y_1)$, $(x_2, y_2)$, ..., $(x_n, y_n)$ using the formula $$R = \frac{1}{n-1} \sum_{i=1}^{n} \frac{x_i-\bar{x}}{s_x}\frac{y_i-\bar{y}}{s_y}$$ where $\bar{x}$, $\bar{y}$, $s_x$, and $s_y$ are the sample means and standard deviations for each variable.
+[^intro-linear-models-3]: Formally, we can compute the correlation for observations $(x_1, y_1)$, $(x_2, y_2)$, ..., $(x_n, y_n)$ using the formula $$r = \frac{1}{n-1} \sum_{i=1}^{n} \frac{x_i-\bar{x}}{s_x}\frac{y_i-\bar{y}}{s_y}$$ where $\bar{x}$, $\bar{y}$, $s_x$, and $s_y$ are the sample means and standard deviations for each variable.
 
 ```{r posNegCorPlots, fig.cap="Sample scatterplots and their correlations. The first row shows variables with a positive relationship, represented by the trend up and to the right. The second row shows variables with a negative trend, where a large value in one variable is associated with a lower value in the other.", out.width="100%", fig.asp=0.5}
 library(ggpubr) # Adding here instead of _common.R to avoid collision with ggimage
@@ -405,7 +405,8 @@ simulated_scatter %>%
     strip.background = element_blank(),
     strip.text.x = element_blank()
   ) +
-  stat_cor(aes(label = ..r.label..))
+#  stat_cor(aes(label = ..r.label..))
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
 ```
 
 The correlation is intended to quantify the strength of a linear trend.
@@ -423,8 +424,122 @@ simulated_scatter %>%
     strip.background = element_blank(),
     strip.text.x = element_blank()
   ) +
-  stat_cor(aes(label = ..r.label..))
+#  stat_cor(aes(label = ..r.label..))
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
 ```
+
+
+::: {.workedexample}
+Consider a handful of crop yields taken from [Our World in Data](https://ourworldindata.org/crop-yields). In each plot a point represents a different country.  The x and y variables represent the proportion of total yield in the last 50 years which is due to that crop type. 
+
+Order the six scatterplots from strongest negative to strongest positive linear relationship.  
+
+```{r}
+library(naniar)
+crops_country <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-01/key_crop_yields.csv') %>%
+  rename(wheat = `Wheat (tonnes per hectare)`,
+         rice = `Rice (tonnes per hectare)`,
+         maize = `Maize (tonnes per hectare)`,
+         soybeans = `Soybeans (tonnes per hectare)`,
+         potatoes = `Potatoes (tonnes per hectare)`,
+         beans = `Beans (tonnes per hectare)`,
+         peas = `Peas (tonnes per hectare)`,
+         cassava = `Cassava (tonnes per hectare)`,
+         barley = `Barley (tonnes per hectare)`,
+         cocoa = `Cocoa beans (tonnes per hectare)`,
+         bananas = `Bananas (tonnes per hectare)`) %>% 
+    filter(!is.na(Code)) %>%  # remove continents, etc.
+  group_by(Code) %>%  # to sum and percent by country
+  summarize(swheat = sum(wheat, na.rm = TRUE),
+            srice = sum(rice, na.rm = TRUE),
+            smaize = sum(maize, na.rm = TRUE),
+            ssoybeans = sum(soybeans, na.rm = TRUE),
+            spotatoes = sum(potatoes, na.rm = TRUE),
+            sbeans = sum(beans, na.rm = TRUE),
+            speas = sum(peas, na.rm = TRUE),
+            scassava = sum(cassava, na.rm = TRUE),
+            sbarley = sum(barley, na.rm = TRUE),
+            scocoa = sum(cocoa, na.rm = TRUE),
+            sbananas = sum(bananas, na.rm = TRUE),
+            pwheat = 100*swheat / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
+            price = 100*srice / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
+            pmaize = 100*smaize / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
+            psoybeans = 100*ssoybeans / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
+            ppotatoes = 100*spotatoes / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
+            pbeans = 100*sbeans / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
+            ppeas = 100*speas / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
+            pcassava = 100*scassava / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
+            pbarley = 100*sbarley / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
+            pcocoa = 100*scocoa / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
+            pbananas = 100*sbananas / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
+            ) %>%
+  replace_with_na_all(condition = ~.x == 0)%>%
+  mutate(nmiss = rowSums(is.na(.))/2) %>%
+  filter(nmiss <= 5)  # filter out countries that don't have data for most of the crops.
+sb <- ggplot(crops_country) +
+  geom_point(aes(x = psoybeans, y = pbananas)) +
+  xlim(c(0,6)) + 
+  xlab("% soybeans") +
+  ylab("% bananas")
+
+sc <- ggplot(crops_country) +
+  geom_point(aes(x = psoybeans, y = pcassava)) +
+  xlim(c(0,6)) + 
+  xlab("% soybeans") +
+  ylab("% cassava")
+
+mc <- ggplot(crops_country) +
+  geom_point(aes(x = pmaize, y = pcassava)) +
+  xlim(c(0,15)) + 
+  xlab("% maize") +
+  ylab("% cassava")
+
+peb <- ggplot(crops_country) +
+  geom_point(aes(x = ppotatoes, y = pbananas)) +
+  xlim(c(0,60)) + 
+  xlab("% potatoes") +
+  ylab("% bananas")
+
+cb <- ggplot(crops_country) +
+  geom_point(aes(x = pcocoa, y = pbananas)) +
+  xlab("% cocoa") +
+  ylab("% bananas")
+
+wb <- ggplot(crops_country) +
+  geom_point(aes(x = pwheat, y = pbarley)) +
+  xlab("% wheat") +
+  ylab("% barley")
+
+pob <- ggplot(crops_country) +
+  geom_point(aes(x = ppeas, y = pbarley)) +
+  xlab("% peas") +
+  ylab("% barley")
+
+ggpubr::ggarrange( peb, sc, mc, cb, pob, wb, 
+                   labels = c("A", "B", "C", "D", "E", "F"),
+                   ncol = 2, nrow = 3)
+```
+
+------------------------------------------------------------------------
+
+```{r}
+temptbl <- tribble(
+ ~variable,  ~col1, ~col2, ~corval,
+ "A", "potatoes", "bananas", round(cor(crops_country$ppotatoes, crops_country$pbananas, use = "pairwise.complete.obs"), digits = 2),
+ "B", "soybeans", "cassava", round(cor(crops_country$psoybeans, crops_country$pcassava, use = "pairwise.complete.obs"), digits = 2),
+ "C", "maize", "cassava", round(cor(crops_country$pmaize, crops_country$pcassava, use = "pairwise.complete.obs"), digits = 2),
+ "D", "cocoa", "bananas", round(cor(crops_country$pcocoa, crops_country$pbananas, use = "pairwise.complete.obs"), digits = 2),
+ "E", "peas", "barley", round(cor(crops_country$ppeas, crops_country$pbarley, use = "pairwise.complete.obs"), digits = 2),
+ "F", "wheat", "barley", round(cor(crops_country$pwheat, crops_country$pbarley, use = "pairwise.complete.obs"), digits = 2),
+)
+
+temptbl %>%
+ kable(caption = "Correlation of percentage of total yield across different crops.",
+  col.names = c("Graph", "x-variable", "y-variable", "correlation")) %>%
+ kable_styling() 
+```
+:::
+
 
 ::: {.guidedpractice}
 No straight line is a good fit for the data sets represented in Figure \@ref(fig:corForNonLinearPlots).
@@ -591,7 +706,7 @@ Calculating these values by hand leverages two properties of the least squares l
 
 $$b_1 = \frac{s_y}{s_x} R $$
 
-where $R$ is the correlation between the two variables, and $s_x$ and $s_y$ are the sample standard deviations of the explanatory variable and response, respectively.
+where $r$ is the correlation between the two variables, and $s_x$ and $s_y$ are the sample standard deviations of the explanatory variable and response, respectively.
 
 -   If $\bar{x}$ is the sample mean of the explanatory variable and $\bar{y}$ is the sample mean of the vertical variable, then the point $(\bar{x}, \bar{y})$ is on the least squares line.
 
@@ -755,7 +870,7 @@ terms_chp_3 <- c(terms_chp_3, "coefficient of determination")
 ::: {.important}
 **Coefficient of determination: proportion of variability in the response variable explained by the model.**
 
-Since $R$ is always between -1 and 1, $R^2$ will always be between 0 and 1.
+Since $r$ is always between -1 and 1, $R^2$ will always be between 0 and 1.
 This statistic is called the **coefficient of determination** and it measures the proportion of variation in the response variable, $y$, that can be explained by the linear model with predictor $x$.
 :::
 
