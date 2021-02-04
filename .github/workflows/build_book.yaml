@@ -2,9 +2,17 @@ on:
   push:
     branches:
       - master
-      - new-workflow
+  pull_request:
+    branches:
+      - master
+  schedule:
+    # run every day at 11 PM
+    - cron: '0 23 * * *'
 
 name: Build book
+
+env:
+  isExtPR: ${{ github.event.pull_request.head.repo.fork == true }}
 
 jobs:
   build:
@@ -59,14 +67,20 @@ jobs:
           # options(bookdown.render.file_scope = FALSE)
           bookdown::render_book("index.Rmd")
         shell: Rscript {0}
-      - name: Install npm
-        uses: actions/setup-node@v1
-
+        
       - name: Deploy to Netlify
-        # NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID added in the repo's secrets
+        if: contains(env.isExtPR, 'false')
+        id: netlify-deploy
+        uses: nwtgck/actions-netlify@v1.1
+        with:
+          publish-dir: './_book'
+          production-branch: master
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message:
+            'Deploy from GHA: ${{ github.event.pull_request.title || github.event.head_commit.message }} (${{ github.sha }})'
+          enable-pull-request-comment: false
+          enable-commit-comment: false
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        run: |
-          npm install netlify-cli -g
-          netlify deploy --prod --dir _book
+        timeout-minutes: 1
