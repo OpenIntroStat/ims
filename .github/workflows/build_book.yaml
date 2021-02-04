@@ -1,8 +1,8 @@
 on:
   push:
     branches:
-      - main
       - master
+      - new-workflow
 
 name: Build book
 
@@ -16,38 +16,49 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Setup R
-        uses: r-lib/actions/setup-r@v1
-        
-      - name: Install gfortran and imagemagick
-        run: |
-          brew install gfortran
-          brew install imagemagick@6
+        uses: r-lib/actions/setup-r@master
 
-      - name: Install pandoc
+      - name: Setup pandoc
+        uses: r-lib/actions/setup-pandoc@master
+        with:
+          pandoc-version: '2.11.2'
+          
+      - name: Get R version
+        id: get-r-version
         run: |
-          brew install pandoc
+          echo "::set-output name=version::$(Rscript -e 'cat(as.character(getRversion()))')"
+        shell: bash
 
-      - name: Cache Renv packages
+      - name: Cache R packages
         uses: actions/cache@v2
         with:
-          path: $HOME/.local/share/renv
-          key: r-${{ hashFiles('renv.lock') }}
-          restore-keys: r-
+          path: ${{ env.R_LIBS_USER }}
+          key: ${{ runner.os }}-${{ steps.get-r-version.outputs.version }}-3-
+
+      - name: Install pak
+        run: |
+          install.packages("pak", repos = "https://r-lib.github.io/p/pak/dev/")
+        shell: Rscript {0}
+
+      - name: Install dependencies
+        run: |
+          pak::local_install_dev_deps()
+        shell: Rscript {0}
 
       - name: Cache bookdown results
         uses: actions/cache@v2
         with:
           path: _bookdown_files
-          key: bookdown-${{ hashFiles('**/*Rmd') }}
-          restore-keys: bookdown-
+          key: bookdown-3-${{ hashFiles('**/*Rmd') }}
+          restore-keys: bookdown-3-
 
-      - name: Install packages
-        run: |
-          R -e 'install.packages("renv")'
-          R -e 'renv::restore()'
       - name: Build site
-        run: Rscript -e 'bookdown::render_book("index.Rmd", quiet = TRUE)'
-
+        run: |
+          # Allows [implcit heading links] to work; will need to convert
+          # to explicit before switching to visual editor
+          # options(bookdown.render.file_scope = FALSE)
+          bookdown::render_book("index.Rmd")
+        shell: Rscript {0}
       - name: Install npm
         uses: actions/setup-node@v1
 
