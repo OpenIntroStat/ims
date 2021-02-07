@@ -435,90 +435,89 @@ The x and y variables represent the proportion of total yield in the last 50 yea
 
 Order the six scatterplots from strongest negative to strongest positive linear relationship.
 
-```{r}
-library(naniar)
-crops_country <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-01/key_crop_yields.csv') %>%
-  rename(wheat = `Wheat (tonnes per hectare)`,
-         rice = `Rice (tonnes per hectare)`,
-         maize = `Maize (tonnes per hectare)`,
-         soybeans = `Soybeans (tonnes per hectare)`,
-         potatoes = `Potatoes (tonnes per hectare)`,
-         beans = `Beans (tonnes per hectare)`,
-         peas = `Peas (tonnes per hectare)`,
-         cassava = `Cassava (tonnes per hectare)`,
-         barley = `Barley (tonnes per hectare)`,
-         cocoa = `Cocoa beans (tonnes per hectare)`,
-         bananas = `Bananas (tonnes per hectare)`) %>% 
-    filter(!is.na(Code)) %>%  # remove continents, etc.
-  group_by(Code) %>%  # to sum and percent by country
-  summarize(swheat = sum(wheat, na.rm = TRUE),
-            srice = sum(rice, na.rm = TRUE),
-            smaize = sum(maize, na.rm = TRUE),
-            ssoybeans = sum(soybeans, na.rm = TRUE),
-            spotatoes = sum(potatoes, na.rm = TRUE),
-            sbeans = sum(beans, na.rm = TRUE),
-            speas = sum(peas, na.rm = TRUE),
-            scassava = sum(cassava, na.rm = TRUE),
-            sbarley = sum(barley, na.rm = TRUE),
-            scocoa = sum(cocoa, na.rm = TRUE),
-            sbananas = sum(bananas, na.rm = TRUE),
-            pwheat = 100*swheat / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
-            price = 100*srice / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
-            pmaize = 100*smaize / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
-            psoybeans = 100*ssoybeans / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
-            ppotatoes = 100*spotatoes / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
-            pbeans = 100*sbeans / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
-            ppeas = 100*speas / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
-            pcassava = 100*scassava / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
-            pbarley = 100*sbarley / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
-            pcocoa = 100*scocoa / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
-            pbananas = 100*sbananas / (swheat + srice + smaize + ssoybeans + spotatoes + sbeans + speas + scassava + sbarley + scocoa + sbananas),
-            ) %>%
-  replace_with_na_all(condition = ~.x == 0)%>%
-  mutate(nmiss = rowSums(is.na(.))/2) %>%
-  filter(nmiss <= 5)  # filter out countries that don't have data for most of the crops.
+```{r out.width = "100%", out.width =  "140%"}
+crops_country <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-01/key_crop_yields.csv")
+
+crops_country <- crops_country %>%
+  rename_with(tolower) %>%
+  rename_with(str_remove, contains("tonnes"), " \\(tonnes per hectare\\)") %>%
+  rename(cocoa = `cocoa beans`) %>%
+  filter(!is.na(code)) %>%
+  pivot_longer(
+    cols = wheat:bananas,
+    names_to = "crop",
+    values_to = "yield"
+  ) %>%
+  group_by(code, crop) %>%
+  summarise(total = sum(yield, na.rm = TRUE), .groups = "drop_last") %>%
+  mutate(prop = (total / sum(total)) * 100) %>%
+  ungroup() %>%
+  pivot_wider(
+    names_from = crop,
+    values_from = c(total, prop)
+  ) %>%
+  na_if(0) %>%
+  mutate(
+    n_missing = rowSums(is.na(.)) / 2
+  ) %>% 
+  filter(n_missing <= 5)  # filter out countries that don't have data for most of the crops
+
 sb <- ggplot(crops_country) +
-  geom_point(aes(x = psoybeans, y = pbananas)) +
+  geom_point(aes(x = prop_soybeans, y = prop_bananas), color = COL["blue", "full"]) +
   xlim(c(0,6)) + 
-  xlab("% soybeans") +
-  ylab("% bananas")
+  labs(
+    x = "% soybeans",
+    y = "% bananas"
+  )
 
 sc <- ggplot(crops_country) +
-  geom_point(aes(x = psoybeans, y = pcassava)) +
+  geom_point(aes(x = prop_soybeans, y = prop_cassava), color = COL["blue", "full"]) +
   xlim(c(0,6)) + 
-  xlab("% soybeans") +
-  ylab("% cassava")
+  labs(
+    x = "% soybeans",
+    y = "% cassava"
+  )
 
 mc <- ggplot(crops_country) +
-  geom_point(aes(x = pmaize, y = pcassava)) +
+  geom_point(aes(x = prop_maize, y = prop_cassava), color = COL["blue", "full"]) +
   xlim(c(0,15)) + 
-  xlab("% maize") +
-  ylab("% cassava")
+  labs(
+    x = "% maize",
+    y = "% cassava"
+  )
 
 peb <- ggplot(crops_country) +
-  geom_point(aes(x = ppotatoes, y = pbananas)) +
+  geom_point(aes(x = prop_potatoes, y = prop_bananas), color = COL["blue", "full"]) +
   xlim(c(0,60)) + 
-  xlab("% potatoes") +
-  ylab("% bananas")
+  labs(
+    x = "% potatoes",
+    y = "% bananas"
+  )
 
 cb <- ggplot(crops_country) +
-  geom_point(aes(x = pcocoa, y = pbananas)) +
-  xlab("% cocoa") +
-  ylab("% bananas")
+  geom_point(aes(x = prop_cocoa, y = prop_bananas), color = COL["blue", "full"]) +
+  labs(
+    x = "% cocoa",
+    y = "% bananas"
+  )
 
 wb <- ggplot(crops_country) +
-  geom_point(aes(x = pwheat, y = pbarley)) +
-  xlab("% wheat") +
-  ylab("% barley")
+  geom_point(aes(x = prop_wheat, y = prop_barley), color = COL["blue", "full"]) +
+  labs(
+    x = "% wheat",
+    y = "% barley"
+  )
 
 pob <- ggplot(crops_country) +
-  geom_point(aes(x = ppeas, y = pbarley)) +
-  xlab("% peas") +
-  ylab("% barley")
+  geom_point(aes(x = prop_peas, y = prop_barley), color = COL["blue", "full"]) +
+  labs(
+    x = "% peas",
+    y = "% barley"
+  )
 
-ggpubr::ggarrange( peb, sc, mc, cb, pob, wb, 
-                   labels = c("A", "B", "C", "D", "E", "F"),
-                   ncol = 2, nrow = 3)
+peb + sc + mc + cb + pob + wb +
+  plot_layout(ncol = 2) +
+  plot_annotation(tag_levels = "A")
 ```
 
 ------------------------------------------------------------------------
@@ -526,12 +525,12 @@ ggpubr::ggarrange( peb, sc, mc, cb, pob, wb,
 ```{r}
 temptbl <- tribble(
  ~variable,  ~col1, ~col2, ~corval,
- "A", "potatoes", "bananas", round(cor(crops_country$ppotatoes, crops_country$pbananas, use = "pairwise.complete.obs"), digits = 2),
- "B", "soybeans", "cassava", round(cor(crops_country$psoybeans, crops_country$pcassava, use = "pairwise.complete.obs"), digits = 2),
- "C", "maize", "cassava", round(cor(crops_country$pmaize, crops_country$pcassava, use = "pairwise.complete.obs"), digits = 2),
- "D", "cocoa", "bananas", round(cor(crops_country$pcocoa, crops_country$pbananas, use = "pairwise.complete.obs"), digits = 2),
- "E", "peas", "barley", round(cor(crops_country$ppeas, crops_country$pbarley, use = "pairwise.complete.obs"), digits = 2),
- "F", "wheat", "barley", round(cor(crops_country$pwheat, crops_country$pbarley, use = "pairwise.complete.obs"), digits = 2),
+ "A", "potatoes", "bananas", round(cor(crops_country$prop_potatoes, crops_country$prop_bananas, use = "pairwise.complete.obs"), digits = 2),
+ "B", "soybeans", "cassava", round(cor(crops_country$prop_soybeans, crops_country$prop_cassava, use = "pairwise.complete.obs"), digits = 2),
+ "C", "maize", "cassava", round(cor(crops_country$prop_maize, crops_country$prop_cassava, use = "pairwise.complete.obs"), digits = 2),
+ "D", "cocoa", "bananas", round(cor(crops_country$prop_cocoa, crops_country$prop_bananas, use = "pairwise.complete.obs"), digits = 2),
+ "E", "peas", "barley", round(cor(crops_country$prop_peas, crops_country$prop_barley, use = "pairwise.complete.obs"), digits = 2),
+ "F", "wheat", "barley", round(cor(crops_country$prop_wheat, crops_country$prop_barley, use = "pairwise.complete.obs"), digits = 2),
 )
 
 temptbl %>%
