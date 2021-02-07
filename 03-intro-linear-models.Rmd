@@ -374,7 +374,7 @@ It would be useful if we could quantify the strength of these linear relationshi
 
 ::: {.important}
 **Correlation: strength of a linear relationship.** **Correlation** which always takes values between -1 and 1, describes the strength of the linear relationship between two variables.
-We denote the correlation by $R$.
+We denote the correlation by $r$.
 :::
 
 ```{r include=FALSE}
@@ -389,7 +389,7 @@ If the relationship is strong and positive, the correlation will be near +1.
 If it is strong and negative, it will be near -1.
 If there is no apparent linear relationship between the variables, then the correlation will be near zero.
 
-[^intro-linear-models-3]: Formally, we can compute the correlation for observations $(x_1, y_1)$, $(x_2, y_2)$, ..., $(x_n, y_n)$ using the formula $$R = \frac{1}{n-1} \sum_{i=1}^{n} \frac{x_i-\bar{x}}{s_x}\frac{y_i-\bar{y}}{s_y}$$ where $\bar{x}$, $\bar{y}$, $s_x$, and $s_y$ are the sample means and standard deviations for each variable.
+[^intro-linear-models-3]: Formally, we can compute the correlation for observations $(x_1, y_1)$, $(x_2, y_2)$, ..., $(x_n, y_n)$ using the formula $$r = \frac{1}{n-1} \sum_{i=1}^{n} \frac{x_i-\bar{x}}{s_x}\frac{y_i-\bar{y}}{s_y}$$ where $\bar{x}$, $\bar{y}$, $s_x$, and $s_y$ are the sample means and standard deviations for each variable.
 
 ```{r posNegCorPlots, fig.cap="Sample scatterplots and their correlations. The first row shows variables with a positive relationship, represented by the trend up and to the right. The second row shows variables with a negative trend, where a large value in one variable is associated with a lower value in the other.", out.width="100%", fig.asp=0.5}
 library(ggpubr) # Adding here instead of _common.R to avoid collision with ggimage
@@ -405,7 +405,8 @@ simulated_scatter %>%
     strip.background = element_blank(),
     strip.text.x = element_blank()
   ) +
-  stat_cor(aes(label = ..r.label..))
+#  stat_cor(aes(label = ..r.label..))
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
 ```
 
 The correlation is intended to quantify the strength of a linear trend.
@@ -414,17 +415,130 @@ Nonlinear trends, even when strong, sometimes produce correlations that do not r
 ```{r corForNonLinearPlots, fig.cap="Sample scatterplots and their correlations. In each case, there is a strong relationship between the variables, However, because the relationship is nonlinear, the correlation is relatively weak.", fig.asp=0.3, out.width="100%"}
 simulated_scatter %>%
   filter(group %in% 17:19) %>%
-  ggplot(aes(x = x, y = y)) + 
+  ggplot(aes(x = x, y = y)) +
   geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
   theme_void() +
-  facet_wrap(~group, nrow = 1, scales = "free_x") + 
+  facet_wrap(~group, nrow = 1, scales = "free_x") +
   theme(
     panel.border = element_rect(colour = "gray", fill = NA, size = 1),
     strip.background = element_blank(),
     strip.text.x = element_blank()
   ) +
-  stat_cor(aes(label = ..r.label..))
+  #  stat_cor(aes(label = ..r.label..))
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
 ```
+
+::: {.workedexample}
+Consider a handful of crop yields taken from [Our World in Data](https://ourworldindata.org/crop-yields).
+In each plot a point represents a different country.
+The x and y variables represent the proportion of total yield in the last 50 years which is due to that crop type.
+
+Order the six scatterplots from strongest negative to strongest positive linear relationship.
+
+```{r out.width = "100%", fig.asp = 1}
+crops_country <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-01/key_crop_yields.csv")
+
+crops_country <- crops_country %>%
+  rename_with(tolower) %>%
+  rename_with(str_remove, contains("tonnes"), " \\(tonnes per hectare\\)") %>%
+  rename(cocoa = `cocoa beans`) %>%
+  filter(!is.na(code)) %>%
+  pivot_longer(
+    cols = wheat:bananas,
+    names_to = "crop",
+    values_to = "yield"
+  ) %>%
+  group_by(code, crop) %>%
+  summarise(total = sum(yield, na.rm = TRUE), .groups = "drop_last") %>%
+  mutate(prop = (total / sum(total)) * 100) %>%
+  ungroup() %>%
+  pivot_wider(
+    names_from = crop,
+    values_from = c(total, prop)
+  ) %>%
+  na_if(0) %>%
+  mutate(
+    n_missing = rowSums(is.na(.)) / 2
+  ) %>% 
+  filter(n_missing <= 5)  # filter out countries that don't have data for most of the crops
+
+sb <- ggplot(crops_country) +
+  geom_point(aes(x = prop_soybeans, y = prop_bananas), color = COL["blue", "full"]) +
+  xlim(c(0,6)) + 
+  labs(
+    x = "% soybeans",
+    y = "% bananas"
+  )
+
+sc <- ggplot(crops_country) +
+  geom_point(aes(x = prop_soybeans, y = prop_cassava), color = COL["blue", "full"]) +
+  xlim(c(0,6)) + 
+  labs(
+    x = "% soybeans",
+    y = "% cassava"
+  )
+
+mc <- ggplot(crops_country) +
+  geom_point(aes(x = prop_maize, y = prop_cassava), color = COL["blue", "full"]) +
+  xlim(c(0,15)) + 
+  labs(
+    x = "% maize",
+    y = "% cassava"
+  )
+
+peb <- ggplot(crops_country) +
+  geom_point(aes(x = prop_potatoes, y = prop_bananas), color = COL["blue", "full"]) +
+  xlim(c(0,60)) + 
+  labs(
+    x = "% potatoes",
+    y = "% bananas"
+  )
+
+cb <- ggplot(crops_country) +
+  geom_point(aes(x = prop_cocoa, y = prop_bananas), color = COL["blue", "full"]) +
+  labs(
+    x = "% cocoa",
+    y = "% bananas"
+  )
+
+wb <- ggplot(crops_country) +
+  geom_point(aes(x = prop_wheat, y = prop_barley), color = COL["blue", "full"]) +
+  labs(
+    x = "% wheat",
+    y = "% barley"
+  )
+
+pob <- ggplot(crops_country) +
+  geom_point(aes(x = prop_peas, y = prop_barley), color = COL["blue", "full"]) +
+  labs(
+    x = "% peas",
+    y = "% barley"
+  )
+
+peb + sc + mc + cb + pob + wb +
+  plot_layout(ncol = 2) +
+  plot_annotation(tag_levels = "A")
+```
+
+------------------------------------------------------------------------
+
+```{r}
+temptbl <- tribble(
+ ~variable,  ~col1, ~col2, ~corval,
+ "A", "potatoes", "bananas", round(cor(crops_country$prop_potatoes, crops_country$prop_bananas, use = "pairwise.complete.obs"), digits = 2),
+ "B", "soybeans", "cassava", round(cor(crops_country$prop_soybeans, crops_country$prop_cassava, use = "pairwise.complete.obs"), digits = 2),
+ "C", "maize", "cassava", round(cor(crops_country$prop_maize, crops_country$prop_cassava, use = "pairwise.complete.obs"), digits = 2),
+ "D", "cocoa", "bananas", round(cor(crops_country$prop_cocoa, crops_country$prop_bananas, use = "pairwise.complete.obs"), digits = 2),
+ "E", "peas", "barley", round(cor(crops_country$prop_peas, crops_country$prop_barley, use = "pairwise.complete.obs"), digits = 2),
+ "F", "wheat", "barley", round(cor(crops_country$prop_wheat, crops_country$prop_barley, use = "pairwise.complete.obs"), digits = 2),
+)
+
+temptbl %>%
+ kable(caption = "Correlation of percentage of total yield across different crops.",
+  col.names = c("Graph", "x-variable", "y-variable", "correlation")) %>%
+ kable_styling() 
+```
+:::
 
 ::: {.guidedpractice}
 No straight line is a good fit for the data sets represented in Figure \@ref(fig:corForNonLinearPlots).
@@ -591,7 +705,7 @@ Calculating these values by hand leverages two properties of the least squares l
 
 $$b_1 = \frac{s_y}{s_x} R $$
 
-where $R$ is the correlation between the two variables, and $s_x$ and $s_y$ are the sample standard deviations of the explanatory variable and response, respectively.
+where $r$ is the correlation between the two variables, and $s_x$ and $s_y$ are the sample standard deviations of the explanatory variable and response, respectively.
 
 -   If $\bar{x}$ is the sample mean of the explanatory variable and $\bar{y}$ is the sample mean of the vertical variable, then the point $(\bar{x}, \bar{y})$ is on the least squares line.
 
@@ -755,7 +869,7 @@ terms_chp_3 <- c(terms_chp_3, "coefficient of determination")
 ::: {.important}
 **Coefficient of determination: proportion of variability in the response variable explained by the model.**
 
-Since $R$ is always between -1 and 1, $R^2$ will always be between 0 and 1.
+Since $r$ is always between -1 and 1, $R^2$ will always be between 0 and 1.
 This statistic is called the **coefficient of determination** and it measures the proportion of variation in the response variable, $y$, that can be explained by the linear model with predictor $x$.
 :::
 
