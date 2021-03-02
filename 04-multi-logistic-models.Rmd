@@ -73,7 +73,7 @@ loans_var_def %>%
 
 Let's start by fitting a linear regression model for interest rate with a single predictor indicating whether or not a person has a bankruptcy in their record:
 
-$$\widehat{\texttt{interest_rate}} = 12.33 + 0.74 \times bankruptcy$$
+$$\widehat{\texttt{interest_rate}} = 12.33 + 0.74 \times \texttt{bankruptcy}$$
 
 Results of this model are shown in Table \@ref(tab:int-rate-bankruptcy).
 
@@ -122,7 +122,12 @@ How would we write an equation for this regression model?
 
 The equation for the regression model may be written as a model with two predictors:
 
-$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times \texttt{verified_income}_{\texttt{Source Verified}} + 3.25 \times \texttt{verified_income}_{\texttt{Verified}}$$
+$$
+\begin{align}
+\widehat{\texttt{interest_rate}} = 11.10 &+ 1.42 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
+&+ 3.25 \times \texttt{verified_income}_{\texttt{Verified}}
+\end{align}
+$$
 
 We use the notation $\texttt{variable}_{\texttt{level}}$ to represent indicator variables for when the categorical variable takes a particular value.
 For example, $\texttt{verified_income}_{\texttt{Source Verified}}$ would take a value of 1 if was for a loan, and it would take a value of 0 otherwise.
@@ -150,9 +155,9 @@ Using the model for predicting interest rate from income verification type, comp
 
 ------------------------------------------------------------------------
 
-When `verified_income` takes a value of `Source Verified`, then the corresponding variable takes a value of 1 while the other ($\texttt{verified_income}_{\texttt{Verified}}$) is 0:
+When `verified_income` takes a value of `Source Verified`, then the corresponding variable takes a value of 1 while the other is 0:
 
-$$\widehat{\texttt{interest_rate}} = = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 12.52$$
+$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 12.52$$
 
 The average interest rate for these borrowers is 12.52%.
 :::
@@ -206,37 +211,31 @@ terms_chp_4 <- c(terms_chp_4, "multiple regression")
 We want to construct a model that accounts for not only for any past bankruptcy or whether the borrower had their income source or amount verified, but simultaneously accounts for all the variables in the `loans` data set: `verified_income`, `debt_to_income`, `credit_util`, `bankruptcy`, `term`, `issue_month`, and `credit_checks`.
 
 $$\begin{align*}
-\widehat{\texttt{interest_rate}}
-    &= \beta_0 +
-        \beta_1\times \texttt{verified_income}_{\texttt{Source Verified}} +
-        \beta_2\times \texttt{verified_income}_{\texttt{Verified}} \\
-    &\qquad\  +
-        \beta_3\times \texttt{debt_to_income} \\
-    &\qquad\  +
-        \beta_4 \times \texttt{credit_util} \\
-    &\qquad\  +
-        \beta_5 \times \texttt{bankruptcy} \\
-    &\qquad\  +
-        \beta_6 \times \texttt{term} \\
-    &\qquad\  +
-        \beta_7 \times \texttt{issue_month}_{\texttt{Jan-2018}} +
-        \beta_8 \times \texttt{issue_month}_{\texttt{Mar-2018}} \\
-    &\qquad\  +
-        \beta_9 \times \texttt{credit_checks}
+\widehat{\texttt{interest_rate}} = b_0 &+ b_1 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
+&+ b_2 \times \texttt{verified_income}_{\texttt{Verified}} \\
+&+ b_3 \times \texttt{debt_to_income} \\
+&+ b_4 \times \texttt{credit_util} \\
+&+ b_5 \times \texttt{bankruptcy} \\
+&+ b_6 \times \texttt{term} \\
+&+ b_7 \times \texttt{issue_month}_{\texttt{Jan-2018}} \\
+&+ b_8 \times \texttt{issue_month}_{\texttt{Mar-2018}} \\
+&+ b_9 \times \texttt{credit_checks}
 \end{align*}$$
 
 This equation represents a holistic approach for modeling all of the variables simultaneously.
 Notice that there are two coefficients for `verified_income` and also two coefficients for `issue_month`, since both are 3-level categorical variables.
 
-We estimate the parameters $\beta_0$, $\beta_1$, $\beta_2$, $\cdots$, $\beta_9$ in the same way as we did in the case of a single predictor.
-We select $b_0$, $b_1$, $b_2$, $\cdots$, $b_9$ that minimize the sum of the squared residuals:
+We calculate $b_0$, $b_1$, $b_2$, $\cdots$, $b_9$ the same way as we did in the case of a model with a single predictor -- we select values that minimize the sum of the squared residuals:
 
 $$SSE = e_1^2 + e_2^2 + \dots + e_{10000}^2 = \sum_{i=1}^{10000} e_i^2 = \sum_{i=1}^{10000} \left(y_i - \hat{y}_i\right)^2$$
 
 where $y_i$ and $\hat{y}_i$ represent the observed interest rates and their estimated values according to the model, respectively.
 10,000 residuals are calculated, one for each observation.
+Note that these values are sample statistics and in the case where the observed data is a random sample from a target population that we are interested in making inferences about, they are estimates of the population parameters $\beta_0$, $\beta_1$, $\beta_2$, $\cdots$, $\beta_9$.
+We will discuss inference based on linear models in Chapter \@ref(inference-reg), for now we will focus on calculating sample statistics $b_i$.
+
 We typically use a computer to minimize the sum of squares and compute point estimates, as shown in the sample output in Table \@ref(tab:loans-full).
-Using this output, we identify the point estimates $b_i$ of each $\beta_i$, just as we did in the one-predictor case.
+Using this output, we identify $b_i$, just as we did in the one-predictor case.
 
 ```{r loans-full}
 m_full <- lm(interest_rate ~ ., data = loans)
@@ -255,10 +254,10 @@ tidy(m_full) %>%
 A multiple regression model is a linear model with many predictors.
 In general, we write the model as
 
-$$\hat{y} = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_k x_k$$
+$$\hat{y} = b_0 + b_1 x_1 + b_2 x_2 + \cdots + b_k x_k$$
 
 when there are $k$ predictors.
-We always estimate the $\beta_i$ parameters using statistical software.
+We always calculate $b_i$ using statistical software.
 :::
 
 ::: {.workedexample}
@@ -269,27 +268,19 @@ How many predictors are there in this model?
 
 The fitted model for the interest rate is given by:
 
-$$\begin{align*}
-\widehat{\texttt{interest_rate}}
-    &= 1.925 +
-        0.975 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
-    &\qquad\  +
-        2.537 \times \texttt{verified_income}_{\texttt{Verified}} \\
-    &\qquad\  +
-        0.021 \times \texttt{debt_to_income} \\
-    &\qquad\  +
-        4.896 \times \texttt{credit_util} \\
-    &\qquad\  +
-        0.386 \times \texttt{bankruptcy} \\
-    &\qquad\  +
-        0.154 \times \texttt{term} \\
-    &\qquad\  +
-        0.028 \times \texttt{issue_month}_{\texttt{Jan-2018}} \\
-    &\qquad\  -
-        0.040 \times \texttt{issue_month}_{\texttt{Mar-2018}} \\
-    &\qquad\  +
-        0.228 \times \texttt{credit_checks}
-\end{align*}$$
+$$
+\begin{align}
+\widehat{\texttt{interest_rate}} = 1.925 &+ 0.975 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
+&+ 2.537 \times \texttt{verified_income}_{\texttt{Verified}} \\
+&+ 0.021 \times \texttt{debt_to_income} \\
+&+ 4.896 \times \texttt{credit_util} \\
+&+ 0.386 \times \texttt{bankruptcy} \\
+&+ 0.154 \times \texttt{term} \\
+&+ 0.028 \times \texttt{issue_month}_{\texttt{Jan-2018}} \\
+&- 0.040 \times \texttt{issue_month}_{\texttt{Mar-2018}} \\
+&+ 0.228 \times \texttt{credit_checks}
+\end{align}
+$$
 
 If we count up the number of predictor coefficients, we get the *effective* number of predictors in the model: $k = 9$.
 Notice that the categorical predictor counts as two, once for the two levels shown in the model.
@@ -297,66 +288,64 @@ In general, a categorical predictor with $p$ different levels will be represente
 :::
 
 ::: {.guidedpractice}
-What does $\beta_4$, the coefficient of variable , represent?
-What is the point estimate of $\beta_4$?[^multi-logistic-models-4]
+What does $b_4$, the coefficient of variable `credit_util`, represent?
 :::
-
-[^multi-logistic-models-4]: $\beta_4$ represents the change in interest rate we would expect if someone's credit utilization was 0 and went to 1, all other factors held even.
-    The point estimate is $b_4 = 4.90%$.
 
 ::: {.guidedpractice}
-Compute the residual of the first observation in Table \@ref(tab:loans-data-matrix) on page using the full model.[^multi-logistic-models-5]
+Compute the residual of the first observation in Table \@ref(tab:loans-data-matrix) on page using the full model.[^multi-logistic-models-4]
 :::
 
-[^multi-logistic-models-5]: To compute the residual, we first need the predicted value, which we compute by plugging values into the equation from earlier.
+[^multi-logistic-models-4]: To compute the residual, we first need the predicted value, which we compute by plugging values into the equation from earlier.
     For example, $\texttt{verified_income}_{\texttt{Source Verified}}$ takes a value of 0, $\texttt{verified_income}_{\texttt{Verified}}$ takes a value of 1 (since the borrower's income source and amount were verified), was 18.01, and so on.
     This leads to a prediction of $\widehat{\texttt{interest_rate}}_1 = 18.09$.
     The observed interest rate was 14.07%, which leads to a residual of $e_1 = 14.07 - 18.09 = -4.02$.
 
 ::: {.workedexample}
-We estimated a coefficient for in Section \@ref(ind-and-cat-predictors) of $b_4 = 0.74$ with a standard error of $SE_{b_1} = 0.15$ when using simple linear regression.
-Why is there a difference between that estimate and the estimated coefficient of 0.39 in the multiple regression setting?
+We calculated a slope coefficient of 0.74 for `bankruptcy` in Section \@ref(ind-and-cat-predictors) while the coefficient is 0.386 here.
+Why is there a difference between the coefficient values between the models with single and multiple predictors?
 
 ------------------------------------------------------------------------
 
 If we examined the data carefully, we would see that some predictors are correlated.
-For instance, when we estimated the connection of the outcome `interest_rate` and predictor `bankruptcy` using simple linear regression, we were unable to control for other variables like whether the borrower had her income verified, the borrower's debt-to-income ratio, and other variables.
+For instance, when we modeled the relationship of the outcome `interest_rate` and predictor `bankruptcy` using simple linear regression, we were unable to control for other variables like whether the borrower had her income verified, the borrower's debt-to-income ratio, and other variables.
 That original model was constructed in a vacuum and did not consider the full context.
 When we include all of the variables, underlying and unintentional bias that was missed by these other variables is reduced or eliminated.
 Of course, bias can still exist from other confounding variables.
 :::
 
 The previous example describes a common issue in multiple regression: correlation among predictor variables.
-We say the two predictor variables are (pronounced as *co-linear*) when they are correlated, and this collinearity complicates model estimation.
+We say the two predictor variables are (pronounced as *co-linear*) when they are correlated, and this **collinearity** complicates model estimation.
 While it is impossible to prevent collinearity from arising in observational data, experiments are usually designed to prevent predictors from being collinear.
+
+```{r include=FALSE}
+terms_chp_4 <- c(terms_chp_4, "collinearity")
+```
 
 ::: {.guidedpractice}
 The estimated value of the intercept is 1.925, and one might be tempted to make some interpretation of this coefficient, such as, it is the model's predicted price when each of the variables take value zero: income source is not verified, the borrower has no debt (debt-to-income and credit utilization are zero), and so on.
 Is this reasonable?
-Is there any value gained by making this interpretation?[^multi-logistic-models-6]
+Is there any value gained by making this interpretation?[^multi-logistic-models-5]
 :::
 
-[^multi-logistic-models-6]: Many of the variables do take a value 0 for at least one data point, and for those variables, it is reasonable.
+[^multi-logistic-models-5]: Many of the variables do take a value 0 for at least one data point, and for those variables, it is reasonable.
     However, one variable never takes a value of zero: \texttt{term}, which describes the length of the loan, in months.
     If \texttt{term} is set to zero, then the loan must be paid back immediately; the borrower must give the money back as soon as she receives it, which means it is not a real loan.
     Ultimately, the interpretation of the intercept in this setting is not insightful.
 
 ### Adjusted R-squared
 
-We first used $R^2$ in Section \@ref(r-squared) to determine the amount of variability in the response that was explained by the model: $$\begin{aligned}
-R^2 =
-    1 - \frac{\text{variability in residuals}}
-        {\text{variability in the outcome}}
+We first used $R^2$ in Section \@ref(r-squared) to determine the amount of variability in the response that was explained by the model: $$
+R^2 = 1 - \frac{\text{variability in residuals}}{\text{variability in the outcome}}
     = 1 - \frac{Var(e_i)}{Var(y_i)}
-\end{aligned}$$ where $e_i$ represents the residuals of the model and $y_i$ the outcomes.
+$$where $e_i$ represents the residuals of the model and $y_i$ the outcomes.
 This equation remains valid in the multiple regression framework, but a small enhancement can make it even more informative when comparing models.
 
 ::: {.guidedpractice}
 The variance of the residuals for the model given in the earlier Guided Practice is 18.53, and the variance of the total price in all the auctions is 25.01.
-Calculate $R^2$ for this model.[^multi-logistic-models-7]
+Calculate $R^2$ for this model.[^multi-logistic-models-6]
 :::
 
-[^multi-logistic-models-7]: $R^2 = 1 - \frac{18.53}{25.01} = 0.2591$.
+[^multi-logistic-models-6]: $R^2 = 1 - \frac{18.53}{25.01} = 0.2591$.
 
 This strategy for estimating $R^2$ is acceptable when there is just a single variable.
 However, it becomes less helpful when there are many variables.
@@ -388,19 +377,19 @@ If we were to make predictions for *new data* using our current model, we would 
 
 ::: {.guidedpractice}
 There were $n=10000$ auctions in the data set and $k=9$ predictor variables in the model.
-Use $n$, $k$, and the variances from the earlier Guided Practice to calculate $R_{adj}^2$ for the interest rate model.[^multi-logistic-models-8]
+Use $n$, $k$, and the variances from the earlier Guided Practice to calculate $R_{adj}^2$ for the interest rate model.[^multi-logistic-models-7]
 :::
 
-[^multi-logistic-models-8]: $R_{adj}^2 = 1 - \frac{18.53}{25.01}\times \frac{10000-1}{1000-9-1} = 0.2584$.
+[^multi-logistic-models-7]: $R_{adj}^2 = 1 - \frac{18.53}{25.01}\times \frac{10000-1}{1000-9-1} = 0.2584$.
     While the difference is very small, it will be important when we fine tune the model in the next section.
 
 ::: {.guidedpractice}
 Suppose you added another predictor to the model, but the variance of the errors $Var(e_i)$ didn't go down.
 What would happen to the $R^2$?
-What would happen to the adjusted $R^2$?[^multi-logistic-models-9]
+What would happen to the adjusted $R^2$?[^multi-logistic-models-8]
 :::
 
-[^multi-logistic-models-9]: The unadjusted $R^2$ would stay the same and the adjusted $R^2$ would go down.
+[^multi-logistic-models-8]: The unadjusted $R^2$ would stay the same and the adjusted $R^2$ would go down.
 
 Adjusted $R^2$ could have been used in Chapter \@ref(intro-linear-models).
 However, when there is only $k = 1$ predictors, adjusted $R^2$ is very close to regular $R^2$, so this nuance isn't typically important when the model has only one predictor.
@@ -540,8 +529,7 @@ That is, after backward elimination, we are left with the model that keeps all p
 
 $$
 \begin{align}  
-\widehat{rate} &= 1.921 \\
-&+ 0.974 \times \texttt{verified_income}_\texttt{Source only} \\
+\widehat{interest_rate} = 1.921 &+ 0.974 \times \texttt{verified_income}_\texttt{Source only} \\
 &+ 2.535 \times \texttt{verified_income}_\texttt{Verified} \\
 &+ 0.021 \times \texttt{debt_to_income} \\
 &+ 4.896 \times \texttt{credit_util} \\
@@ -681,11 +669,11 @@ Ultimately, the application of a GLM will feel very similar to multiple regressi
 
 ### Resume data
 
-We will consider experiment data from a study that sought to understand the effect of race and sex on job application callback rates.[@bertrand2003] To evaluate which factors were important, job postings were identified in Boston and Chicago for the study, and researchers created many fake resumes to send off to these jobs to see which would elicit a callback.[^multi-logistic-models-10]
+We will consider experiment data from a study that sought to understand the effect of race and sex on job application callback rates.[@bertrand2003] To evaluate which factors were important, job postings were identified in Boston and Chicago for the study, and researchers created many fake resumes to send off to these jobs to see which would elicit a callback.[^multi-logistic-models-9]
 The researchers enumerated important characteristics, such as years of experience and education details, and they used these characteristics to randomly generate the resumes.
 Finally, they randomly assigned a name to each resume, where the name would imply the applicant's sex and race.
 
-[^multi-logistic-models-10]: We did omit discussion of some structure in the data for the analysis presented: the experiment design included blocking, where typically four resumes were sent to each job: one for each inferred race/sex combination (as inferred based on the first name).
+[^multi-logistic-models-9]: We did omit discussion of some structure in the data for the analysis presented: the experiment design included blocking, where typically four resumes were sent to each job: one for each inferred race/sex combination (as inferred based on the first name).
     We did not worry about this blocking aspect, since accounting for the blocking would *reduce* the standard error without notably changing the point estimates for the `race` and `sex` variables versus the analysis performed in the section.
     That is, the most interesting conclusions in the study are unaffected even when completing a more sophisticated analysis.
 
@@ -805,7 +793,7 @@ In the resume application, $Y_i$ will be used to represent whether resume $i$ re
 The predictor variables are represented as follows: $x_{1,i}$ is the value of variable 1 for observation $i$, $x_{2,i}$ is the value of variable 2 for observation $i$, and so on.
 
 $$
-transformation(p_i) = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \cdots + \beta_k x_{k,i}
+transformation(p_i) = b_0 + b_1 x_{1,i} + b_2 x_{2,i} + \cdots + b_k x_{k,i}
 $$
 
 We want to choose a transformation in the equation that makes practical and mathematical sense.
@@ -821,7 +809,7 @@ The logit transformation is shown in Figure \@ref(fig:logit-transformation).
 Below, we rewrite the equation relating $Y_i$ to its predictors using the logit transformation of $p_i$:
 
 $$
-\log_{e}\left( \frac{p_i}{1-p_i} \right) = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \cdots + \beta_k x_{k,i}
+\log_{e}\left( \frac{p_i}{1-p_i} \right) = b_0 + b_1 x_{1,i} + b_2 x_{2,i} + \cdots + b_k x_{k,i}
 $$
 
 ```{r logit-transformation, fig.cap = "Values of $p_i$ against values of $logit(p_i)$."}
@@ -901,10 +889,10 @@ To convert from values on the logistic regression scale (e.g. -2.4998 and -1.633
 which is the result of solving for $p_i$ in the regression model:
 
 $$
-p_i = \frac{e^{\beta_0 + \beta_1 x_{1,i}+\cdots+\beta_k x_{k,i}}}{1 + e^{\beta_0 + \beta_1 x_{1,i}+\cdots+\beta_k x_{k,i}}}
+p_i = \frac{e^{b_0 + b_1 x_{1,i}+\cdots+b_k x_{k,i}}}{1 + e^{b_0 + b_1 x_{1,i}+\cdots+b_k x_{k,i}}}
 $$
 
-As with most applied data problems, we substitute the point estimates for the parameters (the $\beta_i$) so that we can make use of this formula.
+As with most applied data problems, we substitute the point estimates for the parameters (the $b_i$) so that we can make use of this formula.
 The probabilities can be calculated as follows.
 
 $$
@@ -1048,7 +1036,7 @@ There was a 50% higher barrier for resumes simply when the candidate had a first
 It's unlikely that discrimination would stop there.
 
 ::: {.workedexample}
-Let's consider a sex-imbalanced company that consists of 20% women and 80%[^multi-logistic-models-11] men, and we'll suppose that the company is very large, consisting of perhaps 20,000 employees.
+Let's consider a sex-imbalanced company that consists of 20% women and 80%[^multi-logistic-models-10] men, and we'll suppose that the company is very large, consisting of perhaps 20,000 employees.
 Suppose when someone goes up for promotion at this company, 5 of their colleagues are randomly chosen to provide feedback on their work.
 
 Now let's imagine that 10% of the people in the company are prejudiced against the other sex.
@@ -1069,12 +1057,12 @@ Of these 400 men, about 40 (10%) hold a bias against women.
 Of the 500 colleagues providing feedback on the promotion packet for these women, 8% of the colleagues hold a bias against the women.
 :::
 
-[^multi-logistic-models-11]: A more thoughtful example would include non-binary individuals.
+[^multi-logistic-models-10]: A more thoughtful example would include non-binary individuals.
 
 This example highlights something profound: even in a hypothetical setting where each demographic has the same degree of prejudice against the other demographic, the smaller group experiences the negative effects more frequently.
-Additionally, if we would complete a handful of examples like the one above with different numbers, we'd learn that the greater the imbalance in the population groups, the more the smaller group is disproportionately impacted.[^multi-logistic-models-12]
+Additionally, if we would complete a handful of examples like the one above with different numbers, we'd learn that the greater the imbalance in the population groups, the more the smaller group is disproportionately impacted.[^multi-logistic-models-11]
 
-[^multi-logistic-models-12]: If a proportion $p$ of a company are women and the rest of the company consists of men, then under the hypothetical situation the ratio of rates of discrimination against women vs men would be given by $\frac{1 - p}{p}$; this ratio is always greater than 1 when $p < 0.5$.
+[^multi-logistic-models-11]: If a proportion $p$ of a company are women and the rest of the company consists of men, then under the hypothetical situation the ratio of rates of discrimination against women vs men would be given by $\frac{1 - p}{p}$; this ratio is always greater than 1 when $p < 0.5$.
 
 Of course, there are other considerable real-world omissions from the hypothetical example.
 For example, studies have found instances where people from an oppressed group also discriminate against others within their own oppressed group.
