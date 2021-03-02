@@ -512,6 +512,109 @@ How should we proceed under the backward elimination strategy?
 
 Our baseline adjusted $R^2$ from the full model is , and we need to determine whether dropping a predictor will improve the adjusted $R^2$.
 To check, we fit models that each drop a different predictor, and we record the adjusted $R^2$:
+
+-   Excluding `verified_income`: 0.22380
+-   Excluding `debt_to_income`: 0.25468
+-   Excluding `credit_util`: 0.19063
+-   Excluding `bankruptcy`: 0.25787
+-   Excluding `term`: 0.14581
+-   Excluding `credit_checks`: 0.25854
+-   Excluding `issue_month`: 0.24689
+
+The model without `issue_month` has the highest adjusted $R^2$ of 0.25854, higher than the adjusted $R^2$ for the full model.
+Because eliminating `issue_month` leads to a model with a higher adjusted $R^2$, we drop `issue_month` from the model.
+
+Since we eliminated a predictor from the model in the first step, we see whether we should eliminate any additional predictors.
+Our baseline adjusted $R^2$ is now $R^2_{adj} = 0.25854$.
+We now fit new models, which consider eliminating each of the remaining predictors in addition to `issue_month`:
+
+-   Excluding `issue_month` and `verified_income`: 0.22395
+-   Excluding `issue_month` and `debt_to_income`: 0.25479
+-   Excluding `issue_month` and `credit_util`: 0.19074
+-   Excluding `issue_month` and `bankruptcy`: 0.25798
+-   Excluding `issue_month` and `term`: 0.14592
+-   Excluding `issue_month` and `credit_checks`: 0.24701
+
+None of these models lead to an improvement in adjusted \$R\^2\$, so we do not eliminate any of the remaining predictors.
+That is, after backward elimination, we are left with the model that keeps all predictors except issue_month, which we can summarize using the coefficients from Table \@ref(tab:loans-full-except-issue-month).
+
+$$
+\begin{align}  
+\widehat{rate} &= 1.921 \\
+&+ 0.974 \times \texttt{verified_income}_\texttt{Source only} \\
+&+ 2.535 \times \texttt{verified_income}_\texttt{Verified} \\
+&+ 0.021 \times \texttt{debt_to_income} \\
+&+ 4.896 \times \texttt{credit_util} \\
+&+ 0.387 \times \texttt{bankruptcy} \\
+&+ 0.154 \times \texttt{term} \\
+&+ 0.228 \times \texttt{credit_check}
+\end{align}
+$$
+:::
+
+The **forward selection** strategy is the reverse of the backward elimination technique.
+Instead of eliminating variables one-at-a-time, we add variables one-at-a-time until we cannot find any variables that improve the model (as measured by adjusted $R^2$).
+
+```{r include=FALSE}
+terms_chp_4 <- c(terms_chp_4, "forward selection")
+```
+
+::: {.workedexample}
+Construct a model for predicting `rate` from the `loans` data using forward selection.
+
+------------------------------------------------------------------------
+
+We start with the model that includes no predictors.
+Then we fit each of the possible models with just one predictor.
+Then we examine the adjusted \$R\^2\$ for each of these models:
+
+-   Including `verified_income`: 0.05926
+-   Including `debt_to_income`: 0.01946
+-   Including `credit_util`: 0.06452
+-   Including `bankruptcy`: 0.00222
+-   Including `term`: 0.12855
+-   Including `credit_checks`: -0.0001
+-   Including `issue_month`: 0.01711
+
+In this first step, we compare the adjusted $R^2$ against a baseline model that has no predictors.
+The no-predictors model always has $R_{adj}^2 = 0$.
+The model with one predictor that has the largest adjusted $R^2$ is the model with the `term` predictor, and because this adjusted $R^2$ is larger than the adjusted $R^2$ from the model with no predictors ($R_{adj}^2 = 0$), we will add this variable to our model.
+
+We repeat the process again, this time considering 2-predictor models where one of the predictors is and with a new baseline of $R^2_{adj} = 0.12855$:
+
+-   Including `term` and `verified_income`: 0.16851
+-   Including `term` and `debt_to_income`: 0.14368
+-   Including `term` and `credit_util`: 0.20046
+-   Including `term` and `bankruptcy`: 0.13070
+-   Including `term` and `credit_checks`: 0.12840
+-   Including `term` and `issue_month`: 0.14294
+
+Adding `credit_util` yields a model with a higher adjusted $R^2$ (0.20046) than the baseline (0.12855), so we also add `credit_util` to the model as a predictor.
+
+Since we have again added a predictor to the model, we continue and see whether it would be beneficial to add a third predictor:
+
+-   Including `term`, `credit_util, and verified_income`: 0.24183
+-   Including `term`, `credit_util, and debt_to_income`: 0.20810
+-   Including `term`, `credit_util, and bankruptcy`: 0.20169
+-   Including `term`, `credit_util, and credit_checks`: 0.20031
+-   Including `term`, `credit_util, and issue_month`: 0.21629
+
+The model including `verified_income` improved adjusted $R^2$ (0.24183 to 0.20046), so we `verified_income` add to the model as a predictor as well.
+
+We continue on in this way, next adding `debt_to_income`, then `credit_checks`, and `bankruptcy`.
+At this point, we come again to the `issue_month` variable: adding this as a predictor leads to $R_{adj}^2 = 0.25843$, while keeping all the other predictors but excluding `issue_month` leads to a higher $R_{adj}^2 = 0.25854$.
+This means we do not add `issue_month` to the model as a predictor.
+In this example, we have arrived at the same model that we identified from backward elimination.
+:::
+
+::: {.important}
+**Model selection strategies**
+
+Backward elimination begins with the model having the largest number of predictors and eliminates variables one-by-one until we are satisfied that all remaining variables are important to the model.
+Forward selection starts with no variables included in the model, then it adds in variables according to their importance until no other important variables are found.
+
+Backward elimination and forward selection sometimes arrive at different final models.
+If trying both techniques and this happens, it's common to choose the model with the larger $R_{adj}^2$.
 :::
 
 ### Exercises {#model-selection-exercises}
@@ -522,6 +625,23 @@ To check, we fit models that each drop a different predictor, and we record the 
 :::
 
 ## Model diagnostics {#model-diagnostics}
+
+Multiple regression methods using the model
+
+$$
+\hat{y} = b_0 + b_1 x_1 + b_2 x_2 + \cdots + b_k x_k
+$$
+
+generally depend on the following four conditions:
+
+1.  the residuals of the model are nearly normal (less important for larger data sets),
+2.  the variability of the residuals is nearly constant,
+3.  the residuals are independent, and
+4.  each variable is linearly related to the outcome.
+
+::: {.todo}
+Finish section
+:::
 
 ### Diagnostic plots
 
