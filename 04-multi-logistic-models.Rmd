@@ -412,12 +412,34 @@ It's common (and hip, at least in the statistical world) to refer to models that
 terms_chp_4 <- c(terms_chp_4, "parsimonious")
 ```
 
-In practice, the model that includes all available explanatory variables is often referred to as the **full model**.
+In practice, the model that includes all available predictors is often referred to as the **full model**.
 The full model may not be the best model, and if it isn't, we want to identify a smaller model that is preferable.
 
 ```{r include=FALSE}
 terms_chp_4 <- c(terms_chp_4, "full model")
 ```
+
+### Stepwise selection
+
+Two common strategies for adding or removing variables in a multiple regression model are called backward elimination and forward selection.
+These techniques are often referred to as **stepwise selection** strategies, because they add or delete one variable at a time as they "step" through the candidate predictors.
+
+```{r include=FALSE}
+terms_chp_4 <- c(terms_chp_4, "stepwise selection")
+```
+
+**Backward elimination** starts with the full model (the model that includes all potential predictor variables. Variables are eliminated one-at-a-time from the model until we cannot improve the model any further.
+
+**Forward selection** is the reverse of the backward elimination technique.
+Instead of eliminating variables one-at-a-time, we add variables one-at-a-time until we cannot find any variables that improve the model any further.
+
+```{r include=FALSE}
+terms_chp_4 <- c(terms_chp_4, "backward elimination", "forward selection")
+```
+
+An important consideration in implementing either of these stepwise selection strategies is the criterion used to decide whether to eliminate or add a variable.
+One commonly used decision criterion is adjusted $R^2$.
+When using adjusted $R^2$ as the decision criterion, we seek to eliminate or add variables depending on whether they lead to the largest improvement in adjusted $R^2$ and we stop when adding or elimination of another variable does not lead to further improvement in adjusted $R^2$.
 
 Adjusted $R^2$ describes the strength of a model fit, and it is a useful tool for evaluating which predictors are adding value to the model, where *adding value* means they are (likely) improving the accuracy in predicting future outcomes.
 
@@ -478,23 +500,10 @@ Since the second model has a higher $R^2_{adj}$ compared to the first model, we 
 :::
 
 Will the model without `issue_month` be better than the model with `issue_month`?
-We cannot know for sure, but based on the adjusted $R^2$, this is our best assessment.
-
-### Model selection strategies
-
-Two common strategies for adding or removing variables in a multiple regression model are called *backward elimination* and *forward selection*.
-These techniques are often referred to as model selection strategies, because they add or delete one variable at a time as they "step" through the candidate predictors.
-
-**Backward elimination** starts with the model that includes all potential predictor variables.
-Variables are eliminated one-at-a-time from the model until we cannot improve the adjusted $R^2$.
-The strategy within each elimination step is to eliminate the variable that leads to the largest improvement in adjusted $R^2$.
-
-```{r include=FALSE}
-terms_chp_4 <- c(terms_chp_4, "backward elimination")
-```
+We cannot know for sure, but based on the adjusted $R^2$, this is our best assessment.
 
 ::: {.workedexample}
-Results corresponding to the *full model* for the `loans` data are shown in Table \@ref(tab:loans-full-for-model-selection).
+Results corresponding to the full model for the `loans` data are shown in Table \@ref(tab:loans-full-for-model-selection).
 How should we proceed under the backward elimination strategy?
 
 ------------------------------------------------------------------------
@@ -529,7 +538,7 @@ That is, after backward elimination, we are left with the model that keeps all p
 
 $$
 \begin{align}  
-\widehat{interest_rate} = 1.921 &+ 0.974 \times \texttt{verified_income}_\texttt{Source only} \\
+\widehat{\texttt{interest_rate}} = 1.921 &+ 0.974 \times \texttt{verified_income}_\texttt{Source only} \\
 &+ 2.535 \times \texttt{verified_income}_\texttt{Verified} \\
 &+ 0.021 \times \texttt{debt_to_income} \\
 &+ 4.896 \times \texttt{credit_util} \\
@@ -540,21 +549,14 @@ $$
 $$
 :::
 
-The **forward selection** strategy is the reverse of the backward elimination technique.
-Instead of eliminating variables one-at-a-time, we add variables one-at-a-time until we cannot find any variables that improve the model (as measured by adjusted $R^2$).
-
-```{r include=FALSE}
-terms_chp_4 <- c(terms_chp_4, "forward selection")
-```
-
 ::: {.workedexample}
-Construct a model for predicting `rate` from the `loans` data using forward selection.
+Construct a model for predicting `interest_rate` from the `loans` data using forward selection.
 
 ------------------------------------------------------------------------
 
 We start with the model that includes no predictors.
 Then we fit each of the possible models with just one predictor.
-Then we examine the adjusted \$R\^2\$ for each of these models:
+Then we examine the adjusted $R^2$ for each of these models:
 
 -   Including `verified_income`: 0.05926
 -   Including `debt_to_income`: 0.01946
@@ -596,14 +598,21 @@ In this example, we have arrived at the same model that we identified from backw
 :::
 
 ::: {.important}
-**Model selection strategies**
+**Stepwise selection strategies**
 
 Backward elimination begins with the model having the largest number of predictors and eliminates variables one-by-one until we are satisfied that all remaining variables are important to the model.
 Forward selection starts with no variables included in the model, then it adds in variables according to their importance until no other important variables are found.
 
 Backward elimination and forward selection sometimes arrive at different final models.
-If trying both techniques and this happens, it's common to choose the model with the larger $R_{adj}^2$.
+If trying both techniques and this happens, it's common to choose the model with the larger adjusted $R^2$.
 :::
+
+### Other model selection strategies
+
+Stepwise selection using adjusted $R^2$ as the decision criteria is one of many widely accepted and commonly used model selection strategies.
+Stepwise selection can also be carried out with decision criteria other than adjusted $R^2$, such as p-values, which you'll learn about in Chapter \@ref(inference-reg), or AIC (Akaike information criterion) or BIC (Bayesian information criterion), which you might learn about in more advanced courses.
+
+Additionally, one can choose to include or exclude variables from a model based on expert opinion or due to research focus.
 
 ### Exercises {#model-selection-exercises}
 
