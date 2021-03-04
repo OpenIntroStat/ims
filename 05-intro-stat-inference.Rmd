@@ -14,15 +14,15 @@ That is, we create what is called a **confidence interval**\index{confidence int
 ```{r method-summary-table-chp5}
 method_summary_table <- tribble(
   ~variable, ~col1, ~col2, ~col3,
-  "What does it do?", "Shuffles the explanatory variable to mimic the natural variability  found in a randomized experiment", "Resamples (with replacement) from the observed data to mimic the sampling variability found by collecting data.", "Uses theory (primarily the Central Limit Theorem) to describe the hypothetical variability resulting from either repeated randomized experiments or random samples",
+  "What does it do?", "Shuffles the explanatory variable to mimic the natural variability  found in a randomized experiment.", "Resamples (with replacement) from the observed data to mimic the sampling variability found by collecting data from a population.", "Uses theory (primarily the Central Limit Theorem) to describe the hypothetical variability resulting from either repeated randomized experiments or random samples.",
 
-  "What is the random process described?", "Randomized experiment", "Random sampling", "Either / both",
+  "What is the random process described?", "Randomized experiment.", "Random sampling from a population.", "Randomized experiment or random sampling.",
 
-  "What other random processes can be approximated?", "Yes, can be used to describe random sampling in an observational model", "Yes, can be used to describe random allocation in an experiment", "Yes",
+  "What other random processes can be approximated?", "Can also be used to describe random sampling in an observational model", "Can also be used to describe random allocation in an experiment", "Randomized experiment or random sampling.",
 
-  "What is it best for?", "Hypothesis Testing (can be used for Confidence Intervals, but not covered in this text)", "Confidence Intervals (HT for one proportion covered in Chapter 6)", "Quick analyses through, for example, calculating a Z score",
+  "What is it best for?", "Hypothesis Testing (can be used for Confidence Intervals, but not covered in this text).", "Confidence Intervals (bootstrap HT for one proportion covered in Chapter 6).", "Quick analyses through, for example, calculating a Z score.",
 
-  "What physical object represents the simulation process?", "Shuffling cards", "Pulling balls from a bag", "Not applicable",
+  "What physical object represents the simulation process?", "Shuffling cards", "Pulling marbles from a bag", "Not applicable",
 
   "What are the technical conditions?", "Independence", "Independence, large n", "Independence, large n"
 )
@@ -63,7 +63,7 @@ terms_chp_5 <- c(terms_chp_5, "independent")
 
 Studying randomness of this form is a key focus of statistics.
 Throughout this chapter, and those that follow, we provide three different approaches for quantifying the variability inherent in data: randomization, bootstrapping, and mathematical models.
-Using the methods provided in this chapter, we will be able to draw conclusions beyond the dataset at hand to research questions about larger populations that these samples come from.
+Using the methods provided in this chapter, we will be able to draw conclusions beyond the dataset at hand to research questions about larger populations that the samples come from.
 
 ## Randomization tests {#inf-rand}
 
@@ -96,17 +96,21 @@ The data from this study can be found in the [openintro](http://openintrostat.gi
 
 #### Observed data {.unnumbered}
 
-The participants in this study were 48 male bank supervisors attending a management institute at the University of North Carolina in 1972.
+The participants in this study were 48 male bank supervisors attending a management institute at the University of North Carolina in 1972.[^intro-stat-inference-3]
 They were asked to assume the role of the personnel director of a bank and were given a personnel file to judge whether the person should be promoted to a branch manager position.
 The files given to the participants were identical, except that half of them indicated the candidate was male and the other half indicated the candidate was female.
 These files were randomly assigned to the subjects.
 
+[^intro-stat-inference-3]: Rosen B and Jerdee T.
+    1974.
+    "Influence of sex role stereotypes on personnel decisions." Journal of Applied Psychology 59(1):9-14.
+
 ::: {.guidedpractice}
 Is this an observational study or an experiment?
-How does the type of study impact what can be inferred from the results?[^intro-stat-inference-3]
+How does the type of study impact what can be inferred from the results?[^intro-stat-inference-4]
 :::
 
-[^intro-stat-inference-3]: The study is an experiment, as subjects were randomly assigned a "male" file or a "female" file (remember, all the files were actually identical in content).
+[^intro-stat-inference-4]: The study is an experiment, as subjects were randomly assigned a "male" file or a "female" file (remember, all the files were actually identical in content).
     Since this is an experiment, the results can be used to evaluate a causal relationship between gender of a candidate and the promotion decision.
 
 ```{r gender-discrimination-obs-p}
@@ -130,7 +134,7 @@ perc_female <- label_percent(accuracy = 0.1)(p_female)
 perc_diff   <- label_percent(accuracy = 0.1)(p_diff)
 ```
 
-For each supervisor we recorded the gender associated with the assigned file and the promotion decision.
+For each supervisor both the gender associated with the assigned file and the promotion decision were recorded.
 Using the results of the study summarized in Table \@ref(tab:gender-discrimination-obs), we would like to evaluate if females are unfairly discriminated against in promotion decisions.
 In this study, a smaller proportion of females are promoted than males (`r p_female` versus `r p_male`), but it is unclear whether the difference provides *convincing evidence* that females are unfairly discriminated against.
 
@@ -144,8 +148,8 @@ gender_discrimination %>%
   add_header_above(c(" " = 1, "decision" = 2, " " = 1)) 
 ```
 
-The data are visualized in Figure \@ref(fig:gender-rand-obs).
-Note that each card box denotes a personnel file (an observation from our dataset) and the colors indicate the decision: red for promoted and white for not promoted.
+The data are visualized in Figure \@ref(fig:gender-rand-obs) as a set of cards.
+Note that each card denotes a personnel file (an observation from our dataset) and the colors indicate the decision: red for promoted and white for not promoted.
 Additionally, the observations are broken up into the male and female groups.
 
 ```{r gender-rand-obs, out.width = "50%", fig.cap = "The gender descriminiation study can be thought of as 48 red and white cards."}
@@ -166,17 +170,18 @@ Since we wouldn't expect the sample proportions to be *exactly* equal, even if t
 The previous example is a reminder that the observed outcomes in the sample may not perfectly reflect the true relationships between variables in the underlying population.
 Table \@ref(tab:gender-discrimination-obs) shows there were 7 fewer promotions in the female group than in the male group, a difference in promotion rates of `r perc_diff` $\left( \frac{21}{24} - \frac{14}{24} = 0.292 \right).$ This observed difference is what we call a **point estimate**\index{point estimate} of the true difference.
 The point estimate of the difference is large, but the sample size for the study is small, making it unclear if this observed difference represents discrimination or whether it is simply due to chance.
-We label these two competing claims, $H_0$ and $H_A$:
+Chance can be thought of as the claim due to natural variability; discrimination can be thought of as the claim the researchers set out to demonstrate.
+We label these two competing claims, $H_0$ and $H_A:$
 
 ```{r include = FALSE}
 terms_chp_5 <- c(terms_chp_5, "point estimate")
 ```
 
--   $H_0$: **Null hypothesis**\index{null hypothesis}.
+-   $H_0:$ **Null hypothesis**\index{null hypothesis}.
     The variables `gender` and `decision` are independent.
     They have no relationship, and the observed difference between the proportion of males and females who were promoted, `r perc_diff`, was due to random chance.
 
--   $H_A$: **Alternative hypothesis**\index{alternative hypothesis}.
+-   $H_A:$ **Alternative hypothesis**\index{alternative hypothesis}.
     The variables `gender` and `decision` are *not* independent.
     The difference in promotion rates of `r perc_diff` was not due to random chance, and equally qualified females are less likely to be promoted than males.
 
@@ -203,30 +208,30 @@ terms_chp_5 <- c(terms_chp_5, "hypothesis test")
 
 What would it mean if the null hypothesis, which says the variables `gender` and `decision` are unrelated, was true?
 It would mean each banker would decide whether to promote the candidate without regard to the gender indicated on the file.
-That is, the difference in the promotion percentages would be due to the way the files were randomly divided to the bankers, and the randomization just happened to give rise to a relatively large difference of `r perc_diff`.
+That is, the difference in the promotion percentages would be due to the way the files were randomly allocated to the bankers, and the randomization just happened to give rise to a relatively large difference of `r perc_diff`.
 
 Consider the alternative hypothesis: bankers were influenced by which gender was listed on the personnel file.
 If this was true, and especially if this influence was substantial, we would expect to see some difference in the promotion rates of male and female candidates.
 If this gender bias was against females, we would expect a smaller fraction of promotion recommendations for female personnel files relative to the male files.
 
-We will choose between these two competing claims by assessing if the data conflict so much with $H_0$ that the null hypothesis cannot be deemed reasonable.
-If this is the case, and the data seem to support $H_A,$ then we will reject the notion of independence and conclude that these data provide strong evidence of discrimination.
+We will choose between the two competing claims by assessing if the data conflict so much with $H_0$ that the null hypothesis cannot be deemed reasonable.
+If data and the null claim seem to be at odds with one another, and the data seem to support $H_A,$ then we will reject the notion of independence and conclude that the data provide strong evidence of discrimination.
 
 #### Variability of the statistic {.unnumbered}
 
 Table \@ref(tab:gender-discrimination-obs) shows that 35 bank supervisors recommended promotion and 13 did not.
 Now, suppose the bankers' decisions were independent of gender.
 Then, if we conducted the experiment again with a different random assignment of gender to the files, differences in promotion rates would be based only on random fluctuation.
-We can actually perform this **randomization**, which simulates what would have happened if the bankers' decisions had been independent of `gender` but we had distributed the file genders differently.[^intro-stat-inference-4]
+We can actually perform this **randomization**, which simulates what would have happened if the bankers' decisions had been independent of `gender` but we had distributed the file genders differently.[^intro-stat-inference-5]
 
-[^intro-stat-inference-4]: The test procedure we employ in this section is sometimes referred to as a **permutation test**\index{permutation test}.
+[^intro-stat-inference-5]: The test procedure we employ in this section is sometimes referred to as a **permutation test**\index{permutation test}.
 
 ```{r include = FALSE}
 terms_chp_5 <- c(terms_chp_5, "permutation test")
 ```
 
-In this **simulation**\index{simulation}, we thoroughly shuffle 48 personnel files, 35 labelled `promoted` and 13 labelled `not promoted`, and we deal these files into two stacks.
-Note that by keeping 35 promoted and 13 not promoted, we are assuming that 35 of the bank managers would have promoted the individual whose content is contained in the file (**independent** of gender).
+In the **simulation**\index{simulation}, we thoroughly shuffle 48 personnel files, 35 labelled `promoted` and 13 labelled `not promoted`, and we deal files into two stacks.
+Note that by keeping 35 promoted and 13 not promoted, we are assuming that 35 of the bank managers would have promoted the individual whose content is contained in the file **independent** of gender.
 We will deal 24 files into the first stack, which will represent the 24 "female" files.
 The second stack will also have 24 files, and it will represent the 24 "male" files.
 Figure \@ref(fig:gender-rand-shuffle-1) highlights both the shuffle and the reallocation to the sham gender groups.
@@ -266,10 +271,10 @@ gender_discrimination_rand_1 %>%
 
 ::: {.guidedpractice}
 What is the difference in promotion rates between the two simulated groups in Table \@ref(tab:gender-discrimination-rand-1) ?
-How does this compare to the observed difference 29.2% from the actual study?[^intro-stat-inference-5]
+How does this compare to the observed difference 29.2% from the actual study?[^intro-stat-inference-6]
 :::
 
-[^intro-stat-inference-5]: $18/24 - 17/24=0.042$ or about 4.2% in favor of the men.
+[^intro-stat-inference-6]: $18/24 - 17/24=0.042$ or about 4.2% in favor of the men.
     This difference due to chance is much smaller than the difference observed in the actual groups.
 
 Figure \@ref(fig:gender-rand-shuffle-1-sort) shows that the difference in promotion rates is much larger in the original data than it is in the simulated groups (0.292 \>\>\> 0.042).
@@ -334,17 +339,15 @@ Such a low probability indicates that observing such a large difference from cha
 
 The difference of 29.2% is a rare event if there really is no impact from listing gender in the candidates' files, which provides us with two possible interpretations of the study results:
 
--   $H_0$: **Null hypothesis**.
-    Gender has no effect on promotion decision, and we observed a difference that is so large that it would only happen rarely.
+-   If $H_0,$ the **Null hypothesis** is true: Gender has no effect on promotion decision, and we observed a difference that is so large that it would only happen rarely.
 
--   $H_A$: **Alternative hypothesis**.
-    Gender has an effect on promotion decision, and what we observed was actually due to equally qualified women being discriminated against in promotion decisions, which explains the large difference of 29.2%.
+-   If $H_A,$ the **Alternative hypothesis** is true: Gender has an effect on promotion decision, and what we observed was actually due to equally qualified women being discriminated against in promotion decisions, which explains the large difference of 29.2%.
 
-When we conduct formal studies, we reject a null position (the idea that the data are a result of chance only) if the data strongly conflict with that null position.[^intro-stat-inference-6]
+When we conduct formal studies, we reject a null position (the idea that the data are a result of chance only) if the data strongly conflict with that null position.[^intro-stat-inference-7]
 In our analysis, we determined that there was only a $\approx$ 2% probability of obtaining a sample where $\geq$ 29.2% more males than females get promoted by chance alone, so we conclude that the data provide strong evidence of gender discrimination against women by the supervisors.
 In this case, we reject the null hypothesis in favor of the alternative.
 
-[^intro-stat-inference-6]: This reasoning does not generally extend to anecdotal observations.
+[^intro-stat-inference-7]: This reasoning does not generally extend to anecdotal observations.
     Each of us observes incredibly rare events every day, events we could not possibly hope to predict.
     However, in the non-rigorous setting of anecdotal evidence, almost anything may appear to be a rare event, so the idea of looking for rare events in day-to-day activities is treacherous.
     For example, we might look at the lottery: there was only a 1 in 176 million chance that the Mega Millions numbers for the largest jackpot in history (October 23, 2018) would be (5, 28, 62, 65, 70) with a Mega ball of (5), but nonetheless those numbers came up!
@@ -369,12 +372,12 @@ In particular, we are interested in whether reminding students about this well-k
 A skeptic might think that such a reminder would have no impact.
 We can summarize the two different perspectives using the null and alternative hypothesis framework.
 
--   $H_0$: **Null hypothesis**. Reminding students that they can save money for later purchases will not have any impact on students' spending decisions.
--   $H_A$: **Alternative hypothesis**. Reminding students that they can save money for later purchases will reduce the chance they will continue with a purchase.
+-   $H_0:$ **Null hypothesis**. Reminding students that they can save money for later purchases will not have any impact on students' spending decisions.
+-   $H_A:$ **Alternative hypothesis**. Reminding students that they can save money for later purchases will reduce the chance they will continue with a purchase.
 
-In this section, we'll explore an experiment conducted by researchers that investigates this very question for students at a university in the southwestern United States.[^intro-stat-inference-7]
+In this section, we'll explore an experiment conducted by researchers that investigates this very question for students at a university in the southwestern United States.[^intro-stat-inference-8]
 
-[^intro-stat-inference-7]: Frederick S, Novemsky N, Wang J, Dhar R, Nowlis S.
+[^intro-stat-inference-8]: Frederick S, Novemsky N, Wang J, Dhar R, Nowlis S.
     2009.
     Opportunity Cost Neglect.
     Journal of Consumer Research 36: 553-561.
@@ -448,10 +451,10 @@ opportunity_cost %>%
   add_header_above(c(" " = 1, "decision" = 2, " " = 1)) 
 ```
 
-We will define a **success**\index{success} in this study as a student who chooses not to buy the video.[^intro-stat-inference-8]
+We will define a **success**\index{success} in this study as a student who chooses not to buy the video.[^intro-stat-inference-9]
 Then, the value of interest is the change in video purchase rates that results by reminding students that not spending money now means they can spend the money later.
 
-[^intro-stat-inference-8]: Success is often defined in a study as the outcome of interest, and a "success" may or may not actually be a positive outcome.
+[^intro-stat-inference-9]: Success is often defined in a study as the outcome of interest, and a "success" may or may not actually be a positive outcome.
     For example, researchers working on a study on COVID prevalence might define a "success" in the statistical sense as a patient who is COVID+.
     A more complete discussion of the term **success** will be given in Chapter \@ref(inference-cat).
 
@@ -463,7 +466,7 @@ We can construct a point estimate for this difference as
 
 $$\hat{p}_{treatment} - \hat{p}_{control} = \frac{34}{75} - \frac{19}{75} = 0.453 - 0.253 = 0.200$$
 
-The proportion of students who chose not to buy the video was 20% higher in the treatment group than the control group.
+The proportion of students who chose not to buy the video was 20 percentage points higher in the treatment group than the control group.
 However, is this result **statistically significant**\index{statistically significant}?
 In other words, is a 20% difference between the two groups so prominent that it is unlikely to have occurred from chance alone?
 
@@ -477,8 +480,8 @@ The primary goal in this data analysis is to understand what sort of differences
 For this, we'll use the same procedure we applied in Section \@ref(caseStudyGenderDiscrimination): randomization.
 
 Let's think about the data in the context of the hypotheses.
-If the null hypothesis ($H_0$) was true and the treatment had no impact on student decisions, then the observed difference between the two groups of 20% could be attributed entirely to random chance.
-If, on the other hand, the alternative hypothesis ($H_A$) is true, then the difference indicates that reminding students about saving for later purchases actually impacts their buying decisions.
+If the null hypothesis $(H_0)$ was true and the treatment had no impact on student decisions, then the observed difference between the two groups of 20% could be attributed entirely to random chance.
+If, on the other hand, the alternative hypothesis $(H_A)$ is true, then the difference indicates that reminding students about saving for later purchases actually impacts their buying decisions.
 
 #### Observed statistic vs. null statistics {.unnumbered}
 
@@ -492,13 +495,13 @@ Then we shuffle these cards thoroughly and divide them into two stacks of size 7
 Any observed difference between the proportions of "not buy video" cards (what we earlier defined as *success*) can be attributed entirely to chance.
 
 ::: {.workedexample}
-If we are randomly assigning the cards into the simulated treatment and control groups, how many "not buy video" cards would we expect to end up with in each simulated group?
+If we are randomly assigning the cards into the simulated treatment and control groups, how many "not buy video" cards would we expect to end up in each simulated group?
 What would be the expected difference between the proportions of "not buy video" cards in each group?
 
 ------------------------------------------------------------------------
 
 Since the simulated groups are of equal size, we would expect $53 / 2 = 26.5,$ i.e., 26 or 27, "not buy video" cards in each simulated group, yielding a simulated point estimate of the difference in proportions of 0% .
-However, due to random chance, we might actually observe a number a little above or below 26 and 27.
+However, due to random chance, we might also expect to sometimes observe a number a little above or below 26 and 27.
 :::
 
 The results of a single randomization from chance alone is shown in Table \@ref(tab:opportunity-cost-obs-simulated).
@@ -551,7 +554,7 @@ We'll do this 1,000 times.
 
 The results are summarized in a dot plot in Figure \@ref(fig:opportunity-cost-rand-dot-plot), where each point represents a simulation.
 
-```{r opportunity-cost-rand-dot-plot, fig.cap = "A stacked dot plot of 1,000 simulated differences produced under the null hypothesis, $H_0.$ Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study.", out.width = "100%"}
+```{r opportunity-cost-rand-dot-plot, fig.cap = "A stacked dot plot of 1,000 simulated (null) differences produced under the null hypothesis, $H_0.$ Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study.", out.width = "100%"}
 ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
   geom_dotplot(binwidth = 0.01, 
                fill = COL["red", "full"], 
@@ -565,21 +568,21 @@ ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
     axis.text.y = element_blank()
   ) +
   labs(
-    x = "Simulated differences in proportions of students who\ndo not buy the video (treatment - control)",
+    x = "Simulated null differences in proportions of students who\ndo not buy the video (treatment - control)",
     y = NULL
   )
 ```
 
-Since there are so many points, it is more convenient to summarize the results in a histogram such as the one in Figure \@ref(fig:opportunity-cost-rand-hist), where the height of each histogram bar represents the fraction of observations in that group.
+Since there are so many points, it is more convenient to summarize the results in a histogram such as the one in Figure \@ref(fig:opportunity-cost-rand-hist), where the height of each histogram bar represents the number of simulations resulting in an outcome of that magnitude.
 
-```{r opportunity-cost-rand-hist, fig.cap = "A histogram of 1,000 chance differences produced under the null hypothesis, $H_0.$ Histograms like this one are a more convenient representation of data or results when there are a large number of observations.", out.width = "100%"}
+```{r opportunity-cost-rand-hist, fig.cap = "A histogram of 1,000 chance differences produced under the null hypothesis, $H_0.$ Histograms like this one are a convenient representation of data or results when there are a large number of simulations.", out.width = "100%"}
 ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
   geom_histogram(binwidth = 0.05, fill = COL["red", "full"], color = COL["blue", "full"], pad = TRUE) +
   gghighlight(stat >= 0.20, 
               unhighlighted_params = list(fill = "white", 
                                           color = COL["blue", "full"])) +
   labs(
-    x = "Simulated differences in proportions of students who\ndo not buy the video (treatment - control)",
+    x = "Simulated null differences in proportions of students who\ndo not buy the video (treatment - control)",
     y = "Number of simulated scenarios"
   )
 ```
@@ -590,7 +593,7 @@ That is really rare!
 
 Instead, we will conclude the data provide strong evidence there is a treatment effect: reminding students before a purchase that they could instead spend the money later on something else lowers the chance that they will continue with the purchase.
 
-Notice that we are able to make a causal statement for this study since the study is an experiment.
+Notice that we are able to make a causal statement for this study since the study is an experiment, although we don't know why the reminder induces a lower purchase rate.
 
 ### Hypothesis testing {#HypothesisTesting}
 
@@ -643,6 +646,7 @@ They are simply not convinced of the alternative that the person is guilty.
 This is also the case with hypothesis testing: *even if we fail to reject the null hypothesis, we typically do not accept the null hypothesis as truth*.
 
 Failing to find strong evidence for the alternative hypothesis is not equivalent to providing evidence that the null hypothesis is true.
+We will see this idea in greater detail in Section \@ref(decerr).
 
 #### p-value and statistical significance {.unnumbered}
 
@@ -650,11 +654,11 @@ In Section \@ref(caseStudyGenderDiscrimination) we encountered a study from the 
 The research question -- are females discriminated against in promotion decisions?
 -- was framed in the context of hypotheses:
 
--   $H_0$: Gender has no effect on promotion decisions.
+-   $H_0:$ Gender has no effect on promotion decisions.
 
--   $H_A$: Women are discriminated against in promotion decisions.
+-   $H_A:$ Women are discriminated against in promotion decisions.
 
-The null hypothesis ($H_0$) was a perspective of no difference.
+The null hypothesis $(H_0)$ was a perspective of no difference.
 The data on gender discrimination provided a point estimate of a `r perc_diff` difference in recommended promotion rates between men and women.
 We determined that such a difference from chance alone would be rare: it would only happen about 2 in 100 times.
 When results like these are inconsistent with $H_0,$ we reject $H_0$ in favor of $H_A.$ Here, we concluded there was discrimination against women.
@@ -718,7 +722,7 @@ We've made a video to help clarify *why 0.05*:
 <https://www.openintro.org/book/stat/why05/>
 
 Sometimes it's also a good idea to deviate from the standard.
-We'll discuss when to choose a threshold different than 0.05 in Section \@ref(two-prop-errors).
+We'll discuss when to choose a threshold different than 0.05 in Section \@ref(decerr).
 :::
 
 ### Randomization test summary
@@ -731,19 +735,19 @@ Figure \@ref(fig:fullrand) provides a visual summary of the randomization testin
 terms_chp_5 <- c(terms_chp_5, "randomization test")
 ```
 
-```{r fullrand, out.width="100%", fig.cap = "An example of one simulation of the full randomization procedure.  We repeat the steps hundreds or thousands of times."}
+```{r fullrand, out.width="100%", fig.cap = "An example of one simulation of the full randomization procedure from a hypothetical dataset as visualized in the first panel.  We repeat the steps hundreds or thousands of times."}
 knitr::include_graphics("05/figures/fullrand.png")
 ```
 
-We can summarise this procedure as follows:
+We can summarise the Randomization Test procedure as follows:
 
--   **Frame the research question in terms of hypotheses.** Hypothesis tests are appropriate for research questions that can be summarized in two competing hypotheses. The null hypothesis ($H_0$) usually represents a skeptical perspective or a perspective of no difference. The alternative hypothesis ($H_A$) usually represents a new view or a difference.
+-   **Frame the research question in terms of hypotheses.** Hypothesis tests are appropriate for research questions that can be summarized in two competing hypotheses. The null hypothesis $(H_0)$ usually represents a skeptical perspective or a perspective of no difference. The alternative hypothesis $(H_A)$ usually represents a new view or a difference.
 -   **Collect data with an observational study or experiment.** If a research question can be formed into two hypotheses, we can collect data to run a hypothesis test. If the research question focuses on associations between variables but does not concern causation, we would run an observational study. If the research question seeks a causal connection between two or more variables, then an experiment should be used.
--   **Model the randomness as if the null hypothesis was true.** In the examples above, the variability has been modeled as if the treatment (e.g., gender, opportunity, blood thinner) allocation was independent of the outcome of the study. The computer generated the null distribution from many different randomizations in order to quantify the null variability.
+-   **Model the randomness as if the null hypothesis was true.** In the examples above, the variability has been modeled as if the treatment (e.g., gender, opportunity) allocation was independent of the outcome of the study. The computer generated the null distribution from many different randomizations in order to quantify the null variability.
 -   **Analyze the data.** Choose an analysis technique appropriate for the data and identify the p-value. So far, we've only seen one analysis technique: randomization. Throughout the rest of this textbook, we'll encounter several new methods suitable for many other contexts.
 -   **Form a conclusion.** Using the p-value from the analysis, determine whether the data provide statistically significant evidence against the null hypothesis. Also, be sure to write the conclusion in plain language so casual readers can understand the results.
 
-Table \@ref(tab:chp5-1-summary) is another look at this summary.
+Table \@ref(tab:chp5-1-summary) is another look at the Randomization Test summary.
 
 ```{r chp5-1-summary}
 method_summary_table %>%
@@ -762,17 +766,18 @@ Exercises for this section are under construction.
 
 ## Bootstrap confidence intervals {#boot-ci}
 
-Randomization is a statistical technique suitable for evaluating whether a difference in sample proportions is due to chance.
+As seen in Section \@ref(inf-rand), Randomization is a statistical technique suitable for evaluating whether a difference in sample proportions is due to chance.
 
-Randomization tests are best suited for modeling experiments where the treatment (explanatory variable) has been randomly assigned to the observational units and there is an attempt to answer a simple yes/no question.
+Randomization tests are best suited for modeling experiments where the treatment (explanatory variable) has been randomly assigned to the observational units and there is an attempt to answer a simple yes/no research question.
 
 For example, consider the following research questions that can be well assessed with a randomization test:
 
 -   Does this vaccine make it less likely that a person will get malaria?
 -   Does drinking caffeine affect how quickly a person can tap their finger?
--   Can we predict which candidate will win the upcoming election?
+-   Can we predict whether candidate A will win the upcoming election?
 
-In this section, however, we are instead interested in estimating the unknown value of a population parameter.
+In this section, however, we are instead interested in a different approach to understanding population parameters.
+Instead of testing a claim, the goal now is to estimate the unknown value of a population parameter.
 
 For example,
 
@@ -780,7 +785,7 @@ For example,
 -   How much faster (or slower) can a person tap their finger, on average, if they drink caffeine first?
 -   What proportion of the vote will go to candidate A?
 
-Here, we explore the situation where focus is on a single proportion, and we introduce a new simulation method, bootstrapping.
+Here, we explore the situation where focus is on a single proportion, and we introduce a new simulation method: bootstrapping.
 
 Bootstrapping is best suited for modeling studies where the data have been generated through random sampling from a population.
 
@@ -830,7 +835,7 @@ She claims this is strong evidence that her work meaningfully contributes to red
 
 ::: {.workedexample}
 We will let $p$ represent the true complication rate for liver donors working with this consultant.
-(The "true" complication rate will be referred to as the **parameter**.) We estimate $p$ using the data, and label this estimation $\hat{p}.$
+(The "true" complication rate will be referred to as the **parameter**.) We estimate $p$ using the data, and label the estimate $\hat{p}.$
 
 ------------------------------------------------------------------------
 
@@ -838,7 +843,7 @@ The sample proportion for the complication rate is 3 complications divided by th
 :::
 
 ::: {.workedexample}
-Is it possible to assess the consultant's claim using the data?
+Is it possible to assess the consultant's claim (that the reduction in complications is due to her work) using the data?
 
 ------------------------------------------------------------------------
 
@@ -857,6 +862,7 @@ While it is not possible to assess the causal claim, it is still possible to und
 A **parameter** is the "true" value of interest.
 
 We typically estimate the parameter using a point estimate\index{point estimate} from a sample of data.
+The point estimate is also known as the **statistic**\index{statistic}.
 
 For example, we estimate the probability $p$ of a complication for a client of the medical consultant by examining the past complications rates of her clients:
 
@@ -864,7 +870,7 @@ $$\hat{p} = 3 / 62 = 0.048~\text{is used to estimate}~p$$
 :::
 
 ```{r include = FALSE}
-terms_chp_5 <- c(terms_chp_5, "parameter")
+terms_chp_5 <- c(terms_chp_5, "parameter", "point estimate", "statistic")
 ```
 
 #### Variability of the statistic {.unnumbered}
@@ -881,13 +887,13 @@ terms_chp_5 <- c(terms_chp_5, "bootstrapping")
 
 Most of the inferential procedures covered in this text are grounded in quantifying how one data set would differ from another when they are both taken from the same population.
 
-It doesn't make sense to take repeated samples from the same population because if you have the means to take more samples, a larger sample size will benefit you more than the exact same sample twice.
+It doesn't make sense to take repeated samples from the same population because if you have the means to take more samples, a larger sample size will benefit you more than separately evaluating two sample of the exact same size.
 
 Instead, we measure how the samples behave under an estimate of the population.
 
 Figure \@ref(fig:boot1) shows how the unknown original population can be estimated by using the sample to approximate the proportion of successes and failures (in our case, the proportion of complications and no complications for the medical consultant).
 
-```{r boot1, fig.cap = "The unknown population is estimated using the observed sample data.  Note that we can use the sample to create an estimated or bootstrapped population from which to sample.  The observed data include three red and four white marbles, so the estimated population also has red marbles in a proportion of 3/7.", warning = FALSE,  out.width="75%"}
+```{r boot1, fig.cap = "The unknown population is estimated using the observed sample data.  Note that we can use the sample to create an estimated or bootstrapped population from which to sample.  The observed data include three red and four white marbles, so the estimated population contains 3/7 red marbles and 4/7 white marbles.", warning = FALSE,  out.width="75%"}
 knitr::include_graphics("05/figures/boot1prop1.png")
 ```
 
@@ -897,15 +903,15 @@ In Figure \@ref(fig:boot2) the repeated bootstrap samples are obviously differen
 
 Recall that the bootstrap samples were taken from the same (estimated) population, and so the differences are due entirely to natural variability in the sampling procedure.
 
-```{r boot2, fig.cap = "Bootstrap sampling provides a measure of the variability of sample to sample.  Note that we are taking samples from the estimated population that was created from the sample.", out.width="75%"}
+```{r boot2, fig.cap = "Bootstrap sampling provides a measure of the sample to sample variability.  Note that we are taking samples from the estimated population that was created from the observed data.", out.width="75%"}
 knitr::include_graphics("05/figures/boot1prop2.png")
 ```
 
 By summarizing each of the bootstrap samples (here, using the sample proportion), we see, directly, the variability of the sample proportion, $\hat{p},$ from sample to sample.
 
-The distribution of $\hat{p}_{BS}$ for the example scenario is shown in Figure \@ref(fig:boot3), and the bootstrap distribution for the medical consultant data is shown in Figure \@ref(fig:MedConsBSSim).
+The distribution of $\hat{p}_{BS}$ for the example scenario is shown in Figure \@ref(fig:boot3), and the full bootstrap distribution for the medical consultant data is shown in Figure \@ref(fig:MedConsBSSim).
 
-```{r boot3, fig.cap = "The bootstrapped proportion is estimated for each bootstrap sample.  The resulting bootstrap distribution (histogram) provides a measure for how the proportions vary from sample to sample", warning = FALSE,  out.width="75%"}
+```{r boot3, fig.cap = "The bootstrapped proportion is estimated for each bootstrap sample.  The resulting bootstrap distribution (dotplot) provides a measure for how the proportions vary from sample to sample", warning = FALSE,  out.width="75%"}
 knitr::include_graphics("05/figures/boot1prop3.png")
 ```
 
@@ -947,17 +953,15 @@ It turns out that in practice, it is very difficult for computers to work with a
 
 However, there is a physical and computational model which produces an equivalent bootstrap distribution of the sample proportion in a computationally efficient manner.
 
-Consider the observed data to be a bag of marbles 3 of which are success (white) and 4 of which are failures (red).
+Consider the observed data to be a bag of marbles 3 of which are success (red) and 4 of which are failures (white).
 
 By drawing the marbles out of the bag with replacement, we depict the exact same sampling **process** as was done with the infinitely large estimated population.
-
-Note in Figure \@ref(fig:boot4) that when sampling the original observations, a particular data point may end up in the new sample one time (evidenced by a circle around the observation), two times (evidenced by two circles around the observation), or not at all (no circles around the observation).
 
 ```{r boot4, fig.cap = "Taking repeated resamples from the sample data is the same process as creating an infinitely large estimate of the population.  It is computationally more feasible to take resamples directly from the sample.  Note that the resampling is now done with replacement (that is, the original sample does not ever change) so that the original sample and estimated hypothetical population are equivalent.", warning = FALSE,  out.width="75%"}
 knitr::include_graphics("05/figures/boot1prop4.png")
 ```
 
-```{r boot1prop, fig.cap = "A comparison of the process of sampling from the estimate infinite population and resampling with replacement from the original sample.  Note that the histogram of bootstrapped proportions is the same because the process by which the statistics were estimated is equivalent.", warning = FALSE,  out.width="75%"}
+```{r boot1prop, fig.cap = "A comparison of the process of sampling from the estimate infinite population and resampling with replacement from the original sample.  Note that the dotplot of bootstrapped proportions is the same because the process by which the statistics were estimated is equivalent.", warning = FALSE,  out.width="75%"}
 knitr::include_graphics("05/figures/boot1propboth.png")
 ```
 
@@ -965,15 +969,15 @@ If we apply the bootstrap sampling process to the medical consultant example, we
 
 There will be 59 white marbles (no complication) and 3 red marbles (complication).
 
-If we 62 choose marbles out of the bag (one at a time with replacement) and compute the proportion of simulated patients with complications, $\hat{p}_{BS},$ then this "bootstrap" proportion represents a single simulated proportion from the "resample from the sample" approach.
+If we choose 62 marbles out of the bag (one at a time with replacement) and compute the proportion of simulated patients with complications, $\hat{p}_{BS},$ then this "bootstrap" proportion represents a single simulated proportion from the "resample from the sample" approach.
 
 ::: {.guidedpractice}
-In a simulation of 62 patients, about how many would we expect to have had a complication?[^intro-stat-inference-9]
+In a simulation of 62 patients, about how many would we expect to have had a complication?[^intro-stat-inference-10]
 :::
 
-[^intro-stat-inference-9]: About 5% of the patients (6.2 on average) in the simulation will have a complication, though we will see a little variation from one simulation to the next.
+[^intro-stat-inference-10]: About 5% of the patients (6.2 on average) in the simulation will have a complication, though we will see a little variation from one simulation to the next.
 
-One simulation isn't enough to get a sense of the variability from one bootstrap proportion to another bootstrap proportion, so we repeated the simulation 10,000 times using a computer.
+One simulation isn't enough to get a sense of the variability from one bootstrap proportion to another bootstrap proportion, so we repeat the simulation 10,000 times using a computer.
 
 Figure \@ref(fig:MedConsBSSim) shows the distribution from the 10,000 bootstrap simulations.
 
@@ -1025,12 +1029,12 @@ In this simple game, you are the tapper, and the other person is the listener.
 
 #### Observed data {.unnumbered}
 
-A Stanford University graduate student named Elizabeth Newton conducted an experiment using the tapper-listener game.[^intro-stat-inference-10]
+A Stanford University graduate student named Elizabeth Newton conducted an experiment using the tapper-listener game.[^intro-stat-inference-11]
 In her study, she recruited 120 tappers and 120 listeners into the study.
 About 50% of the tappers expected that the listener would be able to guess the song.
 Newton wondered, is 50% a reasonable expectation?
 
-[^intro-stat-inference-10]: This case study is described in [Made to Stick](http://www.openintro.org/redirect.php?go=made-to-stick&redirect=simulation_textbook_pdf_preliminary) by Chip and Dan Heath.
+[^intro-stat-inference-11]: This case study is described in [Made to Stick](http://www.openintro.org/redirect.php?go=made-to-stick&redirect=simulation_textbook_pdf_preliminary) by Chip and Dan Heath.
     Little known fact: the teaching principles behind many OpenIntro resources are based on *Made to Stick*.
 
 In Newton's study, only 3 out of 120 listeners ($\hat{p} = 0.025$) were able to guess the tune!
@@ -1042,7 +1046,7 @@ To answer the question, we will again use a simulation.
 
 To simulate 120 games, this time we use a bag of 120 marbles 3 are red (for those who guessed correctly) and 117 are white (for those who could not guess the song).
 
-Sampling from the bag 120 times (while not actually removing the marbles from the bag) produces one bootstrap sample.
+Sampling from the bag 120 times (remembering to replace the marble back into the bag each time to keep constant the population proportion of red) produces one bootstrap sample.
 
 For example, we can start by simulating 5 tapper-listener pairs by sampling 5 marbles from the bag of 3 red and 117 white marbles.
 
@@ -1051,7 +1055,7 @@ For example, we can start by simulating 5 tapper-listener pairs by sampling 5 ma
 | Wrong | Wrong | Wrong | Correct | Wrong |
 
 After selecting 120 marbles, we counted 2 red for $\hat{p}_{BS1} = 0.0167.$ As we did with the randomization technique, seeing what would happen with one simulation isn't enough.
-In order to evaluate whether our originally observed proportion of 0.025 is unusual or not, we should generate more simulations.
+In order to understand how far the observed proportion of 0.025 might be from the true parameter, we should generate more simulations.
 Here we've repeated the entire simulation ten times:
 
 $$0.0417 \quad 0.0250 \quad 0.0250 \quad 0.0083 \quad 0.0500 \quad 0.0333 \quad 0.0250 \quad 0.000 \quad 0.0083 \quad 0.000$$ <!-- % round(rbinom(10, 120, 0.5) / 120, 3) -->
@@ -1083,10 +1087,10 @@ mtext("Bootstrapped values of the proportion of listeners who guessed correctly"
 ```
 
 ::: {.guidedpractice}
-Do the data provide "statistically significant" evidence against the claim that 50% of listeners can guess the tapper's tune?[^intro-stat-inference-11]
+Do the data provide "statistically significant" evidence against the claim that 50% of listeners can guess the tapper's tune?[^intro-stat-inference-12]
 :::
 
-[^intro-stat-inference-11]: Because 50% is not in the interval estimate for the true parameter, there is statistically significant evidence.
+[^intro-stat-inference-12]: Because 50% is not in the interval estimate for the true parameter, there is statistically significant evidence.
     Indeed, the data provide strong evidence that the chance a listener will guess the correct tune is less than 50%.
 
 ### Confidence intervals {#ConfidenceIntervals}
@@ -1097,7 +1101,7 @@ A point estimate provides a single plausible value for a parameter.
 However, a point estimate is rarely perfect; usually there is some error in the estimate.
 In addition to supplying a point estimate of a parameter, a next logical step would be to provide a plausible *range of values* for the parameter.
 
-#### Population parameter {.unnumbered}
+#### Plausible range of values for the population parameter {.unnumbered}
 
 A plausible range of values for the population parameter is called a **confidence interval**.
 Using only a single point estimate is like fishing in a murky lake with a spear, and using a confidence interval is like fishing with a net.
@@ -1108,10 +1112,10 @@ If we report a point estimate, we probably will not hit the exact population par
 On the other hand, if we report a range of plausible values -- a confidence interval -- we have a good shot at capturing the parameter.
 
 ::: {.guidedpractice}
-If we want to be very certain we capture the population parameter, should we use a wider interval or a smaller interval?[^intro-stat-inference-12]
+If we want to be very certain we capture the population parameter, should we use a wider interval or a smaller interval?[^intro-stat-inference-13]
 :::
 
-[^intro-stat-inference-12]: If we want to be more certain we will capture the fish, we might use a wider net.
+[^intro-stat-inference-13]: If we want to be more certain we will capture the fish, we might use a wider net.
     Likewise, we use a wider confidence interval if we want to be more certain that we capture the parameter.
 
 #### Bootstrap confidence interval {.unnumbered}
@@ -1119,8 +1123,9 @@ If we want to be very certain we capture the population parameter, should we use
 As we saw above, a **bootstrap sample**\index{bootstrap sample} is a sample of the original sample.
 In the case of the medical complications data, we proceed as follows:
 
--   Randomly sample one observation from the 62 patients (sample, without removing the marbles, 62 marbles from the bag).
--   Randomly sample a second observation from the 62 patients. Because we sample with replacement (i.e., we don't actually remove the marbles from the bag), there is a 1-in-62 chance that the second observation will be the same one sampled in the first step! ...
+-   Randomly sample one observation from the 62 patients (replace the marble back into the bag so as to keep constant the population).
+-   Randomly sample a second observation from the 62 patients. Because we sample with replacement (i.e., we don't actually remove the marbles from the bag), there is a 1-in-62 chance that the second observation will be the same one sampled in the first step!
+-   Keep going one sampled observation at a time ...
 -   Randomly sample a 62nd observation from the 62 patients.
 
 ```{r include = FALSE}
@@ -1129,9 +1134,9 @@ terms_chp_5 <- c(terms_chp_5, "bootstrap sample", "bootstrap percentile confiden
 
 Bootstrap sampling is often called **sampling with replacement**.
 
-A bootstrap sample behaves similarly to how an actual sample would behave, and we compute the point estimate of interest (here, compute $\hat{p}_{BS}$).
+A bootstrap sample behaves similarly to how an actual sample from a populationwould behave, and we compute the point estimate of interest (here, compute $\hat{p}_{BS}$).
 
-Due to theory that is beyond this text, we know that the bootstrap proportions $\hat{p}_{BS}$ vary around $\hat{p}$ in a similar way to how different sample (i.e., different datasets which would produce different $\hat{p}$ values) proportions vary around the true parameter $p.$
+Due to theory that is beyond this text, we know that the bootstrap proportions $\hat{p}_{BS}$ vary around $\hat{p}$ in a similar way to how different sample proportions (i.e., values of $\hat{p}$) vary around the true parameter $p.$
 
 Therefore, an interval estimate for $p$ can be produced using the $\hat{p}_{BS}$ values themselves.
 
@@ -1155,6 +1160,16 @@ Section \@ref(one-prop-null-boot) also provides a longer discussion on what "95%
 ```{r bootboth, fig.cap = "We will use sampling with replacement to measure the variability of the statistic of interest (here the proportion). Sampling with replacement is a computational tool which is equivalent to using the sample as a way of estimating an infinitely large population from which to sample.", warning = FALSE, out.width = "75%"}
 knitr::include_graphics("05/figures/boot1propboth.png") 
 ```
+
+We can summarise the Bootstrap process as follows:
+
+-   **Frame the research question in terms of a parameter to estimate.** Confidence Intervals are appropriate for research questions that aim to estimate a number from the population (called a parameter).
+-   **Collect data with an observational study or experiment.** If a research question can be formed as a query about the parameter, we can collect data to calculate a statistic which is the best guess we have for the value of the parameter. However, we know that the statistic won't be exactly equal to the parameter due to natural variability.
+-   **Model the randomness by using the data values as a proxy for the population.** In order to assess how far the statistic might be from the parameter, we take repeated resamples from the dataset to measure the variability in bootstrapped statistics. The variability of the bootstrapped statistics around the observed statistic (a quantity which can be measured through computational technique) should be approximately the same as the variability of many observed sample statistics around the parameter (a quantity which is very difficult to measure because in real life we only get exactly one sample).
+-   **Create the interval.** After choosing a particular confidence level, use the variability of the bootstrapped statistics to create an interval estimate which will hope to capture the true parameter. While the interval estimate associated with the particular sample at hand may or may not capture the parameter, the researcher knows that over their lifetime, the confidence level will determine the percentage of their research confidence intervals that do capture the true parameter.
+-   **Form a conclusion.** Using the confidence interval from the analysis, report on the interval estimate for the parameter of interest. Also, be sure to write the conclusion in plain language so casual readers can understand the results.
+
+Table \@ref(tab:chp5-2-summary) is another look at the Bootstrap process summary.
 
 ```{r chp5-2-summary}
 method_summary_table %>% 
@@ -1182,7 +1197,7 @@ While they differ in the settings, in their outcomes, and also in the technique 
 Figure \@ref(fig:FourCaseStudies) shows the null distributions in each of the four case studies where we ran 10,000 simulations.
 In the case of the opportunity cost study, which originally had just 1,000 simulations, we've included an additional 9,000 simulations.
 
-```{r FourCaseStudies, fig.cap = "The null distribution for each of the four case studies presented in previous.", fig.width = 10}
+```{r FourCaseStudies, fig.cap = "The null distribution for each of the four case studies presented previously.  Note that the center of each distribution is given by the value of the parameter set in the null hypothesis.", fig.width = 10}
 number.of.simulations <- 10000
 m.fact <- number.of.simulations / 1e3
 # _____ Opportunity Cost _____ #
@@ -1221,7 +1236,7 @@ for(i in 1:length(udiffs)){
 bin.width <- diff(udiffs)[1]
 breaks <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
 histPlot(diffs, breaks = breaks, axes = FALSE,
-         col = COL[2,2], xlab = "", ylab = "")
+         col = COL[2,2], xlab = xlab=expression('H'[0]': p'[T]' - p'[C]' = 0'), ylab = "")
 axis(1)
 rect(-0.135, 12 * m.fact, 0.135, 28 * m.fact,
      col = rgb(1,1,1,0.65), border = rgb(0,0,0,0))
@@ -1242,7 +1257,7 @@ udiffs    <- sort(unique(d))
 bin.width <- diff(udiffs)[1]
 breaks    <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
 histPlot(d, breaks = breaks, col = COL[2,2],
-         main="", xlab="", ylab="", axes=FALSE)
+         main="", xlab=expression('H'[0]': p'[M]' - p'[F]' = 0'), ylab="", axes=FALSE)
 axis(1)
 rect(-0.07, 153 * m.fact, 0.07, 347 * m.fact,
      col = rgb(1,1,1,0.65), border = rgb(0,0,0,0))
@@ -1253,7 +1268,7 @@ set.seed(2)
 pHat <- rbinom(number.of.simulations, 62, 0.1)/62
 M    <- max(pHat)*62
 histPlot(pHat, breaks=(-1:(2*M)+0.75)/2/62,
-         xlab="", ylab="", axes = FALSE, col = COL[2,2])
+         xlab=expression('H'[0]': p = 0.1'), ylab="", axes = FALSE, col = COL[2,2])
 axis(1)
 rect(0.023, 21 * m.fact, 0.168, 38.5 * m.fact,
      col = rgb(1,1,1,0.65), border = rgb(0,0,0,0))
@@ -1270,7 +1285,7 @@ un    <- sort(unique(p.))
 bin.width <- diff(un)[10]
 breaks <- c(un - bin.width / 4, un + bin.width / 4)
 histPlot(p., breaks = breaks, axes = FALSE, col = COL[2,2],
-         xlab = "", ylab = "")
+         xlab = expression('H'[0]': p = 0.5'), ylab = "")
 axis(1)
 rect(0.42, 11 * m.fact, 0.58, 20 * m.fact,
      col = rgb(1,1,1,0.65), border = rgb(0,0,0,0))
@@ -1279,10 +1294,10 @@ text(0.5, 15.5 * m.fact, cex = 2,
 ```
 
 ::: {.guidedpractice}
-Describe the shape of the distributions and note anything that you find interesting.[^intro-stat-inference-13]
+Describe the shape of the distributions and note anything that you find interesting.[^intro-stat-inference-14]
 :::
 
-[^intro-stat-inference-13]: In general, the distributions are reasonably symmetric.
+[^intro-stat-inference-14]: In general, the distributions are reasonably symmetric.
     The case study for the medical consultant is the only distribution with any evident skew.
 
 The case study for the medical consultant is the only distribution with any evident skew.
@@ -1348,11 +1363,11 @@ However, as we've learned, point estimates aren't perfect -- they only provide a
 ------------------------------------------------------------------------
 
 It would be useful if we could provide a *range of plausible values* for the impact, more formally known as a **confidence interval**.
-It is often difficult to construct a reliable confidence interval in many situations using simulations.[^intro-stat-inference-14]
+It is often difficult to construct a reliable confidence interval in many situations using simulations.[^intro-stat-inference-15]
 However, doing so is reasonably straightforward using the normal distribution.
 :::
 
-[^intro-stat-inference-14]: The percentile bootstrap method has been introduced in Section \@ref(ConfidenceIntervals).
+[^intro-stat-inference-15]: The percentile bootstrap method has been introduced in Section \@ref(ConfidenceIntervals).
     We will revisit bootstrap intervals in Section \@ref(two-prop-boot-ci).
 
 ::: {.workedexample}
@@ -1437,11 +1452,11 @@ In Section \@ref(ApplyingTheNormalModel), we apply the new knowledge in the cont
 
 Among all the distributions we see in statistics, one is overwhelmingly the most common.
 The symmetric, unimodal, bell curve is ubiquitous throughout statistics.
-It is so common that people know it as a variety of names including the **normal curve**\index{normal curve}, **normal model**\index{normal model}, or **normal distribution**\index{normal distribution}.[^intro-stat-inference-15]
+It is so common that people know it as a variety of names including the **normal curve**\index{normal curve}, **normal model**\index{normal model}, or **normal distribution**\index{normal distribution}.[^intro-stat-inference-16]
 Under certain conditions, sample proportions, sample means, and sample differences can be modeled using the normal distribution.
 Additionally, some variables such as SAT scores and heights of US adult males closely follow the normal distribution.
 
-[^intro-stat-inference-15]: It is also introduced as the Gaussian distribution after Frederic Gauss, the first person to formalize its mathematical expression.
+[^intro-stat-inference-16]: It is also introduced as the Gaussian distribution after Frederic Gauss, the first person to formalize its mathematical expression.
 
 ```{r include = FALSE}
 terms_chp_5 <- c(terms_chp_5, "normal curve", "normal model", "normal distribution")
@@ -1526,10 +1541,10 @@ terms_chp_5 <- c(terms_chp_5, "parameter")
 ```
 
 ::: {.guidedpractice}
-Write down the short-hand for a normal distribution with (a) mean 5 and standard deviation 3, (b) mean -100 and standard deviation 10, and (c) mean 2 and standard deviation 9.[^intro-stat-inference-16]
+Write down the short-hand for a normal distribution with (a) mean 5 and standard deviation 3, (b) mean -100 and standard deviation 10, and (c) mean 2 and standard deviation 9.[^intro-stat-inference-17]
 :::
 
-[^intro-stat-inference-16]: (a) $N(\mu=5,\sigma=3).$
+[^intro-stat-inference-17]: (a) $N(\mu=5,\sigma=3).$
     (b) $N(\mu=-100, \sigma=10).$
     (c) $N(\mu=2, \sigma=9).$
 
@@ -1539,10 +1554,10 @@ Write down the short-hand for a normal distribution with (a) mean 5 and standard
 Table \@ref(tab:satACTstats) shows the mean and standard deviation for total scores on the SAT and ACT.
 The distribution of SAT and ACT scores are both nearly normal.
 Suppose Ann scored 1800 on her SAT and Tom scored 24 on his ACT.
-Who performed better?[^intro-stat-inference-17]
+Who performed better?[^intro-stat-inference-18]
 :::
 
-[^intro-stat-inference-17]: We use the standard deviation as a guide.
+[^intro-stat-inference-18]: We use the standard deviation as a guide.
     Ann is 1 standard deviation above average on the SAT: $1500 + 300=1800.$ Tom is 0.6 standard deviations above the mean on the ACT: $21+0.6\times 5=24.$ In Figure \@ref(fig:satActNormals), we can see that Ann tends to do better with respect to everyone else than Tom did, so her score was better.
 
 ```{r satACTstats}
@@ -1612,36 +1627,36 @@ $$ Z = \frac{x-\mu}{\sigma}$$
 :::
 
 ::: {.guidedpractice}
-Use Tom's ACT score, 24, along with the ACT mean and standard deviation to compute his Z score.[^intro-stat-inference-18]
+Use Tom's ACT score, 24, along with the ACT mean and standard deviation to compute his Z score.[^intro-stat-inference-19]
 :::
 
-[^intro-stat-inference-18]: $Z_{Tom} = \frac{x_{Tom} - \mu_{ACT}}{\sigma_{ACT}} = \frac{24 - 21}{5} = 0.6$
+[^intro-stat-inference-19]: $Z_{Tom} = \frac{x_{Tom} - \mu_{ACT}}{\sigma_{ACT}} = \frac{24 - 21}{5} = 0.6$
 
 Observations above the mean always have positive Z scores while those below the mean have negative Z scores.
 If an observation is equal to the mean (e.g., SAT score of 1500), then the Z score is $0.$
 
 ::: {.guidedpractice}
-Let $X$ represent a random variable from $N(\mu=3, \sigma=2),$ and suppose we observe $x=5.19.$ (a) Find the Z score of $x.$ (b) Use the Z score to determine how many standard deviations above or below the mean $x$ falls.[^intro-stat-inference-19]
+Let $X$ represent a random variable from $N(\mu=3, \sigma=2),$ and suppose we observe $x=5.19.$ (a) Find the Z score of $x.$ (b) Use the Z score to determine how many standard deviations above or below the mean $x$ falls.[^intro-stat-inference-20]
 :::
 
-[^intro-stat-inference-19]: (a) Its Z score is given by $Z = \frac{x-\mu}{\sigma} = \frac{5.19 - 3}{2} = 2.19/2 = 1.095.$
+[^intro-stat-inference-20]: (a) Its Z score is given by $Z = \frac{x-\mu}{\sigma} = \frac{5.19 - 3}{2} = 2.19/2 = 1.095.$
     (b) The observation $x$ is 1.095 standard deviations *above* the mean. We know it must be above the mean since $Z$ is positive.
 
 ::: {.guidedpractice}
 Head lengths of brushtail possums follow a nearly normal distribution with mean 92.6 mm and standard deviation 3.6 mm.
-Compute the Z scores for possums with head lengths of 95.4 mm and 85.8 mm.[^intro-stat-inference-20]
+Compute the Z scores for possums with head lengths of 95.4 mm and 85.8 mm.[^intro-stat-inference-21]
 :::
 
-[^intro-stat-inference-20]: For $x_1=95.4$ mm: $Z_1 = \frac{x_1 - \mu}{\sigma} = \frac{95.4 - 92.6}{3.6} = 0.78.$ For $x_2=85.8$ mm: $Z_2 = \frac{85.8 - 92.6}{3.6} = -1.89.$
+[^intro-stat-inference-21]: For $x_1=95.4$ mm: $Z_1 = \frac{x_1 - \mu}{\sigma} = \frac{95.4 - 92.6}{3.6} = 0.78.$ For $x_2=85.8$ mm: $Z_2 = \frac{85.8 - 92.6}{3.6} = -1.89.$
 
 We can use Z scores to roughly identify which observations are more unusual than others.
 One observation $x_1$ is said to be more unusual than another observation $x_2$ if the absolute value of its Z score is larger than the absolute value of the other observation's Z score: $|Z_1| > |Z_2|.$ This technique is especially insightful when a distribution is symmetric.
 
 ::: {.guidedpractice}
-Which of the two brushtail possum observations in the previous guided practice is more *unusual*?[^intro-stat-inference-21]
+Which of the two brushtail possum observations in the previous guided practice is more *unusual*?[^intro-stat-inference-22]
 :::
 
-[^intro-stat-inference-21]: Because the *absolute value* of Z score for the second observation is larger than that of the first, the second observation has a more unusual head length.
+[^intro-stat-inference-22]: Because the *absolute value* of Z score for the second observation is larger than that of the first, the second observation has a more unusual head length.
 
 #### Normal probability calculations {.unnumbered}
 
@@ -1704,10 +1719,10 @@ openintro::normTail(0.84162, m = 0, s = 1)
 ```
 
 ::: {.guidedpractice}
-Determine the proportion of SAT test takers who scored better than Ann on the SAT.[^intro-stat-inference-22]
+Determine the proportion of SAT test takers who scored better than Ann on the SAT.[^intro-stat-inference-23]
 :::
 
-[^intro-stat-inference-22]: If 84% had lower scores than Ann, the number of people who had better scores must be 16%.
+[^intro-stat-inference-23]: If 84% had lower scores than Ann, the number of people who had better scores must be 16%.
     (Generally ties are ignored when the normal model, or any other continuous distribution, is used.)
 
 #### Normal probability examples {.unnumbered}
@@ -1796,10 +1811,10 @@ After drawing a figure to represent the situation, identify the Z score for the 
 
 ::: {.guidedpractice}
 If the probability of Shannon scoring at least 1630 is 0.3336, then what is the probability she scores less than 1630?
-Draw the normal curve representing this exercise, shading the lower region instead of the upper one.[^intro-stat-inference-23]
+Draw the normal curve representing this exercise, shading the lower region instead of the upper one.[^intro-stat-inference-24]
 :::
 
-[^intro-stat-inference-23]: We found the probability to be 0.6664.
+[^intro-stat-inference-24]: We found the probability to be 0.6664.
     A picture for this exercise is represented by the shaded area below "0.6664".
 
 ::: {.workedexample}
@@ -1849,15 +1864,15 @@ If you would like the area to the right, first find the area to the left and the
 Stuart earned an SAT score of 2100.
 Draw a picture for each part.
 (a) What is his percentile?
-(b) What percent of SAT takers did better than Stuart?[^intro-stat-inference-24]
+(b) What percent of SAT takers did better than Stuart?[^intro-stat-inference-25]
 :::
 
-[^intro-stat-inference-24]: Numerical answers: (a) 0.9772.
+[^intro-stat-inference-25]: Numerical answers: (a) 0.9772.
     (b) 0.0228.
 
-Based on a sample of 100 men,[^intro-stat-inference-25] the heights of male adults between the ages 20 and 62 in the US is nearly normal with mean 70.0'' and standard deviation 3.3''.
+Based on a sample of 100 men,[^intro-stat-inference-26] the heights of male adults between the ages 20 and 62 in the US is nearly normal with mean 70.0'' and standard deviation 3.3''.
 
-[^intro-stat-inference-25]: This sample was taken from the USDA Food Commodity Intake Database.
+[^intro-stat-inference-26]: This sample was taken from the USDA Food Commodity Intake Database.
 
 ::: {.guidedpractice}
 Mike is 5'7'' and Jim is 6'4''.
@@ -1958,19 +1973,19 @@ abline(h=0)
 
 ::: {.guidedpractice}
 (a) What is the $95^{th}$ percentile for SAT scores?\
-(b) What is the $97.5^{th}$ percentile of the male heights? As always with normal probability problems, first draw a picture.[^intro-stat-inference-26]
+(b) What is the $97.5^{th}$ percentile of the male heights? As always with normal probability problems, first draw a picture.[^intro-stat-inference-27]
 :::
 
-[^intro-stat-inference-26]: Remember: draw a picture first, then find the Z score.
+[^intro-stat-inference-27]: Remember: draw a picture first, then find the Z score.
     (We leave the pictures to you.) The Z score can be found by using the percentiles and the normal probability table.
     (a) We look for 0.95 in the probability portion (middle part) of the normal probability table, which leads us to row 1.6 and (about) column 0.05, i.e., $Z_{95}=1.65.$ Knowing $Z_{95}=1.65,$ $\mu = 1500,$ and $\sigma = 300,$ we setup the Z score formula: $1.65 = \frac{x_{95} - 1500}{300}.$ We solve for $x_{95}$: $x_{95} = 1995.$ (b) Similarly, we find $Z_{97.5} = 1.96,$ again setup the Z score formula for the heights, and calculate $x_{97.5} = 76.5.$
 
 ::: {.guidedpractice}
 (a) What is the probability that a randomly selected male adult is at least 6'2'' (74 inches)?\
-(b) What is the probability that a male adult is shorter than 5'9'' (69 inches)?[^intro-stat-inference-27]
+(b) What is the probability that a male adult is shorter than 5'9'' (69 inches)?[^intro-stat-inference-28]
 :::
 
-[^intro-stat-inference-27]: Numerical answers: (a) 0.1131.
+[^intro-stat-inference-28]: Numerical answers: (a) 0.1131.
     (b) 0.3821.
 
 ::: {.workedexample}
@@ -2039,18 +2054,18 @@ That is, the probability of being between 5'9'' and 6'2'' is 0.5048.
 :::
 
 ::: {.guidedpractice}
-What percent of SAT takers get between 1500 and 2000?[^intro-stat-inference-28]
+What percent of SAT takers get between 1500 and 2000?[^intro-stat-inference-29]
 :::
 
-[^intro-stat-inference-28]: This is an abbreviated solution.
+[^intro-stat-inference-29]: This is an abbreviated solution.
     (Be sure to draw a figure!) First find the percent who get below 1500 and the percent that get above 2000: $Z_{1500} = 0.00 \to 0.5000$ (area below), $Z_{2000} = 1.67 \to 0.0475$ (area above).
     Final answer: $1.0000-0.5000 - 0.0475 = 0.4525.$
 
 ::: {.guidedpractice}
-What percent of adult males are between 5'5'' and 5'7''?[^intro-stat-inference-29]
+What percent of adult males are between 5'5'' and 5'7''?[^intro-stat-inference-30]
 :::
 
-[^intro-stat-inference-29]: 5'5'' is 65 inches.
+[^intro-stat-inference-30]: 5'5'' is 65 inches.
     5'7'' is 67 inches.
     Numerical solution: $1.000 - 0.0649 - 0.8183 = 0.1168,$ i.e., 11.68%.
 
@@ -2097,10 +2112,10 @@ abline(h=0, col='#AAAAAA')
 ::: {.guidedpractice}
 Use `pnorm()` (or a Z table) to confirm that about 68%, 95%, and 99.7% of observations fall within 1, 2, and 3, standard deviations of the mean in the normal distribution, respectively.
 For instance, first find the area that falls between $Z=-1$ and $Z=1,$ which should have an area of about 0.68.
-Similarly there should be an area of about 0.95 between $Z=-2$ and $Z=2.$[^intro-stat-inference-30]
+Similarly there should be an area of about 0.95 between $Z=-2$ and $Z=2.$[^intro-stat-inference-31]
 :::
 
-[^intro-stat-inference-30]: First draw the pictures.
+[^intro-stat-inference-31]: First draw the pictures.
     To find the area between $Z=-1$ and $Z=1,$ use `pnorm()` or the normal probability table to determine the areas below $Z=-1$ and above $Z=1.$ Next verify the area between $Z=-1$ and $Z=1$ is about 0.68.
     Repeat this for $Z=-2$ to $Z=2$ and also for $Z=-3$ to $Z=3.$
 
@@ -2114,10 +2129,10 @@ SAT scores closely follow the normal model with mean $\mu = 1500$ and standard d
 (a) About what percent of test takers score 900 to 2100?
 \
 (b) What percent score between 1500 and 2100
-?[^intro-stat-inference-31]
+?[^intro-stat-inference-32]
 :::
 
-[^intro-stat-inference-31]: (a) 900 and 2100 represent two standard deviations above and below the mean, which means about 95% of test takers will score between 900 and 2100.
+[^intro-stat-inference-32]: (a) 900 and 2100 represent two standard deviations above and below the mean, which means about 95% of test takers will score between 900 and 2100.
     (b) Since the normal model is symmetric, then half of the test takers from part (a) ($\frac{95\%}{2} = 47.5\%$ of all test takers) will score 900 to 1500 while 47.5% score between 1500 and 2100.
 
 ### Hypothesis testing case studies {#ApplyingTheNormalModel}
@@ -2327,15 +2342,15 @@ terms_chp_5 <- c(terms_chp_5, "95% confidence interval", "95% confident")
 ```
 
 ::: {.guidedpractice}
-Compute the area between -1.96 and 1.96 for a normal distribution with mean 0 and standard deviation 1.[^intro-stat-inference-32]
+Compute the area between -1.96 and 1.96 for a normal distribution with mean 0 and standard deviation 1.[^intro-stat-inference-33]
 :::
 
-[^intro-stat-inference-32]: We will leave it to you to draw a picture.
+[^intro-stat-inference-33]: We will leave it to you to draw a picture.
     The Z scores are $Z_{left} = -1.96$ and $Z_{right} = 1.96.$ The area between these two Z scores is $0.9750 - 0.0250 = 0.9500.$ This is where "1.96" comes from in the 95% confidence interval formula.
 
 ::: {.workedexample}
 The point estimate from the opportunity cost study was that 20% fewer students would buy a video if they were reminded that money not spent now could be spent later on something else.
-The point estimate from this study can reasonably be modeled with a normal distribution, and a proper standard error for this point estimate is $SE = 0.078.$ Construct a 95% confidence interval.[^intro-stat-inference-33]
+The point estimate from this study can reasonably be modeled with a normal distribution, and a proper standard error for this point estimate is $SE = 0.078.$ Construct a 95% confidence interval.[^intro-stat-inference-34]
 
 ------------------------------------------------------------------------
 
@@ -2347,7 +2362,7 @@ We are 95% confident that the video purchase rate resulting from the treatment i
 Since this confidence interval does not contain 0, it is consistent with our earlier result where we rejected the notion of "no difference" using a hypothesis test.
 :::
 
-[^intro-stat-inference-33]: We've used $SE = 0.078$ from the last section.
+[^intro-stat-inference-34]: We've used $SE = 0.078$ from the last section.
     However, it would more generally be appropriate to recompute the $SE$ slightly differently for this confidence interval using the technique introduced in Section \@ref(diff-two-prop).
     Don't worry about this detail for now since the two resulting standard errors are, in this case, almost identical.
 
@@ -2425,10 +2440,10 @@ for(i in 1:num.sim){
 ```
 
 ::: {.guidedpractice}
-In Figure \@ref(fig:95PercentConfidenceInterval), one interval does not contain the true proportion, $p = 0.3.$ Does this imply that there was a problem with the simulations run?[^intro-stat-inference-34]
+In Figure \@ref(fig:95PercentConfidenceInterval), one interval does not contain the true proportion, $p = 0.3.$ Does this imply that there was a problem with the simulations run?[^intro-stat-inference-35]
 :::
 
-[^intro-stat-inference-34]: No.
+[^intro-stat-inference-35]: No.
     Just as some observations occur more than 1.96 standard deviations from the mean, some point estimates will be more than 1.96 standard errors from the parameter.
     A confidence interval only provides a plausible range of values for a parameter.
     While we might say other values are implausible based on the data, this does not mean they are impossible.
@@ -2451,9 +2466,16 @@ Confidence intervals provide an interval estimate for and attempt to capture pop
 
 ### Mathematical model summary
 
-::: {.todo}
-Math flow chart
-:::
+We can summarise the normal model as follows:
+
+-   **Frame the research question.** The mathematical model can be applied to both the hypothesis testing and the confidence interval framework. Make sure that your research question is being addressed by the most appropriate inference procedure.
+-   **Collect data with an observational study or experiment.** To address the research question, collect data on the variables of interest. Note that your data may be a random sample from a population or may be part of a randomized experiment.
+-   **Model the randomness of the statistic.** In many cases, the normal distribution will be an excellent model for the randomness associated with the statistic of interest. The Central Limit Theorem tells us that if the sample size is large enough, sample averages (which can be calculated as either a proportion or a sample mean) will be approximately normally distributed when describing how the statistics change from sample to sample.
+-   **Calculate the variability of the statistic.** Using formulas, come up with the standard deviation (or more typically, an estimate of the standard deviation called the standard error) of the statistic. The SE of the statistic will give information on how far the observed statistic is from the null hypothesized value (if performing a hypothesis test) or from the unknown population parameter (if creating a confidence interval).
+-   **Use the normal distribution to quantify the variability.** The normal distribution will provide a probability which measures how likely it is for your observed and hypothesized (or observed and unknown) parameter to differ by the amount measured. The unusualness (or not) of the descrepancy will form the conclusion to the research question.
+-   **Form a conclusion.** Using the p-value or the confidence interval from the analysis, report on the research question of interest. Also, be sure to write the conclusion in plain language so casual readers can understand the results.
+
+Table \@ref(tab:chp5-3-summary) is another look at the mathematical model approach to inference..
 
 ```{r chp5-3-summary}
   method_summary_table %>%
