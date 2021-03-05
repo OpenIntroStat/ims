@@ -1,35 +1,42 @@
 # Inference for regression {#inference-reg}
 
 ::: {.underconstruction}
-This chapter is currently under construction, however the content to be presented in this chapter is covered in the R tutorials. We encourage you to review the content there in the meantime. Click [here](https://openintrostat.github.io/ims-tutorials/08-inference-for-regression/) to take a look! 
+This chapter is currently under construction, however the content to be presented in this chapter is covered in the R tutorials.
+We encourage you to review the content there in the meantime.
+Click [here](https://openintrostat.github.io/ims-tutorials/08-inference-for-regression/) to take a look!
 :::
 
 ::: {.chapterintro}
-We now bring together ideas of inferential analyses from Chapter \@ref(intro-stat-inference) with the descriptive models seen in Chapters \@ref(intro-linear-models) and \@ref(multi-logistic-models).  The setting is now focused on predicting a numeric response variable (for linear models) or a binary response variable (for logistic models), we continue to ask questions about the variability of the model from sample to sample.  The sampling variability will inform the conclusions about the population that can be drawn.
+We now bring together ideas of inferential analyses from Chapter \@ref(intro-stat-inference) with the descriptive models seen in Chapters \@ref(intro-linear-models) and \@ref(multi-logistic-models).
+The setting is now focused on predicting a numeric response variable (for linear models) or a binary response variable (for logistic models), we continue to ask questions about the variability of the model from sample to sample.
+The sampling variability will inform the conclusions about the population that can be drawn.
 
-Many of the inferential ideas are remarkably similar to those covered in previous chapters.  The technical conditions for linear models are typically assessed graphically, although independence of observations continues to be of utmost importance.  
+Many of the inferential ideas are remarkably similar to those covered in previous chapters.
+The technical conditions for linear models are typically assessed graphically, although independence of observations continues to be of utmost importance.
 
-We encourage the reader to think broadly about the models at hand without putting too much dependence on the exact p-values that are reported from the statistical software.  Inference on models with multiple explanatory variables can suffer from data snooping which result in false positive claims.  We provide some guidance and hope the reader will further their statistical learning after working through the material in this text.
+We encourage the reader to think broadly about the models at hand without putting too much dependence on the exact p-values that are reported from the statistical software.
+Inference on models with multiple explanatory variables can suffer from data snooping which result in false positive claims.
+We provide some guidance and hope the reader will further their statistical learning after working through the material in this text.
 :::
-
 
 ## Inference for linear regression {#inferenceForLinearRegression}
 
-
-In this chapter, we bring together the inferential ideas (see Chapter \@ref(intro-stat-inference)) used to make claims about a population from information in a sample and the modeling ideas seen in Chapters \@ref(intro-linear-models) and \@ref(multi-logistic-models). 
-In particular, we will use the least squares regression line to test whether or not there is a relationship between two continuous variables. 
+In this chapter, we bring together the inferential ideas (see Chapter \@ref(intro-stat-inference)) used to make claims about a population from information in a sample and the modeling ideas seen in Chapters \@ref(intro-linear-models) and \@ref(multi-logistic-models).
+In particular, we will use the least squares regression line to test whether or not there is a relationship between two continuous variables.
 Additionally, we will build confidence intervals which quantify the slope of the linear regression line.
 
+#### Observed data {.unnumbered}
 
-
-#### Observed data {-}
-
-We start the chapter with a hypothetical example describing the linear relationship between dollars spent advertising for a chain sandwich restaurant and monthly revenue.  The hypothetical example serves the purpose of illustrating how a linear model varies from sample to sample.  Because we have made up the example and the data (and the entire population), we can take many many samples from the population to visualize the variability.  Note that in real life, we always have exactly one sample (that is, one dataset), and through the inference process, we imagine what might have happened had we taken a different sample.  The change from sample to sample leads to an understanding of how the single observed dataset is different from the population of values, which is typically the fundamental goal of inference. 
+We start the chapter with a hypothetical example describing the linear relationship between dollars spent advertising for a chain sandwich restaurant and monthly revenue.
+The hypothetical example serves the purpose of illustrating how a linear model varies from sample to sample.
+Because we have made up the example and the data (and the entire population), we can take many many samples from the population to visualize the variability.
+Note that in real life, we always have exactly one sample (that is, one dataset), and through the inference process, we imagine what might have happened had we taken a different sample.
+The change from sample to sample leads to an understanding of how the single observed dataset is different from the population of values, which is typically the fundamental goal of inference.
 
 Consider the following hypothetical population of all of the sandwich stores of a particular chain seen in Figure \@ref(fig:sandpop).
 In this made-up world, the CEO actually has all the relevant data, which is why they can plot it here.
 The CEO is omniscient and can write down the population model which describes the true population relationship between the advertising dollars and revenue.
-There appears to be linear relationship between advertising dollars and revenue (both in $000).
+There appears to be linear relationship between advertising dollars and revenue (both in\$000).
 
 ```{r sandpop, fig.cap = "Revenue as a linear model of advertising dollars for a population of sandwich stores, in $000.", echo = FALSE, message = FALSE, warning = FALSE}
 set.seed(4747)
@@ -54,16 +61,15 @@ You may remember from Chapter \@ref(intro-linear-models) that the population mod
 
 Again, the omniscient CEO (with the full population information) can write down the true population model as: $$\mbox{expected revenue} = 11.23 + 4.8 \cdot \mbox{advertising}.$$
 
-
-#### Variability of the statistic {-}
+#### Variability of the statistic {.unnumbered}
 
 Unfortunately, in our scenario, the CEO is not willing to part with the full set of data, but they will allow potential franchise buyers to see a small sample of the data in order to help the potential buyer decide whether or not set up a new franchise.
 The CEO is willing to give each potential franchise buyer a random sample of data from 20 stores.
 
 As with any numerical characteristic which describes a subset of the population, the estimated slope of a sample will vary from sample to sample.
-Consider the linear model which describes revenue (in \$000) based on advertising dollars (in \$0000).  
+Consider the linear model which describes revenue (in \$000) based on advertising dollars (in \$0000).
 
-The least squares regression model uses the data to find a sample linear fit:  $$\hat{y} = b_0 + b_1 x.$$
+The least squares regression model uses the data to find a sample linear fit: $$\hat{y} = b_0 + b_1 x.$$
 
 A random sample of 20 stores shows a different least square regression line depending on which observations are selected.
 A subset of size 20 stores shows a similar positive trend between advertising and revenue (to what we saw in Figure \@ref(fig:sandpop) which described the population) despite having fewer observations on the plot.
@@ -78,9 +84,6 @@ sandwich_many <- sandwich %>%
   rep_sample_n(size = 20, replace = FALSE, reps = 50)
 ```
 
-
-
-
 ```{r echo = FALSE, fig.cap = "A random sample of 20 stores from the entire population. A linear trend between advertising and revenue continues to be observed."}
 ggplot(sandwich2) +
   geom_point(aes(x = ad, y = rev)) +
@@ -90,7 +93,6 @@ ggplot(sandwich2) +
   ylab("revenue in thousands of dollars") +
   ylim(c(0,65))
 ```
-
 
 A second sample of size 20 also shows a positive trend!
 
@@ -105,7 +107,6 @@ ggplot(sandwich3) +
   ylim(c(0,65))
 ```
 
-
 But the line is slightly different!
 
 ```{r echo = FALSE, fig.cap = "The linear models from the two different random samples are quite similar, but they are not the same line."}
@@ -118,8 +119,8 @@ ggplot(sandwich2, aes(x = ad, y = rev)) + geom_point(color=COL[1,1]) +
   ylim(c(0,65))
 ```
 
-
-That is, there is **variability** in the regression line from sample to sample.  The concept of the sampling variability is something you've seen before, but in this lesson, you will focus on the variability of the line often measured through the variability of a single statistic:  **the slope of the line**.
+That is, there is **variability** in the regression line from sample to sample.
+The concept of the sampling variability is something you've seen before, but in this lesson, you will focus on the variability of the line often measured through the variability of a single statistic: **the slope of the line**.
 
 ```{r slopes, echo = FALSE, fig.cap = "If repeated samples of size 20 are taken from the entire population, each linear model will be slightly different. The red line provides the linear fit to the entire population."}
 ggplot() + 
@@ -131,10 +132,11 @@ ggplot() +
   xlab("amount spent on advertising in thousands of dollars") +
   ylab("revenue in thousands of dollars") +
   ylim(c(0,65))
-```  
+```
 
-
-You might notice in Figure \@ref(fig:slopes) that the $\hat{y}$ values given by the lines are much more consistent in the middle of the dataset than at the ends.  The reason is that the data itself anchors the lines in such a way that the line must pass through the center of the data cloud.  The effect of the fan-shaped lines is that predicted revenue for advertising close to \$4,000 will be much more precise than the revenue predictions made for \$1,000 or \$7,000 of advertising.
+You might notice in Figure \@ref(fig:slopes) that the $\hat{y}$ values given by the lines are much more consistent in the middle of the dataset than at the ends.
+The reason is that the data itself anchors the lines in such a way that the line must pass through the center of the data cloud.
+The effect of the fan-shaped lines is that predicted revenue for advertising close to \$4,000 will be much more precise than the revenue predictions made for \$1,000 or \$7,000 of advertising.
 
 The distribution of slopes (for samples of size $n=20$) can be seen in a histogram, as in Figure \@ref(fig:sand20lm).
 
@@ -151,7 +153,7 @@ ggplot(sandwich_many_lm, aes(x=estimate)) +
 
 Recall, the example described in this introduction is hypothetical.
 That is, we created an entire population in order demonstrate how the slope of a line would vary from sample to sample.
-The tools in this textbook are designed to evaluate only one single sample of data.  
+The tools in this textbook are designed to evaluate only one single sample of data.\
 With actual studies, we do not have repeated samples, so we are not able to use repeated samples to visualize the variability in slopes.
 We have seen variability in samples throughout this text, so it should not come as a surprise that different samples will produce different linear models.
 However, it is nice to visually consider the linear models produced by different slopes.
@@ -160,11 +162,13 @@ Additionally, as with measuring the variability of previous statistics (e.g., $\
 In the following sections, the distribution (i.e., histogram) of $b_1$ (the estimated slope coefficient) will be constructed in the same three ways that, by now, may be familiar to you.
 First (in Section \@ref(randslope)), the distribution of $b_1$ when $\beta_1 = 0$ is constructed by randomizing (permuting) the response variable.
 Next (in Section \@ref(bootbeta1)), we can bootstrap the data by taking random samples of size n from the original dataset.
-And last (in Section \@ref(mathslope)), we use mathematical tools to describe the variability using the $t$-distribution that was first encountered in Section \@ref(one-mean-math).  
+And last (in Section \@ref(mathslope)), we use mathematical tools to describe the variability using the $t$-distribution that was first encountered in Section \@ref(one-mean-math).
 
 ### Randomization test for $H_0: \beta_1= 0$ {#randslope}
 
-Consider the data on Global Crop Yields compiled by [Our World in Data](https://ourworldindata.org/crop-yields) and presented as part of the [TidyTuesday](https://github.com/rfordatascience/tidytuesday/trunk/data/2020/2020-09-01) series seen in Figure \@ref(fig:allcrops).  The scientific research interest at hand will be in determining the linear relationship between wheat yield (for a country-year) and other crop yields.  The dataset is quite rich and deserves exploring, but for this example, we will focus only on the annual crop yield in the United States.  
+Consider the data on Global Crop Yields compiled by [Our World in Data](https://ourworldindata.org/crop-yields) and presented as part of the [TidyTuesday](https://github.com/rfordatascience/tidytuesday/trunk/data/2020/2020-09-01) series seen in Figure \@ref(fig:allcrops).
+The scientific research interest at hand will be in determining the linear relationship between wheat yield (for a country-year) and other crop yields.
+The dataset is quite rich and deserves exploring, but for this example, we will focus only on the annual crop yield in the United States.
 
 ```{r allcrops, echo = FALSE, fig.cap = "Yield (in tonnes per hectare) for six different crops in the US.  The color of the dot indicates the year."}
 key_crop_yields <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-01/key_crop_yields.csv') %>%
@@ -194,15 +198,20 @@ ggplot(crops_USA_long)   +
   ylim(c(1.4, 3.6))
 ```
 
+As you have seen previously, statistical inference typically relies on setting a null hypothesis which is hoped to be subsequently rejected.
+In the linear model setting, we might hope to have a linear relationship between `maize` and `wheat` in settings where `maize` production is known and `wheat` production needs to be predicted.
 
-As you have seen previously, statistical inference typically relies on setting a null hypothesis which is hoped to be subsequently rejected.  In the linear model setting, we might hope to have a linear relationship between `maize` and `wheat` in settings where `maize` production is known and `wheat` production needs to be predicted.  
+The relevant hypotheses for the linear model setting can be written in terms of the population slope parameter.
+Here the population refers to a larger set of years where `maize` and `wheat` are both grown in the US.
 
-The relevant hypotheses for the linear model setting can be written in terms of the population slope parameter.  Here the population refers to a larger set of years where `maize` and `wheat` are both grown in the US.
+-   $H_0: \beta_1= 0$, there is no linear relationship between `wheat` and `maize`.
+-   $H_A: \beta_1 \ne 0$, there is some linear relationship between `wheat` and `maize`.
 
-* $H_0: \beta_1= 0$, there is no linear relationship between `wheat` and `maize`.  
-* $H_A: \beta_1 \ne 0$, there is some linear relationship between `wheat` and `maize`.
-
-Recall that for the randomization test, we permute one variables to eliminate any existing relationship between the variables.  That is, we set the null hypothesis to be true, and we measure the natural variability in the data due to sampling but **not** due to variables being correlated.  Figure \@ref(fig:permwheatScatter) shows the observed data and a scatterplot of one permutation of the `wheat` variable.  The careful observer can see that each of the observed the values for `wheat` (and for `maize`) exist in both the original data plot as well as the permuted `wheat` plot, but the given `wheat` and `maize` yields are no longer matched for a given year.  That is, each `wheat` yield is randomly assigned to a new `maize` yield.
+Recall that for the randomization test, we permute one variables to eliminate any existing relationship between the variables.
+That is, we set the null hypothesis to be true, and we measure the natural variability in the data due to sampling but **not** due to variables being correlated.
+Figure \@ref(fig:permwheatScatter) shows the observed data and a scatterplot of one permutation of the `wheat` variable.
+The careful observer can see that each of the observed the values for `wheat` (and for `maize`) exist in both the original data plot as well as the permuted `wheat` plot, but the given `wheat` and `maize` yields are no longer matched for a given year.
+That is, each `wheat` yield is randomly assigned to a new `maize` yield.
 
 ```{r permwheatScatter, fig.cap = "Original (left) and permuted (right) data.  The permutation removes the linear relationship between `wheat` and `maize`.  Repeated permutations allow for quantifying the variability in the slope under the condition that there is no linear relationship (i.e., that the null hypothesis is true).", fig.show = 'hold', out.width='47%', fig.ncol = 2}
 set.seed(4747)
@@ -218,23 +227,28 @@ ggplot(crops_USA) +
   ylim(c(1.4, 3.6))
 ```
 
+By repeatedly permuting the response variable any pattern in the linear model that is observed is due only to random chance (and not an underlying relationship).
+The randomization test compares the slopes calculated from the permuted response variable with the observed slope.
+If the observed slope is inconsistent with the slopes from permuting, we can conclude that there is some underlying relationship (and that the slope is not merely due to random chance).
 
-By repeatedly permuting the response variable any pattern in the linear model that is observed is due only to random chance (and not an underlying relationship).  The randomization test compares the slopes calculated from the permuted response variable with the observed slope.  If the observed slope is inconsistent with the slopes from permuting, we can conclude that there is some underlying relationship (and that the slope is not merely due to random chance).
+#### Observed data {.unnumbered}
 
-#### Observed data {-}
-
-We will continue to use the crop data to investigate the linear relationship between `wheat` and `maize`.  Note that the least squares model (see Chapter \@ref(intro-linear-models) ) describing the relationship is given in Table \@ref(tab:lsCrops).  The columns in Table \@ref(tab:lsCrops) are further described in Section \@ref(mathslope).
+We will continue to use the crop data to investigate the linear relationship between `wheat` and `maize`.
+Note that the least squares model (see Chapter \@ref(intro-linear-models) ) describing the relationship is given in Table \@ref(tab:lsCrops).
+The columns in Table \@ref(tab:lsCrops) are further described in Section \@ref(mathslope).
 
 ```{r lsCrops}
 lm(wheat ~ maize, data = crops_USA) %>% 
   tidy() %>%
- kable(caption = "The least squares estimates of the intercept and slope are given in the `estimate` column.  The observed slope is 0.195.") %>%
- kable_styling() 
+  kable(caption = "The least squares estimates of the intercept and slope are given in the `estimate` column.  The observed slope is 0.195.") %>%
+  kable_styling() 
 ```
 
-#### Variability of the statistic {-}
+#### Variability of the statistic {.unnumbered}
 
-After permuting the data, the least squares estimate of the line can be computed.  Repeated permutations and slope calculations describe the variability in the line (i.e., in the slope) due only to the natural variability and not due to a relationship between `wheat` and `maize`.  Figure \@ref(fig:permwheatlm) shows two different permutations of `wheat` and the resulting linear models.
+After permuting the data, the least squares estimate of the line can be computed.
+Repeated permutations and slope calculations describe the variability in the line (i.e., in the slope) due only to the natural variability and not due to a relationship between `wheat` and `maize`.
+Figure \@ref(fig:permwheatlm) shows two different permutations of `wheat` and the resulting linear models.
 
 ```{r permwheatlm, fig.cap = "Two different permutations of the wheat variable with slightly different least squares regression lines.", fig.show = 'hold', fig.ncol = 2, out.width='47%'}
 set.seed(47)
@@ -253,24 +267,24 @@ ggplot(crops_USA, aes(x = maize, y = sample(wheat))) +
   ylim(c(1.4, 3.6))
 ```
 
+As you can see, sometimes the slope of the permuted data is positive, sometimes it is negative.
+Because the randomization happens under the condition of no underlying relationship (because the response variable is completely mixed with the explanatory variable), we expect to see the center of the randomized slope distribution to be zero.
 
-As you can see, sometimes the slope of the permuted data is positive, sometimes it is negative.  Because the randomization happens under the condition of no underlying relationship (because the response variable is completely mixed with the explanatory variable), we expect to see the center of the randomized slope distribution to be zero.
-
-#### Observed statistic vs. null statistics {-}
+#### Observed statistic vs. null statistics {.unnumbered}
 
 ```{r nulldistCrop, echo=FALSE, fig.cap = "Histogram of slopes given different permutations of the wheat variable.  The vertical red line is at the observed value of the slope, 0.195."}
 perm_slope <- crops_USA %>%
-   specify(wheat ~ maize) %>%
-   hypothesize(null = "independence") %>%
-   generate(reps = 1000, type = "permute") %>%
-   calculate(stat = "slope") 
+  specify(wheat ~ maize) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "slope") 
  
 obs_slope <- crops_USA %>%
-   specify(wheat ~ maize) %>%
-   calculate(stat = "slope") %>% pull()
+  specify(wheat ~ maize) %>%
+  calculate(stat = "slope") %>% pull()
   
 ggplot(data=perm_slope, aes(x=stat)) + 
-   geom_histogram() +
+  geom_histogram() +
   geom_vline(xintercept = obs_slope, col = COL[4,1])
 ```
 
@@ -279,17 +293,17 @@ That is, if indeed there were no linear relationship between `wheat` and `maize`
 We reject the null hypothesis.
 Therefore, we believe that the slope observed on the original data is not just due to natural variability and indeed, there is a linear relationship between `wheat` and `maize` crop yield in the US.
 
-
-
 ### Bootstrap confidence interval for $\beta_1$ {#bootbeta1}
 
+As we have seen in previous chapters, we can use bootstrapping to estimate the sampling distribution of the statistic of interest (here, the slope) without the null assumption of no relationship (which was the condition in the randomization test).
+Because interest is now in creating a CI, there is no null hypothesis, so there won't be any reason to permute either of the variables.
 
-As we have seen in previous chapters, we can use bootstrapping to estimate the sampling distribution of the statistic of interest (here, the slope) without the null assumption of no relationship (which was the condition in the randomization test).  Because interest is now in creating a CI, there is no null hypothesis, so there won't be any reason to permute either of the variables.
+#### Observed data {.unnumbered}
 
-
-#### Observed data {-}
-
-Returning to the crop data, we may want to consider the relationship between `peas` and `wheat`.  Are `peas` a good predictor of `wheat`?  And if so, what is their relationship?  That is, what is the slope that models `average wheat yield` as a function of `peas`?
+Returning to the crop data, we may want to consider the relationship between `peas` and `wheat`.
+Are `peas` a good predictor of `wheat`?
+And if so, what is their relationship?
+That is, what is the slope that models `average wheat yield` as a function of `peas`?
 
 ```{r echo = FALSE}
 set.seed(4747)
@@ -301,21 +315,21 @@ crops_many_BS <- crops_USA %>%
   rep_sample_n(size = 58, replace = TRUE, reps = 50)
 ```
 
-
 ```{r peasPlot, echo = FALSE, fig.cap = "Original data: wheat yield as a linear model of peas yield, in tonnes per hectare.  Notice that the relationship between `peas` and `wheat` is not as strong as the relationship we saw previously between `maize` and `wheat`."}
 ggplot(crops_USA) +
   geom_point(aes(x = peas, y = wheat)) +
   geom_smooth(aes(x = peas, y = wheat), method = "lm", se = FALSE,
-              color=COL[1,1], fullrange = TRUE) + 
+              color = COL[1,1], fullrange = TRUE) + 
   ylim(c(1.4, 3.6))
 ```
 
+#### Variability of the statistic {.unnumbered}
 
-
-
-#### Variability of the statistic {-}
-
-Because we are not focused on a null distribution, we sample with replacement $n=58$ observations from the original dataset.  Recall that with bootstrapping we always resample the same number of observations as we start with in order to mimic the process of taking a sample from the population.  When sampling in the linear model case, consider each observation to be a single dot.  If the dot is resampled, both the `wheat` and the `peas` measurement are observed.  The measurements are linked to the dot (i.e., to the year in which the measurements were taken).
+Because we are not focused on a null distribution, we sample with replacement $n=58$ observations from the original dataset.
+Recall that with bootstrapping we always resample the same number of observations as we start with in order to mimic the process of taking a sample from the population.
+When sampling in the linear model case, consider each observation to be a single dot.
+If the dot is resampled, both the `wheat` and the `peas` measurement are observed.
+The measurements are linked to the dot (i.e., to the year in which the measurements were taken).
 
 ```{r crop2BS, echo = FALSE, fig.cap = "Original and one bootstrap sample of the crop data.  Note that it is difficult to differentiate the two plots, as (within a single bootstrap sample) the observations which have been resampled twice are plotted as points on top of one another.  The orange circle represent points in the original data which were not included in the bootstrap sample.  The blue circle represents a point that was repeatedly resampled (and is therefore darker) in the bootstrap sample.  The green circle represents a particular structure to the data which is observed in both the original and bootstrap samples.",  fig.show = 'hold', out.width = '47%', fig.ncol = 2}
 
@@ -347,20 +361,17 @@ The blue circle represents a point that was repeatedly resampled (and is therefo
 The green circle represents a particular structure to the data which is observed in both the original and bootstrap samples.
 By repeatedly resampling, we can see dozens of bootstrapped slopes on the same plot in Figure \@ref(fig:cropBS).
 
-
 ```{r cropBS, echo = FALSE, fig.cap = "Repeated bootstrap resamples of size 58 are taken from the original data.  Each of the bootstrapped linear model is slightly different."}
 ggplot(crops_many_BS, aes(x=peas, y=wheat, group=replicate)) + 
   #geom_point() + 
   geom_smooth(method="lm", se=FALSE, color=COL[1,1], fullrange = TRUE) + 
   ylim(c(1.4, 3.6))
-```  
-
+```
 
 Recall that in order to create a confidence interval for the slope, we need to find the range of values that the statistic (here the slope) takes on from different bootstrap samples.
 Figure \@ref(fig:peasBSslopes) is a histogram of the relevant bootstrapped slopes.
 We can see that a 95% bootstrap percentile interval for the true population slope is given by (0.061, 0.52).
 We are 95% confident that for the model describing the population of crops of `peas` and `wheat`, a one unit increase in `peas` yield (in tonnes per hectare) will be associated with an increase in predicted average `wheat` yield of between 0.061 and 0.52 tonnes per hectare.
-
 
 ```{r peasBSslopes, fig.cap="The original crop data on wheat and peas is bootstrapped 1,000 times. The histogram provides a sense for the variability of the standard deviation of the linear model slope from sample to sample.", warning=FALSE, fig.width=15}
 
@@ -411,49 +422,42 @@ par(las = 0)
 mtext("Bootstrapped values of the slope statistic describing wheat and peas.", 1, 2.5)
 ```
 
-
-
 ### Mathematical model {#mathslope}
 
-When certain technical conditions apply, it is convenient to use mathematical approximations to test and estimate the slope parameter. 
-The approximations will build on the t-distribution which were described in Chapter \@ref(inference-num). 
+When certain technical conditions apply, it is convenient to use mathematical approximations to test and estimate the slope parameter.
+The approximations will build on the t-distribution which were described in Chapter \@ref(inference-num).
 The mathematical model is often correct and is usually easy to implement computationally.
-The validity of the technical conditions will be considered in detail in Section \@ref(tech-cond-linmod). 
+The validity of the technical conditions will be considered in detail in Section \@ref(tech-cond-linmod).
 
+In this section, we discuss uncertainty in the estimates of the slope and y-intercept for a regression line.
+Just as we identified standard errors for point estimates in previous chapters, we first discuss standard errors for these new estimates.
 
-In this section, we discuss uncertainty in the estimates of the slope
-and y-intercept for a regression line. Just as we identified standard
-errors for point estimates in previous chapters, we first discuss
-standard errors for these new estimates.
+#### Midterm elections and unemployment {.unnumbered}
 
-#### Midterm elections and unemployment {-}
-
-##### Observed data {-}
+##### Observed data {.unnumbered}
 
 \index{data!midterm elections|(}
 
-Elections for members of the United States House of Representatives
-occur every two years, coinciding every four years with the U.S.
-Presidential election. The set of House elections occurring during the
-middle of a Presidential term are called midterm elections. In America's two-party
-system (the vast majority of House members through history have been either Republicans or Democrats), one political theory suggests the higher the unemployment rate,
-the worse the President's party will do in the midterm elections.  In 2020 there were 232 Democrats, 198 Republicans, and 1 Libertarian in the House.
+Elections for members of the United States House of Representatives occur every two years, coinciding every four years with the U.S.
+Presidential election.
+The set of House elections occurring during the middle of a Presidential term are called midterm elections.
+In America's two-party system (the vast majority of House members through history have been either Republicans or Democrats), one political theory suggests the higher the unemployment rate, the worse the President's party will do in the midterm elections.
+In 2020 there were 232 Democrats, 198 Republicans, and 1 Libertarian in the House.
 
 \indexthis{midterm elections}{midterm election}
 
-To assess the validity of this claim, we can compile historical data and
-look for a connection. We consider every midterm election from 1898 to
-2018, with the exception of those elections during the Great Depression.
+To assess the validity of this claim, we can compile historical data and look for a connection.
+We consider every midterm election from 1898 to 2018, with the exception of those elections during the Great Depression.
 The House of Representatives is made up of 435 voting members
 
-Figure \@ref(fig:unemploymentAndChangeInHouse) shows these data and the
-least-squares regression line: 
-$$\begin{aligned}
-&\mbox{% change in House seats for President's party}  \\
-&\qquad\qquad= -7.36 - 0.89 \times \mbox{(unemployment rate)}\end{aligned}$$
-We consider the percent change in the number of seats of the President's
-party (e.g. percent change in the number of seats for Republicans in
-2018) against the unemployment rate.
+Figure \@ref(fig:unemploymentAndChangeInHouse) shows these data and the least-squares regression line:
+
+$$
+&\text{% change in House seats for President's party}  \\
+&\qquad\qquad= -7.36 - 0.89 \times \text{(unemployment rate)}
+$$
+
+We consider the percent change in the number of seats of the President's party (e.g. percent change in the number of seats for Republicans in 2018) against the unemployment rate.
 
 Examining the data, there are no clear deviations from linearity or substantial outliers (see Section \@ref(resids) for a discussion on using residuals to visualize how well a linear model fits the data).
 While the data are collected sequentially, a separate analysis was used to check for any apparent correlation between successive observations; no such correlation was found.
@@ -509,53 +513,41 @@ legend('topright',
 
 ```
 
-
 ::: {.guidedpractice}
-The data for the Great Depression (1934 and 1938) were removed because
-the unemployment rate was 21% and 18%, respectively. Do you agree that
-they should be removed for this investigation? Why or why not?^[The answer to this question relies on the idea that statistical data analysis is somewhat of an art. That is, in many situations, there is no "right" answer. As you do more and more analyses on your own, you will come to recognize the nuanced understanding which is needed for a particular dataset.  In terms of the Great Depression, we will provide two contrasting considerations.
-  Each of these points would have very high leverage on any
-  least-squares regression line, and years with such high
-  unemployment may not help us understand what would happen
-  in other years where the unemployment is only modestly high.
-  On the other hand, these are exceptional cases, and we would
-  be discarding important information if we exclude them from
-  a final analysis.]
+The data for the Great Depression (1934 and 1938) were removed because the unemployment rate was 21% and 18%, respectively.
+Do you agree that they should be removed for this investigation?
+Why or why not?[^inference-reg-1]
 :::
-  
-There is a negative slope in the line shown in Figure \@ref(fig:unemploymentAndChangeInHouse). However, this slope (and the
-y-intercept) are only estimates of the parameter values. We might
-wonder, is this convincing evidence that the "true" linear model has a
-negative slope? That is, do the data provide strong evidence that the
-political theory is accurate, where the unemployment rate is a useful
-predictor of the midterm election? We can frame this investigation into
-a statistical hypothesis test:
 
-* $H_0$: $\beta_1 = 0$. The true linear model has slope zero.  
-* $H_A$: $\beta_1 \neq 0$. The true linear model has a slope different than
-    zero. The unemployment is predictive of whether the President's
-    party wins or loses seats in the House of Representatives.
+[^inference-reg-1]: The answer to this question relies on the idea that statistical data analysis is somewhat of an art.
+    That is, in many situations, there is no "right" answer.
+    As you do more and more analyses on your own, you will come to recognize the nuanced understanding which is needed for a particular dataset.
+    In terms of the Great Depression, we will provide two contrasting considerations.
+    Each of these points would have very high leverage on any least-squares regression line, and years with such high unemployment may not help us understand what would happen in other years where the unemployment is only modestly high.
+    On the other hand, these are exceptional cases, and we would be discarding important information if we exclude them from a final analysis.
 
-We would reject $H_0$ in favor of $H_A$ if the data provide strong
-evidence that the true slope parameter is different than zero. To assess
-the hypotheses, we identify a standard error for the estimate, compute
-an appropriate test statistic, and identify the p-value.
+There is a negative slope in the line shown in Figure \@ref(fig:unemploymentAndChangeInHouse).
+However, this slope (and the y-intercept) are only estimates of the parameter values.
+We might wonder, is this convincing evidence that the "true" linear model has a negative slope?
+That is, do the data provide strong evidence that the political theory is accurate, where the unemployment rate is a useful predictor of the midterm election?
+We can frame this investigation into a statistical hypothesis test:
 
-#### Regression output from software {-}
+-   $H_0$: $\beta_1 = 0$. The true linear model has slope zero.
+-   $H_A$: $\beta_1 \neq 0$. The true linear model has a slope different than zero. The unemployment is predictive of whether the President's party wins or loses seats in the House of Representatives.
 
+We would reject $H_0$ in favor of $H_A$ if the data provide strong evidence that the true slope parameter is different than zero.
+To assess the hypotheses, we identify a standard error for the estimate, compute an appropriate test statistic, and identify the p-value.
 
-##### Variability of the statistic {-}
+#### Regression output from software {.unnumbered}
 
-Just like other point estimates we have seen before, we can compute a
-standard error and test statistic for $b_1$. We will generally label the
-test statistic using a $T$, since it follows the $t$-distribution.
+##### Variability of the statistic {.unnumbered}
 
-We will rely on statistical software to compute the standard error and
-leave the explanation of how this standard error is determined to a
-second or third statistics course.
-Table \@ref(tab:midtermUnempRegTable) shows software output for the least
-squares regression line in Figure \@ref(fig:unemploymentAndChangeInHouse). The row labeled `unemp` includes all relevant information about the slope estimate (i.e., the coefficient of the unemployment variable).
+Just like other point estimates we have seen before, we can compute a standard error and test statistic for $b_1$.
+We will generally label the test statistic using a $T$, since it follows the $t$-distribution.
 
+We will rely on statistical software to compute the standard error and leave the explanation of how this standard error is determined to a second or third statistics course.
+Table \@ref(tab:midtermUnempRegTable) shows software output for the least squares regression line in Figure \@ref(fig:unemploymentAndChangeInHouse).
+The row labeled `unemp` includes all relevant information about the slope estimate (i.e., the coefficient of the unemployment variable).
 
 ```{r midtermUnempRegTable}
 d <- midterms_house
@@ -569,66 +561,52 @@ lm(house_change ~ unemp, d[th,]) %>%
 ```
 
 ::: {.workedexample}
-What do the first and second columns of Table \@ref(tab:midtermUnempRegTable)  represent?
+What do the first and second columns of Table \@ref(tab:midtermUnempRegTable) represent?
 
----
+------------------------------------------------------------------------
 
-The entries in the first column represent the least squares estimates, $b_0$ and $b_1$, and the values in the second column correspond to the standard errors of each
-estimate. Using the estimates, we could write the equation for the least
-square regression line as $$\begin{aligned}
-  \hat{y} = -7.36 - 0.89 x
-  \end{aligned}$$ where $\hat{y}$ in this case represents the predicted
-change in the number of seats for the president's party, and $x$
-represents the unemployment rate.
+The entries in the first column represent the least squares estimates, $b_0$ and $b_1$, and the values in the second column correspond to the standard errors of each estimate.
+Using the estimates, we could write the equation for the least square regression line as
+
+$$ \hat{y} = -7.36 - 0.89 x $$
+
+where $\hat{y}$ in this case represents the predicted change in the number of seats for the president's party, and $x$ represents the unemployment rate.
 :::
 
-We previously used a $t$-test statistic for hypothesis testing in the
-context of numerical data. Regression is very similar. In the hypotheses
-we consider, the null value for the slope is 0, so we can compute the
-test statistic using the T-score formula: 
-$$\begin{aligned}
-T
-  = \frac{\text{estimate} - \text{null value}}{\text{SE}}
-  = \frac{-0.89 - 0}{0.835}
-  = -1.07\end{aligned}$$ This corresponds to the third column of
-Table \@ref(tab:midtermUnempRegTable) .
+We previously used a $t$-test statistic for hypothesis testing in the context of numerical data.
+Regression is very similar.
+In the hypotheses we consider, the null value for the slope is 0, so we can compute the test statistic using the T-score formula:
 
+$$
+T \ = \ \frac{\text{estimate} - \text{null value}}{\text{SE}} = \ \frac{-0.89 - 0}{0.835} = \ -1.07
+$$
+
+This corresponds to the third column of Table \@ref(tab:midtermUnempRegTable) .
 
 ::: {.workedexample}
-Use Table \@ref(tab:midtermUnempRegTable) to determine the p-value for the
-hypothesis test. 
+Use Table \@ref(tab:midtermUnempRegTable) to determine the p-value for th hypothesis test
 
----
+------------------------------------------------------------------------
 
-The last column of the table gives the p-value for the
-two-sided hypothesis test for the coefficient of the unemployment rate:
-0.2961. That is, the data do not provide convincing evidence that a
-higher unemployment rate has any correspondence with smaller or larger
-losses for the President's party in the House of Representatives in
-midterm elections.
+The last column of the table gives the p-value for th two-sided hypothesis test for the coefficient of the unemployment rate 0.2961 That is, the data do not provide convincing evidence that a higher unemployment rate has any correspondence with smaller or larger losses for the President's party in the House of Representatives in midterm elections.
 :::
 
+##### Observed statistic vs. null statistics {.unnumbered}
 
-
-
-##### Observed statistic vs. null statistics {-}
-
-As the final step in a mathematical hypothesis test for the slope, we use the information provided to make a conclusion about whether or not the data could have come from a population where the true slope was zero (i.e., $\beta_1 = 0$).    Before evaluating the formal hypothesis claim, sometimes it is important to check your intuition.  Based on everything we've seen in the examples above describing the variability of a line from sample to sample, as yourself if the linear relationship given by the data could have come from a population in which the slope was truly zero.
-
+As the final step in a mathematical hypothesis test for the slope, we use the information provided to make a conclusion about whether or not the data could have come from a population where the true slope was zero (i.e., $\beta_1 = 0$).
+Before evaluating the formal hypothesis claim, sometimes it is important to check your intuition.
+Based on everything we've seen in the examples above describing the variability of a line from sample to sample, as yourself if the linear relationship given by the data could have come from a population in which the slope was truly zero.
 
 ::: {.workedexample}
-Examine Figure \@ref(fig:elmhurstScatterWLSROnly-CLTsection), which relates the Elmhurst College
-aid and student family income. How sure are you that the slope is
-statistically significantly different from zero? That is, do you think a
-formal hypothesis test would reject the claim that the true slope of the
-line should be zero?
+Examine Figure \@ref(fig:elmhurstScatterWLSROnly-CLTsection), which relates the Elmhurst College aid and student family income.
+How sure are you that the slope is statistically significantly different from zero?
+That is, do you think a formal hypothesis test would reject the claim that the true slope of the line should be zero?
 
----
+------------------------------------------------------------------------
 
 While the relationship between the variables is not perfect, there is an evident decreasing trend in the data.
 This suggests the hypothesis test will reject the null claim that the slope is zero.
 :::
-
 
 The point of the tools in this section are to go beyond a visual interpretation of the linear relationship toward a formal mathematical claim about the statistical significance of the slope estimate.
 
@@ -642,100 +620,67 @@ lm(gift_aid ~ family_income, d) %>%
  kable_styling() 
 ```
 
-
 ::: {.guidedpractice}
-Table \@ref(tab:rOutputForIncomeAidLSRLineInInferenceSection) shows
-statistical software output from fitting the least squares regression
-line shown in Figure \@ref(fig:elmhurstScatterWLSROnly-CLTsection). Use the output to formally
-evaluate the following hypotheses.
+Table \@ref(tab:rOutputForIncomeAidLSRLineInInferenceSection) shows statistical software output from fitting the least squares regression line shown in Figure \@ref(fig:elmhurstScatterWLSROnly-CLTsection).
+Use the output to formally evaluate the following hypotheses.[^inference-reg-2]
 
-* $H_0$: The true coefficient for family income is zero.  
-* $H_A$: The true coefficient for family income is not zero.^[We look in the second row corresponding
-  to the family income variable.
-  We see the point estimate of the slope of the line is -0.0431,
-  the standard error of this estimate is 0.0108, and the $t$-test
-  statistic is $T = -3.98$.
-  The p-value corresponds exactly to the two-sided test we are
-  interested in: 0.0002.
-  The p-value is so small that we reject the null hypothesis
-  and conclude that family income and financial aid at Elmhurst
-  College for freshman entering in the year 2011 are negatively
-  correlated and the true slope parameter is indeed less than 0,
-  just as we believed in our analysis of Figure \@ref(fig:elmhurstScatterWLSROnly-CLTsection).]
-:::  
-
-
-
-::: {.important}
-**Inference for regression**
-We usually rely on statistical software to
-identify point estimates, standard errors, test statistics, and p-values
-in practice. However, be aware that software will not generally check
-whether the method is appropriate, meaning we must still verify
-conditions are met.  See Section \@ref(tech-cond-linmod).
+-   $H_0$: The true coefficient for family income is zero.
+-   $H_A$: The true coefficient for family income is not zero.
 :::
 
+[^inference-reg-2]: We look in the second row corresponding to the family income variable.
+    We see the point estimate of the slope of the line is -0.0431, the standard error of this estimate is 0.0108, and the $t$-test statistic is $T = -3.98$.
+    The p-value corresponds exactly to the two-sided test we are interested in: 0.0002.
+    The p-value is so small that we reject the null hypothesis and conclude that family income and financial aid at Elmhurst College for freshman entering in the year 2011 are negatively correlated and the true slope parameter is indeed less than 0, just as we believed in our analysis of Figure \@ref(fig:elmhurstScatterWLSROnly-CLTsection).
 
-#### Confidence interval for a coefficient {-}
+::: {.important}
+**Inference for regression** We usually rely on statistical software to identify point estimates, standard errors, test statistics, and p-values in practice.
+However, be aware that software will not generally check whether the method is appropriate, meaning we must still verify conditions are met.
+See Section \@ref(tech-cond-linmod).
+:::
 
-##### Observed data {-}
+#### Confidence interval for a coefficient {.unnumbered}
 
-Similar to how we can conduct a hypothesis test for a model coefficient
-using regression output, we can also construct a confidence interval for
-that coefficient.
+##### Observed data {.unnumbered}
+
+Similar to how we can conduct a hypothesis test for a model coefficient using regression output, we can also construct a confidence interval for that coefficient.
 
 ::: {.workedexample}
-Compute the 95% confidence interval for the coefficient using the
-regression output from Table \@ref(tab:rOutputForIncomeAidLSRLineInInferenceSection). 
+Compute the 95% confidence interval for the coefficient using the regression output from Table \@ref(tab:rOutputForIncomeAidLSRLineInInferenceSection).
 
----
+------------------------------------------------------------------------
 
-The point estimate is -0.0431 and the standard error is $SE = 0.0108$. When
-constructing a confidence interval for a model coefficient, we generally
-use a $t$-distribution. The degrees of freedom for the distribution are
-noted in the regression output, $df = 48$, allowing us to identify
-$t_{48}^{\star} = 2.01$ for use in the confidence interval.
+The point estimate is -0.0431 and the standard error is $SE = 0.0108$.
+When constructing a confidence interval for a model coefficient, we generally use a $t$-distribution.
+The degrees of freedom for the distribution are noted in the regression output, $df = 48$, allowing us to identify $t_{48}^{\star} = 2.01$ for use in the confidence interval.
 
 We can now construct the confidence interval in the usual way:
-$$\begin{aligned}
-  \text{point estimate} \pm t_{48}^{\star} \times SE
-    \qquad\to\qquad -0.0431 \pm 2.01 \times 0.0108
-    \qquad\to\qquad (-0.0648, -0.0214)
-  \end{aligned}$$ We are 95% confident that with each dollar increase in
-, the university's gift aid is predicted to decrease on average by
-\$0.0214 to \$0.0648.
+
+$$
+\begin{align*}
+\text{point estimate} &\pm t_{48}^{\star} \times SE \\
+-0.0431 &\pm 2.01 \times 0.0108 \\
+(-0.0648 &, -0.0214)
+\end{align*}
+$$
+
+We are 95% confident that with each dollar increase in , the university's gift aid is predicted to decrease on average by \$0.0214 to \$0.0648.
 :::
 
-##### Variability of the statistic {-}
+##### Variability of the statistic {.unnumbered}
 
 ::: {.important}
-**Confidence intervals for coefficients** 
+**Confidence intervals for coefficients**
 
-Confidence intervals for model
-coefficients (e.g., the intercept or the slope) can be computed using the $t$-distribution:
-$$\begin{aligned}
-  b_i \ \pm\ t_{df}^{\star} \times SE_{b_{i}}
-  \end{aligned}$$ where $t_{df}^{\star}$ is the appropriate $t$-value
-corresponding to the confidence level with the model's degrees of
-freedom.
+Confidence intervals for model coefficients (e.g., the intercept or the slope) can be computed using the $t$-distribution:
+
+$$ b_i \ \pm\ t_{df}^{\star} \times SE_{b_{i}} $$
+
+where $t_{df}^{\star}$ is the appropriate $t$-value corresponding to the confidence level with the model's degrees of freedom.
 :::
 
-On the topic of intervals in this book, we've focused exclusively on
-confidence intervals for model parameters. However, there are other
-types of intervals that may be of interest, including prediction
-intervals for a response value and also confidence intervals for a mean
-response value in the context of regression. 
-
-<!--These two interval types
-are introduced in an online extra that you may download at
-
-\oiRedirect{stat_extra_linear_regression_supp}
-    {www.openintro.org/d?file=stat\_extra\_linear\_regression\_supp}
-
------------
--->
-
-
+On the topic of intervals in this book, we've focused exclusively on confidence intervals for model parameters.
+However, there are other types of intervals that may be of interest, including prediction intervals for a response value and also confidence intervals for a mean response value in the context of regression.
 
 ### Exercises {#inference-single-regression-exercises}
 
@@ -745,44 +690,30 @@ Exercises for this section are under construction.
 
 ## Checking model conditions {#tech-cond-linmod}
 
-In the previous sections, we used randomization and bootstrapping to perform inference when the mathematical model was not valid due to violations of the technical conditions.  In this section, we'll provide details for when the mathematical model is appropriate and a discussion of technical conditions needed for the randomization and bootstrapping procedures.  .
+In the previous sections, we used randomization and bootstrapping to perform inference when the mathematical model was not valid due to violations of the technical conditions.
+In this section, we'll provide details for when the mathematical model is appropriate and a discussion of technical conditions needed for the randomization and bootstrapping procedures.
+.
 
-#### What are the technical conditions for the mathematical model? {-}
-
+#### What are the technical conditions for the mathematical model? {.unnumbered}
 
 When fitting a least squares line, we generally require
 
-* **Linearity.**  The data should show a linear trend. If there is a nonlinear trend
-    (e.g. first panel of Figure \@ref(fig:whatCanGoWrongWithLinearModel)) an advanced regression
-    method from another book or later course should be applied.
+-   **Linearity.** The data should show a linear trend.
+    If there is a nonlinear trend (e.g. first panel of Figure \@ref(fig:whatCanGoWrongWithLinearModel)) an advanced regression method from another book or later course should be applied.
 
-* **Independent observations.**  Be cautious about applying regression to data, which are sequential
-    observations in time such as a stock price each day. Such data may
-    have an underlying structure that should be considered in a model
-    and analysis. An example of a data set where successive observations
-    are not independent is shown in the fourth panel of
-    Figure \@ref(fig:whatCanGoWrongWithLinearModel). There are also other
-    instances where correlations within the data are important, which is
-    further discussed in
-    Chapter \@ref(multi-logistic-models).
-    
-* **Nearly normal residuals.**  Generally, the residuals must be nearly normal. When this condition
-    is found to be unreasonable, it is usually because of outliers or
-    concerns about influential points, which we'll talk about more in
-    Section \@ref(outliers-in-regression). An example of a
-    residual that would be a potentially concern is shown in the second panel of
-    Figure \@ref(fig:whatCanGoWrongWithLinearModel), where one observation is
-    clearly much further from the regression line than the others.
+-   **Independent observations.** Be cautious about applying regression to data, which are sequential observations in time such as a stock price each day.
+    Such data may have an underlying structure that should be considered in a model and analysis.
+    An example of a data set where successive observations are not independent is shown in the fourth panel of Figure \@ref(fig:whatCanGoWrongWithLinearModel).
+    There are also other instances where correlations within the data are important, which is further discussed in Chapter \@ref(multi-logistic-models).
 
-* **Constant or equal variability.**  The variability of points around the least squares line remains
-    roughly constant. An example of non-constant variability is shown in
-    the third panel of
-    Figure \@ref(fig:whatCanGoWrongWithLinearModel), which represents the
-    most common pattern observed when this condition fails: the
-    variability of $y$ is larger when $x$ is larger.
+-   **Nearly normal residuals.** Generally, the residuals must be nearly normal.
+    When this condition is found to be unreasonable, it is usually because of outliers or concerns about influential points, which we'll talk about more in Section \@ref(outliers-in-regression).
+    An example of a residual that would be a potentially concern is shown in the second panel of Figure \@ref(fig:whatCanGoWrongWithLinearModel), where one observation is clearly much further from the regression line than the others.
 
+-   **Constant or equal variability.** The variability of points around the least squares line remains roughly constant.
+    An example of non-constant variability is shown in the third panel of Figure \@ref(fig:whatCanGoWrongWithLinearModel), which represents the most common pattern observed when this condition fails: the variability of $y$ is larger when $x$ is larger.
 
-```{r whatCanGoWrongWithLinearModel, fig.cap="Four examples showing when the methods in this chapter are insufficient to apply to the data. The top set of graphs represents the $x$ and $y$ relationship.  The bottom set of graphs is a residual plot.  First panel: linearity fails. Second panel: there are outliers, most especially one point that is very far away from the line. Third panel: the variability of the errors is related to the value of $x$. Fourth panel: a time series data set is shown, where successive observations are highly correlated.", warning=FALSE, fig.asp = 1.2}
+```{r whatCanGoWrongWithLinearModel, fig.cap="Four examples showing when the methods in this chapter are insufficient to apply to the data. The top set of graphs represents the $x$ and $y$ relationship.  The bottom set of graphs is a residual plot.  First panel: linearity fails. Second panel: there are outliers, most especially one point that is very far away from the line. Third panel: the variability of the errors is related to the value of $x$. Fourth panel: a time series data set is shown, where successive observations are highly correlated.", warning=FALSE, out.width = "100%"}
 
 source("08/figures/makeTubeAdv.R")
 pch <- 20
@@ -918,33 +849,33 @@ abline(h = 0, lty = 2)
 box()
 
 makeTubeAdv(x,y, col = COL[7,3])
-
 ```
 
 ::: {.guidedpractice}
-Should we have concerns about applying least squares regression to the
-Elmhurst data in Figure \@ref(fig:elmhurstScatterW2Lines)?^[The trend appears to be linear, the data fall around the line with no obvious outliers, the variance is roughly constant. These are also not time series observations. Least squares regression can be applied to these data.]
+Should we have concerns about applying least squares regression to the Elmhurst data in Figure \@ref(fig:elmhurstScatterW2Lines)?[^inference-reg-3]
 :::
 
+[^inference-reg-3]: The trend appears to be linear, the data fall around the line with no obvious outliers, the variance is roughly constant.
+    These are also not time series observations.
+    Least squares regression can be applied to these data.
 
 The technical conditions are often remembered using the **LINE** mnemonic.
-The linearity, normality, and equality of variance conditions usually can be assessed through residual plots, as seen in  Figure \@ref(fig:whatCanGoWrongWithLinearModel).
+The linearity, normality, and equality of variance conditions usually can be assessed through residual plots, as seen in Figure \@ref(fig:whatCanGoWrongWithLinearModel).
 A careful consideration of the experimental design should be undertaken to confirm that the observed values are indeed independent.
 
-* L: __linear__ model 
-* I: __independent__ observations 
-* N: points are __normally__ distributed around the line 
-* E: __equal__ variability around the line for all values of the explanatory variable 
+-   L: **linear** model
+-   I: **independent** observations
+-   N: points are **normally** distributed around the line
+-   E: **equal** variability around the line for all values of the explanatory variable
 
-
-#### Why do we need technical conditions? {-}
+#### Why do we need technical conditions? {.unnumbered}
 
 As with other inferential techniques we have covered in this text, if the technical conditions above don't hold, then it is not possible to make concluding claims about the population.
 That is, without the technical conditions, the T-score (or Z-score) will not have the assumed t-distribution (or standard normal Z distribution).
 That said, it is almost always impossible to check the conditions precisely, so we look for large deviations from the conditions.
 If there are large deviations, we will be unable to trust the calculated p-value or the endpoints of the resulting confidence interval.
 
-##### The model based on **L**inearity {-}
+##### The model based on **L**inearity {.unnumbered}
 
 The linearity condition is among the most important if your goal is to understand a linear model between $x$ and $y$.
 For example, the value of the slope will not be at all meaningful if the true relationship between $x$ and $y$ is quadratic, as in Figure \@ref(fig:notGoodAtAllForALinearModel).
@@ -953,18 +884,23 @@ Not only should we be cautious about the inference, but the model *itself* is al
 In Section \@ref(inf-mult-reg) we discuss model modifications that can often lead to an excellent fit of strong relationships other than linear ones.
 However, an extended discussion on the different methods for modeling functional forms other than linear is outside the scope of this text.
 
-##### The importance of **I**ndependence {-}
+##### The importance of **I**ndependence {.unnumbered}
 
-The technical condition describing the independence of the observations is often the most crucial but also the most difficult to diagnose.  It is also extremely difficult to gather a dataset which is a true random sample from the population of interest.  (Note: a true randomized experiment from a fixed set of individuals is much easier to implement, and indeed, randomized experiments are done in most medical studies these days.)  
+The technical condition describing the independence of the observations is often the most crucial but also the most difficult to diagnose.
+It is also extremely difficult to gather a dataset which is a true random sample from the population of interest.
+(Note: a true randomized experiment from a fixed set of individuals is much easier to implement, and indeed, randomized experiments are done in most medical studies these days.)
 
-Dependent observations can bias results in ways that produce fundamentally flawed analyses.  That is, if you hang out at the gym measuring height and weight, your linear model is surely not a representation of all students at your university.  At best it is a model describing students who use the gym (but also who are willing to talk to you, that use the gym at the times you were there measuring, etc.).  
+Dependent observations can bias results in ways that produce fundamentally flawed analyses.
+That is, if you hang out at the gym measuring height and weight, your linear model is surely not a representation of all students at your university.
+At best it is a model describing students who use the gym (but also who are willing to talk to you, that use the gym at the times you were there measuring, etc.).
 
 In lieu of trying to answer whether or not your observations are a true random sample, you might instead focus on whether or not you believe your observations are representative of the populations.
 Humans are notoriously bad at implementing random procedures, so you should be wary of any process that used human intuition to balance the data with respect to, for example, the demographics of the individuals in the sample.
 
-##### Some thoughts on **N**ormality  {-}
+##### Some thoughts on **N**ormality {.unnumbered}
 
-The normality condition requires that points vary symmetrically around the line, spreading out in a bell-shaped fashion.  You should consider the "bell" of the normal distribution as sitting on top of the line (coming off the paper in a 3-D sense) so as to indicate that the points are dense close to the line and disperse gradually as they get farther from the line.
+The normality condition requires that points vary symmetrically around the line, spreading out in a bell-shaped fashion.
+You should consider the "bell" of the normal distribution as sitting on top of the line (coming off the paper in a 3-D sense) so as to indicate that the points are dense close to the line and disperse gradually as they get farther from the line.
 
 The normality condition is less important than linearity or independence for a few reasons.
 First, the linear model fit with least squares will still be an unbiased estimate of the true population model.
@@ -973,16 +909,17 @@ Fortunately the Central Limit Theorem tells us that most of the analyses (e.g., 
 One analysis method that *does* require normality, regardless of sample size, is creating intervals which predict the response of individual outcomes at a given $x$ value, using the linear model.
 One additional reason to worry slightly less about normality is that neither the randomization test nor the bootstrapping procedures require the data to be normal around the line.
 
-##### **E**qual variability for prediction in particular {-}
+##### **E**qual variability for prediction in particular {.unnumbered}
 
-As with normality, the equal variability condition (that points are spread out in similar ways around the line for all values of $x$) will not cause problems for the estimate of the linear model. That said, the **inference** on the model (e.g., computing p-values) will be incorrect if the variability around the line is heterogeneous.
+As with normality, the equal variability condition (that points are spread out in similar ways around the line for all values of $x$) will not cause problems for the estimate of the linear model.
+That said, the **inference** on the model (e.g., computing p-values) will be incorrect if the variability around the line is heterogeneous.
 Data that exhibit non-equal variance across the range of x-values will have the potential to seriously mis-estimate the variability of the slope which will have consequences for the inference results (i.e., hypothesis tests and confidence intervals).
 
 The inference results for both a randomization test or a bootstrap confidence interval are robust to the equal variability condition, so they give the analyst methods to use when the data are heteroskedastic (that is, exhibit unequal variability around the regression line).
 Although randomization tests and bootstrapping allow us to analyze data using fewer conditions, some technical conditions are required for all methods described in this text (e.g., independent observation).
 When the equal variability condition is violated and a mathematical analysis (e.g., p-value from T-score) is needed, there are other existing methods (outside the scope of this text) which can easily handle the unequal variance (e.g., weighted least squares analysis).
 
-#### What if all the technical conditions are met?  {-}
+#### What if all the technical conditions are met? {.unnumbered}
 
 When the technical conditions are met, the least squares regression model and inference is provided by virtually all statistical software.
 In addition to being ubiquitous, however, an additional advantage to the least squares regression model (and related inference) is that the linear model has important extensions (which are not trivial to implement with bootstrapping and randomization tests).
@@ -990,9 +927,13 @@ In particular, random effects models, repeated measures, and interaction are all
 When the technical conditions hold, the extensions to the linear model can provide important insight into the data and research question at hand.
 We will discuss some of the extended modeling and associated inference in Section \@ref(inf-mult-reg) and Section \@ref(inf-log-reg).
 Many of the techniques used to deal with technical condition violations are outside the scope of this text, but they are taught in universities in the very next class after this one.
-If you are working with linear models or curious to learn more, we recommend that you continue learning about statistical methods applicable to a larger class of datasets.  
+If you are working with linear models or curious to learn more, we recommend that you continue learning about statistical methods applicable to a larger class of datasets.
 
 ### Exercises {#checking-model-assumptions-exercises}
+
+::: {.underconstruction}
+Exercises for this section are under construction.
+:::
 
 ## Inference for multiple regression {#inf-mult-reg}
 
@@ -1004,11 +945,9 @@ The inference task at hand is to decide whether the coefficient's difference fro
 Both the derivations from the mathematical model and the randomization model are beyond the scope of this book, but we are able to calculate p-values using statistical software.
 We will discuss interpreting p-values in the multiple regression setting and note some scenarios where careful understanding of the context and the relationship between variables is important.
 
-
-
 ### Multiple regression output from software {#inf-mult-reg-soft}
 
-Recall the `loans` data from Chapter \@ref(multi-logistic-models).  
+Recall the `loans` data from Chapter \@ref(multi-logistic-models).
 
 ::: {.data}
 The data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`loans_full_schema`](http://openintrostat.github.io/openintro/reference/loans_full_schema.html).
@@ -1016,13 +955,9 @@ Based on the data in this dataset we have created two new variables: `credit_uti
 We will refer to this modified dataset as `loans`.
 :::
 
-Now, our goal is to create a model where `interest_rate` can be predicted using the variables `debt_to_income`, `term`, and `credit_checks`.  
+Now, our goal is to create a model where `interest_rate` can be predicted using the variables `debt_to_income`, `term`, and `credit_checks`.\
 As learned in Chapter \@ref(multi-logistic-models), least squares can be used to find the coefficient estimates for the linear model.
-The unknown population model can be written as:
-$$E[\mbox{interest_rate}] = \beta_0 + \beta_1\times \mbox{debt_to_income} + \beta_2 \times \mbox{term} + \beta_3 \times \mbox{credit_checks}$$
-
-The estimated equation for the regression model may be written as a model with three predictor variables:
-
+The unknown population model can be written as: $$E[\mbox{interest_rate}] = \beta_0 + \beta_1\times \mbox{debt_to_income} + \beta_2 \times \mbox{term} + \beta_3 \times \mbox{credit_checks}$$
 
 ```{r loansmodel}
 loans <- loans_full_schema %>%
@@ -1042,30 +977,29 @@ lm(interest_rate ~ debt_to_income + term + credit_checks, data = loans) %>%
   kable_styling(full_width = FALSE)
 ```
 
-$$\widehat{\mbox{interest_rate}} = 4.31 + 0.041 \times \mbox{debt_to_income} + 0.16 \times \mbox{term} + 0.25 \times \mbox{credit_checks}$$
+The estimated equation for the regression model may be written as a model with three predictor variables:
 
-
+$$
+\widehat{\texttt{interest_rate}} = 4.31 + 0.041 \times \texttt{debt_to_income} + 0.16 \times \texttt{term} + 0.25 \times \texttt{credit_checks}
+$$
 
 Not only does Table \@ref(tab:loansmodel) provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
 
-
 In Section \@ref(inferenceForLinearRegression), we learned that the hypothesis test for a linear model with **one predictor** can be written as:
 
-$$\mbox{if only one predictor }  H_0: \beta_1 = 0.$$
+> if only one predictor, $H_0: \beta_1 = 0.$
 
 That is, if the true population slope is zero, the p-value measures how likely it would be to select data which produced the observed slope ($b_1$) value.
 
 With **multiple predictors**, the hypothesis is similar, however, it is now conditioned on each of the other variables remaining in the model.
 
-$$\mbox{if multiple predictors } H_0: \beta_i = 0 \mbox{ given other variables in the model}$$
+> if multiple predictors, $H_0: \beta_i = 0$ given other variables in the model
 
 Using the example above and focusing on each of the variable p-values (here we won't discuss the p-value associated with the intercept), we can write out the three different hypotheses:
 
-\begin{eqnarray*}
-H_0: \beta_1 = 0 && \mbox{ given \mbox{term} and \mbox{credit_checks} are included in the model}\\
-H_0: \beta_2 = 0 &&\mbox{ given \mbox{debt_to_income} and \mbox{credit_checks} are included in the model}\\
-H_0: \beta_3 = 0 &&\mbox{ given \mbox{debt_to_income} and \mbox{term} and are included in the model}
-\end{eqnarray*}
+-   $H_0: \beta_1 = 0$, given `term` and `credit_checks` are included in the model
+-   $H_0: \beta_2 = 0$, given `debt_to_income` and `credit_checks` are included in the model
+-   $H_0: \beta_3 = 0$, given `debt_to_income` and `term` are included in the model
 
 The very low p-values from the software output tell us that each of the variables acts as an important predictor in the model, despite the inclusion of the other two.
 Consider the p-value on $H_0: \beta_1$.
@@ -1079,19 +1013,21 @@ Sometimes a set of predictor variables can impact the model in unusual ways, oft
 
 In practice, there will almost always be some degree of correlation between the explanatory variables in a multiple regression model.
 For regression models, it is important to understand the entire context of the model, particularly for correlated variables.
-Our discussion will focus on interpreting coefficients (and their signs) in relationship to other variables as well as the significance (i.e., the p-value) of each coefficient.  
+Our discussion will focus on interpreting coefficients (and their signs) in relationship to other variables as well as the significance (i.e., the p-value) of each coefficient.
 
 Consider an example where we'd like to predict how much money is in a coin dish based only on the number of coins in the dish.
-We ask 26 students to tell us about their individual coin dishes, collecting data on the total dollar amount, the total number of coins, and the total number of low coins.^[In all honesty, this particular dataset is fabricated, and the original idea for the problem comes from Jeff Witmer at Oberlin College.]
+We ask 26 students to tell us about their individual coin dishes, collecting data on the total dollar amount, the total number of coins, and the total number of low coins.[^inference-reg-4]
 The number of low coins is the number of coins minus the number of quarters (a quarter is the largest commonly used US coin, at US\$0.25).
 Figure \@ref(fig:money) illustrates a sample of U.S. coins, their total worth (amount), the number of total coins, and the number of low coins.
+
+[^inference-reg-4]: In all honesty, this particular dataset is fabricated, and the original idea for the problem comes from Jeff Witmer at Oberlin College.
 
 ```{r money, fig.cap = "A sample of coins with 16 total coins, 10 low coins, and a net worth of $1.90.", fig.width = 10}
 include_graphics("08/figures/money.png")
 ```
 
 The collected data is given in Figure \@ref(fig:coinfig) and shows that the total amount of money is more highly correlated with the total number of coins than it is with the number of low coins.
-We also note that the number of high coins and the number of low coins are positively correlated.  
+We also note that the number of high coins and the number of low coins are positively correlated.
 
 ```{r coinfig, fig.cap = "Plot describing the amount of money (US$) as a fucntion of the number of coins and the number of low coins.  As you might expect, the amount of money is more highly postively correlated with the total number of coins than with the number of low coins.", fig.show = 'hold', out.width='47%', fig.ncol = 2}
 # note, i just made up this data
@@ -1112,16 +1048,13 @@ ggplot(money, aes(y=total.amount, x = number.of.low.coins)) +
   geom_point() +
   xlab("Number of low coins") +
   ylab("Total amount ($)")
-
 ```
-
 
 Using the total number of coins as the predictor variable, Table \@ref(tab:coinhigh) provides the least squares estimate of the coefficient is 0.13.
 For every additional coin in the dish, we would predict that the student had US\$0.13 more.
 The $b_1 = 0.13$ coefficient is highly significant, suggesting we would not have seen data like this if number of coins and amount of money were not linearly related.
 
-$$\widehat{\mbox{amount}} = 0.55 + 0.13 \times \mbox{number of coins} $$
-
+$$ \widehat{\mbox{amount}} = 0.55 + 0.13 \times \mbox{number of coins} $$
 
 ```{r coinhigh}
 lm(amount ~ number.of.coins, data = money) %>%
@@ -1131,12 +1064,11 @@ lm(amount ~ number.of.coins, data = money) %>%
   kable_styling(full_width = FALSE)
 ```
 
-
 Using the number of low coins as the predictor variable, Table \@ref(tab:coinlow) provides the least squares estimate of the coefficient is 0.02.
 For every additional coin in the dish, we would predict that the student had US\$0.02 more.
 The $b_1 = 0.02$ coefficient is not at all significant, suggesting we could easily have seen data like ours even if the number of low coins and amount of money are not at all linearly related.
 
-$$\widehat{\mbox{amount}} = 2.28 + 0.02 \times \mbox{number of low coins} $$
+$$ \widehat{\mbox{amount}} = 2.28 + 0.02 \times \mbox{number of low coins} $$
 
 ```{r coinlow}
 lm(amount ~ number.of.low.coins, data = money) %>%
@@ -1146,11 +1078,9 @@ lm(amount ~ number.of.low.coins, data = money) %>%
   kable_styling(full_width = FALSE)
 ```
 
-
-
 ::: {.workedexample}
-
-Come up with an example of two observations that have the same number of low coins but the number of total coins differs by one.  What is the difference in amount?
+Come up with an example of two observations that have the same number of low coins but the number of total coins differs by one.
+What is the difference in amount?
 
 ------------------------------------------------------------------------
 
@@ -1159,10 +1089,9 @@ include_graphics("08/figures/lowsame.png")
 ```
 :::
 
-
 ::: {.workedexample}
-
-Come up with an example of two observations that have the same total number of coins but a different number of low coins.  What is the difference in amount?
+Come up with an example of two observations that have the same total number of coins but a different number of low coins.
+What is the difference in amount?
 
 ------------------------------------------------------------------------
 
@@ -1172,19 +1101,17 @@ include_graphics("08/figures/totalsame.png")
 :::
 
 Using both the total number of coins and the number of low coins as predictor variables, Table \@ref(tab:coinhighlow) provides the least squares estimates of both coefficients as 0.21 and -0.16.
-Now, with two variables in the model, the interpretation is more nuanced.  
+Now, with two variables in the model, the interpretation is more nuanced.
 
-* The coefficient indicates a change in one variable while keeping the other variable constant.  
-For every additional coin in the dish **while** the number of low coins stays constant, we would predict that the student had US\$0.21 more.
-Re-considering the phrase "every additional coin in the dish **while** the number of low coins stays constant" makes us realize that each increase is a single additional quarter (larger samples sizes would have led to a $b_1$ coefficient closer to 0.25 because of the deterministic relationship described here).   
-* For every additional low coin in the dish **while** the number of total coins stays constant, we would predict that the student had US\$0.16 less.
-Re-considering the phrase "every additional low coin in the dish **while** the number of total coins stays constant" makes us realize that a quarter is being swapped out for a penny, nickel, or dime.
+-   The coefficient indicates a change in one variable while keeping the other variable constant.\
+    For every additional coin in the dish **while** the number of low coins stays constant, we would predict that the student had US\$0.21 more. Re-considering the phrase "every additional coin in the dish **while** the number of low coins stays constant" makes us realize that each increase is a single additional quarter (larger samples sizes would have led to a $b_1$ coefficient closer to 0.25 because of the deterministic relationship described here).\
+-   For every additional low coin in the dish **while** the number of total coins stays constant, we would predict that the student had US\$0.16 less. Re-considering the phrase "every additional low coin in the dish **while** the number of total coins stays constant" makes us realize that a quarter is being swapped out for a penny, nickel, or dime.
 
 Considering the coefficients across Tables \@ref(tab:coinhigh), \@ref(tab:coinlow), and \@ref(tab:coinhighlow) within the context and knowledge we have of US coins allows us to understand the correlation between variables and why the signs of the coefficients would change depending on the model.
 Note also, however, that the significance on the low coin coefficient changed from Table \@ref(tab:coinlow) to Table \@ref(tab:coinhighlow).
 It makes sense that the variable describing the number of low coins provides more information about the amount of money when it is part of a model which also includes the total number of coins than it does when it is used as a single variable in a simple linear regression model.
 
-$$\widehat{\mbox{amount}} = 0.80 + 0.21 \times \mbox{number of coins} - 0.16 \times \mbox{number of low coins}$$
+$$ \widehat{\text{amount}} = 0.80 + 0.21 \times \text{number of coins} - 0.16 \times \text{number of low coins} $$
 
 ```{r coinhighlow}
 lm(amount ~ number.of.coins + number.of.low.coins, data = money) %>%
@@ -1194,12 +1121,15 @@ lm(amount ~ number.of.coins + number.of.low.coins, data = money) %>%
   kable_styling(full_width = FALSE)
 ```
 
+When working with multiple regression models, understanding the significance and sign of the coefficient is not always as straightforward as it was with the coin example.
+However, we encourage you to always think carefully about the variables in the model, consider how they might be correlated among themselves, and work through different models to see how using different sets of variables might produce different relationships for predicting the response variable of interest.
 
-When working with multiple regression models, understanding the significance and sign of the coefficient is not always as straightforward as it was with the coin example.  However, we encourage you to always think carefully about the variables in the model, consider how they might be correlated among themselves, and work through different models to see how using different sets of variables might produce different relationships for predicting the response variable of interest.
+Although diving into the details are beyond the scope of this text, we will provide one more reflection about multicollinearity.
+If the predictor variables have some degree of correlation, it can be quite difficult to interpret the value of the coefficient or its significance.
+However, even a model that suffers from high multicollinearity will likely lead to unbiased predictions of the response variable.
+So if the task at hand is only to do prediction, mutlicollinearity is likely to not cause you substantial problems.
 
-Although diving into the details are beyond the scope of this text, we will provide one more reflection about multicollinearity.  If the predictor variables have some degree of correlation, it can be quite difficult to interpret the value of the coefficient or its significance.  However, even a model that suffers from high multicollinearity will likely lead to unbiased predictions of the response variable.  So if the task at hand is only to do prediction, mutlicollinearity is likely to not cause you substantial problems.
-
-
+```{=html}
 <!--
 Things I didn't talk about but could:
 
@@ -1207,8 +1137,7 @@ Things I didn't talk about but could:
 * For assessing model fit, as is necessary, we will create residual plots of residual vs. fitted (instead of residual vs. X as we saw previously).  
 * Give another example here with a quadratic relationship and the wonky things that can happen with the p-values.
 -->
-
-
+```
 ### Cross validation for prediction error {#inf-mult-reg-cv}
 
 In Section \@ref(inf-mult-reg-soft), p-values were calculated on each of the model coefficients.
@@ -1229,7 +1158,8 @@ include_graphics("08/figures/CV.png")
 
 ::: {.data}
 The data can be found in the [palmerpenguings](https://github.com/allisonhorst/palmerpenguins) package: [`penguins`](https://allisonhorst.github.io/palmerpenguins/articles/intro.html).
-The observations of three different penguin species include measurements on body size and sex.  The data were collected by [Dr. Kristen Gorman](https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php) and the [Palmer Station, Antarctica LTER](https://pal.lternet.edu/) as part of the [Long Term Ecological Research Network](https://lternet.edu/).
+The observations of three different penguin species include measurements on body size and sex.
+The data were collected by [Dr. Kristen Gorman](https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php) and the [Palmer Station, Antarctica LTER](https://pal.lternet.edu/) as part of the [Long Term Ecological Research Network](https://lternet.edu/).
 :::
 
 Our goal in this section is to compare two different regression models which both seek to predict the mass of an individual penguin in grams.
@@ -1242,25 +1172,25 @@ We have deliberately used a model that intuitively makes sense (the more body me
 However, in many settings, it is not obvious which variables or which models contribute most to accurate predictions.
 Cross validation is one way to get accurate independent predictions with which to compare different models.
 
+##### Comparing two models to predict `body_mass_g` in penguins {.unnumbered}
 
-##### Comparing two models to predict `body_mass_g` in penguins {-}
+The question we will seek to answer is whether the predictions of `body_mass_g` are substantially better when `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` are used in the model, as compared with a model on `bill_length_mm` only.
 
-The question we will seek to answer is whether the predictions of `body_mass_g` are substantially better when `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` are used in the model, as compared with a model on `bill_length_mm` only.  
-
-We refer to the model given with only `bill_lengh_mm` as the **smaller** model.  It is seen in Table \@ref(tab:peng-lm-bill) with coefficient estimates of the parameters as well as standard errors and p-values.
-We refer to the model given with `bill_lengh_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` as the **larger** model.  It is seen in Table \@ref(tab:peng-lm-all) with coefficient estimates of the parameters as well as standard errors and p-values.
+We refer to the model given with only `bill_lengh_mm` as the **smaller** model.
+It is seen in Table \@ref(tab:peng-lm-bill) with coefficient estimates of the parameters as well as standard errors and p-values.
+We refer to the model given with `bill_lengh_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` as the **larger** model.
+It is seen in Table \@ref(tab:peng-lm-all) with coefficient estimates of the parameters as well as standard errors and p-values.
 Given what we know about high correlations between body measurements, it is somewhat unsurprising that all of the variables are significant (small p-values) predictors of `body_mass_g`.
 However, in this section, we will go beyond the use of p-values to consider independent predictions of `body_mass_g` as a way to compare the smaller and larger models.
 
+##### The smaller model: {.unnumbered}
 
-
-##### The smaller model: {-}
-
+$$
 \begin{align*}
-E[\mbox{body_mass_g}] =& \beta_0 + \beta_1 \times \mbox{bill_length_mm}\\
-\widehat{\mbox{body_mass_g}} =& 362.31 + 87.42 \times \mbox{bill_length_mm}\\
+E[\texttt{body_mass_g}] &= \ \beta_0 + \beta_1 \times \texttt{bill_length_mm}\\
+\widehat{\texttt{body_mass_g}} &= \ 362.31 + 87.42 \times \texttt{bill_length_mm}\\
 \end{align*}
-
+$$
 
 ```{r peng-lm-bill, echo = FALSE}
 lm(body_mass_g ~ bill_length_mm, data = penguins) %>% 
@@ -1270,18 +1200,18 @@ lm(body_mass_g ~ bill_length_mm, data = penguins) %>%
  kable_styling() 
 ```
 
+##### The larger model: {.unnumbered}
 
-
-##### The larger model: {-}
-
+$$
 \begin{align*}
-E[\mbox{body_mass_g}] =& \beta_0 + \beta_1 \times \mbox{bill_length_mm} + \beta_2 \times \mbox{bill_depth_mm} + \\
-& \beta_3 \times \mbox{flipper_length_mm} + \beta_4 \times \mbox{sex}_{male} + \\
-& \beta_5 \times \mbox{species}_{Chinstrap} + \beta_6 \times \mbox{species}_{Gentoo}\\
-\widehat{\mbox{body_mass_g}} =& -1460.99 + 18.20 \times \mbox{bill_length_mm} + 67.22 \times \mbox{bill_depth_mm} + \\
-& 15.95 \times \mbox{flipper_length_mm} + 389.89 \times \mbox{sex}_{male} + \\
-& -251.48 \times \mbox{species}_{Chinstrap} + 1014.63 \times \mbox{species}_{Gentoo}\\
+E[\texttt{body_mass_g}] = \beta_0 &+ \beta_1 \times \texttt{bill_length_mm} + \beta_2 \times \texttt{bill_depth_mm} \\
+&+ \beta_3 \times \texttt{flipper_length_mm} + \beta_4 \times \texttt{sex}_{male} \\
+&+ \beta_5 \times \texttt{species}_{Chinstrap} + \beta_6 \times \texttt{species}_{Gentoo}\\
+\widehat{\texttt{body_mass_g}} = -1460.99 &+ 18.20 \times \texttt{bill_length_mm} + 67.22 \times \texttt{bill_depth_mm} \\
+&+ 15.95 \times \texttt{flipper_length_mm} + 389.89 \times \texttt{sex}_{male} \\
+&- 251.48 \times \texttt{species}_{Chinstrap} + 1014.63 \times \texttt{species}_{Gentoo}\\
 \end{align*}
+$$
 
 ```{r peng-lm-all, echo = FALSE}
 lm(body_mass_g ~ bill_length_mm + bill_depth_mm  + flipper_length_mm + sex + species, data = penguins) %>% 
@@ -1291,23 +1221,22 @@ lm(body_mass_g ~ bill_length_mm + bill_depth_mm  + flipper_length_mm + sex + spe
  kable_styling() 
 ```
 
-
-In order to compare the smaller and larger models in terms of their **ability to predict penguin mass**, we need to build models that can provide independent predictions based on the penguins in the holdout samples created by cross validation.  
+In order to compare the smaller and larger models in terms of their **ability to predict penguin mass**, we need to build models that can provide independent predictions based on the penguins in the holdout samples created by cross validation.
 To reiterate, each of the predictions that (when combined together) will allow us to distinguish between the smaller and larger are independent of the data which were used to build the model.
 In this example, using cross validation, we remove one quarter of the data before running the least squares calculations.
 Then the least squares model is used to predict the `body_mass_g` of the penguins in the holdout sample.
 Here we use a 4-fold cross validation (meaning that one quarter of the data is removed each time) to produce four different versions of each model (other times it might be more appropriate to use 2-fold or 10-fold or even run the model separately after removing each individual data point one at a time).
 
-Figure \@ref(fig:massCV1) displays how a model is fit to 3/4 of the data (note the slight differences in coefficients as compared to Table \@ref(tab:peng-lm-bill)), and then predictions are made on the holdout sample. 
+Figure \@ref(fig:massCV1) displays how a model is fit to 3/4 of the data (note the slight differences in coefficients as compared to Table \@ref(tab:peng-lm-bill)), and then predictions are made on the holdout sample.
 
 ```{r massCV1, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset with only a single predictor variable. Predictions are made on the remaining 1/4 of the observations.  The y-axis in the scatterplot represents the residual: true observed value minus the predicted value.  Note that the predictions are independent of the estimated model coefficients.", out.width="100%"}
 include_graphics("08/figures/massCV1.png")
 ```
 
 By repeating the process for each holdout quarter sample, the residuals from the model can be plotted against the predicted values.
-We see that the predictions are scattered which shows a good model fit but that the prediction errors vary $\pm$ 1000g of the true body mass.  
+We see that the predictions are scattered which shows a good model fit but that the prediction errors vary $\pm$ 1000g of the true body mass.
 
-```{r peng-mass1, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted.  The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only.  The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value).", warning=FALSE, out.width="100%"}
+```{r peng-mass1, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted.  The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only.  The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value).", warning=FALSE, out.width="100%", fig.width=8}
 set.seed(47)
 data(penguins)
 penguins <- penguins %>%
@@ -1343,6 +1272,7 @@ data.frame(predicted = lm(body_mass_g ~ bill_length_mm , data = penguins[-pengui
   ylab("Prediction Error (g)") +
   theme(text = element_text(size=20))
 ```
+
 ```{r peng-mass1-output, eval = FALSE}
 # this code is used to create the powerpoint images above
 
@@ -1373,43 +1303,49 @@ massCV1 %>%
 The same process is repeated for the larger number of explanatory variables.
 Note that the coefficients estimated for the first cross validation model (in Figure \@ref(fig:massCV2)) are slightly different from the estimates computed on the entire dataset (seen in Table \@ref(tab:peng-lm-all)).
 Figure \@ref(fig:massCV2) displays the cross validation process for the multivariable model with a full set of residual plots given in Figure \@ref(fig:peng-mass2).
-Note that the residuals are mostly within $\pm$ 500g, providing much more precise predictions for the independent body mass values of the individual penguins. 
+Note that the residuals are mostly within $\pm$ 500g, providing much more precise predictions for the independent body mass values of the individual penguins.
 
 ```{r massCV2, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset with the five specified predictor variables. Predictions are made on the remaining 1/4 of the observations.  The y-axis in the scatterplot represents the residual: true observed value minus the predicted value.  Note that the predictions are independent of the estimated model coefficients.", out.width="100%"}
 include_graphics("08/figures/massCV2.png")
 ```
 
-
 ```{r peng-mass2, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted.  The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only.  The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value).", warning=FALSE, out.width="100%"}
-data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1,]) %>% 
-             predict(newdata = penguins[penguinfolds$Fold1,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]) ,
-           obs = penguins[penguinfolds$Fold1,]$body_mass_g,
-           fold = rep("1st quarter", length(penguinfolds$Fold1))) %>%
-  rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold2,]) %>% 
-             predict(newdata = penguins[penguinfolds$Fold2,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]) ,
-           obs = penguins[penguinfolds$Fold2,]$body_mass_g,
-           fold = rep("2nd quarter", length(penguinfolds$Fold2))) ) %>%
-  rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold3,]) %>% 
-             predict(newdata = penguins[penguinfolds$Fold3,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]) ,
-           obs = penguins[penguinfolds$Fold3,]$body_mass_g,
-           fold = rep("3rd quarter", length(penguinfolds$Fold3))) ) %>%
-  rbind(data.frame(predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold4,]) %>% 
-             predict(newdata = penguins[penguinfolds$Fold4,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]) ,
-           obs = penguins[penguinfolds$Fold4,]$body_mass_g,
-           fold = rep("4th quarter", length(penguinfolds$Fold4))) ) %>%
+data.frame(
+  predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1, ]) %>%
+    predict(newdata = penguins[penguinfolds$Fold1, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]),
+  obs = penguins[penguinfolds$Fold1, ]$body_mass_g,
+  fold = rep("1st quarter", length(penguinfolds$Fold1))
+) %>%
+  rbind(data.frame(
+    predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold2, ]) %>%
+      predict(newdata = penguins[penguinfolds$Fold2, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]),
+    obs = penguins[penguinfolds$Fold2, ]$body_mass_g,
+    fold = rep("2nd quarter", length(penguinfolds$Fold2))
+  )) %>%
+  rbind(data.frame(
+    predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold3, ]) %>%
+      predict(newdata = penguins[penguinfolds$Fold3, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]),
+    obs = penguins[penguinfolds$Fold3, ]$body_mass_g,
+    fold = rep("3rd quarter", length(penguinfolds$Fold3))
+  )) %>%
+  rbind(data.frame(
+    predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold4, ]) %>%
+      predict(newdata = penguins[penguinfolds$Fold4, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]),
+    obs = penguins[penguinfolds$Fold4, ]$body_mass_g,
+    fold = rep("4th quarter", length(penguinfolds$Fold4))
+  )) %>%
   mutate(error = obs - predicted) %>%
-  ggplot(aes(x = predicted, y = error )) +
+  ggplot(aes(x = predicted, y = error)) +
   geom_point() +
   geom_hline(yintercept = 0) +
   geom_hline(yintercept = 500, lty = 2, color = "grey") +
   geom_hline(yintercept = -500, lty = 2, color = "grey") +
   facet_wrap(~fold) +
-  ylim(c(-1000,1000)) +
+  ylim(c(-1000, 1000)) +
   xlab("Predicted Body Mass (g)") +
   ylab("Prediction Error (g)") +
-  theme(text = element_text(size=20))
+  theme(text = element_text(size = 20))
 ```
-
 
 ```{r peng-mass2-output, eval = FALSE}
 # this code is used to create the powerpoint images above
@@ -1439,9 +1375,8 @@ massCV1 %>%
   theme(text = element_text(size=20))
 ```
 
-
 Figure \@ref(fig:peng-mass1) shows that the independent predictions are centered around the true values (i.e., errors are centered around zero), but that the predictions can be as much as 1000g off when using only `bill_length_mm` to predict `body_mass_g`.
-On the other hand, when using `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species`  to predict `body_mass_g`, the prediction errors seem to be about half as big, as seen in Figure \@ref(fig:peng-mass2).
+On the other hand, when using `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` to predict `body_mass_g`, the prediction errors seem to be about half as big, as seen in Figure \@ref(fig:peng-mass2).
 
 We have provided a very brief overview to and example using cross validation.
 Cross validation is a computational approach to model building and model validation as an alternative to reliance on p-values.
@@ -1464,54 +1399,58 @@ Consider the `email` data which describes email characteristics which can be use
 Without reading every incoming message, it might be nice to have an automated way to identify SPAM emails.
 Which of the variables describing each email are important for predicting the status of the email?
 
-
 ::: {.data}
 The data from this study can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`email`](http://openintrostat.github.io/openintro/reference/email.html).
 :::
 
-
 ```{r resume-variables}
 resume_variables <- tribble(
-  ~variable,           ~description,
+  ~variable, ~description,
   "spam", "Indicator for whether the email was spam.",
-  "to_multiple",          "Indicator for whether the email was addressed to more than one recipient.",
-  "from",    "Whether the message was listed as from anyone (this is usually set by default for regular outgoing email).",
-  "cc",  "Number of people cc'ed.",
-  "sent_email",            "Indicator for whether the sender had been sent an email in the last 30 days.",
-  "attach",          "The number of attached files.",
+  "to_multiple", "Indicator for whether the email was addressed to more than one recipient.",
+  "from", "Whether the message was listed as from anyone (this is usually set by default for regular outgoing email).",
+  "cc", "Number of people cc'ed.",
+  "sent_email", "Indicator for whether the sender had been sent an email in the last 30 days.",
+  "attach", "The number of attached files.",
   "dollar", "The number of times a dollar sign or the word “dollar” appeared in the email.",
-  "winner",              "Indicates whether “winner” appeared in the email.",
-  "format",               "Indicates whether the email was written using HTML (e.g. may have included bolding or active links).",
-    "re_subj",               "Whether the subject started with “Re:”, “RE:”, “re:”, or “rE:”",
-    "exclaim_subj",               "Whether there was an exclamation point in the subject.",
-    "urgent_subj",               "Whether the word “urgent” was in the email subject.",
-    "exclaim_mess",               "The number of exclamation points in the email message.",
-    "number",               "Factor variable saying whether there was no number, a small number (under 1 million), or a big number."
+  "winner", "Indicates whether “winner” appeared in the email.",
+  "format", "Indicates whether the email was written using HTML (e.g. may have included bolding or active links).",
+  "re_subj", "Whether the subject started with “Re:”, “RE:”, “re:”, or “rE:”",
+  "exclaim_subj", "Whether there was an exclamation point in the subject.",
+  "urgent_subj", "Whether the word “urgent” was in the email subject.",
+  "exclaim_mess", "The number of exclamation points in the email message.",
+  "number", "Factor variable saying whether there was no number, a small number (under 1 million), or a big number."
 )
 
 resume_variables %>%
   mutate(variable = cell_spec(variable, monospace = TRUE)) %>%
   kable(escape = FALSE, caption = "Descriptions for the `spam` variable along with 13 other variables in the `email` data set. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.") %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped")
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = "striped"
+  )
 ```
-
 
 ### Multiple logistic regression output from software {#inf-log-reg-soft}
 
-
 As learned in Chapter \@ref(multi-logistic-models), optimization can be used to find the coefficient estimates for the logistic model.
 The unknown population model can be written as:
-\begin{align}
-\log_e\bigg(\frac{p}{1-p}\bigg) =  \beta_0 + \beta_1\times \mbox{to_multiple} + \beta_2 \times \mbox{cc} + \beta_3 \times \mbox{dollar} + \beta_4 \times \mbox{urgent_subj}
-\end{align}
+
+$$
+\begin{align*}
+\log_e\bigg(\frac{p}{1-p}\bigg) = \beta_0 &+ \beta_1 \times \texttt{to_multiple} + \beta_2 \times \texttt{cc} \\
+&+ \beta_3 \times \texttt{dollar} + \beta_4 \times \texttt{urgent_subj}
+\end{align*}
+$$
 
 The estimated equation for the regression model may be written as a model with four predictor variables (where $\hat{p}$ is the estimated probability of being a SPAM email message):
 
-\begin{align}
-\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -2.05 + -1.91\times \mbox{to_multiple} + 0.02 \times \mbox{cc} - 0.07 \times \mbox{dollar} + 2.66\times \mbox{urgent_subj}
-\end{align}
-
+$$
+\begin{align*}
+\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -2.05 &+ -1.91 \times \texttt{to_multiple} + 0.02 \times \texttt{cc} \\
+&- 0.07 \times \texttt{dollar} + 2.66 \times \texttt{urgent_subj}
+\end{align*}
+$$
 
 ```{r emaillogmodel}
 glm(spam ~ to_multiple + cc + dollar + urgent_subj, data = email, family = "binomial") %>% tidy() %>%
@@ -1520,22 +1459,18 @@ glm(spam ~ to_multiple + cc + dollar + urgent_subj, data = email, family = "bino
   kable_styling(full_width = FALSE)
 ```
 
-
 Not only does Table \@ref(tab:emaillogmodel) provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
-
 
 As in Section \@ref(inf-mult-reg), with **multiple predictors**, each hypothesis test (for each of the explanatory variables) is conditioned on each of the other variables remaining in the model.
 
-$$\mbox{if multiple predictors } H_0: \beta_i = 0 \mbox{ given other variables in the model}$$
+> if multiple predictors $H_0: \beta_i = 0$ given other variables in the model
 
 Using the example above and focusing on each of the variable p-values (here we won't discuss the p-value associated with the intercept), we can write out the four different hypotheses (associated the p-value corresponding to each of the coefficients / row in Table \@ref(tab:emaillogmodel)):
 
-\begin{eqnarray*}
-H_0: \beta_1 = 0 && \mbox{ given `cc` and `dollar` and `urgent_subj` are included in the model}\\
-H_0: \beta_2 = 0 &&\mbox{ given `to_multiple` and `dollar`  and `urgent_subj` are included in the model}\\
-H_0: \beta_3 = 0 &&\mbox{ given `to_multiple` and `cc` and `urgent_subj` and are included in the model}\\
-H_0: \beta_4 = 0 &&\mbox{ given `to_multiple` and `cc` and `dollar` are included in the model}
-\end{eqnarray*}
+-   $H_0: \beta_1 = 0$ given `cc`, `dollar`, and `urgent_subj` are included in the model
+-   $H_0: \beta_2 = 0$ given `to_multiple`, `dollar`, and `urgent_subj` are included in the model
+-   $H_0: \beta_3 = 0$ given `to_multiple`, `cc`, and `urgent_subj` are included in the model
+-   $H_0: \beta_4 = 0$ given `to_multiple`, `dollar`, and `dollar` are included in the model
 
 The very low p-values from the software output tell us that three of the variables (that is, not `cc`) act as important predictors in the model, despite the inclusion of any of the other variables.
 Consider the p-value on $H_0: \beta_1$.
@@ -1543,13 +1478,12 @@ The low p-value says that it would be extremely unlikely to see data that produc
 Note also that the coefficient on `dollar` is quite significant, but the magnitude of the coefficient is small (0.07).
 It turns out that in units of standard errors (0.02 here), 0.07 is actually quite far from zero, it's all about context!
 The p-values on the remaining variables are be interpreted similarly.
-From the initial output (p-values) in Table  \@ref(tab:emaillogmodel) it seems as though `to_multiple`, `dollar`, and `urgent_subj` are important variables for modeling whether an email is SPAM.
+From the initial output (p-values) in Table \@ref(tab:emaillogmodel) it seems as though `to_multiple`, `dollar`, and `urgent_subj` are important variables for modeling whether an email is SPAM.
 We remind you that although p-values provide some information about the model, there are many aspects to consider when choosing the best model.
 
 As with linear regression (see Section \@ref(inf-mult-reg-collin)), correlated explanatory variables can impact both the coefficient estimates and the associated p-values.
 Investigating multicollinearity in a logistic regression model is saved for a text which provides more detail about logistic regression.
-Next, as a model building alternative (or enhancement) to p-values, we revisit cross validation within the context of predicting SPAM status for each of the individual emails.  
-
+Next, as a model building alternative (or enhancement) to p-values, we revisit cross validation within the context of predicting SPAM status for each of the individual emails.
 
 ### Cross validation for prediction error {#inf-log-reg-cv}
 
@@ -1562,9 +1496,10 @@ A full treatment of cross validation and logistic regression models is beyond th
 Using cross validation, we can build $k$ different models which are used to predict the observations in each of the $k$ holdout samples.
 The smaller model uses only the `to_multiple` variable, see the complete dataset (not cross validated) model output in Table \@ref(tab:emaillogmodel1).
 The logistic regression model can be written as (where $\hat{p}$ is the estimated probability of being a SPAM email message):
-\begin{align}
+
+$$
 \log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -2.12 + -1.81\times \mbox{to_multiple}
-\end{align}
+$$
 
 ```{r emaillogmodel1}
 glm(spam ~ to_multiple, data = email, family = "binomial") %>% tidy() %>%
@@ -1630,9 +1565,15 @@ Adding more variables to the model may help with both the SPAM and not-SPAM pred
 
 The larger model uses `to_multiple`, `attach`, `winner`, `format`, `re_subj`, `exclaim_mess`, and `number` as the set of seven predictor variables, see the complete dataset (not cross validated) model output in Table \@ref(tab:emaillogmodel2).
 The logistic regression model can be written as (where $\hat{p}$ is the estimated probability of being a SPAM email message):
-\begin{align}
-\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -0.34 - 2.56\times \mbox{to_multiple} + 0.20 \times \mbox{attach} + 1.73 \times \mbox{winner}_{yes} - 1.28 \times \mbox{format} - 2.86 \times \mbox{re_subj} + 0 \times \mbox{exclaim_mess} - 1.07 \times \mbox{number}_{small} - 0.42 \times \mbox{number}_{big}
-\end{align}
+
+$$
+\begin{align*}
+\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) = -0.34 &- 2.56 \times \texttt{to_multiple} + 0.20 \times \texttt{attach} \\
+&+ 1.73 \times \texttt{winner}_{yes} - 1.28 \times \texttt{format} \\
+&- 2.86 \times \texttt{re_subj} + 0 \times \texttt{exclaim_mess} \\
+&- 1.07 \times \texttt{number}_{small} - 0.42 \times \texttt{number}_{big}
+\end{align*}
+$$
 
 ```{r emaillogmodel2}
 glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email, family = "binomial") %>% tidy() %>%
@@ -1686,11 +1627,9 @@ logCV2 %>%
   kable_styling(full_width = FALSE)
 ```
 
-
 Somewhat expected, the larger model (see Table \@ref(tab:email-spam2)) was able to capture more nuance in the emails which lead to better predictions.
 However, it is not true that adding variables will always lead to better predictions, as correlated or noise variables may dampen the signal from those variables which truly predict the SPAM status.
 We encourage you to learn more about multiple variable models and cross validation in your future exploration of statistical topics.
-
 
 ### Exercises {#inference-logistic-regression-exercises}
 
@@ -1700,15 +1639,24 @@ Exercises for this section are under construction.
 
 ## Chapter review {#chp8-review}
 
-Throughout the text, we have presented a modern view to introduction to statistics.  Early we presented graphical techniques which communicated relationships across multiple variables.  We also used modeling to formalize the relationships.  Many chapters were dedicated to inferential methods which allowed claims about the population to be made based on samples of data.  Not only did we present the mathematical model for each of the inferential techniques, but when appropriate, we also presented bootstrapping and permutation methods.  In Chapter \@ref{inference-reg} we brought many of the ideas together by considering inferential claims on models which include many variables.  
+Throughout the text, we have presented a modern view to introduction to statistics.
+Early we presented graphical techniques which communicated relationships across multiple variables.
+We also used modeling to formalize the relationships.
+Many chapters were dedicated to inferential methods which allowed claims about the population to be made based on samples of data.
+Not only did we present the mathematical model for each of the inferential techniques, but when appropriate, we also presented bootstrapping and permutation methods.
+In Chapter \@ref{inference-reg} we brought many of the ideas together by considering inferential claims on models which include many variables.
 
-As you might guess, this text has only scratched the surface of the world of statistical analyses that can be applied to different datasets.  In particular, to do justice to the topic, the linear models and generalized linear models we have introduced can each be covered with their own course or book.  Hierarchical models, alternative methods for fitting parameters (e.g., Ridge Regression or LASSO), and advanced computational methods applied to models (e.g., permuting the response variable? one explanatory variable? all the explanatory variables?) are all beyond the scope of this book.  However, your successful understanding of the ideas we have covered has set you up perfectly to move on to a higher level of statistical modeling and inference.  Enjoy!
+As you might guess, this text has only scratched the surface of the world of statistical analyses that can be applied to different datasets.
+In particular, to do justice to the topic, the linear models and generalized linear models we have introduced can each be covered with their own course or book.
+Hierarchical models, alternative methods for fitting parameters (e.g., Ridge Regression or LASSO), and advanced computational methods applied to models (e.g., permuting the response variable? one explanatory variable? all the explanatory variables?) are all beyond the scope of this book.
+However, your successful understanding of the ideas we have covered has set you up perfectly to move on to a higher level of statistical modeling and inference.
+Enjoy!
 
 ### Terms
 
-We introduced the following terms in the chapter. 
+We introduced the following terms in the chapter.
 If you're not sure what some of these terms mean, we recommend you go back in the text and review their definitions.
-We are purposefully presenting them in alphabetical order, instead of in order of appearance, so they will be a little more challenging to locate. 
+We are purposefully presenting them in alphabetical order, instead of in order of appearance, so they will be a little more challenging to locate.
 However you should be able to easily spot them as **bolded text**.
 
 ```{r eval=FALSE}
@@ -1722,15 +1670,13 @@ Exercises for this section are under construction.
 :::
 
 ::: {.sectionexercise}
-
 ```{r intro, child="08-exercises/08-05-chapter-review.Rmd", eval=FALSE}
 ```
-
 :::
 
 ### Interactive R tutorials
 
-Navigate the concepts you've learned in this chapter in R using the following self-paced tutorials. 
+Navigate the concepts you've learned in this chapter in R using the following self-paced tutorials.
 All you need is your browser to get started!
 
 ::: {.alltutorials}
