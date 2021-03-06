@@ -34,13 +34,22 @@ ggplot(target, aes(x = x, y = y)) +
 
 Linear regression is the statistical method for fitting a line to data where the relationship between two variables, $x$ and $y,$ can be modeled by a straight line with some error:
 
-$$ y = \beta_0 + \beta_1x + \varepsilon$$
+$$ y = b_0 + b_1 \ x + e$$
 
-The values $\beta_0$ and $\beta_1$ represent the model's parameters ($\beta$ is the Greek letter *beta*), and the error is represented by $\varepsilon$ (the Greek letter *epsilon*).
-The parameters are estimated using data, and we write their point estimates as $b_0$ and $b_1.$ When we use $x$ to predict $y,$ we usually call $x$ the explanatory or **predictor** variable, and we call $y$ the response; we also often drop the $\epsilon$ term when writing down the model since our main focus is often on the prediction of the average outcome.
+The values $b_0$ and $b_1$ represent the model's intercept and slope, respectively, and the error is represented by $e$.
+These values are calculated based on the data, i.e. they are sample statistics.
+If the observed data is a random sample from a target population that we are interested in making inferences about, these values are considered to be point estimates for the population parameters $\beta_0$ and $\beta_1$.
+We will discuss how to make inferences about parameters of a linear model based on sample statistics in Chapter \@ref(inference-reg).
+
+::: {.{.{.{.{.{#.pronunciation}}}}}}
+The Greek letter $\beta$ is pronounced *beta*, listen to the pronunciation [here](https://youtu.be/PStgY5AcEIw?t=7).
+:::
+
+When we use $x$ to predict $y,$ we usually call $x$ the **predictor** variable and we call $y$ the **outcome**.
+We also often drop the $e$ term when writing down the model since our main focus is often on the prediction of the average outcome.
 
 ```{r include=FALSE}
-terms_chp_3 <- c("predictor")
+terms_chp_3 <- c("predictor", "outcome")
 ```
 
 It is rare for all of the data to fall perfectly on a straight line.
@@ -217,7 +226,7 @@ ggplot(possum, aes(x = total_l, y = head_l)) +
 ```
 
 ::: {.important}
-**Residual: Difference between observed and expected.** The residual of the $i^{th}$ observation $(x_i, y_i)$ is the difference of the observed response ($y_i$) and the response we would predict based on the model fit ($\hat{y}_i$):
+**Residual: Difference between observed and expected.** The residual of the $i^{th}$ observation $(x_i, y_i)$ is the difference of the observed outcome ($y_i$) and the outcome we would predict based on the model fit ($\hat{y}_i$):
 
 $$e_i = y_i - \hat{y}_i$$
 
@@ -260,7 +269,7 @@ Compute the residuals for the observation marked by a green diamond, $(85.0, 98.
 
 Residuals are helpful in evaluating how well a linear model fits a data set.
 We often display them in a scatterplot such as the one shown in Figure \@ref(fig:scattHeadLTotalLResidualPlot) for the regression line in Figure \@ref(fig:scattHeadLTotalLLine-highlighted).
-The residuals are plotted with their predicted response variable value as the horizontal coordinate, and the vertical coordinate as the residual.
+The residuals are plotted with their predicted outcome variable value as the horizontal coordinate, and the vertical coordinate as the residual.
 For instance, the point $(85.0, 98.6)$ (marked by the green diamond) had a predicted value of 91.4 mm and had a residual of 7.45 mm, so in the residual plot it is placed at $(91.4, 7.45).$ Creating a residual plot is sort of like tipping the scatterplot over so the regression line is horizontal.
 
 ```{r scattHeadLTotalLResidualPlot, fig.cap = "Residual plot for the model predicting head length from total length for brushtail possums."}
@@ -638,7 +647,7 @@ The first two reasons are largely for tradition and convenience; the third and f
 
 ### Finding and interpreting the least squares line
 
-For the Elmhurst data, we could write the equation of the least squares regression line as $$\widehat{aid} = \beta_0 + \beta_{1}\times \textit{family_income}$$
+For the Elmhurst data, we could write the equation of the least squares regression line as $$\widehat{\texttt{aid}} = \beta_0 + \beta_{1}\times \texttt{family_income}$$
 
 Here the equation is set up to predict gift aid based on a student's family income, which would be useful to students considering Elmhurst.
 These two values, $\beta_0$ and $\beta_1,$ are the parameters of the regression line.
@@ -700,7 +709,7 @@ In other applications, the intercept may have little or no practical value if th
 :::
 
 ::: {.important}
-**Interpreting parameters estimated by least squares.** The slope describes the estimated difference in the predicted $y$ variable if the explanatory variable $x$ for a case happened to be one unit larger.
+**Interpreting parameters estimated by least squares.** The slope describes the estimated difference in the predicted $y$ variable if the predictor variable $x$ for a case happened to be one unit larger.
 The intercept describes the average outcome of $y$ if $x=0$ *and* the linear model is valid all the way to $x=0$ (values of $x=0$ are not observed or relevant in many applications).
 :::
 
@@ -713,9 +722,9 @@ Calculating the values by hand leverages two properties of the least squares lin
 
 $$b_1 = \frac{s_y}{s_x} r $$
 
-where $r$ is the correlation between the two variables, and $s_x$ and $s_y$ are the sample standard deviations of the explanatory variable and response, respectively.
+where $r$ is the correlation between the two variables, and $s_x$ and $s_y$ are the sample standard deviations of the predictor and outcome, respectively.
 
-2.  If $\bar{x}$ is the sample mean of the explanatory variable and $\bar{y}$ is the sample mean of the vertical variable, then the point $(\bar{x}, \bar{y})$ falls on the least squares line.
+2.  If $\bar{x}$ is the sample mean of the predictor variable and $\bar{y}$ is the sample mean of the outcome variable, then the point $(\bar{x}, \bar{y})$ falls on the least squares line.
 
 Table \@ref(tab:summaryStatsElmhurstRegr) shows the sample means for the family income and gift aid as \$101,780 and \$19,940, respectively.
 We could plot the point $(102, 19.9)$ on Figure \@ref(fig:elmhurstScatterWLine) to verify it falls on the least squares line (the solid line).
@@ -772,18 +781,20 @@ Using the point (102, 19.9) from the sample means and the slope estimate $b_1 = 
 
 Apply the point-slope equation using $(102, 19.9)$ and the slope $b_1 = -0.0431$:
 
-$$\begin{aligned}
+$$
+\begin{align*}
 y - y_0  &= b_1 (x - x_0) \\
 y - 19.9 &= -0.0431(x - 102)
-\end{aligned}$$
+\end{align*}
+$$
 
 Expanding the right side and then adding 19.9 to each side, the equation simplifies:
 
-$$\begin{aligned}
-\widehat{aid} = 24.3 - 0.0431 \times \textit{family_income}
-\end{aligned}$$
+$$
+\widehat{\texttt{aid}} = 24.3 - 0.0431 \times \texttt{family_income}
+$$
 
-Here we have replaced $y$ with $\widehat{aid}$ and $x$ with *family_income* to put the equation in context.
+Here we have replaced $y$ with $\widehat{\texttt{aid}}$ and $x$ with $\texttt{family_income}$ to put the equation in context.
 The final least squares equation should always include a "hat" on the variable being predicted, whether it is a generic $``y"$ or a named variable like $``aid"$.
 :::
 
@@ -818,7 +829,7 @@ The truth is almost always much more complex than a simple line.
 For example, we do not know how the data outside of our limited window will behave.
 
 ::: {.workedexample}
-Use the model $\widehat{aid} = 24.3 - 0.0431 \times \textit{family_income}$ to estimate the aid of another freshman student whose family had income of \$1 million.
+Use the model $\widehat{\texttt{aid}} = 24.3 - 0.0431 \times \texttt{family_income}$ to estimate the aid of another freshman student whose family had income of \$1 million.
 
 ------------------------------------------------------------------------
 
@@ -848,24 +859,24 @@ If provided with a linear model, we might like to describe how closely the data 
 terms_chp_3 <- c(terms_chp_3, "R-squared")
 ```
 
-The $R^2$ of a linear model describes the amount of variation in the response variable that is explained by the least squares line.
+The $R^2$ of a linear model describes the amount of variation in the outcome variable that is explained by the least squares line.
 For example, consider the Elmhurst data, shown in Figure \@ref(fig:elmhurstScatterWLine).
-The variance of the response variable, aid received, is about $s_{aid}^2 \approx 29.8$ million (calculated from the data, some of which is shown in Table \@ref(tab:elmhurst-data)).
+The variance of the outcome variable, aid received, is about $s_{aid}^2 \approx 29.8$ million (calculated from the data, some of which is shown in Table \@ref(tab:elmhurst-data)).
 However, if we apply our least squares line, then this model reduces our uncertainty in predicting aid using a student's family income.
 The variability in the residuals describes how much variation remains after using the model: $s_{_{RES}}^2 \approx 22.4$ million.
 In short, there was a reduction of $$\frac{s_{aid}^2 - s_{_{RES}}^2}{s_{aid}^2}
   = \frac{29800 - 22400}{29800}
   = \frac{7500}{29800}
-  \approx 0.25,$$ or about 25%, of the response variable's variation by using information about family income for predicting aid using a linear model.
+  \approx 0.25,$$ or about 25%, of the outcome variable's variation by using information about family income for predicting aid using a linear model.
 It turns out that $R^2$ corresponds exactly to the squared value of the correlation:
 
 $$r = -0.499 \rightarrow R^2 = 0.25$$
 
 ::: {.guidedpractice}
-If a linear model has a very strong negative relationship with a correlation of -0.97, how much of the variation in the response is explained by the explanatory variable?[^intro-linear-models-8]
+If a linear model has a very strong negative relationship with a correlation of -0.97, how much of the variation in the outcome is explained by the predictor?[^intro-linear-models-8]
 :::
 
-[^intro-linear-models-8]: About $R^2 = (-0.97)^2 = 0.94$ or 94% of the variation in the response variable is explained by the linear model.
+[^intro-linear-models-8]: About $R^2 = (-0.97)^2 = 0.94$ or 94% of the variation in the outcome variable is explained by the linear model.
 
 $R^2$ is also called the **coefficient of determination**.
 
@@ -874,10 +885,10 @@ terms_chp_3 <- c(terms_chp_3, "coefficient of determination")
 ```
 
 ::: {.important}
-**Coefficient of determination: proportion of variability in the response variable explained by the model.**
+**Coefficient of determination: proportion of variability in the outcome variable explained by the model.**
 
 Since $r$ is always between -1 and 1, $R^2$ will always be between 0 and 1.
-This statistic is called the **coefficient of determination**, and it measures the proportion of variation in the response variable, $y,$ that can be explained by the linear model with predictor $x.$
+This statistic is called the **coefficient of determination**, and it measures the proportion of variation in the outcome variable, $y,$ that can be explained by the linear model with predictor $x.$
 :::
 
 More generally, $R^2$ can be calculated as a ratio of a measure of variability around the line divided by a measure of total variability.
@@ -964,7 +975,7 @@ To incorporate the game condition variable into a regression equation, we must c
 We will do so using an **indicator variable** called `condnew`, which takes value 1 when the game is new and 0 when the game is used.
 Using this indicator variable, the linear model may be written as
 
-$$\widehat{price} = b_0 + b_1 \times condnew$$
+$$\widehat{\texttt{price}} = b_0 + b_1 \times \texttt{condnew}$$
 
 The parameter estimates are given in Table \@ref(tab:marioKartNewUsedRegrSummary).
 
@@ -990,7 +1001,7 @@ m_total_pr_cond_tidy %>%
 
 Using values from Table \@ref(tab:marioKartNewUsedRegrSummary), the model equation can be summarized as
 
-$$\widehat{price} = `r m_total_pr_cond_int` + 10.90 \times condnew$$
+$$\widehat{\texttt{price}} = `r m_total_pr_cond_int` + 10.90 \times \texttt{condnew}$$
 
 ::: {.workedexample}
 Interpret the two parameters estimated in the model for the price of Mario Kart in eBay auctions.
@@ -1006,11 +1017,11 @@ The slope indicates that, on average, new games sell for about \$10.90 more than
 **Interpreting model estimates for categorical predictors.**
 
 The estimated intercept is the value of the response variable for the first category (i.e., the category corresponding to an indicator value of 0).
-The estimated slope is the average change in the response variable between the two categories.
+The estimated slope is the average change in the outcome variable between the two categories.
 :::
 
 Note that, fundamentally, the intercept and slope interpretations don't change when modeling categorical variables with two levels.
-However, when the explanatory variable is binary, the coefficient estimates ($b_0$ and $b_1$) are directly interpretable with respect to the dataset at hand.
+However, when the predictor variable is binary, the coefficient estimates ($b_0$ and $b_1$) are directly interpretable with respect to the dataset at hand.
 
 We'll elaborate further on modeling categorical predictors in Chapter \@ref(multi-logistic-models), where we examine the influence of many predictor variables simultaneously using multiple regression.
 
@@ -1031,7 +1042,7 @@ These points are especially important because they can have a strong influence o
 
 ::: {.workedexample}
 There are three plots shown in Figure \@ref(fig:outlierPlots1) along with the corresponding least squares line and residual plots.
-For each scatterplot and residual plot pair, identify the outliers and note how they influence the least squares line.
+For each scatterplot and residual plot pair, identify the outliers and note how they influence the least squares line.
 Recall that an outlier is any point that doesn't appear to belong with the vast majority of the other points.
 
 ------------------------------------------------------------------------
