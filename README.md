@@ -131,6 +131,7 @@ Preliminary edition of Introduction to Modern Statistics is now complete and can
 
 We're currently in the process of finalizing the first edition of Introduction to Modern Statistics.
 It will be available Summer 2021.
+In the meantime, you can follow along with updates to the first edition [here](https://openintro-ims-1e.netlify.app/) however we do not recommend using the in progress version for teaching while it's being updated as we might move around sections content and exercises, which might be unexpected for you and your students.
 
 ------------------------------------------------------------------------
 
