@@ -1,0 +1,280 @@
+# Applications: Data {#data-applications}
+
+## Case study: Passwords {#case-study-passwords}
+
+Stop for a second and think about how many passwords you've used so far today.
+You've probably used one to unlock your phone, one to check email, and probably at least one to log on to a social media account.
+Made a debit purchase?
+You've probably entered a password there too.
+
+If you're reading this book, and particularly if you're reading it online, chances are you have had to create a password once or twice in your life.
+And if you are diligent about your safety and privacy, you've probably chosen passwords that would be hard for others to guess, or *crack*.
+
+In this case study we introduce a dataset on passwords.
+The goal of the case study is to walk you through what a data scientist does when they first get a hold of a dataset as well as to provide some "foreshadowing" of concepts and techniques we'll introduce in the next few chapters on exploratory data analysis.
+
+::: {.data}
+The data can be found in the [tidytuesdayR](https://thebioengineer.github.io/tidytuesdayR/) package: [`passwords`](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-01-14/readme.md).
+:::
+
+Table \@ref(tab:passwords-df-head) shows the first ten rows from the dataset, which are the ten most common passwords.
+Perhaps unsurprisingly, "password" tops the list, followed by "123456".
+
+```{r passwords-df-head}
+# https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-14/passwords.csv
+passwords <- readr::read_csv("data/passwords.csv")
+passwords <- passwords %>%
+  select(-font_size, -rank_alt)  %>%
+  filter(!is.na(category)) %>%
+  mutate(time_unit = fct_relevel(time_unit, "seconds", "minutes", "hours", "days", "weeks", "months", "years"))
+
+passwords %>%
+  slice_head(n = 10) %>%
+  kable(caption = "Top ten rows of the `passwords` dataset.",
+        row.names = FALSE) %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = "striped")  
+```
+
+When you encounter a new dataset, taking a peek at the first few rows we we did in Table \@ref(tab:passwords-df-head) is almost instinctual.
+It can often be helpful to take a look at the last few rows of the data as well to get a sense of the size of the data as well as potentially discover any characteristics that may not be apparent in the top few rows.
+Table \@ref(tab:passwords-df-tail) shows the bottom ten rows of the passwords dataset, which reveals that we are looking at a dataset of 500 passwords.
+
+```{r passwords-df-tail}
+passwords %>%
+  slice_tail(n = 10) %>%
+  kable(caption = "Bottom ten rows of the `passwords` dataset.",
+        row.names = FALSE) %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = "striped")  
+```
+
+At this stage it's also useful to think about how these data were collected, as that will inform the scope of any inference you can make based on your analysis of the data.
+
+::: {.guidedpractice}
+Do these data come from an observational study or an experiment?[^data-applications-1]
+:::
+
+[^data-applications-1]: This is an observational study.
+    Researchers collected data on existing passwords in use and identified most common ones to put together this dataset.
+
+::: {.guidedpractice}
+There are `r nrow(passwords)` rows and `r ncol(passwords)` in the dataset.
+What does each row and each column represent?[^data-applications-2]
+:::
+
+[^data-applications-2]: Each row represents a password and each column represents a variable which contains information on each password.
+
+Once you've identified the rows and columns, it's useful to review the data dictionary to learn about what each column in the dataset represents.
+This is provided in Table \@ref(tab:passwords-var-def).
+
+```{r passwords-var-def}
+passwords_var_def <- tribble(
+  ~variable,   ~description,
+  "rank",      "Popularity in the database of released passwords.",
+  "password",  "Actual text of the password.",
+  "category",  "Category password falls into.",
+  "value",     "Time to crack by online guessing.",
+  "time_unit", "Time unit to match with value.",
+  "offline_crack_sec",  "Time to crack offline in seconds.",
+  "strength",  "Strength of password, relative to only to passwords in this dataset. Lower values indicate weaker passwords."
+)
+
+passwords_var_def %>%
+  mutate(variable = cell_spec(variable, monospace = TRUE)) %>%
+  kable(escape = FALSE, caption = "Variables and their descriptions for the `passwords` data set.") %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = "striped")
+```
+
+We now have a better sense of what each column represents, but we don't yet know much about the characteristics of each of the variables.
+
+::: {.workedexample}
+Determine whether each variable in the passwords dataset is numerical or categorical.
+For numerical variables, further classify them as continuous or discrete.
+For categorical variables, determine if the variable is ordinal.
+
+------------------------------------------------------------------------
+
+The numerical variables in the dataset are `rank` (discrete), `value` (continuous), and `offline_crack_sec` (continuous).
+The categorical variables are `password`, `time_unit`.
+The strength variable is trickier to classify -- we can think of it as discrete numerical or as an ordinal variable as it takes on numerical values, however it's used to categorize the passwords on an ordinal scale.
+One way of approaching this is thinking about whether the values the variable takes vary linearly, e.g. is the difference in strength between passwords with strength levels 8 and 9 the same as the difference with those with strength levels 9 and 10.
+If this is not necessarily the case, we would classify the variable as ordinal.
+Determining the classification of this variable requires understanding how `strength` values were determined, which is a very typical workflow for working with data.
+Sometimes the data dictionary (presented in Table \@ref(tab:passwords-var-def) isn't sufficient, and we need to go back to the data source and try to understand the data better before we can proceed with the analysis meaningfully.
+:::
+
+Next, let's try to get to know each variable a little bit better.
+For categorical variables, this involves figuring out what their levels are and how commonly represented they are in the data.
+Figure \@ref(fig:passwords-cat) shows the distributions of the categorical variables in this dataset.
+We can see that password strengths of 0-10 are more common than higher values.
+The most common password category is name (e.g. michael, jennifer, jordan, etc.) and the least common is food (e.g. pepper, cheese, coffee, etc.).
+Many passwords can be cracked in the matter of days by online cracking with some taking as little as seconds and some as long as years to break.
+Each of these visualizations is a bar plot, which you will learn more about in Chapter \@ref(explore-categorical).
+
+```{r passwords-cat, fig.cap = "Distributions of the categorical variables in the `passwords` dataset. Plot A shows the distribution of password strengths, Plot B password categories, and Plot C length of time it takes to crack the passwords by online guessing.", out.width = "100%", fig.asp = 1}
+p_category <- passwords %>%
+  count(category, sort = TRUE) %>%
+  mutate(category = fct_reorder(category, n)) %>%
+  ggplot(aes(y = category, x = n, fill = fct_rev(category))) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    x = "Frequency", 
+    y = NULL, 
+    title = "Categories"
+    ) +
+  theme(plot.title.position = "plot")
+
+p_time_unit <- passwords %>%
+  count(time_unit) %>%
+  ggplot(aes(y = time_unit, x = n)) +
+  geom_col(show.legend = FALSE, fill = COL["blue", "full"]) +
+  labs(
+    x = "Frequency", 
+    y = NULL, 
+    title = "Length of time to crack",
+    subtitle = "By online guessing"
+    ) +
+  theme(plot.title.position = "plot")
+
+p_strength <- passwords %>%
+  ggplot(aes(y = strength)) +
+  geom_histogram(binwidth = 1, show.legend = FALSE, fill = COL["blue", "full"]) +
+  scale_y_continuous(breaks = seq(0, 50, 5), trans = "reverse") +
+  labs(
+    x = "Frequency",
+    y = NULL,
+    title = "Strengths"
+  ) +
+  theme(plot.title.position = "plot")
+
+patchwork <- p_strength | (p_category / p_time_unit)
+
+patchwork + 
+  plot_annotation(
+    title = "Strengths, categories, and cracking time\nof 500 most common passwords",
+    tag_levels = "A"
+    ) &
+  theme(plot.tag = element_text(size = 12, color = "darkgray"))
+```
+
+Similarly, we can examine the distributions of the numerical variables as well.
+We already know that rank ranges between 1 and 500 in this dataset, based on Table \@ref(tab:passwords-df-head) and Table \@ref(tab:passwords-df-tail).
+The value variable is slightly more complicated to consider since the numerical values in that column are meaningless without the time unit that accompanies them.
+Table \@ref(tab:passwords-online-crack-summary) shows the minimum and maximum amount of time it takes to crack a password by online guessing.
+For example there are 11 passwords in the dataset that can be broken in a matter of seconds, and each of them take 11.11 seconds to break, since the minimum and the maximum of observations in this group are exactly equal to this value.
+And there are 65 passwords that take years to break, ranging from 2.56 years to 92.27 years.
+
+```{r passwords-online-crack-summary}
+passwords %>%
+  group_by(time_unit) %>%
+  summarise(
+    n   = n(),
+    min = min(value),
+    max = max(value)
+  ) %>%
+  kable(caption = "Minimum and maximum amount of time it takes to crack a password by online guessing as well as the number of observations that fall into each time unit category.") %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = "striped")
+```
+
+Even though passwords that take a large number of years to crack can seem like good options (see Table \@ref(tab:passwords-long-crack) for a list of them), now that you've seen them here (and the fact that they are in a dataset of 500 most common passwords), you should not use them as secure passwords!
+
+```{r passwords-long-crack}
+passwords %>% 
+  filter(value == 92.27) %>%
+  kable(caption = "Passwords that take the longest amount of time to crack by online guessing.",
+        row.names = FALSE) %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = "striped")  
+```
+
+The last numerical variable in the dataset is `offline_crack_sec`.
+Figure \@ref(fig:password-offline-crack-hist) shows the distribution of this variable, which reveals that all of these passwords can be cracked offline in under 30 seconds, with a large number of them being crackable in just a few seconds.
+
+```{r password-offline-crack-hist, fig.cap = "Histogram of the length of time it takes to crack passwords offline."}
+ggplot(passwords, aes(x = offline_crack_sec)) +
+  geom_histogram(binwidth = 1, fill = COL["blue", "full"]) +
+  labs(
+    x = "Length of time (seconds)",
+    y = "Frequency",
+    title = "Length of time to crack passwords offline"
+  )
+```
+
+So far we examined the distributions of each individual variable, but it would be more interesting to explore relationships between multiple variables.
+Figure \@ref(fig:password-strength-rank-category) shows the relationship between rank and strength of passwords by category, where more common passwords (those with higher rank) are plotted higher on the y-axis than those that are less common in this dataset.
+The stronger the password, the larger text it's represented with on the plot.
+While this visualization reveals some passwords that are less common, and stronger than others, we should reiterate that you should not use any of these passwords.
+And if you already do, it's time to go change it!
+
+```{r password-strength-rank-category, fig.cap = "Rank vs. strength of 500 most common passwords by category.", out.width = "100%", fig.asp = 1.2}
+passwords %>%
+  mutate(category = fct_relevel(category, "name", "cool-macho", "simple-alphanumeric", "fluffy", "sport", "nerdy-pop", "animal", "password-related", "rebellious-rude", "food")) %>%
+  ggplot(aes(x = strength, y = rank, color = category)) +
+  geom_text(aes(label = password, size = strength), 
+            check_overlap = TRUE, show.legend = FALSE) +
+  facet_wrap(vars(category), ncol = 3) +
+  coord_cartesian(ylim = c(525, -10)) +
+  scale_y_continuous(breaks = c(1, 100, 200, 300, 400, 500), minor_breaks = NULL, trans = "reverse") +
+  labs(
+    x = "Strength of password",
+    y = "Rank of popularity",
+    title = "500 most common passwords by category",
+    caption = "Data: Information is beautiful, via TidyTuesday"
+  )
+```
+
+In this case study, we introduced you to the very first steps a data scientist takes when they start working with a new dataset.
+In the next few chapters we will introduce exploratory data analysis and you'll learn more about the various types of data visualizations and summary statistics you can make to get to know your data better.
+
+Before you move on, we encourage you to think about whether the following questions can be answered with this dataset, and if yes, how you might go about answering them.
+It's okay if your answer is "I'm not sure", we simply want to get your exploratory juices flowing to prime you for what's to come!
+
+1.  What characteristics are associated with a strong vs. a weak password?
+2.  Do more popular passwords take shorter or longer to crack compared to less popular passwords?
+3.  Are passwords that start with letters or numbers more common among the list of top 500 most common passwords?
+
+## Interactive R tutorials {#data-tutorials}
+
+Navigate the concepts you've learned in this chapter in R using the following self-paced tutorials.
+All you need is your browser to get started!
+
+::: {.todo}
+Update tutorial links
+:::
+
+::: {.alltutorials}
+[Tutorial 1: Getting Started with Data](https://openintrostat.github.io/ims-tutorials/01-getting-started-with-data/)
+:::
+
+::: {.singletutorial}
+[Tutorial 1 - Lesson 1: Language of data](https://openintro.shinyapps.io/ims-01-getting-started-with-data-01/)
+:::
+
+::: {.singletutorial}
+[Tutorial 1 - Lesson 2: Types of studies](https://openintro.shinyapps.io/ims-01-getting-started-with-data-02/)
+:::
+
+::: {.singletutorial}
+[Tutorial 1 - Lesson 3: Sampling strategies and Experimental design](https://openintro.shinyapps.io/ims-01-getting-started-with-data-03/)
+:::
+
+::: {.singletutorial}
+[Tutorial 1 - Lesson 4: Case study](https://openintro.shinyapps.io/ims-01-getting-started-with-data-04/)
+:::
+
+You can also access the full list of tutorials supporting this book [here](https://openintrostat.github.io/ims-tutorials/).
+
+## R labs {#data-labs}
+
+Further apply the concepts you've learned in this chapter in R with computational labs that walk you through a data analysis case study.
+
+::: {.singlelab}
+[Intro to R - Birth rates](http://openintrostat.github.io/oilabs-tidy/01_intro_to_r/intro_to_r.html)
+:::
+
+::: {.alllabs}
+[Full list of labs supporting OpenIntro::Introduction to Modern Statistics](http://openintrostat.github.io/oilabs-tidy/)
+:::

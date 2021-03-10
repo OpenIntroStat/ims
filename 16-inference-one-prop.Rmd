@@ -1,0 +1,509 @@
+# (PART) Statistical inference {.unnumbered}
+
+# Inference for a single proportion {#inference-one-prop}
+
+::: {.chapterintro}
+Focusing now on statistical inference for categorical data, we will revisit many of the foundational aspects of hypothesis testing from Chapter \@ref(intro-stat-inference).
+
+The three data structures we detail are one binary variable, summarized using a single proportion; two binary variables, summarized using a difference of two proportions; and two categorical variables, summarized using a two-way table.
+When appropriate, each of the data structures will be analyzed using the three methods from Chapter \@ref(intro-stat-inference): randomization test, bootstrapping, and mathematical models.
+
+As we build on the inferential ideas, we will visit new foundational concepts in statistical inference.
+For example, we will cover the conditions for when a normal model is appropriate; the two different error rates in hypothesis testing; and choosing the confidence level for a confidence interval.
+:::
+
+We encountered inference methods for a single proportion in Chapter \@ref(intro-stat-inference), exploring point estimates, confidence intervals, and hypothesis tests.
+In this section, we'll do a review of these topics and also how to choose an appropriate sample size when collecting data for single proportion contexts.
+
+Note that there is only one variable being measured in a study which focuses on one proportion.
+For each observational unit, the single variable is measured as either a success or failure (e.g., "surgical complication" vs. "no surgical complication").
+Because the nature of the research question at hand focuses on only a single variable, there is not a way to randomize the variable across a different (explanatory) variable.
+For this reason, we will not use randomization as an analysis tool when focusing on a single proportion.
+Instead, we will apply bootstrapping techniques to test a given hypothesis, and we will also revisit the associated mathematical models.
+
+## Bootstrap test for $H_0: p = p_0$ {#one-prop-null-boot}
+
+The bootstrap simulation concept when $H_0$ is true is similar to the ideas used in the case studies presented in Section \@ref(boot-ci) where we bootstrapped without an assumption about $H_0.$ Because we will be testing a hypothesized value of $p$ (referred to as $p_0),$ the bootstrap simulation for hypothesis testing has a fantastic advantage that it can be used for any sample size (a huge benefit for small samples, a nice alternative for large samples).
+
+We expand on the medical consultant example, see Section \@ref(sec-med-consult), where instead of finding an interval estimate for the true complication rate, we work to test a specific research claim.
+
+### Observed data
+
+Recall the set-up for the example:
+
+People providing an organ for donation sometimes seek the help of a special "medical consultant".
+These consultants assist the patient in all aspects of the surgery, with the goal of reducing the possibility of complications during the medical procedure and recovery.
+Patients might choose a consultant based in part on the historical complication rate of the consultant's clients.
+One consultant tried to attract patients by noting the average complication rate for liver donor surgeries in the US is about 10%, but her clients have only had 3 complications in the 62 liver donor surgeries she has facilitated.
+She claims this is strong evidence that her work meaningfully contributes to reducing complications (and therefore she should be hired!).
+
+::: {.workedexample}
+Using the data, is it possible to assess the consultant's claim that her complication rate is less than 10%?
+
+------------------------------------------------------------------------
+
+No.
+The claim is that there is a causal connection, but the data are observational.
+Patients who hire this medical consultant may have lower complication rates for other reasons.
+
+While it is not possible to assess this causal claim, it is still possible to test for an association using these data.
+For this question we ask, could the low complication rate of $\hat{p} = 0.048$ be due to chance?
+:::
+
+::: {.guidedpractice}
+Write out hypotheses in both plain and statistical language to test for the association between the consultant's work and the true complication rate, $p,$ for the consultant's clients.[^inference-one-prop-1]
+:::
+
+[^inference-one-prop-1]: $H_0:$ There is no association between the consultant's contributions and the clients' complication rate.
+    In statistical language, $p=0.10.$ $H_A:$ Patients who work with the consultant tend to have a complication rate lower than 10%, i.e., $p<0.10.$
+
+Because, as it turns out, the conditions of working with the normal distribution are not met (see Section \@ref(one-prop-norm)), the uncertainty associated with the sample proportion should not be modeled using the normal distribution.
+However, we would still like to assess the hypotheses from the previous Guided Practice in absence of the normal framework.
+To do so, we need to evaluate the possibility of a sample value $(\hat{p})$ as far below the null value, $p_0=0.10$ as what was observed.
+The deviation of the sample value from the hypothesized parameter is usually quantified with a p-value.
+
+The p-value is computed based on the null distribution, which is the distribution of the test statistic if the null hypothesis is true.
+Supposing the null hypothesis is true, we can compute the p-value by identifying the chance of observing a test statistic that favors the alternative hypothesis at least as strongly as the observed test statistic.
+Here we will use a bootstrap simulation to measure the p-value.
+
+### Variability of the statistic
+
+We want to identify the sampling distribution of the test statistic $(\hat{p})$ if the null hypothesis was true.
+In other words, we want to see how the sample proportion changes due to chance alone.
+Then we plan to use this information to decide whether there is enough evidence to reject the null hypothesis.
+
+Under the null hypothesis, 10% of liver donors have complications during or after surgery.
+Suppose this rate was really no different for the consultant's clients (for *all* the consultant's clients, not just the 62 previously measured).
+If this was the case, we could *simulate* 62 clients to get a sample proportion for the complication rate from the null distribution.
+Simulating observations using a hypothesized null parameter value is often called a **parametric bootstrap simulation**\index{parametric bootstrap}.
+
+```{r include=FALSE}
+terms_chp_16 <- c("parametric bootstrap")
+```
+
+Similar to the process described in Section \@ref(boot-ci), each client can be simulated using a bag of marbles with 10% red marbles and 90% white marbles.
+Sampling a marble from the bag (with 10% red marbles) is one way of simulating whether a patient has a complication *if the true complication rate is 10%* for the data.
+If we select 62 marbles and then compute the proportion of patients with complications in the simulation, $\hat{p}_{sim1},$ then the resulting sample proportion is exactly a sample from the null distribution.
+
+An undergraduate student was paid \$2 to complete this simulation.
+There were 5 simulated cases with a complication and 57 simulated cases without a complication, i.e., $\hat{p}_{sim1} = 5/62 = 0.081.$
+
+::: {.workedexample}
+Is this one simulation enough to determine whether or not we should reject the null hypothesis?
+
+------------------------------------------------------------------------
+
+No.
+To assess the hypotheses, we need to see a distribution of many values of $\hat{p}_{sim},$ not just a *single* draw from this sampling distribution.
+:::
+
+### Observed statistic vs. null statistics
+
+One simulation isn't enough to get a sense of the null distribution; many simulation studies are needed.
+Roughly 10,000 seems sufficient.
+However, paying someone to simulate 10,000 studies by hand is a waste of time and money.
+Instead, simulations are typically programmed into a computer, which is much more efficient.
+
+Figure \@ref(fig:nullDistForPHatIfLiverTransplantConsultantIsNotHelpful) shows the results of 10,000 simulated studies.
+The proportions that are equal to or less than $\hat{p}=0.048$ are shaded.
+The shaded areas represent sample proportions under the null distribution that provide at least as much evidence as $\hat{p}$ favoring the alternative hypothesis.
+There were 1222 simulated sample proportions with $\hat{p}_{sim} \leq 0.048.$ We use these to construct the null distribution's left-tail area and find the p-value: \begin{align}
+\text{left tail area }\label{estOfPValueBasedOnSimulatedNullForSingleProportion}
+    &= \frac{\text{Number of observed simulations with }\hat{p}_{sim}\leq\text{ 0.048}}{10000}
+\end{align} Of the 10,000 simulated $\hat{p}_{sim},$ 1222 were equal to or smaller than $\hat{p}.$ Since the hypothesis test is one-sided, the estimated p-value is equal to this tail area: 0.1222.
+
+```{r nullDistForPHatIfLiverTransplantConsultantIsNotHelpful, fig.cap="The null distribution for $\\hat{p},$ created from 10,000 simulated studies. The left tail, representing the p-value for the hypothesis test, contains 12.22% of the simulations.", fig.width=10}
+
+pHat <- rbinom(10^4, 62, 0.1) / 62
+M    <- max(pHat) * 62
+histPlot(pHat,
+         breaks = (-1:(2 * M) + 0.75) / 2 / 62,
+         xlab = expression(hat(p)[sim]*"    "),
+         col = COL[7, 3],
+         ylab = "")
+histPlot(pHat[pHat < 0.05],
+         breaks = (-1:(2 * M) + 0.75) / 2 / 62,
+         col = COL[1],
+         add = TRUE)
+par(las = 0)
+mtext("Number of simulations", 2, 3.3)
+```
+
+::: {.guidedpractice}
+Because the estimated p-value is 0.1222, which is larger than the significance level 0.05, we do not reject the null hypothesis.
+Explain what this means in plain language in the context of the problem.[^inference-one-prop-2]
+:::
+
+[^inference-one-prop-2]: There isn't sufficiently strong evidence to support an association between the consultant's work and fewer surgery complications.
+
+\index{data!medical consultant|)}
+
+::: {.guidedpractice}
+Does the conclusion in the previous Guided Practice imply there is no real association between the surgical consultant's work and the risk of complications?
+Explain.[^inference-one-prop-3]
+:::
+
+[^inference-one-prop-3]: No.
+    It might be that the consultant's work is associated with a reduction but that there isn't enough data to convincingly show this connection.
+
+::: {.important}
+**Null distribution of** $\hat{p}$ with bootstrap simulation
+
+Regardless of the statistical method chosen, the p-value is always derived by analyzing the null distribution of the test statistic.
+The normal model poorly approximates the null distribution for $\hat{p}$ when the success-failure condition is not satisfied.
+As a substitute, we can generate the null distribution using simulated sample proportions and use this distribution to compute the tail area, i.e., the p-value.
+:::
+
+In the previous Guided Practice, the p-value is *estimated*.
+It is not exact because the simulated null distribution itself is not exact, only a close approximation.
+An exact p-value can be generated using the binomial distribution, but that method will not be covered in this text.
+
+## Mathematical model {#one-prop-norm}
+
+### Conditions
+
+In Section \@ref(normalDist), we introduced the normal distribution and showed how it can be used as a mathematical model to describe the variability of a statistic.
+There are conditions under which a sample proportion $\hat{p}$ is well modeled using a normal distribution.
+When the sample observations are independent and the sample size is sufficiently large, the normal model will describe the variability quite well; when the observations violate the conditions, the normal model can be inaccurate
+
+::: {.important}
+**Sampling distribution of** $\hat{p}$
+
+The sampling distribution for $\hat{p}$ based on a sample of size $n$ from a population with a true proportion $p$ is nearly normal when:
+
+1.  The sample's observations are independent, e.g., are from a simple random sample.
+2.  We expected to see at least 10 successes and 10 failures in the sample, i.e., $np\geq10$ and $n(1-p)\geq10.$ This is called the **success-failure condition**.
+
+When these conditions are met, then the sampling distribution of $\hat{p}$ is nearly normal with mean $p$ and standard error of $\hat{p}$ as $SE = \sqrt{\frac{\ \hat{p}(1-\hat{p})\ }{n}}.$
+:::
+
+\index{success-failure condition} \index{standard error (SE)!single proportion}
+
+```{r include=FALSE}
+terms_chp_16 <- c(terms_chp_16, "success-failure condition", "standard error of single proportion")
+```
+
+Typically we don't know the true proportion $p,$ so we substitute some value to check conditions and estimate the standard error.
+For confidence intervals, the sample proportion $\hat{p}$ is used to check the success-failure condition and compute the standard error.
+For hypothesis tests, typically the null value -- that is, the proportion claimed in the null hypothesis -- is used in place of $p.$
+
+The independence condition is a more nuanced requirement.
+When it isn't met, it is important to understand how and why it isn't met.
+For example, there exist no statistical methods available to truly correct the inherent biases of data from a convenience sample.
+On the other hand, if we took a cluster sample (see Section \@ref(samp-methods)), the observations wouldn't be independent, but suitable statistical methods are available for analyzing the data (but they are beyond the scope of even most second or third courses in statistic).
+
+::: {.workedexample}
+In the examples based on large sample theory, we modeled $\hat{p}$ using the normal distribution.
+Why is this not appropriate for the case study on the medical consultant?
+
+------------------------------------------------------------------------
+
+The independence assumption may be reasonable if each of the surgeries is from a different surgical team.
+However, the success-failure condition is not satisfied.
+Under the null hypothesis, we would anticipate seeing $62\times 0.10=6.2$ complications, not the 10 required for the normal approximation.
+:::
+
+While this book is scoped to well-constrained statistical problems, do remember that this is just the first book in what is a large library of statistical methods that are suitable for a very wide range of data and contexts.
+
+### Confidence interval for $p$
+
+\index{point estimate!single proportion}
+
+A confidence interval provides a range of plausible values for the parameter $p,$ and when $\hat{p}$ can be modeled using a normal distribution, the confidence interval for $p$ takes the form $$ \hat{p} \pm z^{\star} \times SE.$$ We have seen $\hat{p}$ to be the sample proportion.
+The value $z^{\star}$ determines the confidence level (previously set to be 1.96) and will be discussed in detail in the examples following.
+The value of the standard error, $SE,$ depends heavily on the sample size.
+
+::: {.important}
+**Standard Error of one proportion,** $\hat{p}$
+
+When the conditions are met so that the distribution of $\hat{p}$ is nearly normal, the **variability** of a single proportion, $\hat{p}$ is well described by:
+
+$$SE(\hat{p}) = \sqrt{\frac{p(1-p)}{n}}$$
+
+Note that we almost never know the true value of $p.$ A more helpful formula to use is:
+
+$$SE(\hat{p}) \approx \sqrt{\frac{(\mbox{best guess of }p)(1 - \mbox{best guess of }p)}{n}}$$
+
+For hypothesis testing, we often use $p_0$ as the best guess of $p.$ For confidence intervals, we typically use $\hat{p}$ as the best guess of $p.$
+:::
+
+\index{data!Payday regulation poll|(}
+
+::: {.guidedpractice}
+Consider taking many polls of registered voters (i.e., random samples) of size 300 asking them if they support legalized marijuana.
+It is suspected that about 2/3 of all voters support legalized marijuana.
+To understand how the sample proportion $(\hat{p})$ would vary across the samples, calculate the standard error of $\hat{p}.$[^inference-one-prop-4]
+:::
+
+[^inference-one-prop-4]: Because the $p$ is unknown but expected to be around 2/3, we will use 2/3 in place of $p$ in the formula for the standard error.\
+    $SE = \sqrt{\frac{p(1-p)}{n}} \approx \sqrt{\frac{2/3 (1 - 2/3)} {300}} = 0.027.$
+
+#### Variability of the statistic {.unnumbered}
+
+::: {.workedexample}
+A simple random sample of 826 payday loan borrowers was surveyed to better understand their interests around regulation and costs.
+70% of the responses supported new regulations on payday lenders.
+
+1.  Is it reasonable to model the variability of $\hat{p}$ from sample to sample using a normal distribution?
+
+2.  Estimate the standard error of $\hat{p}.$
+
+3.  Construct a 95% confidence interval for $p,$ the proportion of payday borrowers who support increased regulation for payday lenders.
+
+------------------------------------------------------------------------
+
+1.  The data are a random sample, so the observations are independent and representative of the population of interest.
+
+We also must check the success-failure condition, which we do using $\hat{p}$ in place of $p$ when computing a confidence interval: \begin{align*}
+  \text{Support: }
+      n p &
+          \approx 826 \times 0.70
+      = 578\\
+  \text{Not: }
+      n (1 - p) &
+        \approx 826 \times (1 - 0.70)
+      = 248
+  \end{align*} Since both values are at least 10, we can use the normal distribution to model $\hat{p}.$
+
+2.  Because $p$ is unknown and the standard error is for a confidence interval, use $\hat{p}$ in place of $p$ in the formula.
+
+$SE = \sqrt{\frac{p(1-p)}{n}} \approx \sqrt{\frac{0.70 (1 - 0.70)} {826}} = 0.016.$
+
+3.  Using the point estimate 0.70, $z^{\star} = 1.96$ for a 95% confidence interval, and the standard error $SE = 0.016$ from the previous Guided Practice, the confidence interval is $$ \text{point estimate} \ \pm\ z^{\star} \times SE \to 0.70 \ \pm\ 1.96 \times 0.016 \to (0.669, 0.731)$$ We are 95% confident that the true proportion of payday borrowers who supported regulation at the time of the poll was between 0.669 and 0.731.
+:::
+
+::: {.important}
+**Constructing a confidence interval for a single proportion**
+
+There are three steps to constructing a confidence interval for $p.$
+
+1.  Check independence and the success-failure condition using $\hat{p}.$ If the conditions are met, the sampling distribution of $\hat{p}$ may be well-approximated by the normal model.
+2.  Construct the standard error using $\hat{p}$ in place of $p$ in the standard error formula.
+3.  Apply the general confidence interval formula.
+:::
+
+For additional one-proportion confidence interval examples, see Section \@ref(ConfidenceIntervals).
+
+### Changing the confidence level
+
+\index{confidence interval!confidence level|(}
+
+Suppose we want to consider confidence intervals where the confidence level is somewhat higher than 95%: perhaps we would like a confidence level of 99%.
+Think back to the analogy about trying to catch a fish: if we want to be more sure that we will catch the fish, we should use a wider net.
+To create a 99% confidence level, we must also widen our 95% interval.
+On the other hand, if we want an interval with lower confidence, such as 90%, we could make our original 95% interval slightly slimmer.
+
+The 95% confidence interval structure provides guidance in how to make intervals with new confidence levels.
+Below is a general 95% confidence interval for a point estimate that comes from a nearly normal distribution: \begin{eqnarray}
+\text{point estimate}\ \pm\ 1.96\times SE
+\end{eqnarray} There are three components to this interval: the point estimate, "1.96", and the standard error.
+The choice of $1.96\times SE$ was based on capturing 95% of the data since the estimate is within 1.96 standard errors of the true value about 95% of the time.
+The choice of 1.96 corresponds to a 95% confidence level.
+
+::: {.guidedpractice}
+If $X$ is a normally distributed random variable, how often will $X$ be within 2.58 standard deviations of the mean?[^inference-one-prop-5]
+:::
+
+[^inference-one-prop-5]: This is equivalent to asking how often the $Z$ score will be larger than -2.58 but less than 2.58.
+    (For a picture, see Figure \@ref(fig:choosingZForCI).) To determine this probability, look up -2.58 and 2.58 in the normal probability table (0.0049 and 0.9951).
+    Thus, there is a $0.9951-0.0049 \approx 0.99$ probability that the unobserved random variable $X$ will be within 2.58 standard deviations of the mean.
+
+```{r choosingZForCI, fig.cap="The area between -$z^{\\star}$ and $z^{\\star}$ increases as $|z^{\\star}|$ becomes larger. If the confidence level is 99%, we choose $z^{\\star}$ such that 99% of the normal curve is between -$z^{\\star}$ and $z^{\\star},$ which corresponds to 0.5% in the lower tail and 0.5% in the upper tail: $z^{\\star}=2.58.$", fig.width=10}
+
+par(mar=c(3.3,1,.5,1), mgp=c(2.1,0.6,0))
+X <- rev(seq(-4, 4, 0.025))
+Y <- dt(X, 10) # makes better visual
+plot(X, Y, type='l', xlab='standard deviations from the mean', ylab='', axes=FALSE, xlim=3.3*c(-1,1), ylim=c(0, 0.59), col=COL[6])
+axis(1, at=-3:3) #at=c(-4, -2, 0, 2, 4))
+abline(h=0) #, col='#00000088')
+yMax <- 0.41
+X <- seq(-4, 4, 0.025)
+Y <- dt(X, 10) # makes better visual
+lines(X, Y, col=COL[6])
+
+these <- (X < 2.58 & X > -2.58)
+x <- c(-2.58, X[these], 2.58)
+y <- c(0, dt(X[these], 10), 0)
+polygon(x, y, col=COL[1,3], border='#00000000')
+these <- (X < 1.96 & X > -1.96)
+x <- c(-1.96, X[these], 1.96)
+y <- c(0, dt(X[these], 10), 0)
+polygon(x, y, col=COL[1], border='#00000000')
+
+#x <- 1.96*c(-1,1,1,-1)
+#y <- c(1,1,1.38,1.38)*yMax/3 
+#polygon(x, y, border='#FFFFFF55', col='#FFFFFF77', lwd=7)
+lines(1.96*c(-1,1), rep(yMax,2), lwd=2)
+lines(rep(-1.96,2), c(0,yMax), lty=2, col=COL[6])
+lines(rep( 1.96,2), c(0,yMax), lty=2, col=COL[6])
+text(0, yMax, '95%, extends -1.96 to 1.96', pos=3)
+
+yMax <- 0.53
+#x <- 2.58*c(-1,1,1,-1)
+#y <- c(1,1,1.19,1.19)*2*yMax/3 
+#polygon(x, y, border='#FFFFFF55', col='#FFFFFF77', lwd=7)
+lines(2.58*c(-1,1), rep(yMax,2), lwd=2)
+lines(rep(-2.58,2), c(0,yMax), lty=2, col='#00000055')
+lines(rep( 2.58,2), c(0,yMax), lty=2, col='#00000055')
+text(0, yMax, '99%, extends -2.58 to 2.58', pos=3)
+
+```
+
+\index{confidence interval!confidence level|)}
+
+To create a 99% confidence interval, change 1.96 in the 95% confidence interval formula to be $2.58.$ The previous Guided Practice highlights that 99% of the time a normal random variable will be within 2.58 standard deviations of its mean.
+This approach -- using the Z scores in the normal model to compute confidence levels -- is appropriate when the point estimate is associated with a normal distribution and we can properly compute the standard error.
+Thus, the formula for a 99% confidence interval is:
+
+```{=tex}
+\begin{eqnarray*}
+\text{point estimate}\ \pm\ 2.58\times SE
+\end{eqnarray*}
+```
+The normal approximation is crucial to the precision of the $z^\star$ confidence intervals (in contrast to the bootstrap confidence intervals).
+When the normal model is not a good fit, we will use alternative distributions that better characterize the sampling distribution or we will use bootstrapping procedures.
+
+::: {.guidedpractice}
+Create a 99% confidence interval for the impact of the stent on the risk of stroke using the data from Section \@ref(case-study-stents-strokes).
+The point estimate is 0.090, and the standard error is $SE = 0.028.$ It has been verified for you that the point estimate can reasonably be modeled by a normal distribution.[^inference-one-prop-6]
+:::
+
+[^inference-one-prop-6]: Since the necessary conditions for applying the normal model have already been checked for us, we can go straight to the construction of the confidence interval: $\text{point estimate}\ \pm\ 2.58 \times SE \rightarrow (0.018, 0.162).$ We are 99% confident that implanting a stent in the brain of a patient who is at risk of stroke increases the risk of stroke within 30 days by a rate of 0.018 to 0.162 (assuming the patients are representative of the population).
+
+::: {.important}
+**Mathematical model confidence interval for any confidence level.**
+
+If the point estimate follows the normal model with standard error $SE,$ then a confidence interval for the population parameter is \begin{eqnarray*}
+\text{point estimate}\ \pm\ z^{\star} \times SE
+\end{eqnarray*} where $z^{\star}$ corresponds to the confidence level selected.
+:::
+
+Figure \@ref(fig:choosingZForCI) provides a picture of how to identify $z^{\star}$ based on a confidence level.
+We select $z^{\star}$ so that the area between -$z^{\star}$ and $z^{\star}$ in the normal model corresponds to the confidence level.
+
+::: {.guidedpractice}
+Previously, we found that implanting a stent in the brain of a patient at risk for a stroke *increased* the risk of a stroke.
+The study estimated a 9% increase in the number of patients who had a stroke, and the standard error of this estimate was about $SE = 2.8%.$ Compute a 90% confidence interval for the effect.[^inference-one-prop-7]
+:::
+
+[^inference-one-prop-7]: We must find $z^{\star}$ such that 90% of the distribution falls between -$z^{\star}$ and $z^{\star}$ in the standard normal model, $N(\mu=0, \sigma=1).$ We can look up -$z^{\star}$ in the normal probability table by looking for a lower tail of 5% (the other 5% is in the upper tail), thus $z^{\star}=1.65.$ The 90% confidence interval can then be computed as $\text{point estimate}\ \pm\ 1.65\times SE \to (4.4\%, 13.6\%).$ (Note: the conditions for normality had earlier been confirmed for us.) That is, we are 90% confident that implanting a stent in a stroke patient's brain increased the risk of stroke within 30 days by 4.4% to 13.6%.\
+    Note, the problem was set up as 90% to indicate that there was not a need for a high level of confidence (such a 95% or 99%).
+    A lower degree of confidence increases potential for error, but it also produces a more narrow interval.
+
+### Hypothesis test for $H_0: p = p_0$
+
+::: {.important}
+**The test statistic for assessing a single proportion is a Z.**
+
+The Z score is a ratio of how the sample proportion differs from the hypothesized proportion as compared to the expected variability of the $\hat{p}$ values.
+
+```{=tex}
+\begin{align*}
+Z = \frac{\hat{p} - p_0}{\sqrt{p_0(1-p_0)/n}}
+\end{align*}
+```
+When the null hypothesis is true and the conditions are met, Z has a standard normal distribution.
+
+Conditions:
+
+-   independently observed data\
+-   large samples $(n p_0 \geq 10$ and $n (1-p_0) \geq 10)$\
+:::
+
+One possible regulation for payday lenders is that they would be required to do a credit check and evaluate debt payments against the borrower's finances.
+We would like to know: would borrowers support this form of regulation?
+
+::: {.guidedpractice}
+Set up hypotheses to evaluate whether borrowers have a majority support for this type of regulation.[^inference-one-prop-8]
+:::
+
+[^inference-one-prop-8]: $H_0:$ there is not support for the regulation; $H_0:$ $p \leq 0.50.$ $H_A:$ the majority of borrowers support the regulation; $H_A:$ $p > 0.50.$
+
+To apply the normal distribution framework in the context of a hypothesis test for a proportion, the independence and success-failure conditions must be satisfied.
+In a hypothesis test, the success-failure condition is checked using the null proportion: we verify $np_0$ and $n(1-p_0)$ are at least 10, where $p_0$ is the null value.
+
+::: {.guidedpractice}
+Do payday loan borrowers support a regulation that would require lenders to pull their credit report and evaluate their debt payments?
+From a random sample of 826 borrowers, 51% said they would support such a regulation.
+Is it reasonable use a normal distribution to model $\hat{p}$ for a hypothesis test here?[^inference-one-prop-9]
+:::
+
+[^inference-one-prop-9]: Independence holds since the poll is based on a random sample.
+    The success-failure condition also holds, which is checked using the null value $(p_0 = 0.5)$ from $H_0:$ $np_0 = 826 \times 0.5 = 413,$ $n(1 - p_0) = 826 \times 0.5 = 413.$ Recall that here, the best guess for $p$ is $p_0$ which comes from the null hypothesis (because we assume the null hypothesis is true when performing the testing procedure steps).
+    $H_0:$ there is not support for the regulation; $H_0:$ $p \leq 0.50.$ $H_A:$ the majority of borrowers support the regulation; $H_A:$ $p > 0.50.$
+
+::: {.workedexample}
+Using the hypotheses and data from the previous Guided Practices, evaluate whether the poll on lending regulations provides convincing evidence that a majority of payday loan borrowers support a new regulation that would require lenders to pull credit reports and evaluate debt payments.
+
+------------------------------------------------------------------------
+
+With hypotheses already set up and conditions checked, we can move onto calculations.
+The standard error in the context of a one-proportion hypothesis test is computed using the null value, $p_0:$ \begin{align*}
+  SE = \sqrt{\frac{p_0 (1 - p_0)}{n}}
+      = \sqrt{\frac{0.5 (1 - 0.5)}{826}}
+      = 0.017
+  \end{align*} A picture of the normal model is shown with the p-value represented by the shaded region.
+
+```{r}
+normTail(0.5, 0.017, L = 0.49, U = 0.51, col = COL[1])  
+```
+
+Based on the normal model, the test statistic can be computed as the Z-score of the point estimate: \begin{align*}
+  Z = \frac{\text{point estimate} - \text{null value}}{SE}
+      = \frac{0.51 - 0.50}{0.017}
+      = 0.59
+  \end{align*} The single tail area which represents the p-value is 0.2776.
+Because the p-value is larger than 0.05, we do not reject $H_0.$ The poll does not provide convincing evidence that a majority of payday loan borrowers support regulations around credit checks and evaluation of debt payments.
+
+In Section \@ref(two-prop-errors) we discuss two-sided hypothesis tests of which the payday example may have been better structured.\
+That is, we might have wanted to ask whether the borrows **support or oppose** the regulations (to study opinion in either direction away from the 50% benchmark).
+In that case, the p-value would have been doubled to 0.5552 (again, we would not reject $H_0).$ In the two-sided hypothesis setting, the appropriate conclusion would be to claim that the poll does not provide convincing evidence that a majority of payday loan borrowers support or oppose regulations around credit checks and evaluation of debt payments.
+
+In both the one-sided or two-sided setting, the conclusion is somewhat unsatisfactory because there is no conclusion.
+That is, there is no resolution one way or the other about public opinion.
+We cannot claim that exactly 50% of people support the regulation, but we cannot claim a majority in either direction.
+:::
+
+::: {.important}
+**Mathematical model hypothesis test for a proportion.**
+
+Set up hypotheses and verify the conditions using the null value, $p_0,$ to ensure $\hat{p}$ is nearly normal under $H_0.$ If the conditions hold, construct the standard error, again using $p_0,$ and show the p-value in a drawing.
+Lastly, compute the p-value and evaluate the hypotheses.
+:::
+
+For additional one-proportion hypothesis test examples, see Section \@ref(HypothesisTesting).
+
+\index{data!Payday regulation poll|)}
+
+### Violating conditions
+
+We've spent a lot of time discussing conditions for when $\hat{p}$ can be reasonably modeled by a normal distribution.
+What happens when the success-failure condition fails?
+What about when the independence condition fails?
+In either case, the general ideas of confidence intervals and hypothesis tests remain the same, but the strategy or technique used to generate the interval or p-value change.
+
+When the success-failure condition isn't met for a hypothesis test, we can simulate the null distribution of $\hat{p}$ using the null value, $p_0,$ as seen in Section \@ref(one-prop-null-boot).
+Unfortunately, methods for dealing with observations which are not independent are outside the scope of this book.
+
+## Review
+
+### Summary
+
+::: {.todo}
+Add summary
+:::
+
+### Terms
+
+We introduced the following terms in the chapter.
+If you're not sure what some of these terms mean, we recommend you go back in the text and review their definitions.
+
+```{r}
+make_terms_table(terms_chp_16)
+```
+
+## Exercises {chp16-exercises}
+
+::: {.todo}
+Add exercises
+:::

@@ -1,0 +1,629 @@
+# Inference for the difference of two means {#inference-two-means}
+
+::: {.todo}
+Add chapter intro
+:::
+
+In this section we consider a difference in two population means, $\mu_1 - \mu_2,$ under the condition that the data are not paired.
+Just as with a single sample, we identify conditions to ensure we can use the $t$-distribution with a point estimate of the difference, $\bar{x}_1 - \bar{x}_2,$ and a new standard error formula.
+
+The details for working through inferential problems in the two independent means setting are strikingly similar to those applied to the two independent proportions stetting.
+We first cover a randomization test where the observations are shuffled under the assumption that the null hypothesis is true.
+Then we bootstrap the data (with no imposed null hypothesis) to create a confidence interval for the true difference in population means, $\mu_1 - \mu_2.$ The mathematical model, here the $t$-distribution, is able to describe both the randomization test and the boostrapping as long as the conditions are met.
+
+The inferential tools are applied to three different data contexts: determining whether stem cells can improve heart function, exploring the relationship between pregnant women's smoking habits and birth weights of newborns, and exploring whether there is statistically significant evidence that one variation of an exam is harder than another variation.
+This section is motivated by questions like "Is there convincing evidence that newborns from mothers who smoke have a different average birth weight than newborns from mothers who don't smoke?"
+
+## Randomization test for $H_0: \mu_1 - \mu_2 = 0$ {#rand2mean}
+
+\index{data!two exam comparison|(}
+
+An instructor decided to run two slight variations of the same exam.
+Prior to passing out the exams, she shuffled the exams together to ensure each student received a random version.
+Summary statistics for how students performed on these two exams are shown in Table \@ref(tab:summaryStatsForTwoVersionsOfExams) and plotted in Figure \@ref(fig:boxplotTwoVersionsOfExams).
+Anticipating complaints from students who took Version B, she would like to evaluate whether the difference observed in the groups is so large that it provides convincing evidence that Version B was more difficult (on average) than Version A.
+
+#### Observed data {.unnumbered}
+
+```{r echo = FALSE, include = FALSE}
+data(classdata)
+
+classdata %>% 
+  filter(lecture %in% c("a", "b")) %>%
+  group_by(lecture) %>%
+  skimr::skim(m1)
+
+classdata %>% 
+  filter(lecture %in% c("a", "b")) %>%
+  group_by(lecture) %>%
+  summarise(n())
+```
+
+```{r summaryStatsForTwoVersionsOfExams}
+temptbl <- tribble(
+ ~variable, ~col0,    ~col1, ~col2, ~col3, ~col4,
+ "A", 58, 75.1, 13.9, 44, 100,
+ "B", 55, 72.0, 13.8, 38, 100
+)
+
+temptbl %>%
+ kable(caption = "Summary statistics of scores for each exam version.",
+    col.names = c("", "$n$", "$\\bar{x}$", "s", "minimum", "maximum")) %>%
+ kable_styling() 
+```
+
+```{r boxplotTwoVersionsOfExams, fig.cap="Exam scores for students given one of three different exams.", warning=FALSE, fig.width=10}
+
+classdata %>%
+  filter(lecture %in% c("a", "b")) %>%
+  mutate(exam = lecture) %>%
+  ggplot(aes(x = exam, y = m1, color = exam)) +
+  geom_boxplot() +
+  geom_point() +
+  ggtitle("Boxplot of exam score broken down by version of exam.")
+```
+
+::: {.guidedpractice}
+Construct hypotheses to evaluate whether the observed difference in sample means, $\bar{x}_A - \bar{x}_B=3.1,$ is due to chance.
+We will later evaluate these hypotheses using $\alpha = 0.01.$[^inference-two-means-1]
+:::
+
+[^inference-two-means-1]: $H_0:$ the exams are equally difficult, on average.
+    $\mu_A - \mu_B = 0.$ $H_A:$ one exam was more difficult than the other, on average.
+    $\mu_A - \mu_B \neq 0.$
+
+::: {.guidedpractice}
+Before moving on to evaluate the hypotheses in the previous Guided Practice, let's think carefully about the dataset.
+Are the observations across the two groups independent?
+Are there any concerns about outliers?[^inference-two-means-2]
+:::
+
+[^inference-two-means-2]: (a) Since the exams were shuffled, the "treatment" in this case was randomly assigned, so independence within and between groups is satisfied.
+    (b) The summary statistics suggest the data are roughly symmetric about the mean, and the min/max values don't suggest any outliers of concern.
+
+#### Variability of the statistic {.unnumbered}
+
+In Section \@ref(inf-rand), the variability of the statistic (previously: $\hat{p}_1 - \hat{p}_2)$ was visualized after shuffling the observations across the two treatment groups many times.
+The shuffling process implements the null hypothesis model (that there is no effect of the treatment).
+In the exam example, the null hypothesis is that exam A and exam B are equally difficult, so the average scores across the two tests should be the same.
+If the exams were equally difficult, *due to natural variability*, we would sometimes expect students to do slightly better on exam A $(\bar{x}_A > \bar{x}_B)$ and sometimes expect students to do slightly better on exam B $(\bar{x}_B > \bar{x}_A).$ The question at hand is: does $\bar{x}_A - \bar{x}_B=3.1$ indicate that exam A is easier than exam B.
+
+Figure \@ref(fig:rand2means) shows the process of randomizing the exam to the observed exam scores.
+If the null hypothesis is true, then the score on each exam should represent the true student ability on that material.
+It shouldn't matter whether they were given exam A or exam B.
+By reallocating which student got which exam, we are able to understand how the difference in average exam scores changes due only to natural variability.
+There is only one iteration of the randomization process in Figure \@ref(fig:rand2means), leading to one simulated difference in average scores.
+
+```{r rand2means, fig.cap = "The version of the test (A or B) is randomly allocated to the test scores, under the null assumption that the tests are equally difficult.", warning = FALSE,  out.width="75%"}
+include_graphics("images/rand2means.png")
+```
+
+Building on Figure \@ref(fig:rand2means), Figure \@ref(fig:randexams) shows the values of the simulated statistics $\bar{x}_{1, sim} - \bar{x}_{2, sim}$ over 1000 random simulations.
+We see that, just by chance, the difference in scores can range anywhere from -10 points to +10 points.
+
+```{r randexams, fig.cap = "Histogram of differences in means, calculated from 1000 different randomizations of the exam types.", warning = FALSE, fig.width = 10}
+set.seed(47)
+classdata %>% filter(lecture %in% c("a", "b")) %>%
+  specify(m1 ~ lecture) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "diff in means", order = c("a", "b")) %>% 
+  visualize() +
+  ggtitle("")
+```
+
+#### Observed statistic vs. null statistics {.unnumbered}
+
+The goal of the randomization test is to assess the observed data, here the statistic of interest is $\bar{x}_A - \bar{x}_B=3.1.$ The randomization distribution allows us to identify whether a difference of 3.1 points is more than one would expect by natural variability.
+By plotting the value of 3.1 on Figure \@ref(fig:randexamspval), we can measure how different or similar 3.1 is to the randomized differences which were generated under the null hypothesis.
+
+```{r randexamspval, fig.cap = "Histogram of differences in means, calculated from 1000 different randomizations of the exam types.  The observed difference of 3.1 points is plotted as a vertical line, and the area more extreme than 3.1 is shaded to represent the p-value.", warning = FALSE, fig.width = 10}
+stat_2means <- classdata %>% filter(lecture %in% c("a", "b")) %>%
+  specify(m1 ~ lecture) %>%
+  calculate(stat = "diff in means", order = c("a", "b")) 
+ 
+
+set.seed(47)
+classdata %>% filter(lecture %in% c("a", "b")) %>%
+  specify(m1 ~ lecture) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "diff in means", order = c("a", "b")) %>%
+  visualize() + 
+  shade_p_value(obs_stat = stat_2means, direction = "two-sided",
+                color = "#569BBD", fill = "#569BBD02")
+```
+
+::: {.workedexample}
+Approximate the p-value depicted in Figure \@ref(fig:randexamspval), and provide a conclusion in the context of the case study.
+
+------------------------------------------------------------------------
+
+Using software, we can find the number of shuffled differences in means that are less than the observed difference (of 3.14) is 19 (our of 1000 randomizations).
+So 10% of the simulations are larger than the observed difference.
+To get the p-value, we double the proportion of randomized differences which are larger than the observed difference, p-value = 0.2.
+
+Previously, we specified that we would use $\alpha = 0.01.$ Since the p-value is larger than $\alpha,$ we do not reject the null hypothesis.
+That is, the data do not convincingly show that one exam version is more difficult than the other, and the teacher should not be convinced that she should add points to the Version B exam scores.
+:::
+
+```{r echo = FALSE, eval=FALSE}
+set.seed(47)
+classdata %>% filter(lecture %in% c("a", "b")) %>%
+  specify(m1 ~ lecture) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "diff in means", order = c("a", "b")) %>%
+  get_p_value(obs_stat = stat_2means, direction = "two-sided")
+```
+
+The large p-value and consistency of $\bar{x}_A - \bar{x}_B=3.1$ with the randomized differences leads us to *not reject the null hypothesis*.
+Said differently, there is no evidence to think that one of the tests is easier than the other.
+One might be inclined to conclude that the tests have the same level of difficulty, but that conclusion would be wrong.
+The hypothesis testing framework is set up only to reject a null claim, it is not set up to validate a null claim.
+As we concluded, the data are consistent with exams A and B being equally difficult, but the data are also consistent with exam A being 3.1 points "easier" than exam B.
+The data are not able to adjudicate on whether the exams are equally hard or whether one of them is slightly easier.
+Indeed, conclusions where the null hypothesis is not rejected often seem unsatisfactory.
+However, in this case, the teacher and class are probably all relieved that there is no evidence to demonstrate that one of the exams is more difficult than the other.
+
+\index{data!two exam comparison|)}
+
+## Bootstrap confidence interval for $\mu_1 - \mu_2$
+
+\index{data!stem cells, heart function|(} \index{point estimate!difference of means|(}
+
+Before providing a full example working through a bootstrap analysis on actual data, we return to the fictional Awesome Auto example as a way to visualize the two sample bootstrap setting.
+Consider an expanded scenario where the research question centers on comparing the average price of a car at one Awesome Auto franchise (Group 1) to the average price of a car at a different Awesome Auto franchise (Group 2).
+The process of bootstrapping can be applied to *each* Group separately, and the differences of means recalculated each time.
+Figure \@ref(fig:bootmeans2means) visually describes the bootstrap process when interest is in a statistic computed on two separate samples.
+The analysis proceeds as in the one sample case, but now the (single) statistic of interest is the *difference in sample means*.
+That is, a bootstrap resample is done on each of the groups separately, but the results are combined to have a single bootstrapped difference in means.
+Repetition will produce $k$ bootstrapped differences in means, and the histogram will describe the natural sampling variability associated with the difference in means.
+
+```{r echo = FALSE, eval = FALSE}
+
+aa_cars <- data.frame(price = c(18300, 20100, 9600, 10700, 27000))
+aa_cars2 <- data.frame(price = c(18200, 9100, 12900, 54000, 13500))
+
+set.seed(47)
+bscars <- aa_cars %>%
+  rep_sample_n(size = 5, reps = 1000, replace = TRUE) 
+bscars2 <- aa_cars2 %>%
+  rep_sample_n(size = 5, reps = 1000, replace = TRUE) 
+
+
+bscars_mean <- bscars %>%
+  group_by(replicate) %>% 
+  summarize(car_bsmean = mean(price)) %>%
+  pull()
+
+bscars_mean2 <- bscars2 %>%
+  group_by(replicate) %>% 
+  summarize(car_bsmean = mean(price)) %>%
+  pull()
+
+bscars_diff <- bscars_mean - bscars_mean2
+
+#sd(bscars_mean)
+
+bsq1 <- quantile(bscars_diff, probs = c(0.005, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.995))
+
+umeans <- sort(unique(bscars_diff))
+bin.width <- (umeans[length(umeans)] - umeans[1])/15
+#breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
+breaks <- seq(umeans[1] - 1, umeans[length(umeans)] + bin.width, by = bin.width)
+
+
+histPlot(bscars_diff, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
+     xlab = "", ylab="")
+axis(1)
+```
+
+```{r bootmeans2means, fig.cap = "For the two group comparison, the bootstrap resampling is done separately on each group, but the statistic is calculated as a difference.  The set of k differences is then analyzed as the statistic of interest with conclusions drawn on the parameter of interest.", warning = FALSE,  out.width="75%"}
+include_graphics("images/bootmeans2means.png")
+```
+
+#### Observed data {.unnumbered}
+
+Does treatment using embryonic stem cells (ESCs) help improve heart function following a heart attack?
+Table \@ref(tab:statsSheepEscStudy) contains summary statistics for an experiment to test ESCs in sheep that had a heart attack.
+Each of these sheep was randomly assigned to the ESC or control group, and the change in their hearts' pumping capacity was measured in the study.
+Figure \@ref(fig:stemCellTherapyForHearts) provides histograms of the two data sets.
+A positive value corresponds to increased pumping capacity, which generally suggests a stronger recovery.
+Our goal will be to identify a 95% confidence interval for the effect of ESCs on the change in heart pumping capacity relative to the control group.
+
+```{r statsSheepEscStudy}
+temptbl <- tribble(
+ ~variable, ~col0,    ~col1, ~col2, 
+ "ESCs", 9, 3.50, 5.17,
+ "control", 9, -4.33, 2.76
+)
+
+temptbl %>%
+ kable(caption = "Summary statistics of the embryonic stem cell study.",
+    col.names = c("", "$n$", "$\\bar{x}$", "s")) %>%
+ kable_styling() 
+```
+
+The point estimate of the difference in the heart pumping variable is straightforward to find: it is the difference in the sample means.
+
+$$ \bar{x}_{esc} - \bar{x}_{control}\   =\ 3.50 - (-4.33)\   =\ 7.83 $$
+
+#### Variability of the statistic {.unnumbered}
+
+As we saw in Section \@ref(two-prop-boot-ci), we will use bootstrapping to estimate the variability associated with the difference in sample means when taking repeated samples.
+In a method akin to two proportions, a *separate* sample is taken with replacement from each group (here ESCs and control), the sample means are calculated, and their difference is taken.
+The entire process is repeated multiple times to produce a bootstrap distribution of the difference in sample means (*without* the null hypothesis assumption).
+
+Figure \@ref(fig:bootexamsci) displays the variability of the differences in means with the 90% percentile and SE CIs super imposed.
+
+```{r bootexamsci, fig.cap = "Histogram of differences in means after 1000 bootstrap samples from each of the two groups.  The observed difference is plotted as a black vertical line at 7.83.  The blue and green lines provide the percentile bootstrap and SE boostrap confidence intervals, respectively, for the difference in true population means.", warning = FALSE, fig.width=10}
+data(stem_cell)
+set.seed(470)
+
+stem_cell <- stem_cell %>%
+  mutate(change = after - before)
+
+boot_2mean <- stem_cell %>%
+  specify(change ~ trmt) %>%
+  generate(reps = 1000, type = "bootstrap") %>%
+  calculate(stat = "diff in means", order = c("esc", "ctrl"))
+
+stat_2means <- stem_cell %>%
+  specify(change ~ trmt) %>%
+  calculate(stat = "diff in means", order = c("esc", "ctrl"))
+
+
+ci_perc_2mean <- boot_2mean %>%
+  get_confidence_interval(level = 0.9, type = "percentile")
+
+ci_se_2mean <- boot_2mean %>%
+  get_confidence_interval(level = 0.9, type = "se",
+                          point_estimate = stat_2means)
+
+boot_2mean %>%
+  infer::visualize() +
+  infer::shade_confidence_interval(ci_perc_2mean, 
+                                   color = "#569BBD", 
+                                   fill = NULL, size = .5) +
+  infer::shade_confidence_interval(ci_se_2mean, 
+                                   color = "#4C721D",
+                                   fill = NULL, size = .5) +
+  ggtitle("Simulation-Based Bootstrap Distribution for Diff in Means") +
+  geom_vline(xintercept = stat_2means$stat) +  
+  xlim(c(0,15)) +
+  geom_line(aes(y = replicate, x = stat, color = "a"), alpha = 0) +  # bogus code
+  geom_line(aes(y = replicate, x = stat, color = "b"), alpha = 0) +  # bogus code
+  geom_line(aes(y = replicate, x = stat, color = "c"), alpha = 0) +  # bogus code
+  ylim(c(0,200)) + 
+  guides(color = guide_legend(override.aes = list(alpha = 1))) +
+  scale_color_manual(name = "CI type",
+                       values = c("a" = "#569BBD", "b" = "#4C721D", "c" = "#000000"),
+                       labels = c("Percentile", "SE", "Observed stat"),
+                     guide = "legend")
+```
+
+::: {.workedexample}
+Choose one of the bootstrap confidence intervals for the true difference in average pumping capacity, $\mu_{esc} - \mu_{control}.$ Does the interval show that there is a difference across the two treatments?
+
+------------------------------------------------------------------------
+
+Because neither of the 90% intervals (either percentile or SE) above overlap zero (note that zero is never one of the bootstrapped differences so 95% and 99% intervals would have given the same conclusion!), we conclude that the ESC treatment is significantly better with respect to heart pumping capacity than the treatment.
+
+Because the study is a randomized controlled experiment, we can conclude that it is the treatment (ESC) which is causing the change in pumping capacity.
+:::
+
+## Mathematical model {#math2samp}
+
+### t-test for $\mu_1 - \mu_2$ {.unnumbered}
+
+#### Observed data {.unnumbered}
+
+\index{data!baby\_smoke|(}
+
+A dataset called `ncbirths` represents a random sample of 150 cases of mothers and their newborns in North Carolina over a year.
+Four cases from this data set are represented in Table \@ref(tab:babySmokeDF).
+We are particularly interested in two variables: `weight` and `smoke`.
+The `weight` variable represents the weights of the newborns and the `smoke` variable describes which mothers smoked during pregnancy.
+We would like to know, is there convincing evidence that newborns from mothers who smoke have a different average birth weight than newborns from mothers who don't smoke?
+We will use the North Carolina sample to try to answer this question.
+The smoking group includes 50 cases and the nonsmoking group contains 100 cases.
+
+```{r babySmokeDF}
+ncbirths %>% 
+  select(-premie, -mature, -lowbirthweight) %>%
+  head(4) %>%
+ kable(caption = "Four cases from the `ncbirths` data set. The value `NA`, shown for the first two entries of the first variable, indicates that piece of data is missing.") %>%
+ kable_styling() 
+```
+
+::: {.workedexample}
+Set up appropriate hypotheses to evaluate whether there is a relationship between a mother smoking and average birth weight.
+
+------------------------------------------------------------------------
+
+The null hypothesis represents the case of no difference between the groups.
+
+-   $H_0:$ There is no difference in average birth weight for newborns from mothers who did and did not smoke. In statistical notation: $\mu_{n} - \mu_{s} = 0,$ where $\mu_{n}$ represents non-smoking mothers and $\mu_s$ represents mothers who smoked.\
+-   $H_A:$ There is some difference in average newborn weights from mothers who did and did not smoke $(\mu_{n} - \mu_{s} \neq 0).$
+:::
+
+#### Variability of the statistic {.unnumbered}
+
+We check the two conditions necessary to model the difference in sample means using the $t$-distribution.
+
+-   Because the data come from a simple random sample, the observations are independent, both within and between samples.\
+-   With both data sets over 30 observations, we inspect the data in Figure \@ref(fig:babySmokePlotOfTwoGroupsToExamineSkew) for any particularly extreme outliers and find none.
+
+Since both conditions are satisfied, the difference in sample means may be modeled using a $t$-distribution.
+
+```{r babySmokePlotOfTwoGroupsToExamineSkew, fig.cap="The top panel represents birth weights for infants whose mothers smoked. The bottom panel represents the birth weights for infants whose mothers who did not smoke.", warning=FALSE, fig.width=10}
+
+
+data(births)
+d <- births
+
+xlab.start <- 'Newborn Weights (lbs)'
+histPlot(d$weight[d$smoke == 'smoker'],
+         xlim = c(0, 11),
+         axes = FALSE,
+         xlab = xlab.start,
+         main = 'Mothers Who Smoked',
+         col = COL[1])
+axis(1)
+
+# par(mar = c(2.8, 1, 0.5, 1))
+histPlot(d$weight[d$smoke == 'nonsmoker'],
+         xlim = c(0, 11),
+         axes = FALSE,
+         xlab = xlab.start,
+         main = 'Mothers Who Did Not Smoke',
+         col = COL[1])
+axis(1)
+```
+
+::: {.guidedpractice}
+The summary statistics in Table \@ref(tab:SumStatsBirthWeightNewbornsSmoke) may be useful for this Guided Practice.[^inference-two-means-3]
+
+(a) What is the point estimate of the population difference, $\mu_{n} - \mu_{s}$?
+(b) Compute the standard error of the point estimate from part a.
+:::
+
+[^inference-two-means-3]: (a) The difference in sample means is an appropriate point estimate: $\bar{x}_{n} - \bar{x}_{s} = 0.40.$
+    (b) The standard error of the estimate can be calculated using the standard error formula: $$
+        SE
+        = \sqrt{\frac{\sigma_n^2}{n_n} + \frac{\sigma_s^2}{n_s}}
+          \approx \sqrt{\frac{s_n^2}{n_n} + \frac{s_s^2}{n_s}}
+        = \sqrt{\frac{1.60^2}{100} + \frac{1.43^2}{50}}
+        = 0.26 $$
+
+```{r SumStatsBirthWeightNewbornsSmoke}
+temptbl <- tribble(
+ ~variable, ~col0,    ~col1,  
+ "mean", 6.78, 7.18,
+ "st. dev.", 1.43, 1.60, 
+ "samp. size", 50, 100
+)
+
+temptbl %>%
+ kable(caption = "Summary statistics for the `ncbirths` data set.",
+    col.names = c("", "smoker", "nonsmoker")) %>%
+ kable_styling() 
+```
+
+#### Observed statistic vs. null statistics {.unnumbered}
+
+::: {.important}
+**The test statistic for comparing two means is a T.**
+
+The T score is a ratio of how the groups differ as compared to how the observations within a group vary.
+
+$$ T = \frac{\bar{x}_1 - \bar{x}_2}{\sqrt{s_1^2/n_1 + s_2^2/n_2}} $$ When the null hypothesis is true and the conditions are met, T has a t-distribution with $df = min(n_1 - 1, n_2 -1).$
+
+Conditions:
+
+-   independent observations within and across groups\
+-   large samples and no extreme outliers\
+:::
+
+::: {.workedexample}
+Complete the hypothesis test started in the previous Example and Guided Practice on `ncbirths` dataset and research question.
+Use a significance level of $\alpha=0.05.$ For reference, $\bar{x}_{n} - \bar{x}_{s} = 0.40,$ $SE = 0.26,$ and the sample sizes were $n_n = 100$ and $n_s = 50.$
+
+------------------------------------------------------------------------
+
+We can find the test statistic for this test using the previous information:
+
+$$
+T = \frac{\ 0.40 - 0\ }{0.26} = 1.54
+$$
+
+The p-value is represented by the two shaded tails in Figure \@ref(fig:distOfDiffOfSampleMeansForBWOfBabySmokeData)
+
+We find the single tail area using software.
+We'll use the smaller of $n_n - 1 = 99$ and $n_s - 1 = 49$ as the degrees of freedom: $df = 49.$ The one tail area is 0.065; doubling this value gives the two-tail area and p-value, 0.135.
+
+The p-value is larger than the significance value, 0.05, so we do not reject the null hypothesis.
+There is insufficient evidence to say there is a difference in average birth weight of newborns from North Carolina mothers who did smoke during pregnancy and newborns from North Carolina mothers who did not smoke during pregnancy.
+:::
+
+```{r distOfDiffOfSampleMeansForBWOfBabySmokeData, fig.cap="The mathematical model for the T statistic when the null hypothesis is true.  As expected, the curve is centered at zero (the null value).  The observered statistic is also plotted with the area more extreme than the observed statistic plotted to indicate the p-value.", warning=FALSE, fig.width=10}
+
+data(births)
+d <- births
+
+normTail(0, 1,
+         L = -1.54,
+         U = 1.54,
+         df = 20, # Aesthetics
+         col = COL[1],
+         axes = FALSE)
+at <- c(-5, 0, 1.54, 5)
+labels <- expression(0, mu[n]-mu[s]*' = 0', 'obs. diff', 0)
+axis(1, at, labels, cex.axis=0.9)
+
+```
+
+::: {.guidedpractice}
+We've seen much research suggesting smoking is harmful during pregnancy, so how could we fail to reject the null hypothesis in the previous Example?[^inference-two-means-4]
+:::
+
+[^inference-two-means-4]: It is possible that there is a difference but we did not detect it.
+    If there is a difference, we made a Type 2 Error.
+
+::: {.guidedpractice}
+If we made a Type 2 Error and there is a difference, what could we have done differently in data collection to be more likely to detect the difference?[^inference-two-means-5]
+:::
+
+[^inference-two-means-5]: We could have collected more data.
+    If the sample sizes are larger, we tend to have a better shot at finding a difference if one exists.
+    In fact, this is exactly what we would find if we examined a larger data set!
+
+Public service announcement: while we have used this relatively small data set as an example, larger data sets show that women who smoke tend to have smaller newborns.
+In fact, some in the tobacco industry actually had the audacity to tout that as a *benefit* of smoking:
+
+> *It's true. The babies born from women who smoke are smaller, but they're just as healthy as the babies born from women who do not smoke. And some women would prefer having smaller babies.* - Joseph Cullman, Philip Morris' Chairman of the Board on CBS' *Face the Nation*, Jan 3, 1971
+
+Fact check: the babies from women who smoke are not actually as healthy as the babies from women who do not smoke.[^inference-two-means-6]
+
+[^inference-two-means-6]: You can watch an episode of John Oliver on [*Last Week Tonight*](youtu.be/6UsHHOCH4q8) to explore the present day offenses of the tobacco industry.
+    Please be aware that there is some adult language.
+
+\index{data!baby\_smoke|)}
+
+### t confidence interval for $\mu_1 - \mu_2$ {.unnumbered}
+
+#### Observed data {.unnumbered}
+
+As with hypothesis testing, for the question of whether we can model the difference using a $t$-distribution, we'll need to check new conditions.
+Like the 2-proportion cases, we will require a more robust version of independence so we are confident the two groups are also independent.
+Secondly, we also check for normality in each group separately, which in practice is a check for outliers.
+
+\index{point estimate!difference of means|)}
+
+::: {.important}
+**Using the** $t$-distribution for a difference in means.
+
+The $t$-distribution can be used for inference when working with the standardized difference of two means if
+
+-   *Independence* (extended). The data are independent within and between the two groups, e.g., the data come from independent random samples or from a randomized experiment.\
+-   *Normality*. We check the outliers for each group separately.
+
+The standard error may be computed as
+
+$$ SE = \sqrt{\frac{\sigma_1^2}{n_1} + \frac{\sigma_2^2}{n_2}} $$
+
+The official formula for the degrees of freedom is quite complex and is generally computed using software, so instead you may use the smaller of $n_1 - 1$ and $n_2 - 1$ for the degrees of freedom if software isn't readily available.
+:::
+
+\index{standard error (SE)!difference in means}
+
+#### Variability of the statistic {.unnumbered}
+
+::: {.workedexample}
+Can the $t$-distribution be used to make inference using the point estimate, $\bar{x}_{esc} - \bar{x}_{control} = 7.83$?
+
+------------------------------------------------------------------------
+
+First, we check for independence.
+Because the sheep were randomized into the groups, independence within and between groups is satisfied.
+
+Figure \@ref(fig:stemCellTherapyForHearts) does not reveal any clear outliers in either group.
+(The ESC group does look a bit more variability, but this is not the same as having clear outliers.)
+
+With both conditions met, we can use the $t$-distribution to model the difference of sample means.
+:::
+
+```{r stemCellTherapyForHearts, fig.cap="Histograms for both the embryonic stem cell and control group.", warning=FALSE, fig.width=10}
+
+data(stem_cell)
+d <- stem_cell
+
+change <- d$after - d$before
+#t.test(change ~ trmt, data = d)
+histPlot(change[d[,1] == 'esc'],
+         xlim=c(-10, 15),
+         axes=FALSE,
+         xlab='',
+         main='',
+         breaks=seq(-10, 15, 2.5),
+         col=COL[1])
+x.axis.at <- seq(-10, 15, 5)
+x.axis.labels <- paste0(seq(-10, 15, 5), "%")
+cex.axis <- 0.85
+axis(1, x.axis.at, x.axis.labels, cex.axis=cex.axis)
+mtext('Embryonic stem cell transplant', line=0.5, cex=1.1)
+mtext('Change in heart pumping function', 1, line=1.3, cex = 0.9)
+par(mgp=c(2, 0.6, 0))
+axis(2, at=0:3, cex.axis=0.925)
+
+par(mar=c(2.4, 1.8, 2, 0.7),
+    mgp=c(2, 0.3, 0))
+histPlot(change[d[,1] == 'ctrl'],
+         xlim=c(-10, 15),
+         axes=FALSE,
+         xlab='',
+         main='',
+         breaks=seq(-10, 15, 2.5),
+         col=COL[1])
+axis(1, x.axis.at, x.axis.labels, cex.axis=cex.axis)
+par(mgp=c(2, 0.6, 0))
+axis(2, at=0:3, cex.axis=0.925)
+mtext('Control (no treatment)', line=0.5, cex=1.1)
+mtext('Change in heart pumping function', 1, line=1.3, cex = 0.9)
+
+```
+
+Generally, we use statistical software to find the appropriate degrees of freedom, or if software isn't available, we can use the smaller of $n_1 - 1$ and $n_2 - 1$ for the degrees of freedom, e.g., if using a $t$-table to find tail areas.
+For transparency in the Examples and Guided Practice, we'll use the latter approach for finding $df$; in the case of the ESC example, this means we'll use $df = 8.$
+
+::: {.workedexample}
+Calculate a 95% confidence interval for the effect of ESCs on the change in heart pumping capacity of sheep after they've suffered a heart attack.
+
+------------------------------------------------------------------------
+
+We will use the sample difference and the standard error that we computed earlier calculations:
+
+$$
+\begin{align*}
+\bar{x}_{esc} - \bar{x}_{control} &= 7.83 \\
+SE &= \sqrt{\frac{5.17^2}{9} + \frac{2.76^2}{9}} = 1.95
+\end{align*}
+$$
+
+Using $df = 8,$ we can identify the critical value of $t^{\star}_{8} = 2.31$ for a 95% confidence interval.
+Finally, we can enter the values into the confidence interval formula:
+
+$$
+\begin{align*}
+\text{point estimate} \ &\pm\ t^{\star} \times SE \\
+7.83 \ &\pm\ 2.31\times 1.95 \\
+(3.32 \ &, \ 12.34)
+\end{align*} 
+$$
+
+We are 95% confident that embryonic stem cells improve the heart's pumping function in sheep that have suffered a heart attack by 3.32% to 12.34% .
+:::
+
+## Review
+
+### Summary
+
+::: {.todo}
+Add summary
+:::
+
+### Terms
+
+We introduced the following terms in the chapter.
+If you're not sure what some of these terms mean, we recommend you go back in the text and review their definitions.
+
+```{r eval=FALSE}
+make_terms_table(terms_chp_20)
+```
+
+## Exercises
+
+::: {.todo}
+Add exercieses
+:::

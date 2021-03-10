@@ -1,0 +1,462 @@
+# Inference for two-way tables {#inference-tables}
+
+::: {.todo}
+Add chapter intro
+:::
+
+In Section \@ref(diff-two-prop) our focus was on the difference in proportions, a statistic calculated from finding the success proportions (from the binary response variable) measured across two groups (the binary explanatory variable).
+As we will see in the examples below, sometimes the explanatory or response variables have more than two possible options.
+In that setting, a difference across two groups is not sufficient, and the proportion of "success" is not well defined if there are 3 or 4 or more possible response levels.
+The primary way to summarize categorical data where the explanatory and response variables both have 2 or more levels is through a two-way table as in Table \@ref(tab:ipod-ask-data-summary).
+
+Note that with two-way tables, there is not an obvious single parameter of interest.
+Instead, research questions usually focus on how the proportions of the response variable changes (or not) across the different levels of the explanatory variable.
+Because there is not a population parameter to estimate, bootstrapping to find the standard error of the estimate is not meaningful.
+As such, for two-way tables, we will focus on the randomization test and corresponding mathematical approximation (and not bootstrapping).
+
+## Randomization test of $H_0:$ independence
+
+We all buy used products -- cars, computers, textbooks, and so on -- and we sometimes assume the sellers of those products will be forthright about any underlying problems with what they're selling.
+This is not something we should take for granted.
+Researchers recruited 219 participants in a study where they would sell a used iPod[^inference-tables-1] that was known to have frozen twice in the past.
+The participants were incentivized to get as much money as they could for the iPod since they would receive a 5% cut of the sale on top of \$10 for participating.
+The researchers wanted to understand what types of questions would elicit the seller to disclose the freezing issue.
+
+[^inference-tables-1]: For readers not as old as the authors, an iPod is basically an iPhone without any cellular service, assuming it was one of the later generations.
+    Earlier generations were more basic.
+
+Unbeknownst to the participants who were the sellers in the study, the buyers were collaborating with the researchers to evaluate the influence of different questions on the likelihood of getting the sellers to disclose the past issues with the iPod.
+The scripted buyers started with "Okay, I guess I'm supposed to go first. So you've had the iPod for 2 years ..." and ended with one of three questions:
+
+-   General: What can you tell me about it?\
+-   Positive Assumption: It doesn't have any problems, does it?\
+-   Negative Assumption: What problems does it have?
+
+The question is the treatment given to the sellers, and the response is whether the question prompted them to disclose the freezing issue with the iPod.
+The results are shown in Table \@ref(tab:ipod-ask-data-summary), and the data suggest that asking the, *What problems does it have?*, was the most effective at getting the seller to disclose the past freezing issues.
+However, you should also be asking yourself: could we see these results due to chance alone, or is this in fact evidence that some questions are more effective for getting at the truth?
+
+```{r ipod-ask-data-summary}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3, ~col4,
+ "Disclose Problem", "2", "23", "36", "61",
+ "Hide Problem", "71", "50", "37", "158",
+ "Total", "73", "73", "73", "219"
+)
+
+temptbl %>%
+ kable(caption = "Summary of the iPod study, where a question was
+  posed to the study participant who acted.", 
+    col.names = c( "", "General", "Positive Assumptions", "Negative Assumptions", "Total")) %>%
+ kable_styling()
+```
+
+The hypothesis test for the iPod experiment is really about assessing whether there is statistically significant evidence that there was a difference in the success rates that each question had on getting the participant to disclose the problem with the iPod.
+In other words, the goal is to check whether the buyer's question was independent of whether the seller disclosed a problem.
+
+### Expected counts in two-way tables
+
+While we would not expect the number of disclosures to be exactly the same across the three groups, the rate of disclosure seems substantially different across the three groups.
+In order to investigate whether the differences in rates is due to natural variability or due to a treatment effect (i.e., the question causing the differences), we need to compute estimated counts for each cell in a two-way table.
+
+::: {.workedexample}
+From the experiment, we can compute the proportion of all sellers who disclosed the freezing problem as $61/219 = 0.2785.$ If there really is no difference among the questions and 27.85% of sellers were going to disclose the freezing problem no matter the question that was put to them, how many of the 73 people in the `General` group would we have expected to disclose the freezing problem?
+
+------------------------------------------------------------------------
+
+We would predict that $0.2785 \times 73 = 20.33$ sellers would disclose the problem.
+Obviously we observed fewer than this, though it is not yet clear if that is due to chance variation or whether that is because the questions vary in how effective they are at getting to the truth.
+:::
+
+::: {.guidedpractice}
+If the questions were actually equally effective, meaning about 27.85% of respondents would disclose the freezing issue regardless of what question they were asked, about how many sellers would we expect to *hide* the freezing problem from the Positive Assumption group?[^inference-tables-2]
+:::
+
+[^inference-tables-2]: We would expect $(1 - 0.2785) \times 73 = 52.67.$ It is okay that this result, like the result from Example \ref{iPodExComputeExpAA}, is a fraction.
+
+We can compute the expected number of sellers who we would expect to disclose or hide the freezing issue for all groups, if the questions had no impact on what they disclosed, using the same strategies employed in the previous Example and Guided Practice to computed expected counts.
+These expected counts were used to construct Table \@ref(tab:ipod-ask-data-summary-expected), which is the same as Table \@ref(tab:ipod-ask-data-summary), except now the expected counts have been added in parentheses.
+
+```{r ipod-ask-data-summary-expected}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col1b, ~col2, ~col2b, ~col3, ~col3b, ~col4,
+ "Disclose Problem", "2", "(20.33)", "23", "(20.33)", "36", "(20.33)", "61",
+ "Hide Problem", "71", "(52.67)", "50", "(52.67)", "37", "(52.67)", "158",
+ "Total", "73", "", "73", "", "73", "", "219"
+)
+
+temptbl %>%
+ kable(caption = "The observed counts and the (expected counts).", 
+    col.names = c( "", "", "", "", "", "", "", "")) %>%
+  column_spec(3, color = COL[1,1], italic = TRUE) %>%
+  column_spec(5, color = COL[1,1], italic = TRUE) %>%
+  column_spec(7, color = COL[1,1], italic = TRUE) %>%
+   add_header_above(c(" ", "General" =2, "Positive Assumptions" = 2, "Negative Assumptions" = 2, "Total")) %>%
+ kable_styling()
+```
+
+The examples and exercises above provided some help in computing expected counts.
+In general, expected counts for a two-way table may be computed using the row totals, column totals, and the table total.
+For instance, if there was no difference between the groups, then about 27.85% of each column should be in the first row:
+
+\begin{align*}
+0.2785\times (\text{column 1 total}) &= 20.33 \\
+0.2785\times (\text{column 2 total}) &= 20.33 \\
+0.2785\times (\text{column 3 total}) &= 20.33
+\end{align*} Looking back to how 0.2785 was computed -- as the fraction of sellers who disclosed the freezing issue $(158/219)$ -- these three expected counts could have been computed as \begin{align*}
+\left(\frac{\text{row 1 total}}{\text{table total}}\right)
+    \text{(column 1 total)} &= 20.33 \\
+\left(\frac{\text{row 1 total}}{\text{table total}}\right)
+    \text{(column 2 total)} &= 20.33 \\
+\left(\frac{\text{row 1 total}}{\text{table total}}\right)
+    \text{(column 3 total)} &= 20.33
+\end{align*} This leads us to a general formula for computing expected counts in a two-way table when we would like to test whether there is strong evidence of an association between the column variable and row variable.
+
+::: {.important}
+**Computing expected counts in a two-way table.**
+
+To identify the expected count for the $i^{th}$ row and $j^{th}$ column, compute \begin{align*}
+  \text{Expected Count}_{\text{row }i,\text{ col }j}
+    = \frac{(\text{row $i$ total}) \times
+        (\text{column $j$ total})}{\text{table total}}
+  \end{align*}
+:::
+
+### The chi-square statistic
+
+#### Observed data {.unnumbered}
+
+The chi-square test statistic for a two-way table is found by comparing the observed and expected counts for each cell in the table.
+For each table count, compute:
+
+\begin{align*}
+&\text{General formula} &&
+    \frac{(\text{observed count } - \text{expected count})^2}
+        {\text{expected count}} \\
+&\text{Row 1, Col 1} &&
+    \frac{(2 - 20.33)^2}{20.33} = 16.53 \\
+&\text{Row 1, Col 2} &&
+    \frac{(23 - 20.33)^2}{20.33} = 0.35 \\
+& \hspace{9mm}\vdots &&
+    \hspace{13mm}\vdots \\
+&\text{Row 2, Col 3} &&
+    \frac{(37 - 52.67)^2}{52.67} = 4.66
+\end{align*} Adding the computed value for each cell gives the chi-square test statistic $X^2:$ \begin{align*}
+X^2 = 16.53 + 0.35 + \dots + 4.66 = 40.13
+\end{align*}
+
+### Randomization distribution of the chi-square statistic
+
+#### Variability of the statistic {.unnumbered}
+
+Is 40.13 a big number?
+That is, does it indicate that the observed and expected values are really different?
+Or is 40.13 a value of the statistic that we'd expect to see just due to natural variability?
+Previously, we applied the randomization test to the setting where the research question investigated a difference in proportions.
+The same idea of shuffling the data under the null hypothesis can be used in the setting of the two-way table.
+
+Assuming that the individuals would disclose or hide the problems **regardless** of the question they are given (i.e., that the null hypothesis is true), we can randomize the data by reassigning the 61 disclosed problems and 158 hidden problems to the three groups at random.
+Table \@ref(tab:ipod-ask-data-summary-rand) shows a possible randomization of the observed data under the condition that the null hypothesis is true (in contrast to the original observed data in Table \@ref(tab:ipod-ask-data-summary)).
+
+```{r ipod-ask-data-summary-rand}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3, ~col4,
+ "Disclose Problem", "15", "26", "20", "61",
+ "Hide Problem", "58", "47", "53", "158",
+ "Total", "73", "73", "73", "219"
+)
+
+temptbl %>%
+ kable(caption = "Randomized allocation of the data to the question posed in the iPod study.", 
+    col.names = c( "", "General", "Positive Assumptions", "Negative Assumptions", "Total")) %>%
+ kable_styling()
+```
+
+As before, the randomized data is used to find a single value for the test statistic (here a chi-squared statistic).
+The chi-square statistic for the randomized two-way table is found by comparing the observed and expected counts for each cell in the *randomized* table.
+For each cell, compute:
+
+\begin{align*}
+&\text{General formula} &&
+    \frac{(\text{observed count } - \text{expected count})^2}
+        {\text{expected count}} \\
+&\text{Row 1, Col 1} &&
+    \frac{(15 - 20.33)^2}{20.33} = 1.399 \\
+&\text{Row 1, Col 2} &&
+    \frac{(26 - 20.33)^2}{20.33} = 1.579 \\
+& \hspace{9mm}\vdots &&
+    \hspace{13mm}\vdots \\
+&\text{Row 2, Col 3} &&
+    \frac{(53 - 52.67)^2}{52.67} = 0.002
+\end{align*} Adding the computed value for each cell gives the chi-square test statistic $X^2:$ \begin{align*}
+X^2 = 1.399 + 1.579 + \dots + 0.002 = 4.136
+\end{align*}
+
+```{r eval = FALSE, echo = FALSE}
+
+prob <- c(rep("disclose", 2), rep("hide", 71), rep("disclose", 23), rep("hide", 50),rep("disclose", 36), rep("hide", 37))
+ques <- c(rep("general", 73), rep("positive", 73), rep("negative", 73))
+
+table(prob, ques)
+
+set.seed(4747)
+rand.ipod <- table(prob, sample(ques))
+
+chisq.test(rand.ipod, correct = FALSE)$expected
+(chisq.test(rand.ipod, correct = FALSE)$resid)^2
+
+chisq.test(rand.ipod, correct = FALSE)$stat
+```
+
+#### Observed statistic vs null statistics {.unnumbered}
+
+As before, one randomization will not be sufficient for understanding if the observed data are particularly different from the expected chi-square statistics when $H_0$ is true.
+To investigate whether 40.13 is large enough to indicate the the observed and expected counts are significantly different, we need to understand what values of the chi-squared statistic would happen just due to change.
+Figure \@ref(fig:ipodRandDotPlot) plots 1000 chi-squared statistics generated under the null hypothesis.
+We can see that the observed value is so far from the null statistics that the simulated p-value is zero.
+That is, the probability of seeing the observed statistic when the null hypothesis is true is virtually zero.
+In this case we can conclude that the decision of whether or not to disclose the iPod's problem is changed by the question asked.
+(We use the causal language of "changed" because the study was an experiment.) Note that with a chi-squared test, we only know that the two variables (here: `question` and `disclosure`) are related (i.e., not independent).
+We are not able to claim which type of question causes which type of disclosure.
+
+```{r ipodRandDotPlot, fig.cap="A stacked dot plot of chi-square statisics from 1000 simulations produced under the null hypothesis, $H_0,$ where the question is independent of the disclosure. None of the 1000 simulations had a chi-square value of at least 40.13, the chi-square value observed in the study.  Indeed, none of the simulated chi-squared statistics came anywhere close to the observed statistic!", warning=FALSE, fig.width=10}
+
+disclosure <- c(rep("disclose", 2), rep("hide", 71), rep("disclose", 23), rep("hide", 50),rep("disclose", 36), rep("hide", 37))
+ques <- c(rep("general", 73), rep("positive", 73), rep("negative", 73))
+
+
+set.seed(40)
+nsim = 1000
+n   = length(disclosure)
+group = disclosure
+var1 = ques
+sim  = matrix(NA, nrow = n, ncol = nsim)
+
+statistic <- function(var1, disclosure){	
+  chisq.test(table(disclosure, var1))$stat
+}
+
+for(i in 1:nsim){
+	sim[,i] = sample(ques, n, replace = FALSE)
+}
+
+sim_dist = apply(sim, 2, statistic, var1 = ques)
+chis  = sim_dist
+pval   = sum(chis >= 40.1) / nsim
+values <- table(sim_dist)
+
+
+X <- c()
+Y <- c()
+for(i in 1:length(chis)){
+	x  <- chis[i]
+	rec <- sum(sim_dist == x)
+	X  <- append(X, rep(x, rec))
+	Y  <- append(Y, 1:rec)
+}
+
+
+plot(X, Y, xlim=c(0,40), xlab = "Chi-squared statistics assuming a true null hypothesis.", axes = FALSE, ylim=c(0,max(Y)), col=COL[1], cex=0.8, pch=1, lwd=1.5)
+axis(1, at = seq(0, 40, 2.5), labels = c(0,"",5,"",10,"",15,"",20,"",25,"",30,"", 35, "", 40))
+theta <- seq(0, 2*pi, length.out = 500)
+points(X[X >= 40.1], Y[X >= 40.1], lwd=3, col = COL[4], cex=0.4)
+```
+
+## Mathematical model {#mathchisq}
+
+### The chi-square test of $H_0:$ independence
+
+Previously, in Section \@ref(math-2prop), we applied the Central Limit Theorem to the sampling variability of $\hat{p}_1 - \hat{p}_2.$ The result was that we could use the normal distribution (e.g., $z^*$ values (see Figure \@ref(fig:choosingZForCI) ) and p-values from $Z$ scores) to complete the mathematical inferential procedure.
+The chi-square test statistic has a different mathematical distribution called the chi-squared distribution.
+The important specification to make in describing the chi-square distribution is something called degrees of freedom.
+The degrees of freedom change the shape of the chi-square distribution to fit the problem at hand.
+Figure \@ref(fig:chisqDistDF) visualizes different chi-square distributions corresponding to different degrees of freedom.
+
+```{r chisqDistDF, fig.cap="The chi-square distribution for differing degrees of freedom.  The larger the degrees of freedom, the longer the right tail extends.", warning=FALSE, fig.width=10}
+
+x <- c(0, seq(0.0000001, 40, 0.05))
+DF <- c(2.0000001, 4, 9)
+y <- list()
+for (i in 1:length(DF)) {
+  y[[i]] <- dchisq(x, DF[i])
+}
+plot(0, 0,
+     type = 'n',
+     xlim = c(0, 25),
+     ylim = range(c(y, recursive = TRUE)),
+     axes = FALSE)
+for (i in 1:length(DF)) {
+  lines(x, y[[i]],
+        lty = i,
+        col = COL[ifelse(i == 3, 4, i)],
+        lwd = 1.5 + i / 2)
+}
+abline(h = 0)
+axis(1)
+legend('topright',
+       lwd = 0.3 + 1:4 / 1.25,
+       col = COL[c(1, 2, 4)],
+       lty = 1:4,
+       legend = paste(round(DF)),
+       title = 'Degrees of Freedom',
+       cex = 1)
+```
+
+#### Variability of the statistic {.unnumbered}
+
+As it turns out, the chi-squared test statistic follows a chi-square distribution when the null hypothesis is true.
+For two way tables, the degrees of freedom is equal to: \begin{align*}
+df = \text{(number of rows minus 1)}\times \text{(number of columns minus 1)}
+\end{align*} In our example, the degrees of freedom parameter is \begin{align*}
+df = (2-1)\times (3-1) = 2
+\end{align*}
+
+#### Observed statistic vs. null statistics {.unnumbered}
+
+::: {.important}
+**The test statistic for assessing two categorical variables is a** $X^2.$
+
+The $X^2$ statistic is a ratio of how the expected counts vary from the observed counts as compared to the expected counts (which are a measure of how large the sample size is).
+
+```{=tex}
+\begin{align*}
+X^2 = \sum_{i,j} \frac{(\text{observed count } - \text{expected count})^2}
+        {\text{expected count}} 
+\end{align*}
+```
+When the null hypothesis is true and the conditions are met, $X^2$ has a chi-square distribution with $df = (r-1) \times (c-1).$
+
+Conditions:
+
+-   independently observed data\
+-   large samples (5 observed values in each cell)\
+:::
+
+To bring it back to the example, if the null hypothesis is true (i.e., the questions had no impact on the sellers in the experiment), then the test statistic $X^2 = 40.13$ closely follows a chi-square distribution with 2 degrees of freedom.
+Using this information, we can compute the p-value for the test, which is depicted in Figure \@ref(fig:iPodChiSqTail).
+
+::: {.important}
+**Computing degrees of freedom for a two-way table.** When applying the chi-square test to a two-way table, we use \begin{align*}
+  df = (R-1)\times (C-1)
+  \end{align*} where $R$ is the number of rows in the table and $C$ is the number of columns.
+:::
+
+```{r iPodChiSqTail, fig.cap="Visualization of the p-value for $X^2 = 40.13$ when $df = 2.$", warning=FALSE, fig.width=10}
+
+x = 40.13
+
+ChiSquareTail(x, 2,
+              c(0, 50),
+              col = COL[1])
+text(x, 0, "Tail area (1 / 500 million)\nis too small to see", pos = 3)
+lines(c(x, 1000 * x), rep(0, 2), col = COL[1], lwd = 3)
+```
+
+The software R can be used to find the p-value with the function `pchisq()`.
+Just like `pnorm()`, `pchisq()` always gives the area to the left of the cutoff value.
+Because, in this example, the p-value is represented by the area to the right of 40.13, we subtract the output of `pchisq()` from 1.
+
+```{r echo = TRUE}
+1 - pchisq(40.13, df = 2)
+```
+
+::: {.workedexample}
+Find the p-value and draw a conclusion about whether the question affects the sellers likelihood of reporting the freezing problem.
+
+------------------------------------------------------------------------
+
+Using a computer, we can compute a very precise value for the tail area above $X^2 = 40.13$ for a chi-square distribution with 2 degrees of freedom: 0.000000002.
+
+Using a significance level of $\alpha=0.05,$ the null hypothesis is rejected since the p-value is smaller.
+That is, the data provide convincing evidence that the question asked did affect a seller's likelihood to tell the truth about problems with the iPod.
+:::
+
+\index{data!iPod|)}
+
+\index{data!diabetes|(}
+
+::: {.workedexample}
+Table \@ref(tab:diabetes2ExpMetRosiLifestyleSummary) summarizes the results of an experiment evaluating three treatments for Type 2 Diabetes in patients aged 10-17 who were being treated with metformin.
+The three treatments considered were continued treatment with metformin (`met`), treatment with metformin combined with rosiglitazone (`rosi`), or a lifestyle intervention program.
+Each patient had a primary outcome, which was either lacked glycemic control (failure) or did not lack that control (success).
+What are appropriate hypotheses for this test?
+
+------------------------------------------------------------------------
+
+-   $H_0:$ There is no difference in the effectiveness of the three treatments.
+-   $H_A:$ There is some difference in effectiveness between the three treatments, e.g., perhaps the `rosi` treatment performed better than `lifestyle`.
+:::
+
+```{r diabetes2ExpMetRosiLifestyleSummary}
+temptbl <- tribble(
+ ~variable,    ~col1, ~col2, ~col3, 
+ "`lifestyle`", "109",  "125",  "234",
+ "`met`", "120",  "112", "232",  
+ "`rosi`", "90",  "143",  "233",
+ "Total", "319", "380", "699"
+)
+
+temptbl %>%
+ kable(caption = "Results for the Type 2 Diabetes study.", 
+    col.names = c( "", "Failure", "Success", "Total")) %>%
+ kable_styling()
+```
+
+Typically we will use a computer to do the computational work of finding the chi-square statistic.
+However, it is always good to have a sense for what the computer is doing, and in particular, calculating the values which would be expected if the null hypothesis is true can help to understand the null hypothesis claim.
+Additionally, comparing the expected and observed values by eye often gives the researcher some insight into why or why not the result of the test ends up being significant.
+
+::: {.guidedpractice}
+A chi-square test for a two-way table may be used to test the hypotheses in the diabetes Example above.
+To get a sense for the statistic used in the chi-square test, first compute the expected values for each of the six table cells.[^inference-tables-3]
+:::
+
+[^inference-tables-3]: The expected count for row one / column one is found by multiplying the row one total (234) and column one total (319), then dividing by the table total (699): $\frac{234\times 319}{699} = 106.8.$ Similarly for the second column and the first row: $\frac{234\times 380}{699} = 127.2.$ Row 2: 105.9 and 126.1.
+    Row 3: 106.3 and 126.7.
+
+Note, when analyzing 2-by-2 contingency tables (that is, when both variables only have two possible options), one guideline is to use the two-proportion methods introduced in Section \@ref(diff-two-prop).
+
+## Chapter review {#chp6-review}
+
+### Summary
+
+In this chapter we extended the randomization / bootstrap / mathematical model paradigm to research questions involving categorical variables.
+We continued working with one population proportion as well as the difference in populations proportions, but the test of independence allowed for hypothesis testing on categorical variables with more than two levels.
+We note that the normal model was an excellent mathematical approximation to the sampling distribution of sample proportions (or differences in sample proportions), but that the questions with categorical variables with more than 2 levels required a new mathematical model, the chi-square distribution.
+As seen in Chapter \@ref(intro-stat-inference), but fully realized here in Chapter \@ref(inference-cat), almost all the research questions can be approached using computational methods (e.g., randomization tests or bootstrapping) or using mathematical models.
+We continue to emphasize the importance of experimental design in making conclusions about research claims.
+In particular, recall that variability can come from different sources (e.g., random sampling vs. random allocation, see Figure \@ref(fig:randsampValloc)).
+
+```{r chp6summary}
+prop_method_summary_table <- tribble(
+  ~question, ~randomization, ~bootstrapping, ~mathematical,
+  "What does it do?", "Shuffles the explanatory variable to mimic the natural variability  found in a randomized experiment.", "Resamples (with replacement) from the observed data to mimic the sampling variability found by collecting data from a population.", "Uses theory (primarily the Central Limit Theorem) to describe the hypothetical variability resulting from either repeated randomized experiments or random samples.",
+  "What is the random process described?", "Randomized experiment.", "Random sampling from a population.", "Randomized experiment or random sampling.",
+  "What other random processes can be approximated?", "Can also be used to describe random sampling in an observational model", "Can also be used to describe random allocation in an experiment", "Randomized experiment or random sampling.",
+  "What is it best for?", "Hypothesis Testing (can be used for Confidence Intervals, but not covered in this text).", "Primarily Confidence Intervals (also Bootstrap HT for one proportion).", "Quick analyses through, for example, calculating a Z score.",
+  "What physical object represents the simulation process?", "Shuffling cards", "Pulling marbles from a bag", "Not applicable",
+  "What are the technical conditions?", "Independence", "Independence, large n", "Independence, large n"
+)
+
+prop_method_summary_table %>%
+ kable(
+   caption = "Summary and comparison of Randomization Tests, Bootstrapping, and Mathematical Models as inferential statistical methods.", 
+   col.names = c("", "Randomization", "Bootstrapping", "Mathematical models")
+   ) %>%
+ kable_styling()
+```
+
+### Terms
+
+We introduced the following terms in the chapter.
+If you're not sure what some of these terms mean, we recommend you go back in the text and review their definitions.
+
+```{r eval=FALSE}
+make_terms_table(terms_chp_18)
+```
+
+## Exercises {#independence-two-way-tables-exercises}
+
+::: {.todo}
+Add exercises
+:::
