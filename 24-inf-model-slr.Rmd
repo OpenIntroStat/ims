@@ -4,6 +4,8 @@
 
 ::: {.chapterintro}
 We now bring together ideas of inferential analyses with the descriptive models seen in Chapters \@ref(model-slr).
+In particular, we will use the least squares regression line to test whether or not there is a relationship between two continuous variables.
+Additionally, we will build confidence intervals which quantify the slope of the linear regression line.
 The setting is now focused on predicting a numeric response variable (for linear models) or a binary response variable (for logistic models), we continue to ask questions about the variability of the model from sample to sample.
 The sampling variability will inform the conclusions about the population that can be drawn.
 
@@ -15,11 +17,9 @@ Inference on models with multiple explanatory variables can suffer from data sno
 We provide some guidance and hope the reader will further their statistical learning after working through the material in this text.
 :::
 
-In this chapter, we bring together the inferential ideas (see Chapter \@ref(intro-stat-inference)) used to make claims about a population from information in a sample and the modeling ideas seen in Chapters \@ref(intro-linear-models) and \@ref(multi-logistic-models).
-In particular, we will use the least squares regression line to test whether or not there is a relationship between two continuous variables.
-Additionally, we will build confidence intervals which quantify the slope of the linear regression line.
+## Case study: Sandwich store
 
-#### Observed data {.unnumbered}
+### Observed data {.unnumbered}
 
 We start the chapter with a hypothetical example describing the linear relationship between dollars spent advertising for a chain sandwich restaurant and monthly revenue.
 The hypothetical example serves the purpose of illustrating how a linear model varies from sample to sample.
@@ -51,11 +51,11 @@ ggplot(sandwich, aes(x = ad, y = rev)) +
   ylim(c(0,65))
 ```
 
-You may remember from Chapter \@ref(intro-linear-models) that the population model is: $$y = \beta_0 + \beta_1 x + \varepsilon.$$
+You may remember from Chapter \@ref(model-slr) that the population model is: $$y = \beta_0 + \beta_1 x + \varepsilon.$$
 
 Again, the omniscient CEO (with the full population information) can write down the true population model as: $$\mbox{expected revenue} = 11.23 + 4.8 \times \mbox{advertising}.$$
 
-#### Variability of the statistic {.unnumbered}
+### Variability of the statistic
 
 Unfortunately, in our scenario, the CEO is not willing to part with the full set of data, but they will allow potential franchise buyers to see a small sample of the data in order to help the potential buyer decide whether or not set up a new franchise.
 The CEO is willing to give each potential franchise buyer a random sample of data from 20 stores.
@@ -147,7 +147,7 @@ ggplot(sandwich_many_lm, aes(x=estimate)) +
 
 Recall, the example described in this introduction is hypothetical.
 That is, we created an entire population in order demonstrate how the slope of a line would vary from sample to sample.
-The tools in this textbook are designed to evaluate only one single sample of data.\
+The tools in this textbook are designed to evaluate only one single sample of data.
 With actual studies, we do not have repeated samples, so we are not able to use repeated samples to visualize the variability in slopes.
 We have seen variability in samples throughout this text, so it should not come as a surprise that different samples will produce different linear models.
 However, it is nice to visually consider the linear models produced by different slopes.
@@ -158,7 +158,7 @@ First (in Section \@ref(randslope)), the distribution of $b_1$ when $\beta_1 = 0
 Next (in Section \@ref(bootbeta1)), we can bootstrap the data by taking random samples of size n from the original dataset.
 And last (in Section \@ref(mathslope)), we use mathematical tools to describe the variability using the $t$-distribution that was first encountered in Section \@ref(one-mean-math).
 
-### Randomization test for $H_0: \beta_1= 0$ {#randslope}
+## Randomization test for $H_0: \beta_1= 0$ {#randslope}
 
 Consider the data on Global Crop Yields compiled by [Our World in Data](https://ourworldindata.org/crop-yields) and presented as part of the [TidyTuesday](https://github.com/rfordatascience/tidytuesday/trunk/data/2020/2020-09-01) series seen in Figure \@ref(fig:allcrops).
 The scientific research interest at hand will be in determining the linear relationship between wheat yield (for a country-year) and other crop yields.
@@ -225,10 +225,10 @@ By repeatedly permuting the response variable any pattern in the linear model th
 The randomization test compares the slopes calculated from the permuted response variable with the observed slope.
 If the observed slope is inconsistent with the slopes from permuting, we can conclude that there is some underlying relationship (and that the slope is not merely due to random chance).
 
-#### Observed data {.unnumbered}
+### Observed data
 
 We will continue to use the crop data to investigate the linear relationship between `wheat` and `maize`.
-Note that the least squares model (see Chapter \@ref(intro-linear-models) ) describing the relationship is given in Table \@ref(tab:lsCrops).
+Note that the least squares model (see Chapter \@ref(model-slr)) describing the relationship is given in Table \@ref(tab:lsCrops).
 The columns in Table \@ref(tab:lsCrops) are further described in Section \@ref(mathslope).
 
 ```{r lsCrops}
@@ -238,7 +238,7 @@ lm(wheat ~ maize, data = crops_USA) %>%
   kable_styling() 
 ```
 
-#### Variability of the statistic {.unnumbered}
+### Variability of the statistic
 
 After permuting the data, the least squares estimate of the line can be computed.
 Repeated permutations and slope calculations describe the variability in the line (i.e., in the slope) due only to the natural variability and not due to a relationship between `wheat` and `maize`.
@@ -264,7 +264,7 @@ ggplot(crops_USA, aes(x = maize, y = sample(wheat))) +
 As you can see, sometimes the slope of the permuted data is positive, sometimes it is negative.
 Because the randomization happens under the condition of no underlying relationship (because the response variable is completely mixed with the explanatory variable), we expect to see the center of the randomized slope distribution to be zero.
 
-#### Observed statistic vs. null statistics {.unnumbered}
+### Observed statistic vs. null statistics
 
 ```{r nulldistCrop, echo=FALSE, fig.cap = "Histogram of slopes given different permutations of the wheat variable.  The vertical red line is at the observed value of the slope, 0.195."}
 perm_slope <- crops_USA %>%
@@ -287,12 +287,12 @@ That is, if indeed there were no linear relationship between `wheat` and `maize`
 We reject the null hypothesis.
 Therefore, we believe that the slope observed on the original data is not just due to natural variability and indeed, there is a linear relationship between `wheat` and `maize` crop yield in the US.
 
-### Bootstrap confidence interval for $\beta_1$ {#bootbeta1}
+## Bootstrap confidence interval for $\beta_1$ {#bootbeta1}
 
 As we have seen in previous chapters, we can use bootstrapping to estimate the sampling distribution of the statistic of interest (here, the slope) without the null assumption of no relationship (which was the condition in the randomization test).
 Because interest is now in creating a CI, there is no null hypothesis, so there won't be any reason to permute either of the variables.
 
-#### Observed data {.unnumbered}
+### Observed data
 
 Returning to the crop data, we may want to consider the relationship between `peas` and `wheat`.
 Are `peas` a good predictor of `wheat`?
@@ -317,7 +317,7 @@ ggplot(crops_USA) +
   ylim(c(1.4, 3.6))
 ```
 
-#### Variability of the statistic {.unnumbered}
+### Variability of the statistic
 
 Because we are not focused on a null distribution, we sample with replacement $n=58$ observations from the original dataset.
 Recall that with bootstrapping we always resample the same number of observations as we start with in order to mimic the process of taking a sample from the population.
@@ -416,21 +416,19 @@ par(las = 0)
 mtext("Bootstrapped values of the slope statistic describing wheat and peas.", 1, 2.5)
 ```
 
-### Mathematical model {#mathslope}
+## Mathematical model {#mathslope}
 
 When certain technical conditions apply, it is convenient to use mathematical approximations to test and estimate the slope parameter.
-The approximations will build on the t-distribution which were described in Chapter \@ref(inference-num).
+The approximations will build on the t-distribution which were described in Chapter \@ref(inference-one-mean).
 The mathematical model is often correct and is usually easy to implement computationally.
 The validity of the technical conditions will be considered in detail in Section \@ref(tech-cond-linmod).
 
 In this section, we discuss uncertainty in the estimates of the slope and y-intercept for a regression line.
 Just as we identified standard errors for point estimates in previous chapters, we first discuss standard errors for these new estimates.
 
-#### Midterm elections and unemployment {.unnumbered}
+### Case study: Midterm elections and unemployment
 
-##### Observed data {.unnumbered}
-
-\index{data!midterm elections|(}
+#### Observed data {.unnumbered}
 
 Elections for members of the United States House of Representatives occur every two years, coinciding every four years with the U.S.
 Presidential election.
@@ -532,9 +530,7 @@ We can frame this investigation into a statistical hypothesis test:
 We would reject $H_0$ in favor of $H_A$ if the data provide strong evidence that the true slope parameter is different than zero.
 To assess the hypotheses, we identify a standard error for the estimate, compute an appropriate test statistic, and identify the p-value.
 
-#### Regression output from software {.unnumbered}
-
-##### Variability of the statistic {.unnumbered}
+#### Variability of the statistic {.unnumbered}
 
 Just like other point estimates we have seen before, we can compute a standard error and test statistic for $b_1$.
 We will generally label the test statistic using a $T$, since it follows the $t$-distribution.
@@ -585,7 +581,7 @@ Use Table \@ref(tab:midtermUnempRegTable) to determine the p-value for th hypoth
 The last column of the table gives the p-value for th two-sided hypothesis test for the coefficient of the unemployment rate 0.2961 That is, the data do not provide convincing evidence that a higher unemployment rate has any correspondence with smaller or larger losses for the President's party in the House of Representatives in midterm elections.
 :::
 
-##### Observed statistic vs. null statistics {.unnumbered}
+#### Observed statistic vs. null statistics {.unnumbered}
 
 As the final step in a mathematical hypothesis test for the slope, we use the information provided to make a conclusion about whether or not the data could have come from a population where the true slope was zero (i.e., $\beta_1 = 0$).
 Before evaluating the formal hypothesis claim, sometimes it is important to check your intuition.
@@ -633,9 +629,9 @@ However, be aware that software will not generally check whether the method is a
 See Section \@ref(tech-cond-linmod).
 :::
 
-#### Confidence interval for a coefficient {.unnumbered}
+### Confidence interval for a coefficient
 
-##### Observed data {.unnumbered}
+#### Observed data {.unnumbered}
 
 Similar to how we can conduct a hypothesis test for a model coefficient using regression output, we can also construct a confidence interval for that coefficient.
 
@@ -661,7 +657,7 @@ $$
 We are 95% confident that with each dollar increase in , the university's gift aid is predicted to decrease on average by \$0.0214 to \$0.0648.
 :::
 
-##### Variability of the statistic {.unnumbered}
+#### Variability of the statistic {.unnumbered}
 
 ::: {.important}
 **Confidence intervals for coefficients**
@@ -676,20 +672,13 @@ where $t_{df}^{\star}$ is the appropriate $t$-value corresponding to the confide
 On the topic of intervals in this book, we've focused exclusively on confidence intervals for model parameters.
 However, there are other types of intervals that may be of interest, including prediction intervals for a response value and also confidence intervals for a mean response value in the context of regression.
 
-### Exercises {#inference-single-regression-exercises}
-
-::: {.underconstruction}
-Exercises for this section will be available in the 1st edition of this book, which will be available in Summer 2021.
-In the meantime, [OpenIntro::Introduction to Statistics with Randomization and Simulation](https://www.openintro.org/book/isrs/) and [OpenIntro::Statistics](https://www.openintro.org/book/os/), both of which are available for free, have many exercises you can use alongside this book.
-:::
-
 ## Checking model conditions {#tech-cond-linmod}
 
 In the previous sections, we used randomization and bootstrapping to perform inference when the mathematical model was not valid due to violations of the technical conditions.
 In this section, we'll provide details for when the mathematical model is appropriate and a discussion of technical conditions needed for the randomization and bootstrapping procedures.
 .
 
-#### What are the technical conditions for the mathematical model? {.unnumbered}
+### What are the technical conditions for the mathematical model?
 
 When fitting a least squares line, we generally require
 
@@ -699,7 +688,7 @@ When fitting a least squares line, we generally require
 -   **Independent observations.** Be cautious about applying regression to data, which are sequential observations in time such as a stock price each day.
     Such data may have an underlying structure that should be considered in a model and analysis.
     An example of a data set where successive observations are not independent is shown in the fourth panel of Figure \@ref(fig:whatCanGoWrongWithLinearModel).
-    There are also other instances where correlations within the data are important, which is further discussed in Chapter \@ref(multi-logistic-models).
+    There are also other instances where correlations within the data are important, which is further discussed in Chapter \@ref(inf-model-mlr).
 
 -   **Nearly normal residuals.** Generally, the residuals must be nearly normal.
     When this condition is found to be unreasonable, it is usually because of outliers or concerns about influential points, which we'll talk about more in Section \@ref(outliers-in-regression).
@@ -863,14 +852,14 @@ A careful consideration of the experimental design should be undertaken to confi
 -   N: points are **normally** distributed around the line
 -   E: **equal** variability around the line for all values of the explanatory variable
 
-#### Why do we need technical conditions? {.unnumbered}
+### Why do we need technical conditions?
 
 As with other inferential techniques we have covered in this text, if the technical conditions above don't hold, then it is not possible to make concluding claims about the population.
 That is, without the technical conditions, the T-score (or Z-score) will not have the assumed t-distribution (or standard normal Z distribution).
 That said, it is almost always impossible to check the conditions precisely, so we look for large deviations from the conditions.
 If there are large deviations, we will be unable to trust the calculated p-value or the endpoints of the resulting confidence interval.
 
-##### The model based on **L**inearity {.unnumbered}
+#### The model based on **L**inearity {.unnumbered}
 
 The linearity condition is among the most important if your goal is to understand a linear model between $x$ and $y$.
 For example, the value of the slope will not be at all meaningful if the true relationship between $x$ and $y$ is quadratic, as in Figure \@ref(fig:notGoodAtAllForALinearModel).
@@ -879,7 +868,7 @@ Not only should we be cautious about the inference, but the model *itself* is al
 In Section \@ref(inf-mult-reg) we discuss model modifications that can often lead to an excellent fit of strong relationships other than linear ones.
 However, an extended discussion on the different methods for modeling functional forms other than linear is outside the scope of this text.
 
-##### The importance of **I**ndependence {.unnumbered}
+#### The importance of **I**ndependence {.unnumbered}
 
 The technical condition describing the independence of the observations is often the most crucial but also the most difficult to diagnose.
 It is also extremely difficult to gather a dataset which is a true random sample from the population of interest.
@@ -892,7 +881,7 @@ At best it is a model describing students who use the gym (but also who are will
 In lieu of trying to answer whether or not your observations are a true random sample, you might instead focus on whether or not you believe your observations are representative of the populations.
 Humans are notoriously bad at implementing random procedures, so you should be wary of any process that used human intuition to balance the data with respect to, for example, the demographics of the individuals in the sample.
 
-##### Some thoughts on **N**ormality {.unnumbered}
+#### Some thoughts on **N**ormality {.unnumbered}
 
 The normality condition requires that points vary symmetrically around the line, spreading out in a bell-shaped fashion.
 You should consider the "bell" of the normal distribution as sitting on top of the line (coming off the paper in a 3-D sense) so as to indicate that the points are dense close to the line and disperse gradually as they get farther from the line.
@@ -904,7 +893,7 @@ Fortunately the Central Limit Theorem tells us that most of the analyses (e.g., 
 One analysis method that *does* require normality, regardless of sample size, is creating intervals which predict the response of individual outcomes at a given $x$ value, using the linear model.
 One additional reason to worry slightly less about normality is that neither the randomization test nor the bootstrapping procedures require the data to be normal around the line.
 
-##### **E**qual variability for prediction in particular {.unnumbered}
+#### **E**qual variability for prediction in particular {.unnumbered}
 
 As with normality, the equal variability condition (that points are spread out in similar ways around the line for all values of $x$) will not cause problems for the estimate of the linear model.
 That said, the **inference** on the model (e.g., computing p-values) will be incorrect if the variability around the line is heterogeneous.
@@ -914,32 +903,15 @@ The inference results for both a randomization test or a bootstrap confidence in
 Although randomization tests and bootstrapping allow us to analyze data using fewer conditions, some technical conditions are required for all methods described in this text (e.g., independent observation).
 When the equal variability condition is violated and a mathematical analysis (e.g., p-value from T-score) is needed, there are other existing methods (outside the scope of this text) which can easily handle the unequal variance (e.g., weighted least squares analysis).
 
-#### What if all the technical conditions are met? {.unnumbered}
+### What if all the technical conditions are met?
 
 When the technical conditions are met, the least squares regression model and inference is provided by virtually all statistical software.
 In addition to being ubiquitous, however, an additional advantage to the least squares regression model (and related inference) is that the linear model has important extensions (which are not trivial to implement with bootstrapping and randomization tests).
 In particular, random effects models, repeated measures, and interaction are all linear model extensions which require the above technical conditions.
 When the technical conditions hold, the extensions to the linear model can provide important insight into the data and research question at hand.
-We will discuss some of the extended modeling and associated inference in Section \@ref(inf-mult-reg) and Section \@ref(inf-log-reg).
+We will discuss some of the extended modeling and associated inference in Chapter \@ref(inf-model-mlr) and Section \@ref(inf-model-logistic).
 Many of the techniques used to deal with technical condition violations are outside the scope of this text, but they are taught in universities in the very next class after this one.
 If you are working with linear models or curious to learn more, we recommend that you continue learning about statistical methods applicable to a larger class of datasets.
-
-### Exercises {#checking-model-assumptions-exercises}
-
-::: {.underconstruction}
-Exercises for this section will be available in the 1st edition of this book, which will be available in Summer 2021.
-In the meantime, [OpenIntro::Introduction to Statistics with Randomization and Simulation](https://www.openintro.org/book/isrs/) and [OpenIntro::Statistics](https://www.openintro.org/book/os/), both of which are available for free, have many exercises you can use alongside this book.
-:::
-
-## Inference for multiple regression {#inf-mult-reg}
-
-In Chapter \@ref(multi-logistic-models), the least squares regression method was used to estimate linear models which predicted a particular response variable given more than one explanatory variable.
-Here, we discuss whether each of the variables individually is a significant predictor or whether the model might be just as strong without that variable.
-That is, as before, we apply inferentially methods to ask whether a variable could have come from a population where the particular coefficient at hand was zero.
-If one of the linear model coefficients is truly zero (in the population), then the estimate of the coefficient (using least squares) will vary around zero.
-The inference task at hand is to decide whether the coefficient's difference from zero is large enough to decide that the data cannot possibly have come from a model where the true population coefficient is zero.
-Both the derivations from the mathematical model and the randomization model are beyond the scope of this book, but we are able to calculate p-values using statistical software.
-We will discuss interpreting p-values in the multiple regression setting and note some scenarios where careful understanding of the context and the relationship between variables is important.
 
 ## Review {#chp24-review}
 

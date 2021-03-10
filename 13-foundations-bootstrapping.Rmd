@@ -1,10 +1,21 @@
 # Confidence intervals with bootstrapping {#foundations-bootstrapping}
 
-::: {.todo}
-Add chapter intro
+::: {.chapterintro}
+If we could, we would measure the variability of the statistics by repeatedly taking sample data from the population compute the sample proportion.
+Then we could do it again.
+And again.
+And so on until we have a good sense of the variability of our original estimate.
+
+When the variability across the samples is large, we would assume that the original statistic is possibly far from the true population parameter of interest (and the interval estimate will be wide).
+When the variability across the samples is small, we expect the sample statistic to be close to the true parameter of interest (and the interval estimate will be narrow).
+
+The ideal world where sampling data is free or extremely cheap is almost never the case, and taking repeated samples from a population is usually impossible.
+
+So, instead of using a "resample from the population" approach, bootstrapping uses a "resample from the sample" approach.
+In this chapter we provide below examples and details about the bootstrapping process.
 :::
 
-As seen in Section \@ref(inf-rand), Randomization is a statistical technique suitable for evaluating whether a difference in sample proportions is due to chance.
+As seen in Chapter \@ref(foundations-randomization), randomization is a statistical technique suitable for evaluating whether a difference in sample proportions is due to chance.
 
 Randomization tests are best suited for modeling experiments where the treatment (explanatory variable) has been randomly assigned to the observational units and there is an attempt to answer a simple yes/no research question.
 
@@ -14,7 +25,7 @@ For example, consider the following research questions that can be well assessed
 -   Does drinking caffeine affect how quickly a person can tap their finger?
 -   Can we predict whether candidate A will win the upcoming election?
 
-In this section, however, we are instead interested in a different approach to understanding population parameters.
+In this chapter, however, we are instead interested in a different approach to understanding population parameters.
 Instead of testing a claim, the goal now is to estimate the unknown value of a population parameter.
 
 For example,
@@ -23,42 +34,29 @@ For example,
 -   How much faster (or slower) can a person tap their finger, on average, if they drink caffeine first?
 -   What proportion of the vote will go to candidate A?
 
-Here, we explore the situation where focus is on a single proportion, and we introduce a new simulation method: bootstrapping.
+Here, we explore the situation where the focus is on a single proportion, and we introduce a new simulation method: **bootstrapping**.
+
+```{r include = FALSE}
+terms_chp_13 <- c("bootstrapping")
+```
 
 Bootstrapping is best suited for modeling studies where the data have been generated through random sampling from a population.
 
 As with randomization tests, our goal with bootstrapping is to understand variability of a statistic.
 
-Unlike randomization tests (which modeled how the statistic would change if the treatment had been allocated differently), the bootstrap will model how a statistic changes from repeated sampling.
-How a statistic varies from sample to sample will provide information about how different the statistic is from the parameter of interest.
+Unlike randomization tests (which modeled how the statistic would change if the treatment had been allocated differently), the bootstrap will model how a statistic varies from one sample to another taken from the population.
+This will provide information about how different the statistic is from the parameter of interest.
 
 Quantifying the variability of a statistic from sample to sample is a hard problem.
 
-Fortunately, sometimes the mathematical theory for how a statistic varies (across different samples) is well-known; this is the case for the sample proportion as seen in Section \@ref(inf-math).
+Fortunately, sometimes the mathematical theory for how a statistic varies (across different samples) is well-known; this is the case for the sample proportion as seen in Chapter \@ref(foundations-mathematical).
 
-However, some statistics don't have simple theory for how they vary, and bootstrapping provides a computational approach for providing interval estimates for almost any population parameter (we will revisit bootstrapping in Chapters \@ref(inference-cat), \@ref(inference-num), and \@ref(inference-reg) so you'll get plenty of practice as well as exposure to bootstrapping in many different data settings).
+However, some statistics don't have simple theory for how they vary, and bootstrapping provides a computational approach for providing interval estimates for almost any population parameter.
+In this chapter we will focus on bootstrapping to estimate a single proportion, and we will revisit bootstrapping in Chapters \@ref(inference-one-mean) through \@ref(inference-paired-means), so you'll get plenty of practice as well as exposure to bootstrapping in many different data settings.
 
 Our goal with bootstrapping will be to produce an interval estimate (a range of plausible values) for the population parameter.
 
-If we could, we would measure the variability of the statistics by repeatedly taking sample data from the population compute the sample proportion.
-
-Then we could do it again.
-
-And again.
-
-And so on until we have a good sense of the variability of our original estimate.
-
-When the sampling variability is large, we would assume that the original statistic is possibly far from the true population parameter of interest (and the interval estimate will be wide).
-
-When the variability across the samples is small, we expect the sample statistic to be close to the true parameter of interest (and the interval estimate will be narrow).
-
-The ideal world where sampling data is free or extremely cheap is almost never the case, and taking repeated samples from a population is usually impossible.
-
-So, instead of using a "resample from the population" approach, bootstrapping uses a "resample from the sample" approach.
-
-The sections below provide examples and details about the bootstrapping process.
-
-## Medical consultant case study {#sec-med-consult}
+## Medical consultant case study {#case-study-med-consult}
 
 \index{data!medical consultant}
 
@@ -108,7 +106,7 @@ $$\hat{p} = 3 / 62 = 0.048~\text{is used to estimate}~p$$
 :::
 
 ```{r include = FALSE}
-terms_chp_13 <- c("parameter", "point estimate", "statistic")
+terms_chp_13 <- c(terms_chp_13, "parameter", "point estimate", "statistic")
 ```
 
 ### Variability of the statistic
@@ -117,11 +115,7 @@ In the medical consultant case study, the parameter is $p,$ the true probability
 
 There is no reason to believe that $p$ is exactly $\hat{p} = 3/62,$ but there is also no reason to believe that $p$ is particularly far from $\hat{p} = 3/62.$
 
-By sampling with replacement from the dataset (a process called **bootstrapping**\index{bootstrapping}), the variability of the possible $\hat{p}$ values can be approximated.
-
-```{r include = FALSE}
-terms_chp_13 <- c(terms_chp_13, "bootstrapping")
-```
+By sampling with replacement from the dataset (a process called bootstrapping\index{bootstrapping}), the variability of the possible $\hat{p}$ values can be approximated.
 
 Most of the inferential procedures covered in this text are grounded in quantifying how one data set would differ from another when they are both taken from the same population.
 
@@ -132,7 +126,7 @@ Instead, we measure how the samples behave under an estimate of the population.
 Figure \@ref(fig:boot1) shows how the unknown original population can be estimated by using the sample to approximate the proportion of successes and failures (in our case, the proportion of complications and no complications for the medical consultant).
 
 ```{r boot1, fig.cap = "The unknown population is estimated using the observed sample data.  Note that we can use the sample to create an estimated or bootstrapped population from which to sample.  The observed data include three red and four white marbles, so the estimated population contains 3/7 red marbles and 4/7 white marbles.", warning = FALSE,  out.width="75%"}
-knitr::include_graphics("images//boot1prop1.png")
+knitr::include_graphics("images/boot1prop1.png")
 ```
 
 By taking repeated samples from the estimated population, the variability from sample to sample can be observed.
@@ -142,7 +136,7 @@ In Figure \@ref(fig:boot2) the repeated bootstrap samples are obviously differen
 Recall that the bootstrap samples were taken from the same (estimated) population, and so the differences are due entirely to natural variability in the sampling procedure.
 
 ```{r boot2, fig.cap = "Bootstrap sampling provides a measure of the sample to sample variability.  Note that we are taking samples from the estimated population that was created from the observed data.", out.width="75%"}
-knitr::include_graphics("images//boot1prop2.png")
+knitr::include_graphics("images/boot1prop2.png")
 ```
 
 By summarizing each of the bootstrap samples (here, using the sample proportion), we see, directly, the variability of the sample proportion, $\hat{p},$ from sample to sample.
@@ -150,7 +144,7 @@ By summarizing each of the bootstrap samples (here, using the sample proportion)
 The distribution of $\hat{p}_{boot}$ for the example scenario is shown in Figure \@ref(fig:boot3), and the full bootstrap distribution for the medical consultant data is shown in Figure \@ref(fig:MedConsBSSim).
 
 ```{r boot3, fig.cap = "The bootstrapped proportion is estimated for each bootstrap sample.  The resulting bootstrap distribution (dotplot) provides a measure for how the proportions vary from sample to sample", warning = FALSE,  out.width="95%"}
-knitr::include_graphics("images//boot1prop3.png")
+knitr::include_graphics("images/boot1prop3.png")
 ```
 
 ```{r pollBootDotPlot, fig.cap = "The creation of the histogram that goes in the one proportion bootstrapping ppt figures", echo = FALSE, eval = FALSE, fig.width = 10}
@@ -196,11 +190,11 @@ Consider the observed data to be a bag of marbles 3 of which are success (red) a
 By drawing the marbles out of the bag with replacement, we depict the exact same sampling **process** as was done with the infinitely large estimated population.
 
 ```{r boot4, fig.cap = "Taking repeated resamples from the sample data is the same process as creating an infinitely large estimate of the population.  It is computationally more feasible to take resamples directly from the sample.  Note that the resampling is now done with replacement (that is, the original sample does not ever change) so that the original sample and estimated hypothetical population are equivalent.", warning = FALSE,  out.width="75%"}
-knitr::include_graphics("images//boot1prop4.png")
+knitr::include_graphics("images/boot1prop4.png")
 ```
 
 ```{r boot1prop, fig.cap = "A comparison of the process of sampling from the estimate infinite population and resampling with replacement from the original sample.  Note that the dotplot of bootstrapped proportions is the same because the process by which the statistics were estimated is equivalent.", warning = FALSE,  out.width="95%"}
-knitr::include_graphics("images//boot1propboth.png")
+knitr::include_graphics("images/boot1propboth.png")
 ```
 
 If we apply the bootstrap sampling process to the medical consultant example, we consider each client to be one of the marbles in the bag.
@@ -398,7 +392,7 @@ Section \@ref(one-prop-null-boot) also provides a longer discussion on what "95%
 ### Summary
 
 ```{r bootboth, fig.cap = "We will use sampling with replacement to measure the variability of the statistic of interest (here the proportion). Sampling with replacement is a computational tool which is equivalent to using the sample as a way of estimating an infinitely large population from which to sample.", warning = FALSE, out.width = "95%"}
-knitr::include_graphics("images//boot1propboth.png") 
+knitr::include_graphics("images/boot1propboth.png") 
 ```
 
 We can summarize the bootstrap process as follows:
