@@ -326,7 +326,7 @@
         Explain why the remaining estimates change between the two
         models.
 
-1.  **Challenger disaster, Part I** On January 28, 1986, a routine
+1.  **Challenger disaster and model building.** On January 28, 1986, a routine
     launch was anticipated for the Challenger space shuttle.
     Seventy-three seconds into the flight, disaster happened: the
     shuttle broke apart, killing all seven crew members on board. An
@@ -339,43 +339,45 @@
     *Temp* gives the temperature in Fahrenheit, *Damaged* represents the
     number of damaged O- rings, and *Undamaged* represents the number of
     O-rings that were not damaged.
+    
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(knitr)
+    library(broom)
+    
+    orings %>%
+      slice_head(n = 12) %>%
+      t() %>%
+      kable(col.names = NULL)
+    
+    orings %>%
+      slice_tail(n = 11) %>%
+      t() %>%
+      kable(col.names = NULL)
+    
+    orings %>%
+      pivot_longer(cols = c(damaged, undamaged), names_to = "outcome", values_to = "n") %>%
+      uncount(n) %>%
+      mutate(outcome = fct_relevel(outcome, "undamaged", "damaged")) %>%
+      glm(outcome ~ temperature, data = ., family = "binomial") %>%
+      tidy()
+    ```
 
-      ----------------- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -- -- -- -- -- -- -- -- -- -- --
-                                                                                                                  
-      Shuttle Mission      1    2    3    4    5    6    7    8    9   10   11   12                               
-                                                                                                                  
-      Temperature         53   57   58   63   66   67   67   67   68   69   70   70                               
-      Damaged              5    1    1    1    0    0    0    0    0    0    1    0                               
-      Undamaged            1    5    5    5    6    6    6    6    6    6    5    6                               
-                                                                                                                  
-                                                                                                                  
-      Shuttle Mission     13   14   15   16   17   18   19   20   21   22   23                                    
-                                                                                                                  
-      Temperature         70   70   72   73   75   75   76   76   78   79   81                                    
-      Damaged              1    0    0    0    0    1    0    0    0    0    0                                    
-      Undamaged            5    6    6    6    6    5    6    6    6    6    6                                    
-                                                                                                                  
-      ----------------- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -- -- -- -- -- -- -- -- -- -- --
-
-    1.  Each column of the table above represents a different shuttle
+    a.  Each column of the table above represents a different shuttle
         mission. Examine these data and describe what you observe with
         respect to the relationship between temperatures and damaged
         O-rings.
 
-    2.  Failures have been coded as 1 for a damaged O-ring and 0 for an
+    b.  Failures have been coded as 1 for a damaged O-ring and 0 for an
         undamaged O-ring, and a logistic regression model was fit to
-        these data. A summary of this model is given below. Describe the
-        key components of this summary table in words.
+        these data. The regression output for this model is given above.
+        Describe the key components of the output in words.
 
-                          Estimate   Std. Error   z value   Pr($>$$|$z$|$)
-          ------------- ---------- ------------ --------- ----------------
-            (Intercept)    11.6630       3.2963      3.54           0.0004
-            Temperature    -0.2162       0.0532     -4.07           0.0000
-
-    3.  Write out the logistic model using the point estimates of the
+    c.  Write out the logistic model using the point estimates of the
         model parameters.
 
-    4.  Based on the model, do you think concerns regarding O-rings are
+    d.  Based on the model, do you think concerns regarding O-rings are
         justified? Explain.
 
 1.  **Possum classification, Part II** A logistic regression model was
@@ -410,15 +412,12 @@
         from Victoria? How confident are you in the model's accuracy of
         this probability calculation?
 
-1.  **Challenger disaster, Part II**
-    Exercise [\[challenger_disaster_model_select\]](#challenger_disaster_model_select){reference-type="ref"
-    reference="challenger_disaster_model_select"} introduced us to
-    O-rings that were identified as a plausible explanation for the
-    breakup of the Challenger space shuttle 73 seconds into takeoff
-    in 1986. The investigation found that the ambient temperature at the
-    time of the shuttle launch was closely related to the damage of
-    O-rings, which are a critical component of the shuttle. See this
-    earlier exercise if you would like to browse the original data.
+1.  **Challenger disaster and prediction.**
+    On January 28, 1986, a routine launch was anticipated for the Challenger space shuttle.
+    Seventy-three seconds into the flight, disaster happened: the shuttle broke apart, killing all seven crew members on board. 
+    An investigation into the cause of the disaster focused on a critical seal called an O-ring, and it is believed that damage to these O-rings during a shuttle launch may be related to the ambient temperature during the launch. 
+    The investigation found that the ambient temperature at the time of the shuttle launch was closely related to the damage of O-rings, which are a critical component of the shuttle. 
+    
 
     ![](figures/challenger_disaster_damage_temp.png){width="60%"}
 
