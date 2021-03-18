@@ -594,16 +594,20 @@ include_graphics("images/boot2prop1.png")
 
 set.seed(47)
 exp_gp  <- rep(c("blood_thinner", "control"), c(40, 50))
-outcome <- c(rep(c('survived', 'died'), c(11, 39)),
-             rep(c('survived', 'died'), c(14, 26)))
+outcome <- c(rep(c('survived', 'died'), c(14, 26)),
+             rep(c('survived', 'died'), c(11, 39)))
 
 nsim    <- 1000
-n       <- length(exp_gp)
+gp1     <- "blood_thinner"
+n1      <- length(exp_gp[exp_gp == gp1])
+gp2     <- "control"
+n2      <- length(exp_gp[exp_gp == gp2])
 success <- "survived"
 
-SimulateTable <- function(exp_gp, outcome, ...) {
-  bsobs <- sample(1:n, replace = TRUE)
-  table(exp_gp[bsobs], outcome[bsobs])
+SimulateTable <- function(exp_gp, outcome, ...){
+   bsobs1 <- sample(1:n1, replace = TRUE)
+   bsobs2 <- sample((n1+1):(n1+n2), replace = TRUE)
+   table(exp_gp[c(bsobs1,bsobs2)], outcome[c(bsobs1,bsobs2)])
 }
 
 
@@ -613,7 +617,7 @@ sim_tables <-
         outcome = outcome)
 result <- sim_tables %>%
     lapply(function(x) {
-    	  x[1, 1] / sum(x[1, ]) - x[2, 1] / sum(x[2, ])
+    	  x[1, 2] / sum(x[1, ]) - x[2, 2] / sum(x[2, ])
     	}) %>%
     	unlist()
 
@@ -632,16 +636,14 @@ for (i in 1:length(diffs)) {
 breaks <- seq(min(result)-.05, max(result)+ .05, by = (max(result) - min(result) )/ 20)
 
 histPlot(X, Y, breaks = breaks,
-     xlim = c(-.3,.3),
+     xlim = c(min(result)-.05, max(result)+.05),
      xlab = "Difference in Survival Rates",
      ylab = "",
      axes = FALSE,
      #ylim = c(0, max(Y)),
      col = COL[1],
      pch = 20)
- at <- seq(-0.3, 0.3, 0.1)
- labels <- c(-0.3, "", -0.1, 0, 0.1, "", 0.3)
-axis(1, at, labels)
+axis(1)
 abline(h = 0)
 #points(X[X > 0.64], Y[X > 0.64], lwd=3, col = COL[4], cex=0.4)
 ```
