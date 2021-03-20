@@ -65,8 +65,8 @@ ggplot2::update_geom_defaults("col", list(fill = openintro::COL["blue","full"],
                                           color = "#FFFFFF"))
 ggplot2::update_geom_defaults("boxplot", list(color = openintro::COL["blue","full"]))
 ggplot2::update_geom_defaults("density", list(color = openintro::COL["blue","full"]))
-ggplot2::update_geom_defaults("line", list(color = "#000000"))
-ggplot2::update_geom_defaults("smooth", list(color = "#000000"))
+ggplot2::update_geom_defaults("line", list(color = COL["gray", "full"]))
+ggplot2::update_geom_defaults("smooth", list(color = COL["gray", "full"]))
 ggplot2::update_geom_defaults("dotplot", list(color = openintro::COL["blue","full"], 
                                               fill = openintro::COL["blue","full"]))
 
