@@ -3,12 +3,17 @@
 ::: {.chapterintro}
 In Chapter \@ref(model-mlr), the least squares regression method was used to estimate linear models which predicted a particular response variable given more than one explanatory variable.
 Here, we discuss whether each of the variables individually is a significant predictor or whether the model might be just as strong without that variable.
-That is, as before, we apply inferentially methods to ask whether a variable could have come from a population where the particular coefficient at hand was zero.
+That is, as before, we apply inferential methods to ask whether a variable could have come from a population where the particular coefficient at hand was zero.
 If one of the linear model coefficients is truly zero (in the population), then the estimate of the coefficient (using least squares) will vary around zero.
 The inference task at hand is to decide whether the coefficient's difference from zero is large enough to decide that the data cannot possibly have come from a model where the true population coefficient is zero.
 Both the derivations from the mathematical model and the randomization model are beyond the scope of this book, but we are able to calculate p-values using statistical software.
 We will discuss interpreting p-values in the multiple regression setting and note some scenarios where careful understanding of the context and the relationship between variables is important.
+We use cross validation as a method for independent assessment of the multiple linear regression model.
 :::
+
+```{r include=FALSE}
+terms_chp_26 <- c("inference on multiple linear regression")
+```
 
 ## Multiple regression output from software {#inf-mult-reg-soft}
 
@@ -22,7 +27,12 @@ We will refer to this modified dataset as `loans`.
 
 Now, our goal is to create a model where `interest_rate` can be predicted using the variables `debt_to_income`, `term`, and `credit_checks`.
 As you learned in Chapter \@ref(model-mlr), least squares can be used to find the coefficient estimates for the linear model.
-The unknown population model can be written as: $$E[\mbox{interest_rate}] = \beta_0 + \beta_1\times \mbox{debt_to_income} + \beta_2 \times \mbox{term} + \beta_3 \times \mbox{credit_checks}$$
+The unknown population model can be written as: $$
+\begin{align*}
+E[\mbox{interest_rate}] = \beta_0 &+ \beta_1\times \mbox{debt_to_income} + \beta_2 \times \mbox{term}\\
+&+ \beta_3 \times \mbox{credit_checks}\\
+\end{align*}
+$$
 
 ```{r loansmodel}
 loans <- loans_full_schema %>%
@@ -45,18 +55,32 @@ lm(interest_rate ~ debt_to_income + term + credit_checks, data = loans) %>%
 The estimated equation for the regression model may be written as a model with three predictor variables:
 
 $$
-\widehat{\texttt{interest_rate}} = 4.31 + 0.041 \times \texttt{debt_to_income} + 0.16 \times \texttt{term} + 0.25 \times \texttt{credit_checks}
+\begin{align*}
+\widehat{\texttt{interest_rate}} = 4.31 &+ 0.041 \times \texttt{debt_to_income} + 0.16 \times \texttt{term}\\
+&+ 0.25 \times \texttt{credit_checks}
+\end{align*}
 $$
 
 Not only does Table \@ref(tab:loansmodel) provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
 
-In Section \@ref(inf-model-slr), you learned that the hypothesis test for a linear model with **one predictor** can be written as:
+In Section \@ref(inf-model-slr), you learned that the hypothesis test for a linear model with **one predictor**[^inf-model-mlr-1] can be written as:
+
+[^inf-model-mlr-1]: In previous sections, the term **explanatory variable** was used instead of **predictor**.
+    The words are synonymous and are used separately in the different sections to be consistent with how most analysts use them: explanatory variable for testing, predictor for modeling.
+
+```{r include=FALSE}
+terms_chp_25 <- c(terms_chp_25, "predictor")
+```
 
 > if only one predictor, $H_0: \beta_1 = 0.$
 
 That is, if the true population slope is zero, the p-value measures how likely it would be to select data which produced the observed slope ($b_1$) value.
 
 With **multiple predictors**, the hypothesis is similar, however, it is now conditioned on each of the other variables remaining in the model.
+
+```{r include=FALSE}
+terms_chp_25 <- c(terms_chp_25, "multiple predictors")
+```
 
 > if multiple predictors, $H_0: \beta_i = 0$ given other variables in the model
 
@@ -81,11 +105,11 @@ For regression models, it is important to understand the entire context of the m
 Our discussion will focus on interpreting coefficients (and their signs) in relationship to other variables as well as the significance (i.e., the p-value) of each coefficient.
 
 Consider an example where we'd like to predict how much money is in a coin dish based only on the number of coins in the dish.
-We ask 26 students to tell us about their individual coin dishes, collecting data on the total dollar amount, the total number of coins, and the total number of low coins.[^inf-model-mlr-1]
+We ask 26 students to tell us about their individual coin dishes, collecting data on the total dollar amount, the total number of coins, and the total number of low coins.[^inf-model-mlr-2]
 The number of low coins is the number of coins minus the number of quarters (a quarter is the largest commonly used US coin, at US\$0.25).
 Figure \@ref(fig:money) illustrates a sample of U.S. coins, their total worth (amount), the number of total coins, and the number of low coins.
 
-[^inf-model-mlr-1]: In all honesty, this particular dataset is fabricated, and the original idea for the problem comes from Jeff Witmer at Oberlin College.
+[^inf-model-mlr-2]: In all honesty, this particular dataset is fabricated, and the original idea for the problem comes from Jeff Witmer at Oberlin College.
 
 ```{r money, fig.cap = "A sample of coins with 16 total coins, 10 low coins, and a net worth of $1.90.", fig.width = 10}
 include_graphics("images/money.png")
@@ -189,10 +213,19 @@ lm(amount ~ number.of.coins + number.of.low.coins, data = money) %>%
 When working with multiple regression models, understanding the significance and sign of the coefficient is not always as straightforward as it was with the coin example.
 However, we encourage you to always think carefully about the variables in the model, consider how they might be correlated among themselves, and work through different models to see how using different sets of variables might produce different relationships for predicting the response variable of interest.
 
+::: {.important}
+**Multicollinearity.** Multicollinearity happens when the predictor variables are correlated within themselves.
+When the predictor variables themselves are correlated, the coefficients in a multiple regression model can be difficult to interpret.
+:::
+
+```{r include=FALSE}
+terms_chp_25 <- c(terms_chp_25, "multicollinearity")
+```
+
 Although diving into the details are beyond the scope of this text, we will provide one more reflection about multicollinearity.
 If the predictor variables have some degree of correlation, it can be quite difficult to interpret the value of the coefficient or its significance.
 However, even a model that suffers from high multicollinearity will likely lead to unbiased predictions of the response variable.
-So if the task at hand is only to do prediction, mutlicollinearity is likely to not cause you substantial problems.
+So if the task at hand is only to do prediction, multicollinearity is likely to not cause you substantial problems.
 
 ```{=html}
 <!--
@@ -221,6 +254,10 @@ See Figure \@ref(fig:cv) for a visual representation of the cross validation pro
 include_graphics("images/CV.png")
 ```
 
+```{r include=FALSE}
+terms_chp_25 <- c(terms_chp_25, "cross validation", "prediction error")
+```
+
 ::: {.data}
 The data can be found in the [palmerpenguings](https://github.com/allisonhorst/palmerpenguins) package: [`penguins`](https://allisonhorst.github.io/palmerpenguins/articles/intro.html).
 The observations of three different penguin species include measurements on body size and sex.
@@ -231,6 +268,12 @@ Our goal in this section is to compare two different regression models which bot
 Although not exactly aligned with this research project, you might be able to imagine a setting where the dimensions of the penguin are known (through, for example, aerial photographs) but the mass is not known.
 The first model will predict `body_mass_g` by using only the `bill_length_mm`, a variable denoting the length of a penguin's bill, in mm.
 The second model will predict `body_mass_g` by using `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species`.
+
+::: {.important}
+**Prediction Error.** The predicted error (also previously called the **residual**) is the difference between the observed value and the predicted value (from the regression model).
+
+$$\mbox{prediction error}_i = e_i = y_i - \hat{y}_i$$
+:::
 
 The presentation below (see the comparison of Figures \@ref(fig:peng-mass1) and \@ref(fig:peng-mass2)) shows that the model with more variables predicts `body_mass_g` with much smaller errors (predicted minus actual body mass) than the model which uses only `bill_length_g`.
 We have deliberately used a model that intuitively makes sense (the more body measurements, the more predictable mass is).
@@ -453,15 +496,19 @@ We encourage you to consider both standard inferential methods (such as p-values
 
 ### Summary
 
-::: {.todo}
-Add summary
-:::
+Building on the modeling ideas from Chapter \@ref(model-mlr), we have now introduced methods for evaluating coefficients (based on p-values) and evaluating models (cross validation).
+There are many important aspects to consider when working with multiple variables in a single model, and we have only glanced at a few topics.
+Remember, multicollinearity can make coefficient interpretation difficult.
+A topic not covered in this text but important for multiple regression models is interaction, and we hope that you learn more about how variables work together as you continue to build up your modeling skills.
 
 ### Terms
 
-::: {.todo}
-Add terms
-:::
+We introduced the following terms in the chapter.
+If you're not sure what some of these terms mean, we recommend you go back in the text and review their definitions.
+
+```{r eval=FALSE}
+make_terms_table(terms_chp_25)
+```
 
 ## Exercises
 
