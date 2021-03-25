@@ -147,40 +147,6 @@ The distribution of $\hat{p}_{boot}$ for the example scenario is shown in Figure
 knitr::include_graphics("images/boot1prop3.png")
 ```
 
-```{r pollBootDotPlot, fig.cap = "The creation of the histogram that goes in the one proportion bootstrapping ppt figures", echo = FALSE, eval = FALSE, fig.width = 10}
-set.seed(40)
-nsim = 100
-n   = 7
-group = c(rep("red", 3), rep("white", 4))
-success = "red"
-sim  = matrix(NA, nrow = n, ncol = nsim)
-n1  = n2 = 7
-statistic <- function(var1, group){	
-	t1 <- group == success 
-	sum(t1)/n1
-#	t2 <- var1 == success & group == levels(as.factor(group))[2]
-#	sum(t1)/n1 - sum(t2)/n2 
-}
-for(i in 1:nsim){
-	sim[,i] = sample(group, n, replace = TRUE)
-}
-sim_dist = apply(sim, 2, statistic, var1 = outcome)
-diffs  = sim_dist
-#pval   = sum(diffs >= 0.29) / nsim
-values <- table(sim_dist)
-X <- c()
-Y <- c()
-for(i in 1:length(diffs)){
-	x  <- diffs[i]
-	rec <- sum(sim_dist == x)
-	X  <- append(X, rep(x, rec))
-	Y  <- append(Y, 1:rec)
-}
-plot(X, Y, xlim=range(diffs)+c(-1,1)*sd(diffs)/4, xlab = "", ylab= "", axes = FALSE, ylim=c(0,max(Y)), col=COL[1], cex=0.5, pch=19, lwd=1)
-axis(1, at = seq(0,0.9,0.1), labels = c(0.0,"",0.2,"",0.4,"",0.6,"",0.8, ""))
-abline(h=0)
-```
-
 It turns out that in practice, it is very difficult for computers to work with an infinite population (with the same proportional breakdown as in the sample).
 
 However, there is a physical and computational model which produces an equivalent bootstrap distribution of the sample proportion in a computationally efficient manner.
@@ -220,24 +186,36 @@ The variability in the bootstrapped proportions leads us to believe that the tru
 The range of values for the true proportion is called a **bootstrap percentile confidence interval**, and we will see it again in throughout the next few sections and chapters.
 
 ```{r MedConsBSSim, fig.cap = "The original medical consultant data is bootstrapped 10,000 times. Each simulation creates a sample from the original data where the probability of a complication is $\\hat{p} = 3/62.$ The bootstrap 2.5 percentile proportion is 0 and the 97.5 percentile is 0.113. The result is: we are confident that, in the population, the true probability of a complication is between 0% and 11.3%.", fig.width = 10}
-bsprops <- rbinom(10000, size=62, prob=(3/62))/62
-bsq <- quantile(bsprops, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
-bsprops_up <- bsprops[bsprops >= bsq[7]]
-bsprops_low <- bsprops[bsprops <= bsq[2]]
-uprops <- sort(unique(bsprops))
-bin.width <- diff(uprops)[1]
-breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
-histPlot(bsprops, breaks = breaks, axes = FALSE, col = rgb(1,1,1), xlab = "", ylab="")
-histPlot(bsprops_up, breaks = breaks, col = COL[1], add = TRUE)
-histPlot(bsprops_low, breaks = breaks, col = COL[1], add = TRUE)
-axis(1)
-#axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
-lines(c(bsq[7], bsq[7]), c(0, 600), lty = 3, lwd = 3)
-lines(c(bsq[2], bsq[2]), c(0, 600), lty = 3, lwd = 3)
-text(bsq[7], 600, "97.5 percentile", pos = 3)
-text(bsq[2], 600, "2.5 percentile", pos = 3)
-par(las = 0)
-mtext("Bootstrapped values of the proportion of surgical complications", 1, 2.5)
+bsprop_med <- tibble(
+  bsprop = rbinom(10000, size=62, prob=(3/62))/62
+)
+
+bsprop_med_summary <- bsprop_med %>%
+  summarise(
+    bsprop_025 = quantile(bsprop, 0.025),
+    bsprop_975 = quantile(bsprop, 0.975),
+  )
+
+ggplot(bsprop_med, aes(x = bsprop)) +
+  geom_histogram(binwidth = 0.0075) +
+  gghighlight(bsprop <= bsprop_med_summary$bsprop_025 | bsprop >= bsprop_med_summary$bsprop_975, 
+              unhighlighted_params = list(fill = "white", 
+                                          color = IMSCOL["blue", "full"], 
+                                          stroke = 1.5)) +
+  annotate("segment", 
+           x = bsprop_med_summary$bsprop_025, y = 0, 
+           xend = bsprop_med_summary$bsprop_025, yend = 1000,
+           linetype = "dashed") +
+  annotate("segment", 
+           x = bsprop_med_summary$bsprop_975, y = 0, 
+           xend = bsprop_med_summary$bsprop_975, yend = 1000,
+           linetype = "dashed") +
+  annotate("text", x = bsprop_med_summary$bsprop_025, y = 1200, label = "2.5\npercentile") +
+  annotate("text", x = bsprop_med_summary$bsprop_975, y = 1200, label = "97.5\npercentile") +
+  labs(
+    x = "Bootstrapped values of the proportion of surgical complications",
+    y = "Count"
+  )
 ```
 
 ::: {.workedexample}
@@ -297,25 +275,36 @@ As seen in Figure \@ref(fig:tappers-bs-sim), the range of 95% of the resampled v
 That is, we expect that between 0% and 5.83% of people are truly able to guess the tapper's tune.
 
 ```{r tappers-bs-sim, fig.cap = "The original listener-tapper data is bootstrapped 10,000 times. Each simulation creates a sample where the probability of being correct is $\\hat{p} = 3/120.$ The 2.5 percentile proportion is 0 and the 97.5 percentile is 0.0583. The result is that we are confident that, in the population, the true percent of people who can guess correctly is between 0% and 5.83%.", fig.width = 10}
-bsprops2 <- rbinom(10000, size=120, prob=(3/120))/120
-bsq2 <- quantile(bsprops2, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
-bsprops_up <- bsprops2[bsprops2 >= bsq2[7]]
-bsprops_low <- bsprops2[bsprops2 <= bsq2[2]]
-uprops <- sort(unique(bsprops2))
-bin.width <- diff(uprops)[1]
-breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
-histPlot(bsprops2, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
-     xlab = "", ylab="")
-histPlot(bsprops_up, breaks = breaks, col = COL[1], add = TRUE)
-histPlot(bsprops_low, breaks = breaks, col = COL[1], add = TRUE)
-axis(1)
-#axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
-lines(c(bsq2[7], bsq2[7]), c(0, 600), lty = 3, lwd = 3)
-lines(c(bsq2[2], bsq2[2]), c(0, 600), lty = 3, lwd = 3)
-text(bsq2[7], 600, "97.5 percentile", pos = 3)
-text(bsq2[2], 600, "2.5 percentile", pos = 3)
-par(las = 0)
-mtext("Bootstrapped values of the proportion of listeners who guessed correctly", 1, 2.5)
+bsprop_tap <- tibble(
+  bsprop = rbinom(10000, size=120, prob=(3/120))/120
+)
+
+bsprop_tap_summary <- bsprop_tap %>%
+  summarise(
+    bsprop_025 = quantile(bsprop, 0.025),
+    bsprop_975 = quantile(bsprop, 0.975),
+  )
+
+ggplot(bsprop_tap, aes(x = bsprop)) +
+  geom_histogram(binwidth = 0.0045) +
+  gghighlight(bsprop <= bsprop_tap_summary$bsprop_025 | bsprop >= bsprop_tap_summary$bsprop_975, 
+              unhighlighted_params = list(fill = "white", 
+                                          color = IMSCOL["blue", "full"], 
+                                          stroke = 1.5)) +
+  annotate("segment", 
+           x = bsprop_tap_summary$bsprop_025, y = 0, 
+           xend = bsprop_tap_summary$bsprop_025, yend = 1000,
+           linetype = "dashed") +
+  annotate("segment", 
+           x = bsprop_tap_summary$bsprop_975, y = 0, 
+           xend = bsprop_tap_summary$bsprop_975, yend = 1000,
+           linetype = "dashed") +
+  annotate("text", x = bsprop_tap_summary$bsprop_025, y = 1200, label = "2.5\npercentile") +
+  annotate("text", x = bsprop_tap_summary$bsprop_975, y = 1200, label = "97.5\npercentile") +
+  labs(
+    x = "Bootstrapped values of the proportion of listeners who guessed correctly",
+    y = "Count"
+  )
 ```
 
 ::: {.guidedpractice}
