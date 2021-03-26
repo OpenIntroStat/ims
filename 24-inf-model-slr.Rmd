@@ -36,23 +36,25 @@ In this made-up world, the CEO actually has all the relevant data, which is why 
 The CEO is omniscient and can write down the population model which describes the true population relationship between the advertising dollars and revenue.
 There appears to be linear relationship between advertising dollars and revenue (both in\$000).
 
-```{r sandpop, fig.cap = "Revenue as a linear model of advertising dollars for a population of sandwich stores, in $000.", echo = FALSE, message = FALSE, warning = FALSE}
+```{r sandpop, fig.cap = "Revenue as a linear model of advertising dollars for a population of sandwich stores, in thousands of dollars.", echo = FALSE, message = FALSE, warning = FALSE}
 set.seed(4747)
 popsize <- 1000
 ad <- rnorm(popsize, 4, 1)
 rev <- 12 + 4.7 * ad + rnorm(popsize, 0, 8)
-sandwich <- data.frame(ad, rev)
-
-
-#lm(rev ~ ad, data = sandwich) %>% tidy()
+sandwich <- tibble(ad, rev)
 
 ggplot(sandwich, aes(x = ad, y = rev)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE, col = COL[1,1], fullrange = TRUE) + 
-  xlab("amount spent on advertising in thousands of dollars") +
-  ylab("revenue in thousands of dollars")+
-  ggtitle("Hypothetical population, chain sandwich store") +
-  ylim(c(0,65))
+  geom_point(alpha = 0.5, size = 2) +
+  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
+  scale_x_continuous(labels = label_dollar(suffix = "K")) +
+  scale_y_continuous(labels = label_dollar(suffix = "K")) +
+  labs(
+    x = "Amount spent on advertising",
+    y = "Revenue",
+    title = "Chain sandwich store",
+    subtitle = "Hypothetical population"
+  ) +
+  coord_cartesian(ylim = c(0, 65))
 ```
 
 You may remember from Chapter \@ref(model-slr) that the population model is: $$y = \beta_0 + \beta_1 x + \varepsilon.$$
@@ -74,47 +76,72 @@ A subset of size 20 stores shows a similar positive trend between advertising an
 
 ```{r echo = FALSE}
 set.seed(470)
-sandwich2 <- sandwich %>% 
-  sample_n(size=20) 
+sandwich2 <- sandwich %>%
+  sample_n(size = 20)
 sandwich3 <- sandwich %>%
-  sample_n(size=20)
+  sample_n(size = 20)
 sandwich_many <- sandwich %>%
   rep_sample_n(size = 20, replace = FALSE, reps = 50)
 ```
 
 ```{r echo = FALSE, fig.cap = "A random sample of 20 stores from the entire population. A linear trend between advertising and revenue continues to be observed."}
-ggplot(sandwich2) +
-  geom_point(aes(x = ad, y = rev)) +
-  geom_smooth(aes(x = ad, y = rev), method = "lm", se = FALSE, 
-              color = COL[1,1], fullrange = TRUE) +
-  xlab("amount spent on advertising in thousands of dollars") +
-  ylab("revenue in thousands of dollars") +
-  ylim(c(0,65))
+ggplot(sandwich2, aes(x = ad, y = rev)) +
+  geom_point(size = 3, fill = COL["green", "full"], color = "#FFFFFF", shape = 22) +
+  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE, color = COL["green", "full"]) +
+  scale_x_continuous(labels = label_dollar(suffix = "K")) +
+  scale_y_continuous(labels = label_dollar(suffix = "K")) +
+  labs(
+    x = "Amount spent on advertising",
+    y = "Revenue",
+    title = "Chain sandwich store",
+    subtitle = "Random sample of 20 stores"
+  ) +
+  coord_cartesian(ylim = c(0, 65))
 ```
 
 A second sample of size 20 also shows a positive trend!
 
 ```{r echo = FALSE, fig.cap = "A different random sample of 20 stores from the entire population. Again, a linear trend between advertising and revenue is observed."}
 
-ggplot(sandwich3) +
-  geom_point(aes(x = ad, y = rev)) +
-  geom_smooth(aes(x = ad, y = rev), method = "lm", se = FALSE, 
-              color = COL[4,1], fullrange = TRUE) +
-  xlab("amount spent on advertising in thousands of dollars") +
-  ylab("revenue in thousands of dollars") +
-  ylim(c(0,65))
+ggplot(sandwich3, aes(x = ad, y = rev)) +
+  geom_point(size = 3, fill = COL["gray", "full"], color = "#FFFFFF", shape = 23) +
+  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE, color = COL["gray", "full"]) +
+  scale_x_continuous(labels = label_dollar(suffix = "K")) +
+  scale_y_continuous(labels = label_dollar(suffix = "K")) +
+  labs(
+    x = "Amount spent on advertising",
+    y = "Revenue",
+    title = "Chain sandwich store",
+    subtitle = "Random sample of 20 stores"
+  ) +
+  coord_cartesian(ylim = c(0, 65))
 ```
 
-But the line is slightly different!
+But the lines are slightly different!
 
 ```{r echo = FALSE, fig.cap = "The linear models from the two different random samples are quite similar, but they are not the same line."}
-ggplot(sandwich2, aes(x = ad, y = rev)) + geom_point(color=COL[1,1]) + 
-  geom_smooth(method="lm", se=FALSE, color=COL[1,1], fullrange = TRUE) + 
-  geom_point(data=sandwich3, color=COL[4,1]) +
-  geom_smooth(data=sandwich3, method="lm", se=FALSE, color=COL[4,1], fullrange = TRUE) +
-  xlab("amount spent on advertising in thousands of dollars") +
-  ylab("revenue in thousands of dollars") +
-  ylim(c(0,65))
+ggplot() +
+  geom_point(data = sandwich2, aes(x = ad, y = rev), 
+             size = 3, , shape = 22,
+             fill = COL["green", "full"], color = "#FFFFFF") +
+  geom_smooth(data = sandwich2, aes(x = ad, y = rev), 
+              method = "lm", se = FALSE, fullrange = TRUE, 
+              color = COL["green", "full"]) +
+  geom_point(data = sandwich3, aes(x = ad, y = rev), 
+             size = 3, , shape = 23,
+             fill = COL["gray", "full"], color = "#FFFFFF") +
+  geom_smooth(data = sandwich3, aes(x = ad, y = rev), 
+              method = "lm", se = FALSE, fullrange = TRUE, 
+              color = COL["gray", "full"]) +
+  scale_x_continuous(labels = label_dollar(suffix = "K")) +
+  scale_y_continuous(labels = label_dollar(suffix = "K")) +
+  labs(
+    x = "Amount spent on advertising",
+    y = "Revenue",
+    title = "Chain sandwich store",
+    subtitle = "Two random samples of 20 stores"
+  ) +
+  coord_cartesian(ylim = c(0, 65))
 ```
 
 That is, there is **variability** in the regression line from sample to sample.
@@ -125,15 +152,25 @@ terms_chp_24 <- c(terms_chp_24, "variability of the slope")
 ```
 
 ```{r slopes, echo = FALSE, fig.cap = "If repeated samples of size 20 are taken from the entire population, each linear model will be slightly different. The red line provides the linear fit to the entire population."}
-ggplot() + 
- # geom_point() + 
-  geom_smooth(data = sandwich_many, aes(x=ad, y=rev, group = replicate), 
-              method="lm", se=FALSE, color=COL[1,1], fullrange = TRUE) +
-  geom_smooth(data = sandwich, aes(x=ad, y=rev), method = "lm", se = FALSE, 
-              fullrange = TRUE, col = COL[4,1]) + 
-  xlab("amount spent on advertising in thousands of dollars") +
-  ylab("revenue in thousands of dollars") +
-  ylim(c(0,65))
+ggplot() +
+  geom_smooth(
+    data = sandwich_many, aes(x = ad, y = rev, group = replicate),
+    method = "lm", se = FALSE, fullrange = TRUE, 
+    color = COL["gray", "f2"], size = 0.5
+  ) +
+  geom_smooth(
+    data = sandwich, aes(x = ad, y = rev), method = "lm", se = FALSE,
+    fullrange = TRUE, color = COL["red", "full"]
+  ) +
+  scale_x_continuous(labels = label_dollar(suffix = "K")) +
+  scale_y_continuous(labels = label_dollar(suffix = "K")) +
+  labs(
+    x = "Amount spent on advertising",
+    y = "Revenue",
+    title = "Chain sandwich store",
+    subtitle = "Many random samples of 20 stores"
+  ) +
+  coord_cartesian(ylim = c(0, 65))
 ```
 
 You might notice in Figure \@ref(fig:slopes) that the $\hat{y}$ values given by the lines are much more consistent in the middle of the dataset than at the ends.
@@ -143,14 +180,19 @@ The effect of the fan-shaped lines is that predicted revenue for advertising clo
 The distribution of slopes (for samples of size $n=20$) can be seen in a histogram, as in Figure \@ref(fig:sand20lm).
 
 ```{r sand20lm, echo = FALSE, fig.cap="Variability of slope estimates taken from many different samples of stores, each of size 20."}
-sandwich_many_lm <- sandwich_many %>% 
-  group_by(replicate) %>% 
-  do(tidy(lm(rev ~ ad, data=.))) %>%
-  filter(term=="ad")
+sandwich_many_lm <- sandwich_many %>%
+  group_by(replicate) %>%
+  do(tidy(lm(rev ~ ad, data = .))) %>%
+  filter(term == "ad")
 
-ggplot(sandwich_many_lm, aes(x=estimate)) + 
-  geom_histogram() +
-  xlab("slope estimate")
+ggplot(sandwich_many_lm, aes(x = estimate)) +
+  geom_histogram(binwidth = 0.5) +
+  labs(
+    x = "Slope estimate",
+    y = "Count",
+    title = "Chain sandwich store",
+    subtitle = "Many random samples of 20 stores"
+    )
 ```
 
 Recall, the example described in this introduction is hypothetical.
@@ -177,31 +219,35 @@ terms_chp_24 <- c(terms_chp_24, "randomization test for the slope")
 ```
 
 ```{r allcrops, echo = FALSE, fig.cap = "Yield (in tonnes per hectare) for six different crops in the US.  The color of the dot indicates the year."}
-key_crop_yields <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-01/key_crop_yields.csv') %>%
-  rename(wheat = `Wheat (tonnes per hectare)`,
-         rice = `Rice (tonnes per hectare)`,
-         maize = `Maize (tonnes per hectare)`,
-         soybeans = `Soybeans (tonnes per hectare)`,
-         potatoes = `Potatoes (tonnes per hectare)`,
-         beans = `Beans (tonnes per hectare)`,
-         peas = `Peas (tonnes per hectare)`,
-         cassava = `Cassava (tonnes per hectare)`,
-         barley = `Barley (tonnes per hectare)`,
-         cocoa = `Cocoa beans (tonnes per hectare)`,
-         bananas = `Bananas (tonnes per hectare)`)
-  
+key_crop_yields <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-01/key_crop_yields.csv") %>%
+  rename(
+    wheat = `Wheat (tonnes per hectare)`,
+    rice = `Rice (tonnes per hectare)`,
+    maize = `Maize (tonnes per hectare)`,
+    soybeans = `Soybeans (tonnes per hectare)`,
+    potatoes = `Potatoes (tonnes per hectare)`,
+    beans = `Beans (tonnes per hectare)`,
+    peas = `Peas (tonnes per hectare)`,
+    cassava = `Cassava (tonnes per hectare)`,
+    barley = `Barley (tonnes per hectare)`,
+    cocoa = `Cocoa beans (tonnes per hectare)`,
+    bananas = `Bananas (tonnes per hectare)`
+  )
+
 crops_USA <- key_crop_yields %>%
   filter(Code == "USA") %>%
   select(-cassava, -cocoa, -potatoes, -bananas)
 
 crops_USA_long <- crops_USA %>%
   pivot_longer(rice:barley,
-    names_to = "crop", values_to = "yield")
+    names_to = "crop", values_to = "yield"
+  )
 
-ggplot(crops_USA_long)   +
-    geom_point(aes(x = yield, y = wheat, color = Year)) +
-  facet_wrap(~crop) + 
-  ylim(c(1.4, 3.6))
+ggplot(crops_USA_long) +
+  geom_point(aes(x = yield, y = wheat, color = Year)) +
+  facet_wrap(~crop) +
+  ylim(c(1.4, 3.6)) +
+  scale_color_gradient(low = COL["blue", "f3"], high = COL["blue", "full"])
 ```
 
 As you have seen previously, statistical inference typically relies on setting a null hypothesis which is hoped to be subsequently rejected.
@@ -223,13 +269,13 @@ That is, each `wheat` yield is randomly assigned to a new `maize` yield.
 set.seed(4747)
 ggplot(crops_USA) +
   geom_point(aes(x = maize, y = wheat)) +
-  ggtitle("Original Data") + 
+  ggtitle("Original Data") +
   ylim(c(1.4, 3.6))
 
 ggplot(crops_USA) +
   geom_point(aes(x = maize, y = sample(wheat))) +
   ylab("permuted wheat") +
-  ggtitle("Permuted Data") + 
+  ggtitle("Permuted Data") +
   ylim(c(1.4, 3.6))
 ```
 
@@ -244,10 +290,10 @@ Note that the least squares model (see Chapter \@ref(model-slr)) describing the 
 The columns in Table \@ref(tab:lsCrops) are further described in Section \@ref(mathslope).
 
 ```{r lsCrops}
-lm(wheat ~ maize, data = crops_USA) %>% 
+lm(wheat ~ maize, data = crops_USA) %>%
   tidy() %>%
   kable(caption = "The least squares estimates of the intercept and slope are given in the `estimate` column.  The observed slope is 0.195.") %>%
-  kable_styling() 
+  kable_styling()
 ```
 
 ### Variability of the statistic
@@ -260,16 +306,16 @@ Figure \@ref(fig:permwheatlm) shows two different permutations of `wheat` and th
 set.seed(47)
 ggplot(crops_USA, aes(x = maize, y = sample(wheat))) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, col = COL[1,1], fullrange = TRUE) +
+  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
   ylab("permuted wheat") +
-  ggtitle("First Permutation of Wheat") + 
+  ggtitle("First Permutation of Wheat") +
   ylim(c(1.4, 3.6))
 
 ggplot(crops_USA, aes(x = maize, y = sample(wheat))) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, col = COL[4,1], fullrange = TRUE) +
+  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
   ylab("permuted wheat") +
-  ggtitle("Second Permutation of Wheat") + 
+  ggtitle("Second Permutation of Wheat") +
   ylim(c(1.4, 3.6))
 ```
 
@@ -283,15 +329,16 @@ perm_slope <- crops_USA %>%
   specify(wheat ~ maize) %>%
   hypothesize(null = "independence") %>%
   generate(reps = 1000, type = "permute") %>%
-  calculate(stat = "slope") 
- 
+  calculate(stat = "slope")
+
 obs_slope <- crops_USA %>%
   specify(wheat ~ maize) %>%
-  calculate(stat = "slope") %>% pull()
-  
-ggplot(data=perm_slope, aes(x=stat)) + 
+  calculate(stat = "slope") %>%
+  pull()
+
+ggplot(data = perm_slope, aes(x = stat)) +
   geom_histogram() +
-  geom_vline(xintercept = obs_slope, col = COL[4,1])
+  geom_vline(xintercept = obs_slope, color = COL["red", "full"])
 ```
 
 As we can see from Figure \@ref(fig:nulldistCrop), a slope estimate as extreme as the observed slope estimate (the red line) never happened in many repeated permutations of the `wheat` variable.
@@ -317,10 +364,10 @@ That is, what is the slope that models `average wheat yield` as a function of `p
 
 ```{r echo = FALSE}
 set.seed(4747)
-crops4 <- crops_USA %>% 
-  sample_n(size=58, replace = TRUE) 
+crops4 <- crops_USA %>%
+  sample_n(size = 58, replace = TRUE)
 crops5 <- crops_USA %>%
-  sample_n(size=58, replace = TRUE)
+  sample_n(size = 58, replace = TRUE)
 crops_many_BS <- crops_USA %>%
   rep_sample_n(size = 58, replace = TRUE, reps = 50)
 ```
@@ -328,9 +375,11 @@ crops_many_BS <- crops_USA %>%
 ```{r peasPlot, echo = FALSE, fig.cap = "Original data: wheat yield as a linear model of peas yield, in tonnes per hectare.  Notice that the relationship between `peas` and `wheat` is not as strong as the relationship we saw previously between `maize` and `wheat`."}
 ggplot(crops_USA) +
   geom_point(aes(x = peas, y = wheat)) +
-  geom_smooth(aes(x = peas, y = wheat), method = "lm", se = FALSE,
-              color = COL[1,1], fullrange = TRUE) + 
-  ylim(c(1.4, 3.6))
+  geom_smooth(aes(x = peas, y = wheat),
+    method = "lm", se = FALSE,
+    fullrange = TRUE, 
+  ) +
+  coord_cartesian(ylim = c(1.4, 3.6))
 ```
 
 ### Variability of the statistic
@@ -345,23 +394,27 @@ The measurements are linked to the dot (i.e., to the year in which the measureme
 
 ggplot(crops_USA) +
   geom_point(aes(x = maize, y = wheat), alpha = 0.4) +
-  geom_smooth(aes(x = maize, y = wheat), method = "lm", se = FALSE,
-              col=COL[1,1], fullrange = TRUE) +
+  geom_smooth(aes(x = maize, y = wheat),
+    method = "lm", se = FALSE,
+    fullrange = TRUE
+  ) +
   ggtitle("Original crop data.") +
-  geom_point(x = 8.38, y = 2.89, col = COL[2,1], pch = 1, size=8) +
-  geom_point(x = 4.15, y = 1.7, col = COL[4,1], pch = 1, size=8) +
-  geom_point(x = 5.53, y = 2.28, col = COL[1,1], pch = 1, size=8) + 
+  geom_point(x = 8.38, y = 2.89, color = COL["green", "full"], pch = 1, size = 8) +
+  geom_point(x = 4.15, y = 1.7, color = COL["red", "full"], pch = 1, size = 8) +
+  geom_point(x = 5.53, y = 2.28, pch = 1, size = 8) +
   ylim(c(1.4, 3.6))
 
 
 ggplot(crops5) +
   geom_point(aes(x = maize, y = wheat), alpha = 0.4) +
-  geom_smooth(aes(x = maize, y = wheat), method = "lm", se = FALSE,
-              col=COL[1,1], fullrange = TRUE) +
+  geom_smooth(aes(x = maize, y = wheat),
+    method = "lm", se = FALSE,
+    fullrange = TRUE
+  ) +
   ggtitle("Bootstrap sample from the crop data.") +
-  geom_point(x = 8.38, y = 2.89, col = COL[2,1], pch = 1, size=8) +
-  geom_point(x = 4.15, y = 1.7, col = COL[4,1], pch = 1, size=8) +
-  geom_point(x = 5.53, y = 2.28, col = COL[1,1], pch = 1, size=8) + 
+  geom_point(x = 8.38, y = 2.89, color = COL["green", "full"], pch = 1, size = 8) +
+  geom_point(x = 4.15, y = 1.7, color = COL["red", "full"], pch = 1, size = 8) +
+  geom_point(x = 5.53, y = 2.28, pch = 1, size = 8) +
   ylim(c(1.4, 3.6))
 ```
 
@@ -372,9 +425,9 @@ The green circle represents a particular structure to the data which is observed
 By repeatedly resampling, we can see dozens of bootstrapped slopes on the same plot in Figure \@ref(fig:cropBS).
 
 ```{r cropBS, echo = FALSE, fig.cap = "Repeated bootstrap resamples of size 58 are taken from the original data.  Each of the bootstrapped linear model is slightly different."}
-ggplot(crops_many_BS, aes(x=peas, y=wheat, group=replicate)) + 
-  #geom_point() + 
-  geom_smooth(method="lm", se=FALSE, color=COL[1,1], fullrange = TRUE) + 
+ggplot(crops_many_BS, aes(x = peas, y = wheat, group = replicate)) +
+  # geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = COL[1, 1], fullrange = TRUE) +
   ylim(c(1.4, 3.6))
 ```
 
@@ -386,10 +439,10 @@ We are 95% confident that for the model describing the population of crops of `p
 ```{r peasBSslopes, fig.cap="The original crop data on wheat and peas is bootstrapped 1,000 times. The histogram provides a sense for the variability of the standard deviation of the linear model slope from sample to sample.", warning=FALSE, fig.width=15}
 
 set.seed(4747)
-crops_many_lm_BS <- crops_many_BS %>% 
-  group_by(replicate) %>% 
-  do(tidy(lm(wheat ~ peas, data=.))) %>%
-  filter(term=="peas") %>%
+crops_many_lm_BS <- crops_many_BS %>%
+  group_by(replicate) %>%
+  do(tidy(lm(wheat ~ peas, data = .))) %>%
+  filter(term == "peas") %>%
   select(estimate) %>%
   pull()
 
@@ -399,35 +452,37 @@ bsmeans_up <- crops_many_lm_BS[crops_many_lm_BS >= bsq1[7]]
 bsmeans_low <- crops_many_lm_BS[crops_many_lm_BS <= bsq1[2]]
 
 umeans <- sort(unique(crops_many_lm_BS))
-bin.width <- (umeans[length(umeans)] - umeans[1])/15
-#breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
-breaks <- seq(umeans[1]-.01, umeans[length(umeans)] + bin.width, by = bin.width)
-  
+bin.width <- (umeans[length(umeans)] - umeans[1]) / 15
+# breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
+breaks <- seq(umeans[1] - .01, umeans[length(umeans)] + bin.width, by = bin.width)
 
-histPlot(crops_many_lm_BS, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
-     xlab = "", ylab="")
-#histPlot(bsmeans_up, breaks = breaks, col = COL[1], add = TRUE)
-#histPlot(bsmeans_low, breaks = breaks, col = COL[1], add = TRUE)
+
+histPlot(crops_many_lm_BS,
+  breaks = breaks, axes = FALSE, col = rgb(1, 1, 1),
+  xlab = "", ylab = ""
+)
+# histPlot(bsmeans_up, breaks = breaks, col = COL[1], add = TRUE)
+# histPlot(bsmeans_low, breaks = breaks, col = COL[1], add = TRUE)
 axis(1)
-#axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
-#lines(c(bsq1[6], bsq1[6]), c(0, 125), lty = 3, lwd = 3)
-#lines(c(bsq1[3], bsq1[3]), c(0, 125), lty = 3, lwd = 3)
+# axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
+# lines(c(bsq1[6], bsq1[6]), c(0, 125), lty = 3, lwd = 3)
+# lines(c(bsq1[3], bsq1[3]), c(0, 125), lty = 3, lwd = 3)
 lines(c(bsq1[7], bsq1[7]), c(0, 2), lty = 3, lwd = 3)
 lines(c(bsq1[2], bsq1[2]), c(0, 2), lty = 3, lwd = 3)
-#lines(c(bsq1[8], bsq1[8]), c(0, 55), lty = 3, lwd = 3)
-#lines(c(bsq1[1], bsq1[1]), c(0, 55), lty = 3, lwd = 3)
-#text(bsq1[6], 140, "95 percentile", pos = 3)
-#text(bsq1[3], 140, "5 percentile", pos = 3)
+# lines(c(bsq1[8], bsq1[8]), c(0, 55), lty = 3, lwd = 3)
+# lines(c(bsq1[1], bsq1[1]), c(0, 55), lty = 3, lwd = 3)
+# text(bsq1[6], 140, "95 percentile", pos = 3)
+# text(bsq1[3], 140, "5 percentile", pos = 3)
 text(bsq1[7], 4, "97.5 percentile", pos = 3, cex = 2)
 text(bsq1[2], 4, "2.5 percentile", pos = 3, cex = 2)
-#text(bsq1[8], 70, "99.5 percentile", pos = 3)
-#text(bsq1[1], 70, "0.5 percentile", pos = 3)
-#text(bsq1[6], 130, round(bsq1[6],1), pos = 3)
-#text(bsq1[3], 130, round(bsq1[3],1), pos = 3)
-text(bsq1[7], 3.5, round(bsq1[7],3), pos = 3, cex = 2)
-text(bsq1[2], 3.5, round(bsq1[2],3), pos = 3, cex = 2)
-#text(bsq1[8], 60, round(bsq1[8],1), pos = 3)
-#text(bsq1[1], 60, round(bsq1[1],1), pos = 3)
+# text(bsq1[8], 70, "99.5 percentile", pos = 3)
+# text(bsq1[1], 70, "0.5 percentile", pos = 3)
+# text(bsq1[6], 130, round(bsq1[6],1), pos = 3)
+# text(bsq1[3], 130, round(bsq1[3],1), pos = 3)
+text(bsq1[7], 3.5, round(bsq1[7], 3), pos = 3, cex = 2)
+text(bsq1[2], 3.5, round(bsq1[2], 3), pos = 3, cex = 2)
+# text(bsq1[8], 60, round(bsq1[8],1), pos = 3)
+# text(bsq1[1], 60, round(bsq1[1],1), pos = 3)
 par(las = 0)
 mtext("Bootstrapped values of the slope statistic describing wheat and peas.", 1, 2.5)
 ```
@@ -474,53 +529,64 @@ While the data are collected sequentially, a separate analysis was used to check
 
 ```{r unemploymentAndChangeInHouse, fig.cap="The percent change in House seats for the President's party in each election from 1898 to 2010 plotted against the unemployment rate. The two points for the Great Depression have been removed, and a least squares regression line has been fit to the data.", warning=FALSE, fig.width=15}
 
+midterms_house %>%
+  filter(!(year %in% c(1935, 1939))) %>%
+  ggplot(aes(x = unemp, y = house_change, 
+             color = party, shape = party, fill = party)) +
+  geom_point(size = 3, color = "#FFFFFF", alpha = 0.7) +
+  scale_fill_openintro() +
+  scale_shape_manual(values = c(21, 24))
+
 d <- midterms_house
 th <- !d$year %in% c(1935, 1939)
 plot(d$unemp[th], d$house_change[th],
-     # col = COL[ifelse(d$party[th] == "Republican", 4, 1)],
-     pch = 19,
-     xlim = c(3, 12),
-     ylim = c(-30, 13),
-     axes = FALSE,
-     type = 'n',
-     xlab = '',
-     ylab = paste0("Percent Change in Seats of\n",
-                  "President's Party in House of Rep."))
-mtext('Percent Unemployment', 1, 2)
+  # col = COL[ifelse(d$party[th] == "Republican", 4, 1)],
+  pch = 19,
+  xlim = c(3, 12),
+  ylim = c(-30, 13),
+  axes = FALSE,
+  type = "n",
+  xlab = "",
+  ylab = paste0(
+    "Percent Change in Seats of\n",
+    "President's Party in House of Rep."
+  )
+)
+mtext("Percent Unemployment", 1, 2)
 abline(h = seq(-100, 100, 10), col = COL[7, 3], lwd = 2)
 abline(h = seq(-105, 100, 10), col = COL[7, 3], lwd = 0.7)
 abline(v = seq(-100, 100, 4), col = COL[7, 3], lwd = 2)
 abline(v = seq(-102, 100, 4), col = COL[7, 3], lwd = 0.7)
 repub <- (d$party[th] == "Republican")
 points(d$unemp[th], d$house_change[th],
-       col = COL[ifelse(repub, 4, 1)],
-       pch = ifelse(repub, 17, 19))
+  col = COL[ifelse(repub, 4, 1)],
+  pch = ifelse(repub, 17, 19)
+)
 AxisInPercent(1, at = seq(0, 20, 4))
 AxisInPercent(2, at = seq(-100, 100, 10))
 box()
 cases <- c(1, 22, 25, 27, 29, 31)
 for (i in 1:length(cases)) {
-  potus  <- as.character(d$potus[cases[i]])
-  potus  <- tail(strsplit(potus, " ")[[1]], 1)
-  year   <- d$year[cases[i]]-1
-  potus  <- paste0(potus, "\n", year)
-  unem   <- d$unemp[cases[i]]
+  potus <- as.character(d$potus[cases[i]])
+  potus <- tail(strsplit(potus, " ")[[1]], 1)
+  year <- d$year[cases[i]] - 1
+  potus <- paste0(potus, "\n", year)
+  unem <- d$unemp[cases[i]]
   change <- d$house_change[cases[i]]
   text(unem, change, potus, pos = 3, cex = 0.6)
 }
 
-#summary(lm(house_change ~ unemp, d))
+# summary(lm(house_change ~ unemp, d))
 
-g <- lm(house_change ~ unemp, d[th,])
-#summary(g)
+g <- lm(house_change ~ unemp, d[th, ])
+# summary(g)
 abline(g, col = COL[5])
-legend('topright',
-       bg = "#FFFFFF",
-       pch = c(19, 17),
-       col = COL[c(1, 4)],
-       legend = c("Democrat", "Republican"))
-
-
+legend("topright",
+  bg = "#FFFFFF",
+  pch = c(19, 17),
+  col = COL[c(1, 4)],
+  legend = c("Democrat", "Republican")
+)
 ```
 
 ::: {.guidedpractice}
@@ -564,12 +630,12 @@ terms_chp_24 <- c(terms_chp_24, "t-distribution for slope")
 ```{r midtermUnempRegTable}
 d <- midterms_house
 th <- !d$year %in% c(1935, 1939)
-lm(house_change ~ unemp, d[th,]) %>% 
+lm(house_change ~ unemp, d[th, ]) %>%
   tidy() %>%
- kable(caption = "Output from statistical software for the regression
+  kable(caption = "Output from statistical software for the regression
     line modeling the midterm election losses for the
     President's party as a response to unemployment.") %>%
- kable_styling() 
+  kable_styling()
 ```
 
 ::: {.workedexample}
@@ -626,10 +692,10 @@ The point of the tools in this section are to go beyond a visual interpretation 
 d <- elmhurst
 d$gift_aid <- d$gift_aid * 1000
 d$family_income <- d$family_income * 1000
-lm(gift_aid ~ family_income, d) %>% 
+lm(gift_aid ~ family_income, d) %>%
   tidy() %>%
- kable(caption = "Summary of least squares fit for the Elmhurst College data, where we are predicting the gift aid by the university based on the family income of students.") %>%
- kable_styling() 
+  kable(caption = "Summary of least squares fit for the Elmhurst College data, where we are predicting the gift aid by the university based on the family income of students.") %>%
+  kable_styling()
 ```
 
 ::: {.guidedpractice}
@@ -730,38 +796,44 @@ pch <- 20
 cex <- 1.75
 col <- COL[1, 3]
 
-layout(matrix(1:8, 2),
-       rep(1, 4),
-       c(2, 1))
+layout(
+  matrix(1:8, 2),
+  rep(1, 4),
+  c(2, 1)
+)
 
 these <- simulated_scatter$group == 20
 x <- simulated_scatter$x[these]
 y <- simulated_scatter$y[these]
 plot(x, y,
-     axes = FALSE,
-     pch = pch,
-     cex = cex,
-     col = "#00000000")
+  axes = FALSE,
+  pch = pch,
+  cex = cex,
+  col = "#00000000"
+)
 box()
 makeTube(x, y,
-         type = 'quad',
-         addLine = FALSE,
-         col = COL[7, 3])
+  type = "quad",
+  addLine = FALSE,
+  col = COL[7, 3]
+)
 points(x, y,
-       pch = pch,
-       cex = cex,
-       col = COL[1, 2])
+  pch = pch,
+  cex = cex,
+  col = COL[1, 2]
+)
 g <- lm(y ~ x)
 abline(g)
 yR <- range(g$residuals)
 yR <- yR + c(-1, 1) * diff(yR) / 10
 plot(x, g$residuals,
-     xlab = "", ylab = "",
-     axes = FALSE,
-     pch = pch,
-     cex = cex,
-     col = COL[1, 2],
-     ylim = yR)
+  xlab = "", ylab = "",
+  axes = FALSE,
+  pch = pch,
+  cex = cex,
+  col = COL[1, 2],
+  ylim = yR
+)
 abline(h = 0, lty = 2)
 box()
 
@@ -769,29 +841,33 @@ these <- simulated_scatter$group == 21
 x <- simulated_scatter$x[these]
 y <- simulated_scatter$y[these]
 plot(x, y,
-     axes = FALSE,
-     pch = pch,
-     cex = cex,
-     col = "#00000000")
+  axes = FALSE,
+  pch = pch,
+  cex = cex,
+  col = "#00000000"
+)
 box()
 makeTube(x, y,
-         addLine = FALSE,
-         col = COL[7, 3])
+  addLine = FALSE,
+  col = COL[7, 3]
+)
 points(x, y,
-       pch = pch,
-       cex = cex,
-       col = COL[1,2])
+  pch = pch,
+  cex = cex,
+  col = COL[1, 2]
+)
 g <- lm(y ~ x)
 abline(g)
 yR <- range(g$residuals)
 yR <- yR + c(-1, 1) * diff(yR) / 10
 plot(x, g$residuals,
-     xlab = "", ylab = "",
-     axes = FALSE,
-     pch = pch,
-     cex = cex,
-     col = COL[1, 2],
-     ylim = yR)
+  xlab = "", ylab = "",
+  axes = FALSE,
+  pch = pch,
+  cex = cex,
+  col = COL[1, 2],
+  ylim = yR
+)
 abline(h = 0, lty = 2)
 box()
 
@@ -799,32 +875,36 @@ these <- simulated_scatter$group == 22
 x <- simulated_scatter$x[these]
 y <- simulated_scatter$y[these]
 plot(x, y,
-     axes = FALSE,
-     pch = pch,
-     cex = cex,
-     col = "#00000000")
+  axes = FALSE,
+  pch = pch,
+  cex = cex,
+  col = "#00000000"
+)
 box()
 makeTubeAdv(x, y,
-            type = 'l',
-            variance = 'l',
-            bw = 0.03,
-            Z = 1.7,
-            col = COL[7, 3])
+  type = "l",
+  variance = "l",
+  bw = 0.03,
+  Z = 1.7,
+  col = COL[7, 3]
+)
 points(x, y,
-       pch = pch,
-       cex = cex,
-       col = COL[1, 2])
+  pch = pch,
+  cex = cex,
+  col = COL[1, 2]
+)
 g <- lm(y ~ x)
 abline(g)
 yR <- range(g$residuals)
 yR <- yR + c(-1, 1) * diff(yR) / 10
 plot(x, g$residuals,
-     axes = FALSE,
-     xlab = "", ylab = "",
-     pch = pch,
-     cex = cex,
-     col = COL[1, 2],
-     ylim = yR)
+  axes = FALSE,
+  xlab = "", ylab = "",
+  pch = pch,
+  cex = cex,
+  col = COL[1, 2],
+  ylim = yR
+)
 abline(h = 0, lty = 2)
 box()
 
@@ -832,33 +912,37 @@ these <- simulated_scatter$group == 23
 x <- simulated_scatter$x[these]
 y <- simulated_scatter$y[these]
 plot(x, y,
-     axes = FALSE,
-     pch = pch,
-     cex = cex,
-     col = "#00000000")
+  axes = FALSE,
+  pch = pch,
+  cex = cex,
+  col = "#00000000"
+)
 box()
 makeTube(x, y,
-         addLine = FALSE,
-         col = COL[7, 3])
+  addLine = FALSE,
+  col = COL[7, 3]
+)
 points(x, y,
-       pch = pch,
-       cex = cex,
-       col = COL[1, 2])
+  pch = pch,
+  cex = cex,
+  col = COL[1, 2]
+)
 g <- lm(y ~ x)
 abline(g)
 yR <- range(g$residuals)
 yR <- yR + c(-1, 1) * diff(yR) / 10
 plot(x, g$residuals,
-     axes = FALSE,
-     xlab = "", ylab = "",
-     pch = pch,
-     cex = cex,
-     col = COL[1, 2],
-     ylim = yR)
+  axes = FALSE,
+  xlab = "", ylab = "",
+  pch = pch,
+  cex = cex,
+  col = COL[1, 2],
+  ylim = yR
+)
 abline(h = 0, lty = 2)
 box()
 
-makeTubeAdv(x,y, col = COL[7,3])
+makeTubeAdv(x, y, col = COL[7, 3])
 ```
 
 ::: {.guidedpractice}

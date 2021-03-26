@@ -40,9 +40,6 @@ expenses <- tribble(
 ```
 
 ```{r pie-to-bar, out.width="30%", fig.show = 'hold', fig.ncol = 2, fig.cap = "A pie chart (with added irrelevant features) as compared to a simple bar plot."}
-# remake in R using ggthreed
-# doesn't work with ggthreed
-# https://github.com/coolbutuseless/ggthreed/issues/5
 knitr::include_graphics("images/pie-3d.jpg")
 ggplot(expenses, aes(x = fct_infreq(category))) +
   geom_bar() +
@@ -65,20 +62,16 @@ The default coloring is distracting and makes the reader question, for example, 
 Also note that not everyone sees color the same way, often it's useful to add color and one more feature (e.g., pattern) so that you can refer to the features you're drawing attention to in multiple ways.
 
 ```{r red-bar, fig.width = 5, fig.asp=0.8, fig.cap = "The default coloring in the first bar plot does nothing for the udnerstanding of the data.  In the second plot, the color draws attention directly to the bar on Buildings and Administration."}
-p_bad <- ggplot(expenses, aes(x = fct_infreq(category), fill = category)) +
-  geom_bar() +
-  theme_minimal() +
-  coord_flip() +
-  labs(x = "", y = "") +
-  theme(legend.position = "none")
+p_bad <- ggplot(expenses, aes(y = fct_infreq(category), fill = category)) +
+  geom_bar(show.legend = FALSE) +
+  scale_color_openintro("five") +
+  labs(x = NULL, y = NULL)
 
-p_good <- ggplot(expenses, aes(x = fct_infreq(category), fill = category)) +
-  geom_bar() +
-  theme_minimal() +
-  coord_flip() +
-  labs(x = "", y = "") +
-  scale_fill_manual(values = c("red", rep("gray", 4))) +
-  theme(legend.position = "none")
+p_good <- ggplot(expenses, aes(y = fct_infreq(category), fill = category)) +
+  geom_bar(show.legend = FALSE) +
+  scale_fill_manual(values = c(IMSCOL["red", "full"], rep(IMSCOL["lgray", "full"], 4))) +
+  labs(x = NULL, y = NULL)
+
 
 p_bad / p_good
 ```
@@ -142,19 +135,16 @@ brexit <- tibble(
 ```{r brexit-bars, out.width="30%", fig.show = 'hold', fig.ncol = 3, fig.cap = "Bar plot three different ways.  The first graph is the default (with bars alphabetically ordered); the middle graph sorts the bars in descending order; the last graph orders the bars in the same order the original question was asked."}
 p_bad <- ggplot(data = brexit, aes(x = opinion)) +
   geom_bar() + 
-  xlab("Opinion") +
-  ylab("Count")
+  labs(x = "Opinion", y = "Count")
 
 p_desc <- ggplot(data = brexit, aes(x = fct_infreq(opinion))) +
   geom_bar() + 
-  xlab("Opinion") +
-  ylab("Count")
+  labs(x = "Opinion", y = "Count")
 
 p_ordered <- ggplot(data = brexit, 
                     aes(x = fct_relevel(opinion, c("Very well", "Fairly well", "Fairly badly", "Very badly", "Don't know")))) +
   geom_bar() + 
-  xlab("Opinion") +
-  ylab("Count")
+    labs(x = "Opinion", y = "Count")
 
 p_bad  
 p_desc
@@ -187,7 +177,7 @@ ggplot(data = brexit, aes(x = region)) +
 ### Make the labels as easy to read as possible
 
 The Brexit survey results were additionally broken down by region in Great Britain.
-The segmented bar plot allows for comparison of Brexit opinion across the five regions.\
+The segmented bar plot allows for comparison of Brexit opinion across the five regions.
 In Figure \@ref(fig:Brex-region) the bars are vertical in the left graphic and horizontal in the right graphic.
 While the quantitative information in the two graphics is identical, rotating the graph and creating horizontal bars provides the long categories with more space to be written.
 The easier the categories are to see, the more the reader will learn from the visualization.
@@ -212,11 +202,13 @@ brexit <- brexit %>%
   mutate(Opinion = fct_relevel(opinion, c("Very well", "Fairly well", "Fairly badly", "Very badly", "Don't know")))
 
 p_bad <- ggplot(data = brexit, aes(x = region, fill = Opinion)) +
-  geom_bar()
+  geom_bar() +
+  scale_fill_openintro("five")
 
 p_good <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
   geom_bar() +
-    labs(x = "Region", y = "")
+  labs(x = "Region", y = NULL) +
+  scale_fill_openintro("five")
 
 p_bad
 p_good
@@ -228,7 +220,7 @@ terms_chp_6 <- c(terms_chp_6, "labels")
 
 ### Pick a purpose
 
-Every graphical decision should be made with a purpose.\
+Every graphical decision should be made with a purpose.
 As previously mentioned, sticking with default options is not always best for conveying the narrative of your data story.
 Segmented bar plots tell one part of a story.
 Depending on your research question, they may not tell the part of the story most important to the research.
@@ -247,24 +239,21 @@ Other deliberate decisions to consider include using informative labels and avoi
 ```{r seg-three-ways,fig.cap = "Three different representations of the two variables including survey opinion and region.  Use the graphic that best conveys the data narrative at hand."}
 p_bad <- ggplot(data = brexit, aes(y = region,  fill = Opinion)) +
   geom_bar(position = "fill") +
-  xlab("Percent") +
-  ylab("")
+  labs(x = "Percent", y = NULL)
 
 p_bad2 <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
   geom_bar() + 
-  xlab("Count")+
-  ylab("")
+  labs(x = "Count", y = NULL)
 
-p_good <- ggplot(data = brexit, aes(x = Opinion)) +
+p_good <- ggplot(data = brexit, aes(y = Opinion)) +
   geom_bar() +
-  coord_flip() +
   facet_grid(. ~ region, labeller = label_wrap_gen(width = 12)) +
+  scale_x_continuous(breaks = c(0, 100, 200)) +
   labs(
     title = "How well or badly do you think the government are doing \nat handling Britain's exit from the European Union?",
     subtitle = "YouGov Survey Results, 2-3 September 2019",
     caption = "Source: bit.ly/2lCJZVg", 
-    x = "", 
-    y = ""
+    x = NULL, y = NULL
   )
 
 (p_bad + p_bad2) / p_good
@@ -283,30 +272,20 @@ Figure \@ref(fig:Brexit-viridis) shows the same plot with two different coloring
 [^explore-effective-2]: originally developed as colormap in the Matplotlib library of Python <https://bids.github.io/colormap>
 
 ```{r Brexit-viridis, out.width="45%", fig.show = 'hold', fig.ncol = 2, fig.cap = "Identical bar plots with two different coloring options.  The left uses default rainbow colors; the right uses viridis colors."}
-p_bad <- ggplot(data = brexit, aes(x = region, fill = Opinion)) +
+p <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
   geom_bar(position = "fill") +
-  coord_flip() +
   labs(
     title = "How well or badly do you think the government are doing \nat handling Britain's exit from the European Union?",
     subtitle = "YouGov Survey Results, 2-3 September 2019",
     caption = "Source: bit.ly/2lCJZVg",
-    x = "", 
-    y = "",
-    fill = ""
-)
+    x = NULL, y = NULL, fill = NULL
+  ) 
 
-p_good <- ggplot(data = brexit, aes(x = region, fill = Opinion)) +
-  geom_bar(position = "fill") +
-  coord_flip() +
-  scale_fill_viridis_d() +
-  labs(
-    title = "How well or badly do you think the government are doing \nat handling Britain's exit from the European Union?",
-    subtitle = "YouGov Survey Results, 2-3 September 2019",
-    caption = "Source: bit.ly/2lCJZVg",
-    x = "", 
-    y = "",
-    fill = ""
-)
+p_bad <- p +
+  scale_fill_openintro("five")
+
+p_good <- p +
+  scale_fill_viridis_d()
 
 p_bad 
 p_good

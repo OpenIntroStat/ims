@@ -20,100 +20,77 @@ Note that the **null distribution**\index{null distribution} is the sampling dis
 Therefore, the null distribution will always be centered at the value of the parameter given by the null hypothesis.
 In the case of the opportunity cost study, which originally had just 1,000 simulations, we've included an additional 9,000 simulations.
 
-```{r FourCaseStudies, fig.cap = "The null distribution for each of the four case studies presented previously. Note that the center of each distribution is given by the value of the parameter set in the null hypothesis.", fig.width = 10}
-number.of.simulations <- 10000
-m.fact <- number.of.simulations / 1e3
-# _____ Opportunity Cost _____ #
-set.seed(2)
-group   <- c(rep('control', 75), rep('treatment', 75))
-outcome <- c(rep(c('buy video', 'do not buy video'), c(56, 19)),
-             rep(c('buy video', 'do not buy video'), c(41, 34)))
-nsim  = number.of.simulations
-n     = length(group)
-group = group
-var1  = outcome
-success = "do not buy video"
-sim   = matrix(NA, nrow = n, ncol = nsim)
-n1    = n2 = 75
-Statistic <- function(var1, group){	
-  t1 <- var1 == success & group == levels(as.factor(group))[1]
-  t2 <- var1 == success & group == levels(as.factor(group))[2]
-  sum(t1)/n1 - sum(t2)/n2 
-}
-for(i in 1:nsim){
-  sim[,i] = sample(group, n, replace = FALSE)
-}
-sim_dist = apply(sim, 2, Statistic, var1 = outcome)
-diffs    = sim_dist
-pval     = sum(diffs >= 0.29) / nsim
-values  <- table(sim_dist)
-X <- c()
-Y <- c()
-udiffs <- sort(unique(diffs))
-for(i in 1:length(udiffs)){
-  x   <- udiffs[i]
-  rec <- sum(sim_dist == x)
-  X   <- append(X, rep(x, rec))
-  Y   <- append(Y, 1:rec)
-}
-bin.width <- diff(udiffs)[1]
-breaks <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
-histPlot(diffs, breaks = breaks, axes = FALSE,
-         col = COL[2,2], xlab=expression(H[0]:~p[T] - p[C] == 0), ylab = "")
-axis(1)
-rect(-0.135, 12 * m.fact, 0.135, 28 * m.fact,
-     col = rgb(1,1,1,0.65), border = rgb(0,0,0,0))
-text(0, 20 * m.fact, cex = 2, "Opportunity Cost")
-# _____ Gender Discrimination_____ #
-set.seed(1)
-gender <- c(rep('male', 24), rep('female', 24))
-outcome <- c(rep(c('promoted', 'not promoted'), c(21, 3)), rep(c('promoted', 'not promoted'), c(14, 10)))
-N <- number.of.simulations * 10
-d <- rep(NA, N)
-for(i in 1:N){
-	gends  <- sample(gender)
-	p1   <- sum(outcome[gends == "male"] == "promoted") / 24
-	p2   <- sum(outcome[gends == "female"] == "promoted") / 24
-	d[i] <- p2 - p1
-}
-udiffs    <- sort(unique(d))
-bin.width <- diff(udiffs)[1]
-breaks    <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
-histPlot(d, breaks = breaks, col = COL[2,2],
-         main="", xlab=expression(H[0]:~p[M] - p[F] == 0), ylab="", axes=FALSE)
-axis(1)
-rect(-0.07, 153 * m.fact, 0.07, 347 * m.fact,
-     col = rgb(1,1,1,0.65), border = rgb(0,0,0,0))
-text(0, 250 * m.fact, cex = 2,
-     paste0("Gender Discrimination"))
-# _____ Medical Consultant _____ #
-set.seed(2)
-pHat <- rbinom(number.of.simulations, 62, 0.1)/62
-M    <- max(pHat)*62
-histPlot(pHat, breaks=(-1:(2*M)+0.75)/2/62,
-         xlab=expression(H[0]: ~ p == 0.1), ylab="", axes = FALSE, col = COL[2,2])
-axis(1)
-rect(0.023, 21 * m.fact, 0.168, 38.5 * m.fact,
-     col = rgb(1,1,1,0.65), border = rgb(0,0,0,0))
-text(0.1, 30 * m.fact, cex = 2,
-     paste0("Medical Consultant"))
-# _____ Tappers + Listeners _____ #
-set.seed(6)
-nsim <- number.of.simulations
-n    <- 120
-p    <- 0.5
-X    <- matrix(sample(c(0,1), nsim * n, TRUE), nsim, n)
-p.  <- apply(X, 1, sum) / n
-un    <- sort(unique(p.))
-bin.width <- diff(un)[10]
-breaks <- c(un - bin.width / 4, un + bin.width / 4)
-histPlot(p., breaks = breaks, axes = FALSE, col = COL[2,2],
-         xlab = expression(H[0]: ~ p == 0.5), ylab = "")
-axis(1)
-rect(0.42, 11 * m.fact, 0.58, 20 * m.fact,
-     col = rgb(1,1,1,0.65), border = rgb(0,0,0,0))
-text(0.5, 15.5 * m.fact, cex = 2,
-     paste0("Tappers + Listeners"))
+```{r include = FALSE}
+opportunity_cost_sim_dist <- opportunity_cost %>%
+  specify(response = decision, explanatory = group, success = "buy video") %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 10000, type = "permute") %>%
+  calculate(stat = "diff in props", order = c("treatment", "control"))
+
+gender_discrimination_sim_dist <- gender_discrimination %>%
+  specify(response = decision, explanatory = gender, success = "promoted") %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 10000, type = "permute") %>%
+  calculate(stat = "diff in props", order = c("male", "female"))  
+
+medical_consultant_sim_dist <- tibble(stat = rbinom(10000, 62, 0.1)/62)
+
+tappers_listeners_sim_dist <- tibble(stat = rbinom(10000, 120, 0.5)/120)
+```
+
+```{r FourCaseStudies, fig.cap = "The null distribution for each of the four case studies presented previously. Note that the center of each distribution is given by the value of the parameter set in the null hypothesis.", fig.asp = 0.5}
+
+# opportunity cost -------------------------------------------------------------
+
+ggplot(opportunity_cost_sim_dist, aes(x = stat)) +
+  geom_histogram(binwidth = 0.013, fill = IMSCOL["blue", "full"]) +
+  scale_x_continuous(breaks = seq(-0.3, 0.3, 0.1), labels = label_number(accuracy = 0.1)) +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid = element_blank()
+  ) +
+  labs(x = expression(H[0]:~p[T] - p[C] == 0), y = NULL) +
+  annotate("rect", xmin = -0.13, xmax = 0.13, ymin = 150, ymax = 450, fill = "white", alpha = 0.5) +
+  annotate("text", x = 0, y = 300, label = "Opportunity cost", size = 8)
+
+# gender discrimination --------------------------------------------------------
+
+ggplot(gender_discrimination_sim_dist, aes(x = stat)) +
+  geom_histogram(binwidth = 0.04, fill = IMSCOL["green", "full"]) +
+  scale_x_continuous(breaks = seq(-0.4, 0.4, 0.1), labels = label_number(accuracy = 0.1)) +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid = element_blank()
+  ) +
+  labs(x = expression(H[0]:~p[M] - p[F] == 0), y = NULL) +
+  annotate("rect", xmin = -0.18, xmax = 0.18, ymin = 250, ymax = 750, fill = "white", alpha = 0.5) +
+  annotate("text", x = 0, y = 500, label = "Gender discrimination", size = 8)
+
+# medical consultant -----------------------------------------------------------
+
+ggplot(medical_consultant_sim_dist, aes(x = stat)) +
+  geom_histogram(binwidth = 0.016, fill = IMSCOL["red", "full"]) +
+  scale_x_continuous(breaks = seq(0, 0.25, 0.05), labels = label_number(accuracy = 0.01)) +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid = element_blank()
+  ) +
+  labs(x = expression(H[0]: ~ p == 0.1), y = NULL) +
+  annotate("rect", xmin = 0.025, xmax = 0.175, ymin = 200, ymax = 600, fill = "white", alpha = 0.5) +
+  annotate("text", x = 0.1, y = 400, label = "Medical consultant", size = 8)
+
+# tappers and listeners --------------------------------------------------------
+
+ggplot(tappers_listeners_sim_dist, aes(x = stat)) +
+  geom_histogram(binwidth = 0.016, fill = IMSCOL["yellow", "full"]) +
+  scale_x_continuous(breaks = seq(0.35, 0.70, 0.05), labels = label_number(accuracy = 0.01)) +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid = element_blank()
+  ) +
+  labs(x = expression(H[0]: ~ p == 0.5), y = NULL) +
+  annotate("rect", xmin = 0.3, xmax = 0.8, ymin = 150, ymax = 450, fill = "white", alpha = 0.5) +
+  annotate("text", x = 0.5, y = 300, label = "Tappers + listeners", size = 8)
 ```
 
 ::: {.guidedpractice}
@@ -149,12 +126,8 @@ Imagine laying a normal curve over each of the four null distributions in Figure
 
 While the mean (center) and standard deviation (width or spread) may change for each plot, the general shape remains roughly intact.
 
-```{r simpleNormal, fig.cap = "A normal curve.", fig.width = 10}
-X <- seq(-5,5,0.01)
-Y <- dnorm(X)
-plot(X, Y, type='l', axes=F, xlim=c(-4,4), lwd=2, col=COL[5])
-#axis(1, at=-3:3)
-abline(h=-0.002, col=COL[5])
+```{r simpleNormal, fig.cap = "A normal curve.", fig.asp = 0.5}
+normTail(axes = FALSE)
 ```
 
 Mathematical theory guarantees that if repeated samples are taken a sample proportion or a difference in sample proportions will follow something that resembles a normal distribution when certain conditions are met.
@@ -204,11 +177,20 @@ However, doing so is reasonably straightforward using the normal distribution.
 [^foundations-mathematical-2]: The percentile bootstrap method has been introduced in Section \@ref(ConfidenceIntervals).
     We will revisit bootstrap intervals in Section \@ref(two-prop-boot-ci).
 
+```{r include = FALSE}
+ucla_textbooks_f18 <- ucla_textbooks_f18 %>% 
+  filter(!is.na(bookstore_new), !is.na(amazon_new)) %>%
+  mutate(diff = bookstore_new - amazon_new)
+
+ucla_textbooks_f18_diff_mean<- ucla_textbooks_f18 %>%
+  summarise(diff_mean = round(mean(diff), 2)) %>%
+  pull(diff_mean)
+```
+
 ::: {.workedexample}
-Book prices were collected for 73 courses at UCLA in Spring 2010.
-Data were collected from both the UCLA Bookstore and Amazon.
-The differences in these prices are shown in Figure \@ref(fig:diffInTextbookPricesS10-CLTsection).
-The mean difference in the price of the books was \$12.76, and we might wonder, does this provide strong evidence that the prices differ between the two book sellers?
+Book prices were collected for `r nrow(ucla_textbooks_f18)` courses at UCLA in Fall 2018 Data were collected from both the UCLA Bookstore and Amazon.
+The differences in these prices are shown in Figure \@ref(fig:diffInTextbookPricesF18-CLTsection).
+The mean difference in the price of the books was \$`r ucla_textbooks_f18_diff_mean`, and we might wonder, does this provide strong evidence that the prices differ between the two book sellers?
 
 ------------------------------------------------------------------------
 
@@ -216,13 +198,17 @@ Here again we can apply the normal distribution, this time in the context of num
 We'll explore this example and construct such a hypothesis test in Section \@ref(inference-paired-means).
 :::
 
-```{r diffInTextbookPricesS10-CLTsection, fig.cap = "Histogram of the difference in price for each book sampled. These data are strongly skewed.", fig.width = 10, message = FALSE}
-d <- read_delim("data/textS10.txt", 
-     "\t", escape_double = FALSE, trim_ws = TRUE)
-histPlot(d$diff, axes=FALSE, xlim=c(-20, 80), xlab='UCLA price - Amazon price (USD)', ylab='', col=COL[1])
-mtext("Frequency", 2, 2.1, las=0)
-axis(1,cex.axis=0.87, tck=-0.03)
-axis(2, at=seq(0, 30, 10), cex.axis=0.87, tck=-0.02)
+::: {.data}
+The data from this study can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`ucla_textbooks_f18`](http://openintrostat.github.io/openintro/reference/ucla_textbooks_f18.html).
+:::
+
+```{r diffInTextbookPricesF18-CLTsection, fig.cap = "Histogram of the difference in price for each book sampled. These data are strongly skewed.", fig.width = 10, message = FALSE}
+ggplot(ucla_textbooks_f18, aes(x = diff)) +
+  geom_histogram(binwidth = 10) +
+  labs(
+    x = "UCLA price - Amazon price (USD)",
+    y = "Count"
+  )
 ```
 
 ::: {.workedexample}
@@ -237,42 +223,16 @@ In Chapter \@ref(inf-model-slr) we will focus on whether or not that trend can b
 For this case study, we could again use the normal distribution to help us answer this question.
 :::
 
-```{r elmhurstScatterWLSROnly-CLTsection, fig.cap = "Gift aid and family income for a random sample of 50 first-year students from Elmhurst College, shown with a regression line.", fig.width = 10, message = FALSE, warning = FALSE}
-d<- read_csv("data/elm_data.csv")
-g <- lm(d$gift_aid ~ d$family_income)
-#summary(g)
-loss <- function(a, b, d){
-	p <- a + b*d$family_income
-	sum(abs(d$gift_aid - p))
-}
-a      <- round(g$coef[1], 2) + seq(-0.5, 0.5, 0.001)
-b      <- round(g$coef[2], 3) + seq(-0.01, 0.01, 0.0001)
-mins   <- c(a[1], b[1])
-theMin <- loss(a[1], b[1], d)
-pb     <- txtProgressBar(1, length(a), style=3)
-for(i in 1:length(a)){
-	for(j in 1:length(b)){
-		hold <- loss(a[i], b[j], d)
-		if(hold < theMin){
-			mins <- c(a[i],b[j])
-			theMin <- hold
-		}
-	}
-	#setTxtProgressBar(pb, i)
-}
-plot(d$family_income, d$gift_aid,
-     col=openintro::COL[1,2], pch=19, cex=1,
-     xlab='Family income ($1000s)',
-     ylab='', axes=FALSE,
-     xlim=c(0, 280), 
-     ylim=c(0, 35))
-axis(1, at=(0:4)*100)
-axis(2, at=(0:3)*10)
-box()
-par(las=0)
-mtext("Gift aid from university ($1000s)", 2, line=2.5)
-#abline(mins[1], mins[2], lty=2, lwd=2)
-abline(g, lwd=2)
+```{r elmhurstScatterWLSROnly-CLTsection, fig.cap = "Gift aid and family income for a random sample of 50 freshman students from Elmhurst College, shown with a regression line."}
+ggplot(elmhurst, aes(x = family_income, y = gift_aid)) +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_y_continuous(labels = label_dollar(scale = 1, suffix = "K", accuracy = 1)) +
+  scale_x_continuous(labels = label_dollar(scale = 1, suffix = "K", accuracy = 1)) +
+  labs(
+    x = "Family income",
+    y = "Gift aid from university"
+  )
 ```
 
 These examples highlight the value of the normal distribution approach.
@@ -315,49 +275,49 @@ Figure \@ref(fig:twoSampleNormals) shows the normal distribution with mean $0$ a
 A normal distributions with mean $19$ and standard deviation $4$ is shown on the bottom.
 Figure \@ref(fig:twoSampleNormalsStacked) shows the same two normal distributions on the same axis.
 
-```{r twoSampleNormals, fig.cap = "Both curves represent the normal distribution, however, they differ in their center and spread. The normal distribution with mean 0 and standard deviation 1 is called the **standard normal distribution**.", fig.width = 10}
-x <- rnorm(100000)
-hold <- hist(x, breaks=50, probability=TRUE, type="n", plot=FALSE)
-# curve 1
-X <- seq(-4,4,0.01)
-Y <- dnorm(X)
-plot(X, Y, type='l', axes=F, xlim=c(-3.4,3.4))
-axis(1, at=-3:3)
-for(i in 1:length(hold$counts)){
-	rect(hold$breaks[i], 0, hold$breaks[i+1], hold$density[i],
-		border=COL[5,4], col=COL[7,3])
-}
-lines(X, Y)
-abline(h=0)
-# curve 2
-X <- seq(3,35,0.01)
-Y <- dnorm(X, 19, 4)
-plot(X, Y, type='l', axes=F, xlim=c(5.4,32.6))
-axis(1, at=19+4*(-3:3))
-for(i in 1:length(hold$counts)){
-	rect(19+4*hold$breaks[i], 0, 19+4*hold$breaks[i+1], hold$density[i]/4,
-		border=COL[5,4], col=COL[7,3])
-}
-lines(X, Y)
-abline(h=0)
+```{r twoSampleNormals, fig.cap = "Both curves represent the normal distribution, however, they differ in their center and spread. The normal distribution with mean 0 and standard deviation 1 (blue solid line, on the left) is called the **standard normal distribution**. The other distribution (green dashed line, on the right) has mean 19 and standard deviation 4.", fig.asp = 0.4, out.width = "100%"}
+normals <- tibble(
+  x = c(rnorm(100000, mean = 0, sd = 1), rnorm(100000, mean = 19, sd = 4)),
+  group = c(rep(1, 100000), rep(2, 100000))
+)
+
+p1 <- ggplot(normals %>% filter(group == 1), aes(x = x)) +
+  geom_histogram(aes(y=..density..), alpha = 0.5) +
+  geom_function(fun = dnorm, args = list(mean = 0, sd = 1), color = IMSCOL["blue", "full"], size = 1) +
+  labs(y = NULL, x = NULL) +
+  scale_x_continuous(breaks = -3:3) +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid = element_blank()
+  )
+
+p2 <- ggplot(normals %>% filter(group == 2), aes(x = x)) +
+  geom_histogram(aes(y=..density..), alpha = 0.5, fill = IMSCOL["green", "full"]) +
+  geom_function(fun = dnorm, args = list(mean = 19, sd = 4), color = IMSCOL["green", "full"], size = 1,
+                linetype = "dashed") +
+  labs(y = NULL, x = NULL) +
+  scale_x_continuous(breaks = 19 + 4*(-3:3)) +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid = element_blank()
+  )
+
+p1 + p2
 ```
 
 ```{r include = FALSE}
 terms_chp_14 <- c(terms_chp_14, "standard normal distribution")
 ```
 
-```{r twoSampleNormalsStacked, fig.cap = "(ref:twoSampleNormalsStacked-cap)", fig.width = 10}
-# curve 1
-X <- seq(-4,4,0.01)
-Y <- dnorm(X)
-plot(X, Y, type='l', axes=F, xlim=c(-5,35))
-axis(1, at=seq(-10, 40, 10))
-lines(X, Y)
-abline(h=0)
-# curve 2
-X <- seq(3,35,0.01)
-Y <- dnorm(X, 19, 4)
-lines(X, Y)
+```{r twoSampleNormalsStacked, fig.cap = "(ref:twoSampleNormalsStacked-cap)", fig.asp = 0.3, out.width = "100%"}
+ggplot(normals, aes(x = x)) +
+  geom_function(fun = dnorm, args = list(mean = 0, sd = 1), color = IMSCOL["blue", "full"], size = 1) +
+  geom_function(fun = dnorm, args = list(mean = 19, sd = 4), color = IMSCOL["green", "full"], size = 1, linetype = "dashed") +
+  labs(y = NULL, x = NULL) +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid = element_blank()
+  )
 ```
 
 (ref:twoSampleNormalsStacked-cap) The two normal models shown in Figure \@ref(fig:twoSampleNormals) but plotted together on the same scale.
@@ -383,54 +343,68 @@ Write down the short-hand for a normal distribution with (a) mean 5 and standard
 ### Standardizing with Z scores
 
 ::: {.guidedpractice}
-Table \@ref(tab:satACTstats) shows the mean and standard deviation for total scores on the SAT and ACT.
+The table below shows the mean and standard deviation for total scores on the SAT and ACT.
 The distribution of SAT and ACT scores are both nearly normal.
-Suppose Ann scored 1800 on her SAT and Tom scored 24 on his ACT.
+Suppose Nel scored 1800 on their SAT and Sian scored 24 on their ACT.
 Who performed better?[^foundations-mathematical-5]
-:::
-
-[^foundations-mathematical-5]: We use the standard deviation as a guide.
-    Ann is 1 standard deviation above average on the SAT: $1500 + 300=1800.$ Tom is 0.6 standard deviations above the mean on the ACT: $21+0.6\times 5=24.$ In Figure \@ref(fig:satActNormals), we can see that Ann tends to do better with respect to everyone else than Tom did, so her score was better.
 
 ```{r satACTstats}
-temptbl <- tribble(
+tribble(
  ~variable,  ~col1, ~col2, 
  "Mean", "1500", "21",
  "SD", "300", "5"
-)
-temptbl %>%
- kable(caption = "Mean and standard deviation for the SAT and ACT.",
-  col.names = c("", "SAT", "ACT")) %>%
+) %>%
+ kable(col.names = c("", "SAT", "ACT")) %>%
  kable_styling() 
 ```
+:::
 
-```{r satActNormals, fig.cap = "Ann's and Tom's scores shown with the distributions of SAT and ACT scores.", fig.width = 10}
-set.seed(1)
-#===> plot <===#
-par(mfrow=c(2,1), las=1, mar=c(2.5,0,0.5,0))
-# curve 1
-m <- 1500
-s <- 300
-X <- m+s*seq(-4,4,0.01)
-Y <- dnorm(X, m, s)
-plot(X, Y, type='l', axes=F, xlim=m+s*c(-2.7,2.7))
-axis(1, at=m+s*(-3:3))
-abline(h=0)
-lines(c(m,m), dnorm(m, m, s)*c(0.01,0.99), lty=2, col='#EEEEEE')
-lines(c(m,m)+s, dnorm(m+s, m, s)*c(0.01,1.25), lty=2, col=COL[1])
-text(m+s, dnorm(m+s,m,s)*1.25, 'Ann', pos=3, col=COL[1])
-# curve 2
-par(mar=c(2,0,1,0))
-m <- 21
-s <- 5
-X <- m+s*seq(-4,4,0.01)
-Y <- dnorm(X, m, s)
-plot(X, Y, type='l', axes=F, xlim=m+s*c(-2.7,2.7))
-axis(1, at=m+s*(-3:3))
-abline(h=0)
-lines(c(m,m), dnorm(m, m, s)*c(0.01,0.99), lty=2, col='#EEEEEE')
-lines(c(m,m)+3, dnorm(m+3, m, s)*c(0.01,1.2), lty=2, col=COL[1])
-text(m+3, dnorm(m+3,m,s)*1.05, 'Tom', pos=4, col=COL[1])
+[^foundations-mathematical-5]: We use the standard deviation as a guide.
+    Nel is 1 standard deviation above average on the SAT: $1500 + 300=1800.$ Sian is 0.6 standard deviations above the mean on the ACT: $21+0.6\times 5=24.$ In Figure \@ref(fig:satActNormals), we can see that Nel tends to do better with respect to everyone else than Sian did, so their score was better.
+
+```{r satActNormals, fig.cap = "Nel's and Sian's scores shown with the distributions of SAT and ACT scores.", fig.asp = 0.5}
+sat_mean <- 1500
+sat_sd   <- 300
+act_mean <- 21
+act_sd   <- 5
+
+tests <- tibble(
+  score = c(rnorm(100000, mean = sat_mean, sd = sat_sd), rnorm(100000, mean = act_mean, sd = act_sd)),
+  test  = c(rep("SAT", 100000), rep("ACT", 100000))
+)
+
+ggplot(tests %>% filter(test == "SAT"), aes(x = score)) +
+  geom_function(fun = dnorm, args = list(mean = sat_mean, sd = sat_sd), color = IMSCOL["black", "full"]) +
+  labs(y = NULL, x = NULL) +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.minor.x = element_blank()
+  ) +
+  scale_x_continuous(breaks = sat_mean + sat_sd*(-3:3)) +
+  annotate("segment", x = 1800, xend = 1800, y = 0, yend = 0.001, 
+           color = IMSCOL["blue", "full"], linetype = "dashed", size = 1) +
+  annotate("segment", x = sat_mean - 4*sat_sd, xend = sat_mean + 4*sat_sd, y = 0, yend = 0, color = IMSCOL["black", "full"]) +
+  annotate("text", x = 1800, y = 0.0011, label = "Nel", color = IMSCOL["blue", "full"]) +
+  coord_cartesian(xlim = sat_mean + c(-1,1)*4*sat_sd)
+
+ggplot(tests %>% filter(test == "ACT"), aes(x = score)) +
+  geom_function(fun = dnorm, args = list(mean = act_mean, sd = act_sd), 
+                color = IMSCOL["black", "full"]) +
+  labs(y = NULL, x = NULL) +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.minor.x = element_blank()
+  ) +
+  scale_x_continuous(breaks = act_mean + act_sd*(-3:3)) +
+  annotate("segment", x = 24, xend = 24, y = 0, yend = 0.075, 
+           color = IMSCOL["green", "full"], linetype = "dashed", size = 1) +
+  annotate("segment", x = act_mean - 4*act_sd, xend = act_mean + 4*act_sd, y = 0, yend = 0, color = IMSCOL["black", "full"]) +
+  annotate("text", x = 24, y = 0.08, label = "Sian", color = IMSCOL["green", "full"]) +
+  coord_cartesian(xlim = act_mean + c(-1,1)*4*act_sd)
 ```
 
 The solution to the previous example relies on a standardization technique called a Z score, a method most commonly employed for nearly normal observations (but that may be used with any distribution).
@@ -445,9 +419,9 @@ terms_chp_14 <- c(terms_chp_14, "Z score")
 
 $$ Z = \frac{x-\mu}{\sigma} $$
 
-Using $\mu_{SAT}=1500,$ $\sigma_{SAT}=300,$ and $x_{Ann}=1800,$ we find Ann's Z score:
+Using $\mu_{SAT}=1500,$ $\sigma_{SAT}=300,$ and $x_{Nel}=1800,$ we find Nel's Z score:
 
-$$ Z_{Ann} = \frac{x_{Ann} - \mu_{SAT}}{\sigma_{SAT}} = \frac{1800-1500}{300} = 1 $$
+$$ Z_{Nel} = \frac{x_{Nel} - \mu_{SAT}}{\sigma_{SAT}} = \frac{1800-1500}{300} = 1 $$
 
 ::: {.important}
 **The Z score.**
@@ -460,10 +434,10 @@ That is, the normality remains when transforming from $x$ to $Z$ with a shift in
 :::
 
 ::: {.guidedpractice}
-Use Tom's ACT score, 24, along with the ACT mean and standard deviation to compute his Z score.[^foundations-mathematical-6]
+Use Sian's ACT score, 24, along with the ACT mean and standard deviation to compute their Z score.[^foundations-mathematical-6]
 :::
 
-[^foundations-mathematical-6]: $Z_{Tom} = \frac{x_{Tom} - \mu_{ACT}}{\sigma_{ACT}} = \frac{24 - 21}{5} = 0.6$
+[^foundations-mathematical-6]: $Z_{Sian} = \frac{x_{Sian} - \mu_{ACT}}{\sigma_{ACT}} = \frac{24 - 21}{5} = 0.6$
 
 Observations above the mean always have positive Z scores while those below the mean have negative Z scores.
 If an observation is equal to the mean (e.g., SAT score of 1500), then the Z score is $0.$
@@ -494,31 +468,22 @@ Which of the two brushtail possum observations in the previous guided practice i
 ### Normal probability calculations
 
 ::: {.workedexample}
-Ann from the SAT Guided Practice earned a score of 1800 on her SAT with a corresponding $Z=1.$ She would like to know what percentile she falls in among all SAT test-takers.
+Nel from the SAT Guided Practice earned a score of 1800 on their SAT with a corresponding $Z=1.$ She would like to know what percentile they fall in among all SAT test-takers.
 
 ------------------------------------------------------------------------
 
-Ann's **percentile**\index{percentile} is the percentage of people who earned a lower SAT score than Ann.
+Nel's **percentile**\index{percentile} is the percentage of people who earned a lower SAT score than Nel.
 We shade the area representing those individuals in Figure \@ref(fig:satBelow1800).
-The total area under the normal curve is always equal to 1, and the proportion of people who scored below Ann on the SAT is equal to the *area* shaded in Figure \@ref(fig:satBelow1800): 0.8413.
-In other words, Ann is in the $84^{th}$ percentile of SAT takers.
+The total area under the normal curve is always equal to 1, and the proportion of people who scored below Nel on the SAT is equal to the *area* shaded in Figure \@ref(fig:satBelow1800): 0.8413.
+In other words, Nel is in the $84^{th}$ percentile of SAT takers.
 :::
 
 ```{r include = FALSE}
 terms_chp_14 <- c(terms_chp_14, "percentile")
 ```
 
-```{r satBelow1800, fig.cap = "The normal model for SAT scores, shading the area of those individuals who scored below Ann.", fig.width = 10}
-X <- seq(-4,4,0.01)
-Y <- dnorm(X)
-plot(X, Y, type='l', axes=F, xlim=c(-3.4,3.4))
-axis(1, at=-3:3, label=(1500+300*(-3:3)), cex.axis=0.7)
-these <- which(X <= 1)
-polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
-#arrows(1.3,0.28, 0.43, 0.28, length=0.07)
-#text(1.3, 0.28, 'X=1630\nZ=0.43', pos=4, cex=0.7)
-lines(X, Y)
-abline(h=0)
+```{r satBelow1800, fig.cap = "The normal model for SAT scores, shading the area of those individuals who scored below Nel.", fig.asp = 0.5}
+normTail(m = 1500, s = 300, L = 1800, col = IMSCOL["blue", "full"])
 ```
 
 We can use the normal model to find percentiles or probabilities.
@@ -533,11 +498,11 @@ Normal probabilities are most commonly found using statistical software which we
 We use the software to identify the percentile corresponding to any particular Z score.
 For instance, the percentile of $Z=0.43$ is 0.6664, or the $66.64^{th}$ percentile.
 The `pnorm()` function is available in default R and will provide the percentile associated with any cutoff on a normal curve.
-The `normTail()` function is available in the OpenIntro R package and will draw the associated curve if it is helpful.
+The `normTail()` function is available in the [**openintro**](http://openintrostat.github.io/openintro/) R package and will draw the associated.
 
-```{r echo = TRUE}
+```{r echo = TRUE, fig.asp = 0.5}
 pnorm(0.43, mean = 0, sd = 1)
-openintro::normTail(0.43, m = 0, s = 1)
+openintro::normTail(m = 0, s = 1, L = 0.43)
 ```
 
 We can also find the Z score associated with a percentile.
@@ -546,16 +511,16 @@ The quantile represents the cutoff value.
 (To remember the function `qnorm()` as providing a cutoff, notice that both `qnorm()` and "cutoff" start with the sound "kuh".
 To remember the `pnorm()` function as providing a probability from a given cutoff, notice that both `pnorm()` and probability start with the sound "puh".) We determine the Z score for the $80^{th}$ percentile using `qnorm()`: 0.84.
 
-```{r echo = TRUE}
+```{r echo = TRUE, fig.asp = 0.5}
 qnorm(0.80, mean = 0, sd = 1)
-openintro::normTail(0.84162, m = 0, s = 1)
+openintro::normTail(m = 0, s = 1, L = 0.842)
 ```
 
 ::: {.guidedpractice}
-Determine the proportion of SAT test takers who scored better than Ann on the SAT.[^foundations-mathematical-10]
+Determine the proportion of SAT test takers who scored better than Nel on the SAT.[^foundations-mathematical-10]
 :::
 
-[^foundations-mathematical-10]: If 84% had lower scores than Ann, the number of people who had better scores must be 16%.
+[^foundations-mathematical-10]: If 84% had lower scores than Nel, the number of people who had better scores must be 16%.
     (Generally ties are ignored when the normal model, or any other continuous distribution, is used.)
 
 ### Normal probability examples
@@ -564,12 +529,12 @@ Cumulative SAT scores are approximated well by a normal model, $N(\mu=1500, \sig
 
 ::: {.workedexample}
 Shannon is a randomly selected SAT taker, and nothing is known about Shannon's SAT aptitude.
-What is the probability that Shannon scores at least 1630 on her SATs?
+What is the probability that Shannon scores at least 1630 on their SATs?
 
 ------------------------------------------------------------------------
 
 First, always draw and label a picture of the normal distribution.
-(Drawings need not be exact to be useful.) We are interested in the chance she scores above 1630, so we shade the upper tail.
+(Drawings need not be exact to be useful.) We are interested in the chance they score above 1630, so we shade the upper tail.
 See the normal curve below.
 
 The $x$-axis identifies the mean and the values at 2 standard deviations above and below the mean.
@@ -585,22 +550,11 @@ To find the area *above* $Z=0.43,$ we compute one minus the area of the lower ta
 The probability Shannon scores at least 1630 on the SAT is 0.3336.
 :::
 
-```{r satAbove1630, fig.cap = "", fig.width = 10}
-X <- seq(-4,4,0.01)
-Y <- dnorm(X)
-plot(X, Y, type='l', axes=F, xlim=c(-3.4,3.4))
-axis(1, at=c(-2,0,2), label=(1500+c(-2,0,2)*300), cex.axis=0.8)
-these <- which(X >= 0.43)
-polygon(c(X[these[1]], X[these],4), c(0,Y[these],0), col=COL[1])
-#arrows(-0.1, 0.4*dnorm(0),(1600-1500)/300, dnorm(0)*.4, length=0.065)
-#text(0.1, .4*dnorm(0), '1630', pos=2, cex=0.8)
-#arrows(1.3,0.28, 0.43, 0.28, length=0.07)
-#text(1.3, 0.28, 'X=1630\nZ=0.43', pos=4, cex=0.7)
-lines(X, Y)
-abline(h=0)
+```{r satAbove1630, fig.asp = 0.5}
+normTail(m = 1500, s = 300, U = 1630, col = IMSCOL["blue", "full"])
 ```
 
-```{r subtractingArea, fig.cap = "", fig.width = 10}
+```{r subtractingArea, fig.asp = 0.3}
 par(las=1, mar=c(0,0,0,0), mgp=c(3,-0.2,0), mfrow=c(1,1))
 X <- seq(-3.2,3.2,0.01)
 Y <- dnorm(X)
@@ -643,7 +597,7 @@ After drawing a figure to represent the situation, identify the Z score for the 
 :::
 
 ::: {.guidedpractice}
-If the probability of Shannon scoring at least 1630 is 0.3336, then what is the probability she scores less than 1630?
+If the probability of Shannon scoring at least 1630 is 0.3336, then what is the probability they score less than 1630?
 Draw the normal curve representing this exercise, shading the lower region instead of the upper one.[^foundations-mathematical-11]
 :::
 
@@ -651,8 +605,8 @@ Draw the normal curve representing this exercise, shading the lower region inste
     A picture for this exercise is represented by the shaded area below "0.6664".
 
 ::: {.workedexample}
-Edward earned a 1400 on his SAT.
-What is his percentile?
+Edward earned a 1400 on their SAT.
+What is their percentile?
 
 ------------------------------------------------------------------------
 
@@ -660,9 +614,8 @@ First, a picture is needed.
 Edward's percentile is the proportion of people who do not get as high as a 1400.
 These are the scores to the left of 1400.
 
-```{r}
-normTail(1500, 300, 1400, axes = FALSE, col = COL[1])
-axis(1, at = c(900, 1500, 2100))
+```{r fig.asp = 0.5}
+normTail(m = 1500, s = 300, L = 1400, col = IMSCOL["blue", "full"])
 ```
 
 The mean $\mu=1500,$ the standard deviation $\sigma=300,$ and the cutoff for the tail area $x=1400$ are used to compute the Z score:
@@ -681,9 +634,8 @@ Also draw a new picture.
 
 If Edward did better than 37% of SAT takers, then about 63% must have done better than him.
 
-```{r}
-normTail(1500, 300, U=1400, axes=FALSE, col=COL[1])
-axis(1, at=c(900, 1500, 2100))
+```{r fig.asp = 0.5}
+normTail(m = 1500, s = 300, U = 1400, col = IMSCOL["blue", "full"])
 ```
 :::
 
@@ -697,7 +649,7 @@ If you would like the area to the right, first find the area to the left and the
 ::: {.guidedpractice}
 Stuart earned an SAT score of 2100.
 Draw a picture for each part.
-(a) What is his percentile?
+(a) What is their percentile?
 (b) What percent of SAT takers did better than Stuart?[^foundations-mathematical-12]
 :::
 
@@ -708,47 +660,40 @@ Based on a sample of 100 men,[^foundations-mathematical-13] the heights of male 
 
 [^foundations-mathematical-13]: This sample was taken from the USDA Food Commodity Intake Database.
 
-::: {.guidedpractice}
-Mike is 5'7'' and Jim is 6'4''.
-(a) What is Mike's height percentile?
-(b) What is Jim's height percentile?
-Also draw one picture for each part.[^foundations-mathematical-14]
+::: {.workedexample}
+Kamron is 5'7'' and Adrian is 6'4''.
+(a) What is Kamron's height percentile?
+(b) What is Adrian's height percentile?
+Also draw one picture for each part.
 
-```{r}
-normTail(70, 3.3, L=67, axes=FALSE, col=COL[1])
-axis(1, at=c(-100, 67, 70, 1000), cex.axis=1.7)
-text(62, 0.07, "Mike", cex=2)
-normTail(70, 3.3, L=76, axes=FALSE, col=COL[1])
-axis(1, at=c(-100, 70, 76, 1000), cex.axis=1.7)
-text(62, 0.07, "Jim", cex=2)
+------------------------------------------------------------------------
+
+Numerical answers, calculated using statistical software (e.g., `pnorm()` in R): (a) 0.1131.
+(b) 0.3821.
+
+```{r fig.asp = 0.5}
+normTail(70, 3.3, L = 67, col = IMSCOL["blue", "full"])
+text(62, 0.07, "Kamron", cex = 1.5)
+
+normTail(70, 3.3, L = 76, col = IMSCOL["blue", "full"])
+text(62, 0.07, "Adrian", cex = 1.5)
 ```
 :::
-
-[^foundations-mathematical-14]: Numerical answers, calculated using statistical software (e.g., `pnorm()` in R) or a normal probability table: (a) 0.1131.
-    (b) 0.3821.
 
 The last several problems have focused on finding the probability or percentile for a particular observation.
 What if you would like to know the observation corresponding to a particular percentile?
 
 ::: {.workedexample}
-Erik's height is at the $40^{th}$ percentile.
+Yousef's height is at the $40^{th}$ percentile.
 How tall is he?
 
 ------------------------------------------------------------------------
 
 As always, first draw the picture.
 
-```{r}
-X <- seq(-4,4,0.01)
-Y <- dnorm(X)
-plot(X, Y, type='l', axes=F, xlim=c(-3.1,3.1), xlab = "", ylab = "")
-axis(1, at=c(-2,0,2), label=round(70+3.3*c(-2,0,2),2), cex.axis=0.8)
-these <- which(X <= -0.25)
-polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
-#arrows(1.3,0.28, 0.43, 0.28, length=0.07)
-text(-2, 0.24, '  40%\n(0.40)', cex=1.2, col=COL[1])
-lines(X, Y)
-abline(h=0)
+```{r, fig.asp = 0.5}
+normTail(70, 3.3, L = qnorm(0.4, 70, 3.3), col = IMSCOL["blue", "full"])
+text(67, 0.03, "40%\n(0.40)", cex = 1.5, col = IMSCOL["black", "full"])
 ```
 
 In this case, the lower tail probability is known (0.40), which can be shaded on the diagram.
@@ -764,12 +709,12 @@ Here, we show the format for calculating the value of $Z$ using the R statistica
 qnorm(0.4, mean = 0, sd = 1)
 ```
 
-Knowing $Z_{Erik}=-0.25$ and the population parameters $\mu=70$ and $\sigma=3.3$ inches, the Z score formula can be set up to determine Erik's unknown height, labeled $x_{Erik}$:
+Knowing $Z_{Yousef}=-0.25$ and the population parameters $\mu=70$ and $\sigma=3.3$ inches, the Z score formula can be set up to determine Yousef's unknown height, labeled $x_{Yousef}$:
 
-$$ -0.25 = Z_{Erik} = \frac{x_{Erik} - \mu}{\sigma} = \frac{x_{Erik} - 70}{3.3} $$
+$$ -0.25 = Z_{Yousef} = \frac{x_{Yousef} - \mu}{\sigma} = \frac{x_{Yousef} - 70}{3.3} $$
 
-Solving for $x_{Erik}$ yields the height 69.18 inches.
-That is, Erik is about 5'9'' (this is notation for 5-feet, 9-inches).
+Solving for $x_{Yousef}$ yields the height 69.18 inches.
+That is, Yousef is about 5'9'' (this is notation for 5-feet, 9-inches).
 :::
 
 ::: {.workedexample}
@@ -779,18 +724,10 @@ What is the adult male height at the $82^{nd}$ percentile?
 
 Again, we draw the figure first.
 
-```{r height82Perc, fig.cap = "", fig.width = 10}
-X <- seq(-4,4,0.01)
-Y <- dnorm(X)
-plot(X, Y, type='l', axes=F, xlim=c(-3.4,3.4))
-axis(1, at=c(-2,0,2), label=round(70+3.3*c(-2,0,2),2), cex.axis=0.8)
-these <- which(X <= 0.92)
-polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
-text(-2, 0.23, '  82%\n(0.82)', cex=1.2, col=COL[1])
-arrows(2,0.22, 1.45, 0.07, length=0.07)
-text(2.1, 0.2, '  18%\n(0.18)', cex=1.2, pos=3)
-lines(X, Y)
-abline(h=0)
+```{r height82Perc, fig.asp = 0.5}
+normTail(70, 3.3, L = qnorm(0.82, 70, 3.3), col = IMSCOL["blue", "full"])
+text(70, 0.04, "82%\n(0.82)", cex = 1.5, col = IMSCOL["black", "full"])
+text(74.3, 0.02, "18%\n(0.18)", cex = 1.25, col = IMSCOL["black", "full"])
 ```
 
 And calculate the Z value associated with the $82^{nd}$ percentile:
@@ -809,19 +746,19 @@ This yields 73.04 inches or about 6'1'' as the height at the $82^{nd}$ percentil
 
 ::: {.guidedpractice}
 (a) What is the $95^{th}$ percentile for SAT scores?\
-(b) What is the $97.5^{th}$ percentile of the male heights? As always with normal probability problems, first draw a picture.[^foundations-mathematical-15]
+(b) What is the $97.5^{th}$ percentile of the male heights? As always with normal probability problems, first draw a picture.[^foundations-mathematical-14]
 :::
 
-[^foundations-mathematical-15]: Remember: draw a picture first, then find the Z score.
+[^foundations-mathematical-14]: Remember: draw a picture first, then find the Z score.
     (We leave the pictures to you.) The Z score can be found by using the percentiles and the normal probability table.
     (a) We look for 0.95 in the probability portion (middle part) of the normal probability table, which leads us to row 1.6 and (about) column 0.05, i.e., $Z_{95}=1.65.$ Knowing $Z_{95}=1.65,$ $\mu = 1500,$ and $\sigma = 300,$ we setup the Z score formula: $1.65 = \frac{x_{95} - 1500}{300}.$ We solve for $x_{95}$: $x_{95} = 1995.$ (b) Similarly, we find $Z_{97.5} = 1.96,$ again setup the Z score formula for the heights, and calculate $x_{97.5} = 76.5.$
 
 ::: {.guidedpractice}
 (a) What is the probability that a randomly selected male adult is at least 6'2'' (74 inches)?\
-(b) What is the probability that a male adult is shorter than 5'9'' (69 inches)?[^foundations-mathematical-16]
+(b) What is the probability that a male adult is shorter than 5'9'' (69 inches)?[^foundations-mathematical-15]
 :::
 
-[^foundations-mathematical-16]: Numerical answers: (a) 0.1131.
+[^foundations-mathematical-15]: Numerical answers: (a) 0.1131.
     (b) 0.3821.
 
 ::: {.workedexample}
@@ -833,75 +770,62 @@ These heights correspond to 69 inches and 74 inches.
 First, draw the figure.
 The area of interest is no longer an upper or lower tail.
 
-```{r}
-par(las=1, mar=c(1.5,0,0.5,0), mgp=c(3,0.45,0))
-X <- seq(-4,4,0.01)
-Y <- dnorm(X)
-plot(X, Y, type='l', axes=F, xlim=c(-3.4,3.4))
-axis(1, at=c(-2,0,2), label=round(70+3.3*c(-2,0,2),2), cex.axis=0.8)
-these <- which(X >= -.3 & X < 1.21)
-polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
-lines(X, Y)
-abline(h=0)
+```{r fig.asp = 0.5}
+normTail(70, 3.3, M = c(69, 74), col = IMSCOL["blue", "full"])
 ```
 
 The total area under the curve is 1.
 If we find the area of the two tails that are not shaded (from the previous Guided Practice, these areas are $0.3821$ and $0.1131$), then we can find the middle area:
 
-```{r}
-X <- seq(-3.2,3.2,0.01)
+```{r fig.asp = 0.5}
+X <- seq(-3.2, 3.2, 0.01)
 Y <- dnorm(X)
-plot(X, Y, type='l', axes=F, xlim=c(-3.4,24+3.4), ylim=c(0,0.6))
-lines(X, rep(0,length(X)))
+plot(X, Y, type = "l", axes = F, xlim = c(-3.4, 24 + 3.4), ylim = c(0, 0.6), xlab = NA, ylab = NA)
+lines(X, rep(0, length(X)))
 these <- which(X <= 8)
-polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
+polygon(c(X[these[1]], X[these], X[rev(these)[1]]), c(0, Y[these], 0), col = COL[1])
 lines(X, Y)
-#abline(h=0)
-#lines(c(0,0), dnorm(0)*c(0.01,0.99), col='#CCCCCC', lty=3)
-lines(c(3,8-3), c(0.2,0.2), lwd=3)
-lines(X+8, Y, type='l')
-lines(X+8, rep(0,length(X)))
+lines(c(3, 8 - 3), c(0.2, 0.2), lwd = 3)
+lines(X + 8, Y, type = "l")
+lines(X + 8, rep(0, length(X)))
 these <- which(X < -0.303)
-polygon(c(X[these[1]], X[these],X[rev(these)[1]])+8, c(0,Y[these],0), col=COL[1])
-lines(X+8, Y)
-#lines(c(0,0), dnorm(0)*c(0.01,0.99), col='#CCCCCC', lty=3)
-lines(8+c(3,8-3), c(0.2,0.2), lwd=3)
-lines(X+16, Y, type='l')
-lines(X+16, rep(0,length(X)))
+polygon(c(X[these[1]], X[these], X[rev(these)[1]]) + 8, c(0, Y[these], 0), col = COL[1])
+lines(X + 8, Y)
+lines(8 + c(3, 8 - 3), c(0.2, 0.2), lwd = 3)
+lines(X + 16, Y, type = "l")
+lines(X + 16, rep(0, length(X)))
 these <- which(X > 1.212)
-polygon(c(X[these[1]], X[these],X[rev(these)[1]])+16, c(0,Y[these],0), col=COL[1])
-lines(X+16, Y)
-#lines(c(0,0), dnorm(0)*c(0.01,0.99), col='#CCCCCC', lty=3)
-lines(16+c(3,8-3), c(0.23,0.23), lwd=3)
-lines(16+c(3,8-3), c(0.17,0.17), lwd=3)
-lines(X+24, Y, type='l', xlim=c(-3.4,3.4))
-lines(X+24, rep(0,length(X)))
+polygon(c(X[these[1]], X[these], X[rev(these)[1]]) + 16, c(0, Y[these], 0), col = COL[1])
+lines(X + 16, Y)
+lines(16 + c(3, 8 - 3), c(0.23, 0.23), lwd = 3)
+lines(16 + c(3, 8 - 3), c(0.17, 0.17), lwd = 3)
+lines(X + 24, Y, type = "l", xlim = c(-3.4, 3.4))
+lines(X + 24, rep(0, length(X)))
 these <- which(X > -0.303 & X < 1.212)
-polygon(c(X[these[1]], X[these],X[rev(these)[1]])+24, c(0,Y[these],0), col=COL[1])
-lines(X+24, Y)
-#lines(c(0,0), dnorm(0)*c(0.01,0.99), col='#CCCCCC', lty=3)
-text(0,0.53, "1.0000")
-text(8,0.53, "0.3821")
-text(16,0.53, "0.1131")
-text(24,0.53, "0.5048")
+polygon(c(X[these[1]], X[these], X[rev(these)[1]]) + 24, c(0, Y[these], 0), col = COL[1])
+lines(X + 24, Y)
+text(0, 0.53, "1.0000")
+text(8, 0.53, "0.3821")
+text(16, 0.53, "0.1131")
+text(24, 0.53, "0.5048")
 ```
 
 That is, the probability of being between 5'9'' and 6'2'' is 0.5048.
 :::
 
 ::: {.guidedpractice}
-What percent of SAT takers get between 1500 and 2000?[^foundations-mathematical-17]
+What percent of SAT takers get between 1500 and 2000?[^foundations-mathematical-16]
 :::
 
-[^foundations-mathematical-17]: This is an abbreviated solution.
+[^foundations-mathematical-16]: This is an abbreviated solution.
     (Be sure to draw a figure!) First find the percent who get below 1500 and the percent that get above 2000: $Z_{1500} = 0.00 \to 0.5000$ (area below), $Z_{2000} = 1.67 \to 0.0475$ (area above).
     Final answer: $1.0000-0.5000 - 0.0475 = 0.4525.$
 
 ::: {.guidedpractice}
-What percent of adult males are between 5'5'' and 5'7''?[^foundations-mathematical-18]
+What percent of adult males are between 5'5'' and 5'7''?[^foundations-mathematical-17]
 :::
 
-[^foundations-mathematical-18]: 5'5'' is 65 inches.
+[^foundations-mathematical-17]: 5'5'' is 65 inches.
     5'7'' is 67 inches.
     Numerical solution: $1.000 - 0.0649 - 0.8183 = 0.1168,$ i.e., 11.68%.
 
@@ -910,48 +834,43 @@ What percent of adult males are between 5'5'' and 5'7''?[^foundations-mathematic
 Here, we present a useful general rule for the probability of falling within 1, 2, and 3 standard deviations of the mean in the normal distribution.
 The rule will be useful in a wide range of practical settings, especially when trying to make a quick estimate without a calculator or Z table.
 
-```{r er6895997, fig.cap = "Probabilities for falling within 1, 2, and 3 standard deviations of the mean in a normal distribution.", fig.width = 10}
-X <- seq(-4,4,0.01)
+```{r er6895997, fig.cap = "Probabilities for falling within 1, 2, and 3 standard deviations of the mean in a normal distribution.", fig.asp = 0.5}
+X <- seq(-4, 4, 0.01)
 Y <- dnorm(X)
-plot(X, Y, type='n', axes=F, ylim=c(0,0.4), xlim=c(-3.2,3.2))
-abline(h=0, col=COL[6])
-axis(1, at=-3:3, label=expression(mu-3*sigma,mu-2*sigma,mu-sigma,mu,
-	mu+sigma,mu+2*sigma,mu+3*sigma))
-ii <- c(1,2,3)
-jj <- c(1,1,1)
-for(i in 3:1){
-	these <- (X>=i-1 & X <= i)
-	polygon(c(i-1,X[these],i),c(0,Y[these],0), col=COL[ii[i],jj[i]], border=COL[ii[i],jj[i]])
-	these <- (X>=-i & X <= -i+1)
-	polygon(c(-i,X[these],-i+1),c(0,Y[these],0), col=COL[ii[i],jj[i]], border=COL[ii[i],jj[i]])
+plot(X, Y, type = "n", axes = F, ylim = c(0, 0.4), xlim = c(-3.2, 3.2), xlab = NA, ylab = NA)
+abline(h = 0, col = IMSCOL["black", "full"])
+axis(1, at = -3:3, label = expression(
+  mu - 3 * sigma, mu - 2 * sigma, mu - sigma, mu,
+  mu + sigma, mu + 2 * sigma, mu + 3 * sigma
+))
+ii <- c(1, 2, 3)
+jj <- c(1, 1, 1)
+for (i in 3:1) {
+  these <- (X >= i - 1 & X <= i)
+  polygon(c(i - 1, X[these], i), c(0, Y[these], 0), col = IMSCOL[ii[i], jj[i]], border = IMSCOL[ii[i], jj[i]])
+  these <- (X >= -i & X <= -i + 1)
+  polygon(c(-i, X[these], -i + 1), c(0, Y[these], 0), col = IMSCOL[ii[i], jj[i]], border = IMSCOL[ii[i], jj[i]])
 }
-#lines(c(0,0),c(0,dnorm(0)), col='#888888')
-#===> label 99.7 <===#
-arrows(-3,0.03, 3,0.03, code=3, col='#444444', length=0.15)
-#lines(c(-3,-3), c(0,0.03), lty=3, col='#888888')
-#lines(c(3,3), c(0,0.03), lty=3, col='#888888')
-text(0, 0.02, '99.7%', pos=3)
-#===> label 95 <===#
-arrows(-2,0.13, 2,0.13, code=3, col='#444444', length=0.15)
-#lines(c(-2,-2), c(0,0.13), lty=3, col='#888888')
-#lines(c(2,2), c(0,0.13), lty=3, col='#888888')
-text(0, 0.12, '95%', pos=3)
-#===> label 68 <===#
-arrows(-1,0.23, 1,0.23, code=3, col='#444444', length=0.15)
-#lines(c(-1,-1), c(0,0.23), lty=3, col='#888888')
-#lines(c(1,1), c(0,0.23), lty=3, col='#888888')
-text(0, 0.22, '68%', pos=3)
-lines(X, Y, col='#888888')
-abline(h=0, col='#AAAAAA')
+# ===> label 99.7 <===#
+arrows(-3, 0.03, 3, 0.03, code = 3, col = "#444444", length = 0.15)
+text(0, 0.02, "99.7%", pos = 3)
+# ===> label 95 <===#
+arrows(-2, 0.13, 2, 0.13, code = 3, col = "#444444", length = 0.15)
+text(0, 0.12, "95%", pos = 3)
+# ===> label 68 <===#
+arrows(-1, 0.23, 1, 0.23, code = 3, col = "#444444", length = 0.15)
+text(0, 0.22, "68%", pos = 3)
+lines(X, Y, col = "#888888")
+abline(h = 0, col = "#AAAAAA")
 ```
 
 ::: {.guidedpractice}
 Use `pnorm()` (or a Z table) to confirm that about 68%, 95%, and 99.7% of observations fall within 1, 2, and 3, standard deviations of the mean in the normal distribution, respectively.
 For instance, first find the area that falls between $Z=-1$ and $Z=1,$ which should have an area of about 0.68.
-Similarly there should be an area of about 0.95 between $Z=-2$ and $Z=2.$[^foundations-mathematical-19]
+Similarly there should be an area of about 0.95 between $Z=-2$ and $Z=2.$[^foundations-mathematical-18]
 :::
 
-[^foundations-mathematical-19]: First draw the pictures.
+[^foundations-mathematical-18]: First draw the pictures.
     To find the area between $Z=-1$ and $Z=1,$ use `pnorm()` or the normal probability table to determine the areas below $Z=-1$ and above $Z=1.$ Next verify the area between $Z=-1$ and $Z=1$ is about 0.68.
     Repeat this for $Z=-2$ to $Z=2$ and also for $Z=-3$ to $Z=3.$
 
@@ -961,14 +880,11 @@ The probability of being further than 4 standard deviations from the mean is abo
 For 5 and 6 standard deviations, it is about 1-in-3.5 million and 1-in-1 billion, respectively.
 
 ::: {.guidedpractice}
-SAT scores closely follow the normal model with mean $\mu = 1500$ and standard deviation $\sigma = 300.$\
-(a) About what percent of test takers score 900 to 2100?
-\
-(b) What percent score between 1500 and 2100
-?[^foundations-mathematical-20]
+SAT scores closely follow the normal model with mean $\mu = 1500$ and standard deviation $\sigma = 300.$ (a) About what percent of test takers score 900 to 2100?
+(b) What percent score between 1500 and 2100 ?[^foundations-mathematical-19]
 :::
 
-[^foundations-mathematical-20]: (a) 900 and 2100 represent two standard deviations above and below the mean, which means about 95% of test takers will score between 900 and 2100.
+[^foundations-mathematical-19]: (a) 900 and 2100 represent two standard deviations above and below the mean, which means about 95% of test takers will score between 900 and 2100.
     (b) Since the normal model is symmetric, then half of the test takers from part (a) ($\frac{95\%}{2} = 47.5\%$ of all test takers) will score 900 to 1500 while 47.5% score between 1500 and 2100.
 
 ## Hypothesis testing case studies {#ApplyingTheNormalModel}
@@ -1006,54 +922,23 @@ We can calculate the standard error of this distribution by borrowing a formula 
 Recall that the point estimate of the difference was 0.20, as shown in Figure \@ref(fig:OpportunityCostDiffs-w-normal).
 Next, we'll use the normal distribution approach to compute the two-tailed p-value.
 
-```{r OpportunityCostDiffs-w-normal, fig.cap = "Null distribution of differences with an overlaid normal curve for the opportunity cost study. 10,000 simulations were run for this figure.", fig.width = 10}
-source("helpers/helper-dotplot.R")   # source helper
-group   <- c(rep('control', 75), rep('treatment', 75))
-outcome <- c(rep(c('buy video', 'do not buy video'), c(56, 19)),
-             rep(c('buy video', 'do not buy video'), c(41, 34)))
-nsim  = 10000
-n     = length(group)
-group = group
-var1  = outcome
-success = "do not buy video"
-sim   = matrix(NA, nrow = n, ncol = nsim)
-n1    = n2 = 75
-Statistic <- function(var1, group){	
-  t1 <- var1 == success & group == levels(as.factor(group))[1]
-  t2 <- var1 == success & group == levels(as.factor(group))[2]
-  sum(t1)/n1 - sum(t2)/n2 
-}
-for(i in 1:nsim){
-  sim[,i] = sample(group, n, replace = FALSE)
-}
-sim_dist = apply(sim, 2, Statistic, var1 = outcome)
-diffs    = sim_dist
-pval     = sum(diffs >= 0.29) / nsim
-values  <- table(sim_dist)
-xlab <- paste0("When $H_0$ is true, simulated difference in proportions ",
-               "of students who do not buy the video")
-X <- c()
-Y <- c()
-udiffs <- sort(unique(diffs))
-for(i in 1:length(udiffs)){
-  x   <- udiffs[i]
-  rec <- sum(sim_dist == x)
-  X   <- append(X, rep(x, rec))
-  Y   <- append(Y, 1:rec)
-}
-bin.width <- diff(udiffs)[1]
-breaks <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
-diffs.tmp <- diffs[diffs > 0.19]
-histPlot(diffs, breaks = breaks, axes = FALSE, col = COL[2],
-         xlab = "", ylab = "Proportion of simulated scenarios                ")
-axis(1)
-x0 <- seq(-.5, .5, length.out = 1000)
-y0 <- dnorm(x0, 0, 0.078)
-lines(x0, 250 * y0)
-lines(c(0.2, 0.2), c(0, 300), lty = 3, lwd = 3)
-text(0.2, 300, "observed\ndifference", pos = 3)
-par(las = 0)
-mtext(expression('When H'[0]*' is true, simulated difference in proportions of students who do not buy the video'), 1, 2.5)
+```{r OpportunityCostDiffs-w-normal, fig.cap = "Null distribution of differences with an overlaid normal curve for the opportunity cost study. 10,000 simulations were run for this figure.", out.width = "100%"}
+ggplot(opportunity_cost_sim_dist, aes(x = stat)) +
+  geom_histogram(aes(y = ..density..), binwidth = 0.013) +
+  geom_function(fun = dnorm, args = list(mean = 0, sd = sd(opportunity_cost_sim_dist$stat)), color = IMSCOL["black", "full"], size = 1) +
+  scale_x_continuous(breaks = seq(-0.3, 0.3, 0.1), labels = label_number(accuracy = 0.1)) +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.minor.x = element_blank()
+  ) +
+  labs(
+    x = expression('When H'[0]*' is true, simulated difference in proportions of students who do not buy the video'),
+    y = "Proportion of simulated scenarios"
+  ) +
+  annotate("segment", x = 0.2, y = 0, xend = 0.2, yend = 2, linetype = "dashed") +
+  annotate("text", x = 0.2, y = 2.8, label = "observed\ndifference")
 ```
 
 #### Observed statistic vs. null statistics {.unnumbered}
@@ -1061,8 +946,8 @@ mtext(expression('When H'[0]*' is true, simulated difference in proportions of s
 As we learned in Section \@ref(normalDist), it is helpful to draw and shade a picture of the normal distribution so we know precisely what we want to calculate.
 Here we want to find the area of the tail beyond 0.2, representing the p-value.
 
-```{r OpportunityCostDiffs_normal_only, fig.cap = "", fig.width = 10}
-normTail(0, 0.078, -7, 0.2, col = COL[1])
+```{r OpportunityCostDiffs_normal_only, fig.asp = 0.5}
+normTail(m = 0, s = 0.078, U = 0.2, col = IMSCOL["blue", "full"])
 ```
 
 Next, we can calculate the Z score using the observed difference, 0.20, and the two model parameters.
@@ -1090,7 +975,7 @@ Next, let's turn our attention to the medical consultant case study.
 
 #### Observed data {.unnumbered}
 
-In Section \@ref(sec-med-consult) we learned about a medical consultant who reported that only 3 of her 62 clients who underwent a liver transplant had complications, which is less than the more common complication rate of 0.10.
+In Section \@ref(sec-med-consult) we learned about a medical consultant who reported that only 3 of their 62 clients who underwent a liver transplant had complications, which is less than the more common complication rate of 0.10.
 In that work, we did not model a null scenario, but we will discuss a simulation method for a one proportion null distribution in Section \@ref(one-prop-null-boot), such a distribution is provided in Figure \@ref(fig:MedConsNullSim-w-normal).
 We have added the best-fitting normal curve to the figure, which has a mean of 0.10.
 Borrowing a formula that we'll encounter in Chapter \@ref(inference-one-prop), the standard error of this distribution was also computed: $SE = 0.038.$
@@ -1100,16 +985,23 @@ Borrowing a formula that we'll encounter in Chapter \@ref(inference-one-prop), t
 Before we begin, we want to point out a simple detail that is easy to overlook: the null distribution we generated from the simulation is slightly skewed, and the histogram is not particularly smooth.
 In fact, the normal distribution only sort-of fits this model.
 
-```{r MedConsNullSim-w-normal, fig.cap = "The null distribution for the sample proportion, created from 10,000 simulated studies, along with the best-fitting normal model.", fig.width = 10}
-pHat <- rbinom(10^4, 62, 0.1)/62
-M    <- max(pHat)*62
-histPlot(pHat, breaks=(-1:(2*M)+0.75)/2/62, xlab=expression(hat(p)[sim]*"    "), col=COL[2], ylab="", axes = FALSE)
-axis(1)
-x0 <- seq(-0.1, .5, length.out = 1000)
-y0 <- dnorm(x0, 0.1, 0.038)
-lines(x0, 150 * y0)
-lines(c(0.05, 0.05), c(0, 1200), lty = 2, lwd = 2)
-text(0.05, 1200, "Observed\nvalue", pos = 3, cex = 0.8)
+```{r MedConsNullSim-w-normal, fig.cap = "The null distribution for the sample proportion, created from 10,000 simulated studies, along with the best-fitting normal model."}
+ggplot(medical_consultant_sim_dist, aes(x = stat)) +
+  geom_histogram(aes(y = ..density..), binwidth = 0.0167, fill = IMSCOL["blue", "full"]) +
+  geom_function(fun = dnorm, args = list(mean = mean(medical_consultant_sim_dist$stat), sd = sd(medical_consultant_sim_dist$stat)), color = IMSCOL["black", "full"], size = 1) +
+  scale_x_continuous(breaks = seq(0, 0.3, 0.05), labels = label_number(accuracy = 0.01)) +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.minor.x = element_blank()
+  ) +
+  labs(
+    x = expression(hat(p)[sim]),
+    y = "Proportion of simulated scenarios"
+  ) +
+  annotate("segment", x = 0.05, y = 0, xend = 0.05, yend = 8, linetype = "dashed") +
+  annotate("text", x = 0.05, y = 9, label = "observed\nvalue")
 ```
 
 #### Observed statistic vs. null statistics {.unnumbered}
@@ -1117,10 +1009,8 @@ text(0.05, 1200, "Observed\nvalue", pos = 3, cex = 0.8)
 As always, we'll draw a picture before finding the normal probabilities.
 Below is a normal distribution centered at 0.10 with a standard error of 0.038.
 
-```{r MedConsNullSim-normal-only, fig.cap = "", fig.width = 10}
-normTail(0.1, 0.038, 0.048, 7, col = COL[1], xAxisIncr = 2, axes = FALSE)
-a <- c(0.02, 0.1, 0.18)
-axis(1, a, format(a))
+```{r MedConsNullSim-normal-only, fig.asp = 0.5}
+normTail(m = 0.1, s = 0.038, L = 0.048, col = IMSCOL["blue", "full"])
 ```
 
 Next, we can calculate the Z score using the observed complication rate, $\hat{p} = 0.048$ along with the mean and standard deviation of the normal model.
@@ -1179,15 +1069,15 @@ terms_chp_14 <- c(terms_chp_14, "95% confidence interval", "95% confident")
 ```
 
 ::: {.guidedpractice}
-Compute the area between -1.96 and 1.96 for a normal distribution with mean 0 and standard deviation 1.[^foundations-mathematical-21]
+Compute the area between -1.96 and 1.96 for a normal distribution with mean 0 and standard deviation 1.[^foundations-mathematical-20]
 :::
 
-[^foundations-mathematical-21]: We will leave it to you to draw a picture.
+[^foundations-mathematical-20]: We will leave it to you to draw a picture.
     The Z scores are $Z_{left} = -1.96$ and $Z_{right} = 1.96.$ The area between these two Z scores is $0.9750 - 0.0250 = 0.9500.$ This is where "1.96" comes from in the 95% confidence interval formula.
 
 ::: {.workedexample}
 The point estimate from the opportunity cost study was that 20% fewer students would buy a video if they were reminded that money not spent now could be spent later on something else.
-The point estimate from this study can reasonably be modeled with a normal distribution, and a proper standard error for this point estimate is $SE = 0.078.$ Construct a 95% confidence interval.[^foundations-mathematical-22]
+The point estimate from this study can reasonably be modeled with a normal distribution, and a proper standard error for this point estimate is $SE = 0.078.$ Construct a 95% confidence interval.[^foundations-mathematical-21]
 
 ------------------------------------------------------------------------
 
@@ -1199,7 +1089,7 @@ We are 95% confident that the video purchase rate resulting from the treatment i
 Since this confidence interval does not contain 0, it is consistent with our earlier result where we rejected the notion of "no difference" using a hypothesis test.
 :::
 
-[^foundations-mathematical-22]: We've used $SE = 0.078$ from the last section.
+[^foundations-mathematical-21]: We've used $SE = 0.078$ from the last section.
     However, it would more generally be appropriate to recompute the $SE$ slightly differently for this confidence interval using the technique introduced in Section \@ref(diff-two-prop).
     Don't worry about this detail for now since the two resulting standard errors are, in this case, almost identical.
 
@@ -1248,39 +1138,43 @@ The interval which does not capture $p=0.3$ is not due to bad science.
 Instead, it is due to natural variability, and we should *expect* some of our intervals to miss the parameter of interest.
 Indeed, over a lifetime of creating 95% intervals, you should expect 5% of your reported intervals to miss the parameter of interest (unfortunately, you will not ever know which of your reported intervals captured the parameter and which missed the parameter).
 
-```{r 95PercentConfidenceInterval, fig.cap = "Twenty-five samples of size $n=300$ were collected from a population with $p = 0.30.$ For each sample, a confidence interval was created to try to capture the true proportion $p.$ However, 1 of these 25 intervals did not capture $p = 0.30.$", fig.width = 10}
+```{r 95PercentConfidenceInterval, fig.cap = "Twenty-five samples of size $n=300$ were collected from a population with $p = 0.30.$ For each sample, a confidence interval was created to try to capture the true proportion $p.$ However, 1 of these 25 intervals did not capture $p = 0.30.$"}
 set.seed(4747)
 num.sim <- 25
-n       <- 300
-p       <- 0.3
-p.hat   <- rbinom(num.sim, n, p) / n
-SE      <- sqrt(p.hat * (1 - p.hat) / n)
-par(mar=c(2, 1, 1, 1), mgp=c(2.7, 0.9, 0))
-xR <- p + 4*c(-1, 1)*max(SE)
+n <- 300
+p <- 0.3
+p.hat <- rbinom(num.sim, n, p) / n
+SE <- sqrt(p.hat * (1 - p.hat) / n)
+par(mar = c(2, 1, 1, 1), mgp = c(2.7, 0.9, 0))
+xR <- p + 4 * c(-1, 1) * max(SE)
 yR <- c(0, 25)
-plot(xR, yR, type='n', xlab='',
-     ylab='', axes=FALSE)
-abline(v=p, lty=2, col=COL[6])
-axis(1, at=p + c(-0.05, 0, 0.05),
-     c("0.25", "p = 0.30", "0.35"), cex.axis=1.15)
-for(i in 1:num.sim){
-	ci <- p.hat[i] + 2 * c(-1, 1) * SE[i]
-	if(abs(p.hat[i] - p) > 2 * SE[i]){
-		col <- COL[4]
-		points(p.hat[i], i, cex=1.4, col=col)
-	} else {
-		col <- COL[1]
-	}
-	points(p.hat[i], i, pch=20, cex=1.2, col=col)
-	lines(ci, rep(i, 2), col=col)
+plot(xR, yR,
+  type = "n", xlab = "",
+  ylab = "", axes = FALSE
+)
+abline(v = p, lty = 2, col = COL[6])
+axis(1,
+  at = p + c(-0.05, 0, 0.05),
+  c("0.25", "p = 0.30", "0.35"), cex.axis = 1.15
+)
+for (i in 1:num.sim) {
+  ci <- p.hat[i] + 2 * c(-1, 1) * SE[i]
+  if (abs(p.hat[i] - p) > 2 * SE[i]) {
+    col <- COL[4]
+    points(p.hat[i], i, cex = 1.4, col = col)
+  } else {
+    col <- COL[1]
+  }
+  points(p.hat[i], i, pch = 20, cex = 1.2, col = col)
+  lines(ci, rep(i, 2), col = col)
 }
 ```
 
 ::: {.guidedpractice}
-In Figure \@ref(fig:95PercentConfidenceInterval), one interval does not contain the true proportion, $p = 0.3.$ Does this imply that there was a problem with the datasets that were selected?[^foundations-mathematical-23]
+In Figure \@ref(fig:95PercentConfidenceInterval), one interval does not contain the true proportion, $p = 0.3.$ Does this imply that there was a problem with the datasets that were selected?[^foundations-mathematical-22]
 :::
 
-[^foundations-mathematical-23]: No.
+[^foundations-mathematical-22]: No.
     Just as some observations occur more than 1.96 standard deviations from the mean, some point estimates will be more than 1.96 standard errors from the parameter.
     A confidence interval only provides a plausible range of values for a parameter.
     While we might say other values are implausible based on the data, this does not mean they are impossible.

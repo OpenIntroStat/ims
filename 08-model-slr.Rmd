@@ -5,7 +5,7 @@
 ::: {.chapterintro}
 Linear regression is a very powerful statistical technique.
 Many people have some familiarity with regression just from reading the news, where straight lines are overlaid on scatterplots.
-Linear models can be used for prediction or to evaluate whether there is a linear relationship between two numerical variables.
+Linear models colcan be used for prediction or to evaluate whether there is a linear relationship between two numerical variables.
 :::
 
 ## Fitting a line, residuals, and correlation {#fit-line-res-cor}
@@ -25,8 +25,8 @@ target <- simulated_scatter %>%
   filter(group == 4)
 
 ggplot(target, aes(x = x, y = y)) +
-  geom_smooth(method = "lm", color = "black", size = 0.5) +
-  geom_point(col = COL["blue", "full"], size = 3) +
+  geom_smooth(method = "lm") +
+  geom_point(size = 3) +
   scale_y_continuous(labels = label_dollar(scale = 0.001, suffix = "K", accuracy = 1), breaks = c(0, 1000, 2000)) +
   labs(
     x = "Number of Target Corporation Stocks to Purchase",
@@ -62,24 +62,24 @@ The last plot shows a very weak downward trend in the data, so slight we can har
 In each of these examples, we will have some uncertainty regarding our estimates of the model parameters, $\beta_0$ and $\beta_1.$ For instance, we might wonder, should we move the line up or down a little, or should we tilt it more or less?
 As we move forward in this chapter, we will learn about criteria for line-fitting, and we will also learn about the uncertainty associated with estimates of model parameters.
 
-```{r imperfLinearModel, fig.cap = "Three data sets where a linear model may be useful even though the data do not all fall exactly on the line.", out.width="100%"}
+```{r imperfLinearModel, fig.cap = "Three data sets where a linear model may be useful even though the data do not all fall exactly on the line.", out.width="100%", fig.asp = 0.4}
 neg <- simulated_scatter %>% filter(group == 1)
 pos <- simulated_scatter %>% filter(group == 2)
 ran <- simulated_scatter %>% filter(group == 3)
 
 p_neg <- ggplot(neg, aes(x = x, y = y)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE) +
   labs(x = NULL, y = NULL)
 
 p_pos <- ggplot(pos, aes(x = x, y = y)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE) +
   labs(x = NULL, y = NULL)
 
 p_ran <- ggplot(ran, aes(x = x, y = y)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE) +
   labs(x = NULL, y = NULL)
 
 p_neg + p_pos + p_ran
@@ -93,8 +93,8 @@ We discuss nonlinear trends in this chapter and the next, but details of fitting
 bad <- simulated_scatter %>% filter(group == 5)
 
 ggplot(bad, aes(x = x, y = y)) +
-  geom_point(col = COL["blue", "full"], size = 2) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = FALSE) +
   labs(
     x = "Angle of Incline (Degrees)", 
     y = "Distance Traveled (m)"
@@ -122,12 +122,12 @@ While the relationship is not perfectly linear, it could be helpful to partially
 
 ```{r scattHeadLTotalL, fig.cap = "A scatterplot showing head length against total length for 104 brushtail possums. A point representing a possum with head length 86.7 mm and total length 84 cm is highlighted."}
 ggplot(possum, aes(x = total_l, y = head_l)) +
-  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  geom_point(alpha = 0.7, size = 2) +
   labs(
     x = "Total Length (cm)",
     y = "Head Length (mm)"
   ) +
-  geom_point(data = tibble(x = 84, y = 86.7), aes(x = x, y = y), color = COL["red", "full"], size = 5, shape = 21, stroke = 2)
+  geom_point(data = tibble(x = 84, y = 86.7), aes(x = x, y = y), color = IMSCOL["red", "full"], size = 5, shape = "circle open", stroke = 2)
 ```
 
 We want to describe the relationship between the head length and total length variables in the possum data set using a line.
@@ -135,12 +135,12 @@ In this example, we will use the total length as the predictor variable, $x,$ to
 
 ```{r scattHeadLTotalLLine, fig.cap = "A reasonable linear model was fit to represent the relationship between head length and total length."}
 ggplot(possum, aes(x = total_l, y = head_l)) +
-  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  geom_point(alpha = 0.7, size = 2) +
   labs(
     x = "Total Length (cm)",
     y = "Head Length (mm)"
   ) +
-  geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5)
+  geom_smooth(method = "lm", se = FALSE)
 ```
 
 The equation for this line is
@@ -165,8 +165,8 @@ It's harder to tell if age changes the relationship between total length and hea
 
 ```{r scattHeadLTotalL-sex-age, fig.cap = "Relationship between total length and head lentgh of brushtail possums, taking into consideration their sex (Plot A) or age (Plot B).", fig.asp=1.236}
 p_sex <- ggplot(possum, aes(x = total_l, y = head_l, shape = sex, color = sex)) +
-  geom_point(alpha = 0.6, size = 2) +
-  scale_color_manual(values = c(COL["red","full"], COL["blue","full"])) +
+  geom_point(alpha = 0.8, size = 2) +
+  scale_color_manual(values = c(IMSCOL["red","full"], IMSCOL["blue","full"])) +
   labs(
     x = "Total Length (cm)",
     y = "Head Length (mm)",
@@ -174,13 +174,14 @@ p_sex <- ggplot(possum, aes(x = total_l, y = head_l, shape = sex, color = sex)) 
   )
 
 p_age <- ggplot(possum, aes(x = total_l, y = head_l, color = age)) +
-  geom_point(alpha = 0.6, size = 2) +
+  geom_point(size = 2) +
   labs(
     x = "Total Length (cm)",
     y = "Head Length (mm)",
     color = "Age"
   ) +
-  scale_color_viridis_c()
+  scale_color_gradient(low = IMSCOL["green", "f4"], 
+                       high = IMSCOL["green", "full"])
 
 p_sex / p_age + plot_annotation(tag_levels = "A")
 ```
@@ -204,27 +205,36 @@ terms_chp_8 <- c(terms_chp_8, "residuals")
 ```
 
 Figure \@ref(fig:scattHeadLTotalLLine-highlighted) is almost a replica of Figure \@ref(fig:scattHeadLTotalLLine), with three points from the data highlighted.
-The observation marked by a red circle has a small, negative residual of about -1; the observation marked by a green diamond has a large positive residual of about +7; and the observation marked by a yellow triangle has a moderate negative residual of about -4.
+The observation marked by a red circle has a small, negative residual of about -1; the observation marked by a green diamond has a large positive residual of about +7; and the observation marked by a pink triangle has a moderate negative residual of about -4.
 The size of a residual is usually discussed in terms of its absolute value.
-For example, the residual for the observation marked by a yellow triangle is larger than that of the observation marked by a red circle because $|-4|$ is larger than $|-1|.$
+For example, the residual for the observation marked by a pink triangle is larger than that of the observation marked by a red circle because $|-4|$ is larger than $|-1|.$
 
 ```{r scattHeadLTotalLLine-highlighted, fig.cap = "A reasonable linear model was fit to represent the relationship between head length and total length, with three points highlighted."}
 mod <- lm(head_l ~ total_l, data = possum)
 preds <- predict(mod, data.frame(total_l = c(76, 85, 95.5)))
 obs <- c(85.1, 98.6, 94)
 ggplot(possum, aes(x = total_l, y = head_l)) +
-  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  geom_point(alpha = 0.8, size = 2) +
   labs(
     x = "Total Length (cm)",
     y = "Head Length (mm)"
   ) +
-  geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) +
-  geom_point(data = possum %>% filter(total_l == 76), shape = 21, stroke = 2, size = 4, color = COL["red", "full"]) +
-  geom_segment(aes(x = 76, y = preds[1], xend = 76, yend = obs[1]), color = COL["red", "full"], inherit.aes = FALSE) +
-  geom_point(data = possum %>% filter(total_l == 85, head_l == 98.6), shape = 5, stroke = 2, size = 5, color = COL["green", "full"]) +
-  geom_segment(aes(x = 85, y = preds[2], xend = 85, yend = obs[2]), color = COL["green", "full"], inherit.aes = FALSE) +
-  geom_point(data = possum %>% filter(total_l == 95.5, head_l == 94), shape = 2, stroke = 2, size = 5, color = COL["yellow", "full"]) +
-  geom_segment(aes(x = 95.5, y = preds[3], xend = 95.5, yend = obs[3]), color = COL["yellow", "full"], inherit.aes = FALSE)
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_point(data = possum %>% filter(total_l == 76), 
+             shape = "circle open", stroke = 2, 
+             size = 4, color = IMSCOL["red", "full"]) +
+  geom_segment(aes(x = 76, y = preds[1], xend = 76, yend = obs[1] + 0.4), 
+               color = IMSCOL["red", "full"], inherit.aes = FALSE) +
+  geom_point(data = possum %>% filter(total_l == 85, head_l == 98.6), 
+             shape = "diamond open", stroke = 2, size = 5, 
+             color = IMSCOL["green", "full"]) +
+  geom_segment(aes(x = 85, y = preds[2], xend = 85, yend = obs[2]-0.5), 
+               color = IMSCOL["green", "full"], inherit.aes = FALSE) +
+  geom_point(data = possum %>% filter(total_l == 95.5, head_l == 94), 
+             shape = "triangle open", stroke = 2, size = 5, 
+             color = IMSCOL["pink", "full"]) +
+  geom_segment(aes(x = 95.5, y = preds[3], xend = 95.5, yend = obs[3] + 0.5), 
+               color = IMSCOL["pink", "full"], inherit.aes = FALSE)
 ```
 
 ::: {.important}
@@ -263,11 +273,11 @@ What about if it overestimates the observation?[^model-slr-1]
     The opposite is true when the model overestimates the observation: the residual is negative.
 
 ::: {.guidedpractice}
-Compute the residuals for the observation marked by a green diamond, $(85.0, 98.6),$ and the observation marked by a yellow triangle, $(95.5, 94.0),$ in the figure using the linear relationship $\hat{y} = 41 + 0.59x.$[^model-slr-2]
+Compute the residuals for the observation marked by a green diamond, $(85.0, 98.6),$ and the observation marked by a pink triangle, $(95.5, 94.0),$ in the figure using the linear relationship $\hat{y} = 41 + 0.59x.$[^model-slr-2]
 :::
 
 [^model-slr-2]: Green diamond: $\hat{y} = 41+0.59x = 41+0.59\times 85.0 = 91.15 \rightarrow e = y - \hat{y} = 98.6-91.15=7.45.$ This is close to the earlier estimate of 7.
-    Yellow triangle: $\hat{y} = 41+0.59x = 97.3 \rightarrow e = -3.3.$ This is also close to the estimate of -4.
+    pink triangle: $\hat{y} = 41+0.59x = 97.3 \rightarrow e = -3.3.$ This is also close to the estimate of -4.
 
 Residuals are helpful in evaluating how well a linear model fits a data set.
 We often display them in a scatterplot such as the one shown in Figure \@ref(fig:scattHeadLTotalLResidualPlot) for the regression line in Figure \@ref(fig:scattHeadLTotalLLine-highlighted).
@@ -279,18 +289,33 @@ m_head_total <- lm(head_l ~ total_l, data = possum)
 m_head_total_aug <- augment(m_head_total)
 
 ggplot(m_head_total_aug, aes(x = .fitted, y = .resid)) +
-  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
+  geom_point(alpha = 0.8, size = 2) +
   labs(
     x = "Predicted values of head length (mm)",
     y = "Residuals"
   ) +
-  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
-  geom_point(data = m_head_total_aug %>% filter(total_l == 76), shape = 21, stroke = 2, size = 4, color = COL["red", "full"]) +
-  geom_segment(aes(x = preds[1], y = obs[1]-preds[1], xend = preds[1], yend = 0), color = COL["red", "full"], inherit.aes = FALSE) +
-  geom_point(data = m_head_total_aug %>% filter(total_l == 85, head_l == 98.6), shape = 5, stroke = 2, size = 5, color = COL["green", "full"]) +
-  geom_segment(aes(x = preds[2], y = obs[2]-preds[2], xend = preds[2], yend = 0), color = COL["green", "full"], inherit.aes = FALSE) +
-  geom_point(data = m_head_total_aug %>% filter(total_l == 95.5, head_l == 94), shape = 2, stroke = 2, size = 5, color = COL["yellow", "full"]) +
-  geom_segment(aes(x = preds[3], y = obs[3]-preds[3], xend = preds[3], yend = 0), color = COL["yellow", "full"], inherit.aes = FALSE)
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(data = m_head_total_aug %>% 
+               filter(total_l == 76), 
+             shape = "circle open", stroke = 2, size = 4, 
+             color = IMSCOL["red", "full"]) +
+  geom_segment(aes(x = preds[1], y = obs[1]-preds[1]+0.2, 
+                   xend = preds[1], yend = 0), 
+               color = IMSCOL["red", "full"], inherit.aes = FALSE) +
+  geom_point(data = m_head_total_aug %>% 
+               filter(total_l == 85, head_l == 98.6), 
+             shape = "diamond open", stroke = 2, size = 5, 
+             color = IMSCOL["green", "full"]) +
+  geom_segment(aes(x = preds[2], y = obs[2]-preds[2]-0.3, 
+                   xend = preds[2], yend = 0), 
+               color = IMSCOL["green", "full"], inherit.aes = FALSE) +
+  geom_point(data = m_head_total_aug %>% 
+               filter(total_l == 95.5, head_l == 94), 
+             shape = "triangle open", stroke = 2, size = 5, 
+             color = IMSCOL["pink", "full"]) +
+  geom_segment(aes(x = preds[3], y = obs[3]-preds[3]+0.3, 
+                   xend = preds[3], yend = 0), 
+               color = IMSCOL["pink", "full"], inherit.aes = FALSE)
 ```
 
 ::: {.workedexample}
@@ -325,38 +350,38 @@ neg_cur_mod <- augment(lm(y ~ x, data = neg_cur))
 random_mod  <- augment(lm(y ~ x, data = random))
 
 p_neg_lin <- ggplot(neg_lin, aes(x = x, y = y)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE) +
   theme_void() +
   theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
 
 p_neg_cur <- ggplot(neg_cur, aes(x = x, y = y)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE) +
   theme_void() +
   theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
 
 p_random <- ggplot(random, aes(x = x, y = y)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE) +
   theme_void() +
   theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
 
 p_neg_lin_res <- ggplot(neg_lin_mod, aes(x = .fitted, y = .resid)) +
-  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
-  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
   theme_void() +
   theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
 
 p_neg_cur_res <- ggplot(neg_cur_mod, aes(x = .fitted, y = .resid)) +
-  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
-  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
   theme_void() +
   theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
 
 p_random_res <- ggplot(random_mod, aes(x = .fitted, y = .resid)) +
-  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
-  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
   theme_void() +
   theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
 
@@ -405,7 +430,7 @@ library(ggpubr) # Adding here instead of _common.R to avoid collision with ggima
 simulated_scatter %>%
   filter(group %in% 9:16) %>%
   ggplot(aes(x = x, y = y)) + 
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_point(size = 2, alpha = 0.8) +
   theme_void() +
   facet_wrap(~group, nrow = 2, scales = "free_x") + 
   theme(
@@ -413,7 +438,6 @@ simulated_scatter %>%
     strip.background = element_blank(),
     strip.text.x = element_blank()
   ) +
-#  stat_cor(aes(label = ..r.label..))
   stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
 ```
 
@@ -424,15 +448,14 @@ Nonlinear trends, even when strong, sometimes produce correlations that do not r
 simulated_scatter %>%
   filter(group %in% 17:19) %>%
   ggplot(aes(x = x, y = y)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
+  geom_point(size = 2, alpha = 0.8) +
   theme_void() +
-  facet_wrap(~group, nrow = 1, scales = "free_y") +
+  facet_wrap(~group, nrow = 1, scales = "free") +
   theme(
     panel.border = element_rect(colour = "gray", fill = NA, size = 1),
     strip.background = element_blank(),
     strip.text.x = element_blank()
   ) +
-  #  stat_cor(aes(label = ..r.label..))
   stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
 ```
 
@@ -453,9 +476,8 @@ The x and y variables represent the proportion of total yield in the last 50 yea
 Order the six scatterplots from strongest negative to strongest positive linear relationship.
 
 ```{r out.width = "100%", fig.asp = 1}
-# TODO: See if there is a better approach than reading grom GitHub 
-# Using tidytuesdayR package prints messages I can't turn off
-crops_country <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-01/key_crop_yields.csv")
+# from tidytuesday: https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-01/key_crop_yields.csv
+crops_country <- read_csv("data/key_crop_yields.csv")
 
 crops_country <- crops_country %>%
   rename_with(tolower) %>%
@@ -482,56 +504,70 @@ crops_country <- crops_country %>%
   filter(n_missing <= 5)  # filter out countries that don't have data for most of the crops
 
 sb <- ggplot(crops_country) +
-  geom_point(aes(x = prop_soybeans, y = prop_bananas), color = COL["blue", "full"]) +
-  xlim(c(0,6)) + 
+  geom_point(aes(x = prop_soybeans, y = prop_bananas)) +
+  scale_x_continuous(limits = c(0, 6), 
+                     labels = label_percent(scale = 1)) +
+  scale_y_continuous(labels = label_percent(scale = 1)) +
   labs(
-    x = "% soybeans",
-    y = "% bananas"
+    x = "% Soybeans",
+    y = "% Bananas"
   )
 
 sc <- ggplot(crops_country) +
-  geom_point(aes(x = prop_soybeans, y = prop_cassava), color = COL["blue", "full"]) +
-  xlim(c(0,6)) + 
+  geom_point(aes(x = prop_soybeans, y = prop_cassava)) +
+  scale_x_continuous(limits = c(0, 6), 
+                     labels = label_percent(scale = 1)) +
+  scale_y_continuous(labels = label_percent(scale = 1)) +
   labs(
-    x = "% soybeans",
-    y = "% cassava"
+    x = "% Soybeans",
+    y = "% Cassava"
   )
 
 mc <- ggplot(crops_country) +
-  geom_point(aes(x = prop_maize, y = prop_cassava), color = COL["blue", "full"]) +
-  xlim(c(0,15)) + 
+  geom_point(aes(x = prop_maize, y = prop_cassava)) +
+  scale_x_continuous(limits = c(0, 15), 
+                     labels = label_percent(scale = 1)) +
+  scale_y_continuous(labels = label_percent(scale = 1)) +
   labs(
-    x = "% maize",
-    y = "% cassava"
+    x = "% Maize",
+    y = "% Cassava"
   )
 
 peb <- ggplot(crops_country) +
-  geom_point(aes(x = prop_potatoes, y = prop_bananas), color = COL["blue", "full"]) +
-  xlim(c(0,60)) + 
+  geom_point(aes(x = prop_potatoes, y = prop_bananas)) +
+  scale_x_continuous(limits = c(0, 60), 
+                     labels = label_percent(scale = 1)) +
+  scale_y_continuous(labels = label_percent(scale = 1)) +
   labs(
-    x = "% potatoes",
-    y = "% bananas"
+    x = "% Potatoes",
+    y = "% Bananas"
   )
 
 cb <- ggplot(crops_country) +
-  geom_point(aes(x = prop_cocoa, y = prop_bananas), color = COL["blue", "full"]) +
+  geom_point(aes(x = prop_cocoa, y = prop_bananas)) +
+  scale_x_continuous(labels = label_percent(scale = 1)) +
+  scale_y_continuous(labels = label_percent(scale = 1)) +
   labs(
-    x = "% cocoa",
-    y = "% bananas"
+    x = "% Cocoa",
+    y = "% Bananas"
   )
 
 wb <- ggplot(crops_country) +
-  geom_point(aes(x = prop_wheat, y = prop_barley), color = COL["blue", "full"]) +
+  geom_point(aes(x = prop_wheat, y = prop_barley)) +
+  scale_x_continuous(labels = label_percent(scale = 1)) +
+  scale_y_continuous(labels = label_percent(scale = 1)) +
   labs(
-    x = "% wheat",
-    y = "% barley"
+    x = "% Wheat",
+    y = "% Barley"
   )
 
 pob <- ggplot(crops_country) +
-  geom_point(aes(x = prop_peas, y = prop_barley), color = COL["blue", "full"]) +
+  geom_point(aes(x = prop_peas, y = prop_barley)) +
+  scale_x_continuous(labels = label_percent(scale = 1)) +
+  scale_y_continuous(labels = label_percent(scale = 1)) +
   labs(
-    x = "% peas",
-    y = "% barley"
+    x = "% Peas",
+    y = "% Barley"
   )
 
 peb + sc + mc + cb + pob + wb +
@@ -577,8 +613,8 @@ The lines follows a negative trend in the data; students who have higher family 
 
 ```{r elmhurstScatterWLine, fig.cap = "Gift aid and family income for a random sample of 50 freshman students from Elmhurst College."}
 ggplot(elmhurst, aes(x = family_income, y = gift_aid)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = FALSE) +
   scale_y_continuous(labels = label_dollar(scale = 1, suffix = "K", accuracy = 1)) +
   scale_x_continuous(labels = label_dollar(scale = 1, suffix = "K", accuracy = 1)) +
   labs(
@@ -608,9 +644,9 @@ The resulting dashed line shown in Figure \@ref(fig:elmhurstScatterW2Lines) dem
 
 ```{r elmhurstScatterW2Lines, fig.cap = "Gift aid and family income for a random sample of 50 freshman students from Elmhurst College. The dashed line reporesents the line that minimizes the sum of the absolute value of residuals, the solid line represents the line that minimizes the sum of squared residuals, i.e. the least squares line."}
 ggplot(elmhurst, aes(x = family_income, y = gift_aid)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
-  geom_smooth(method = quantreg::rq, formula = y ~ x, color = "black", size = 0.5, se = FALSE, linetype = "dashed") +
+  geom_point(alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_smooth(method = quantreg::rq, formula = y ~ x, se = FALSE, linetype = "dashed") +
   scale_y_continuous(labels = label_dollar(scale = 1, suffix = "K", accuracy = 1)) +
   scale_x_continuous(labels = label_dollar(scale = 1, suffix = "K", accuracy = 1)) +
   labs(
@@ -952,8 +988,8 @@ Note that the original dataset contains some Mario Kart games being sold at pric
 mariokart_lt100 %>%
   filter(total_pr < 100) %>%
   ggplot(aes(x = as.numeric(cond) - 1, y = total_pr)) +
-  geom_jitter(color = COL["blue","full"], alpha = 0.8, position = position_jitter(width = 0.05)) +
-  geom_smooth(method = "lm", color = "black", se = FALSE, fullrange = TRUE) +
+  geom_jitter(alpha = 0.8, position = position_jitter(width = 0.05)) +
+  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
   scale_x_continuous(
     breaks = c(0, 1), 
     minor_breaks = c(0, 1),
@@ -1042,56 +1078,107 @@ Recall that an outlier is any point that doesn't appear to belong with the vast 
 -   C: There is one point far away from the cloud, and this outlier appears to pull the least squares line up on the right; examine how the line around the primary cloud doesn't appear to fit very well.
 :::
 
-```{r outlierPlots1, fig.cap="Three plots, each with a least squares line and corresponding residual plot. All data sets have at least one outlier.", out.width="100%"}
-d1 <- simulated_scatter %>% filter(group == 24)
-d2 <- simulated_scatter %>% filter(group == 25)
-d3 <- simulated_scatter %>% filter(group == 26)
+```{r outlierPlots1, fig.cap="Three plots, each with a least squares line and corresponding residual plot. Each data set has at least one outlier.", out.width="100%", fig.width = 8}
+d1 <- simulated_scatter %>% 
+  filter(group == 24) %>%
+  mutate(outlier = if_else(y == min(y), TRUE, FALSE))
+d2 <- simulated_scatter %>% 
+  filter(group == 25) %>%
+  mutate(outlier = if_else(y == min(y), TRUE, FALSE))
+d3 <- simulated_scatter %>% 
+  filter(group == 26) %>%
+  mutate(outlier = if_else(y == max(y), TRUE, FALSE))
 
-m1_aug <- augment(lm(y ~ x, data = d1))
-m2_aug <- augment(lm(y ~ x, data = d2))
-m3_aug <- augment(lm(y ~ x, data = d3))
+m1_aug <- augment(lm(y ~ x, data = d1)) %>%
+  mutate(outlier = if_else(y == min(y), TRUE, FALSE))
+
+m2_aug <- augment(lm(y ~ x, data = d2)) %>%
+  mutate(outlier = if_else(y == min(y), TRUE, FALSE))
+
+m3_aug <- augment(lm(y ~ x, data = d3)) %>%
+  mutate(outlier = if_else(y == max(y), TRUE, FALSE))
 
 p_1 <- ggplot(d1, aes(x = x, y = y)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
-  theme_void() +
-  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
-  labs(title = "A")
+  geom_point(size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_point(data = d1 %>% filter(outlier), 
+             size = 5, shape = "circle open", 
+             color = IMSCOL["red", "full"], stroke = 2) +
+  labs(title = "A") +
+  theme(
+    panel.grid = element_blank(),
+    axis.text = element_blank(),
+    panel.border = element_rect(colour = "gray", fill = NA, size = 1)
+    )
+
 
 p_1_res <- ggplot(m1_aug, aes(x = .fitted, y = .resid)) +
-  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
-  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
-  theme_void() +
-  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
-  ylim(-4, 4)
+  geom_point(alpha = 0.7, size = 2) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(data = m1_aug %>% filter(outlier), 
+             size = 5, shape = "circle open", 
+             color = IMSCOL["red", "full"], stroke = 2) +
+  ylim(-8, 8) +
+  labs(x = "Predicted y", y = "Residual") +
+  theme(
+    panel.grid = element_blank(),
+    axis.text = element_blank(),
+    panel.border = element_rect(colour = "gray", fill = NA, size = 1)
+    )
 
 p_2 <- ggplot(d2, aes(x = x, y = y)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
-  theme_void() +
-  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
-  labs(title = "B")
+  geom_point(size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_point(data = d2 %>% filter(outlier), 
+             size = 5, shape = "circle open", 
+             color = IMSCOL["green", "full"], stroke = 2) + 
+  labs(title = "B") +
+  theme(
+    panel.grid = element_blank(),
+    axis.text = element_blank(),
+    panel.border = element_rect(colour = "gray", fill = NA, size = 1)
+    )
 
 p_2_res <- ggplot(m2_aug, aes(x = .fitted, y = .resid)) +
-  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
-  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
-  theme_void() +
-  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
-  ylim(-4, 4)
+  geom_point(size = 2, alpha = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(data = m2_aug %>% filter(outlier), 
+             size = 5, shape = "circle open", 
+             color = IMSCOL["green", "full"], stroke = 2) +
+  ylim(-8, 8) +
+  labs(x = "Predicted y", y = "Residual") +
+  theme(
+    panel.grid = element_blank(),
+    axis.text = element_blank(),
+    panel.border = element_rect(colour = "gray", fill = NA, size = 1)
+    )
 
 p_3 <- ggplot(d3, aes(x = x, y = y)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
-  theme_void() +
-  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
-  labs(title = "C")
+  geom_point(size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_point(data = d3 %>% filter(outlier), 
+             size = 5, shape = "circle open", 
+             color = IMSCOL["pink", "full"], stroke = 2) +
+  labs(title = "C") +
+  theme(
+    panel.grid = element_blank(),
+    axis.text = element_blank(),
+    panel.border = element_rect(colour = "gray", fill = NA, size = 1)
+    )
 
 p_3_res <- ggplot(m3_aug, aes(x = .fitted, y = .resid)) +
-  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
-  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
-  theme_void() +
-  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
-  ylim(-4, 4)
+  geom_point(size = 2, alpha = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(data = m3_aug %>% filter(outlier), 
+             size = 5, shape = "circle open", 
+             color = IMSCOL["pink", "full"], stroke = 2) +
+  ylim(-8, 8) +
+  labs(x = "Predicted y", y = "Residual") +
+  theme(
+    panel.grid = element_blank(),
+    axis.text = element_blank(),
+    panel.border = element_rect(colour = "gray", fill = NA, size = 1)
+    )
 
 p_1     + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + 
 p_2     + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + p_3 + 
@@ -1118,7 +1205,9 @@ Recall that an outlier is any point that doesn't appear to belong with the vast 
 :::
 
 ```{r outlierPlots2, fig.cap="Three plots, each with a least squares line and residual plot. All data sets have at least one outlier.", out.width="100%"}
-d4 <- simulated_scatter %>% filter(group == 27)
+d4 <- simulated_scatter %>% 
+  filter(group == 27)
+
 d5 <- simulated_scatter %>% filter(group == 28)
 d6 <- simulated_scatter %>% filter(group == 29)
 
@@ -1127,43 +1216,43 @@ m5_aug <- augment(lm(y ~ x, data = d5))
 m6_aug <- augment(lm(y ~ x, data = d6))
 
 p_4 <- ggplot(d4, aes(x = x, y = y)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE) +
   theme_void() +
   theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
   labs(title = "D")
 
 p_4_res <- ggplot(m4_aug, aes(x = .fitted, y = .resid)) +
-  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
-  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
   theme_void() +
   theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
   ylim(-4, 4)
 
 p_5 <- ggplot(d5, aes(x = x, y = y)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE) +
   theme_void() +
   theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
   labs(title = "E")
 
 p_5_res <- ggplot(m5_aug, aes(x = .fitted, y = .resid)) +
-  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
-  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  geom_point(alpha = 0.7, size = 2) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
   theme_void() +
   theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
   ylim(-4, 4)
 
 p_6 <- ggplot(d6, aes(x = x, y = y)) +
-  geom_point(col = COL["blue", "full"], size = 2, alpha = 0.8) +
-  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE) +
   theme_void() +
   theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
   labs(title = "F")
 
 p_6_res <- ggplot(m6_aug, aes(x = .fitted, y = .resid)) +
-  geom_point(col = COL["blue", "full"], alpha = 0.7, size = 2) +
-  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
   theme_void() +
   theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
   ylim(-4, 4)

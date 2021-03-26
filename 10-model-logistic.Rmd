@@ -39,7 +39,8 @@ resume <- resume %>%
     college_degree = as.factor(college_degree),
     honors = as.factor(honors),
     military = as.factor(military),
-    has_email_address = as.factor(has_email_address)
+    has_email_address = as.factor(has_email_address),
+    race = if_else(race == "black", "Black", "White")
     ) %>%
   select(received_callback, job_city, college_degree, years_experience,
          honors, military, has_email_address, race, sex)
@@ -53,42 +54,42 @@ For example, Lakisha was a name that their survey indicated would be interpreted
 ```{r resume-names}
 resume_names <- tribble(
   ~first_name, ~race, ~sex,
-  "Aisha", "black", "female",
-  "Allison", "white", "female",
-  "Anne", "white", "female",
-  "Brad", "white", "male",
-  "Brendan", "white", "male",
-  "Brett", "white", "male",
-  "Carrie", "white", "female",
-  "Darnell", "black", "male",
-  "Ebony", "black", "female",
-  "Emily", "white", "female",
-  "Geoffrey", "white", "male",
-  "Greg", "white", "male",
-  "Hakim", "black", "male",
-  "Jamal", "black", "male",
-  "Jay", "white", "male",
-  "Jermaine", "black", "male",
-  "Jill", "white", "female",
-  "Kareem", "black", "male",
-  "Keisha", "black", "female",
-  "Kenya", "black", "female",
-  "Kristen", "white", "female",
-  "Lakisha", "black", "female",
-  "Latonya", "black", "female",
-  "Latoya", "black", "female",
-  "Laurie", "white", "female",
-  "Leroy", "black", "male",
-  "Matthew", "white", "male",
-  "Meredith", "white", "female",
-  "Neil", "white", "male",
-  "Rasheed", "black", "male",
-  "Sarah", "white", "female",
-  "Tamika", "black", "female",
-  "Tanisha", "black", "female",
-  "Todd", "white", "male",
-  "Tremayne", "black", "male",
-  "Tyrone", "black", "male"
+  "Aisha", "Black", "female",
+  "Allison", "White", "female",
+  "Anne", "White", "female",
+  "Brad", "White", "male",
+  "Brendan", "White", "male",
+  "Brett", "White", "male",
+  "Carrie", "White", "female",
+  "Darnell", "Black", "male",
+  "Ebony", "Black", "female",
+  "Emily", "White", "female",
+  "Geoffrey", "White", "male",
+  "Greg", "White", "male",
+  "Hakim", "Black", "male",
+  "Jamal", "Black", "male",
+  "Jay", "White", "male",
+  "Jermaine", "Black", "male",
+  "Jill", "White", "female",
+  "Kareem", "Black", "male",
+  "Keisha", "Black", "female",
+  "Kenya", "Black", "female",
+  "Kristen", "White", "female",
+  "Lakisha", "Black", "female",
+  "Latonya", "Black", "female",
+  "Latoya", "Black", "female",
+  "Laurie", "White", "female",
+  "Leroy", "Black", "male",
+  "Matthew", "White", "male",
+  "Meredith", "White", "female",
+  "Neil", "White", "male",
+  "Rasheed", "Black", "male",
+  "Sarah", "White", "female",
+  "Tamika", "Black", "female",
+  "Tanisha", "Black", "female",
+  "Todd", "White", "male",
+  "Tremayne", "Black", "male",
+  "Tyrone", "Black", "male"
 )
 kable(resume_names, 
       caption = "List of all 36 unique names along with the commonly inferred race and sex associated with these names.")
@@ -160,51 +161,48 @@ $$
 \log_{e}\left( \frac{p_i}{1-p_i} \right) = b_0 + b_1 x_{1,i} + b_2 x_{2,i} + \cdots + b_k x_{k,i}
 $$
 
-```{r logit-transformation, fig.cap = "Values of $p_i$ against values of $logit(p_i)$."}
-p <- seq(0.0001, 0.9999, 0.0002)
-lp <- log(p / (1 - p))
+```{r logit-transformation, fig.cap = "Values of $p_i$ against values of $logit(p_i)$.", out.width = "100%"}
+logit_df_line <- tibble(
+  p  = seq(0.0001, 0.9999, 0.0002),
+  lp = log(p / (1 - p))
+)
 
-pts <- seq(0.01, 0.99, length.out = 25)
-R <- c(-6, 6)
-adj <- 0.07
-adj1 <- 0.02
-
-plot(lp, p,
-  xlab = expression(logit(p[i])),
-  ylab = "",
-  xlim = c(-5.8, 6.5),
-  ylim = c(-0.05, 1.1),
-  type = "n"
-)
-lines(lp, p,
-  type = "l",
-  col = COL[5],
-  lwd = 1.5
-)
-mtext(expression(p[i]), 2, 2.4)
-abline(
-  h = 0:1,
-  lty = 2,
-  col = COL[1],
-  lwd = 1.5
-)
-this <- which.min(abs(p - 0.2))
-LP <- c(seq(6, -5, -1))
-P <- exp(LP) / (1 + exp(LP))
-POS <- c(3, 1, 3, 1, 2, 2, 2, 2, 4, 3, 1, 3)
-xOFF <- c()
-Round <- c(3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 3, 3)
-for (i in 1:length(LP)) {
-  points(LP[i], P[i], col = COL[4], lwd = 2)
-  t1 <- format(round(c(LP, 0.9), Round[i]))[i]
-  t2 <- format(round(P, Round[i]))[i]
-  text(LP[i], P[i],
-    paste0("(", t1, ", ", t2, ")"),
-    cex = 0.6,
-    pos = POS[i],
-    col = COL[5]
+logit_df_point <- tibble(
+  lp = -5:6,
+  p = round(exp(lp) / (exp(lp) + 1), 3)
+) %>%
+  mutate(
+    label = glue::glue("({lp}, {p})"),
+    label_pos = case_when(
+      lp %in% c(-5, -3, 4, 6) ~ "above",
+      lp %in% c(-4, 3, 5)     ~ "below",
+      lp == -2                ~ "right",
+      lp %in% c(-1, 0, 1, 2)  ~ "left",
+    )
   )
-}
+
+ggplot(logit_df_line, aes(x = lp, y = p)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = IMSCOL["blue", "full"]) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = IMSCOL["blue", "full"]) +
+  geom_smooth(se = FALSE, size = 0.5) +
+  coord_cartesian(
+    xlim = c(-5.5, 6), 
+    ylim = c(-0.05, 1.1)
+  ) +
+  geom_point(data = logit_df_point, shape = "circle open", 
+             size = 3, color = IMSCOL["red", "full"], stroke = 2) +
+  geom_text(data = logit_df_point %>% filter(label_pos == "above"), 
+            aes(label = label), vjust = -2) +
+  geom_text(data = logit_df_point %>% filter(label_pos == "below"), 
+            aes(label = label), vjust = 2.5) +
+  geom_text(data = logit_df_point %>% filter(label_pos == "right"), 
+            aes(label = label), hjust = -0.25) +
+  geom_text(data = logit_df_point %>% filter(label_pos == "left"), 
+            aes(label = label), hjust = 1.25) +
+  labs(
+    x = expression(logit(p[i])),
+    y = expression(p[i])
+  )
 ```
 
 In our resume example, there are 8 predictor variables, so $k = 8$.
@@ -292,18 +290,18 @@ resume_fit %>%
 ```
 
 ::: {.workedexample}
-The `race` variable had taken only two levels: `black` and `white`.
+The `race` variable had taken only two levels: `Black` and `White`.
 Based on the model results, was race a meaningful factor for if a prospective employer would call back?
 
 ------------------------------------------------------------------------
 
 We see that the p-value for this coefficient is very small (very nearly zero), which implies that race played a statistically significant role in whether a candidate received a callback.
-Additionally, we see that the coefficient shown corresponds to the level of `white`, and it is positive.
+Additionally, we see that the coefficient shown corresponds to the level of `White`, and it is positive.
 This positive coefficient reflects a positive gain in callback rate for resumes where the candidate's first name implied they were White.
 The data provide very strong evidence of racism by prospective employers that favours resumes where the first name is typically interpreted to be White.
 :::
 
-The coefficient of $\texttt{race}_{\texttt{white}}$ in the full model in Table \@ref(tab:resume-full-fit), is nearly identical to the model shown in Table \@ref(tab:resume-fit).
+The coefficient of $\texttt{race}_{\texttt{White}}$ in the full model in Table \@ref(tab:resume-full-fit), is nearly identical to the model shown in Table \@ref(tab:resume-fit).
 The predictors in this experiment were thoughtfully laid out so that the coefficient estimates would typically not be much influenced by which other predictors were in the model, which aligned with the motivation of the study to tease out which effects were important to getting a callback.
 In most observational data, it's common for point estimates to change a little, and sometimes a lot, depending on which other variables are included in the model.
 
@@ -319,7 +317,7 @@ $$
 &log_e \left(\frac{p}{1 - p}\right) \\
 &\quad= - 2.7162 - 0.4364 \times \texttt{job_city}_{\texttt{Chicago}}        + 0.0206 \times \texttt{years_experience} \\
 &\quad\qquad + 0.7634 \times \texttt{honors} - 0.3443 \times \texttt{military} + 0.2221 \times \texttt{email} \\
-&\quad\qquad + 0.4429 \times \texttt{race}_{\texttt{white}} - 0.1959 \times \texttt{sex}_{\texttt{man}} \\
+&\quad\qquad + 0.4429 \times \texttt{race}_{\texttt{White}} - 0.1959 \times \texttt{sex}_{\texttt{man}} \\
 &\quad= - 2.7162 - 0.4364 \times 1 + 0.0206 \times 14 \\
 &\quad\qquad + 0.7634 \times 0 - 0.3443 \times 0 + 0.2221 \times 1 \\
 &\quad\qquad + 0.4429 \times 1 - 0.1959 \times 1 \\
@@ -335,7 +333,7 @@ Compute the probability of a callback for an individual with a name commonly inf
 
 ------------------------------------------------------------------------
 
-We can complete the same steps for an individual with the same characteristics who is Black, where the only difference in the calculation is that the indicator variable $\texttt{race}_{\texttt{white}}$ will take a value of 0.
+We can complete the same steps for an individual with the same characteristics who is Black, where the only difference in the calculation is that the indicator variable $\texttt{race}_{\texttt{White}}$ will take a value of 0.
 Doing so yields a probability of 0.0553.
 Let's compare the results with those of the previous example..
 
@@ -365,13 +363,14 @@ The second condition of the logistic regression model is not easily checked with
 Luckily, we have 4870 resume submissions in the data set!
 Let's first visualize these data by plotting the true classification of the resumes against the model's fitted probabilities, as shown in Figure \@ref(fig:resume-predict).
 
-```{r resume-predict, fig.cap = "The predicted probability that each of the 4870 resumes results in a callback. Noise (small, random vertical shifts) have been added to each point so points with nearly identical values aren’t plotted exactly on top of one another."}
+```{r resume-predict, fig.cap = "The predicted probability that each of the 4870 resumes results in a callback. Points have been jittered so that those with nearly identical values aren’t plotted exactly on top of one another."}
 resume_pred <- predict(resume_fit, new_data = resume, type = "prob") %>%
   bind_cols(resume %>% select(received_callback))
 
 ggplot(resume_pred, aes(x = .pred_1, y = received_callback)) +
-  geom_jitter(color = COL["blue", "full"], alpha = 0.15) +
-  coord_cartesian(xlim = c(0, 1))
+  geom_jitter(alpha = 0.15) +
+  coord_cartesian(xlim = c(0, 1)) +
+  labs(y = "Recevied callback", y = "Predicticted probability that resume results in a callback")
 ```
 
 <!--# Omitting bucket diagram for diagnostics since it uses 95% CI which we haven't discussed yet. Should it go in the final chapter? -->
