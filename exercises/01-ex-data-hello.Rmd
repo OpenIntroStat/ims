@@ -232,7 +232,7 @@ The visualization below shows voting patterns the United States, Canada, and Mex
 Specifically, for a given year between 1946 and 2019, it displays the percentage of roll calls in which the country voted yes for each issue. 
 This visualization was constructed based on a dataset where each observation is a country/year pair.^[The data used in this exercise can be found in the [**unvotes**](https://cran.r-project.org/web/packages/unvotes/index.html) package.]
 
-    ```{r echo=FALSE, message=FALSE, warning=FALSE, out.width="100%"}
+    ```{r echo=FALSE, message=FALSE, warning=FALSE, out.width="100%", fig.asp = 0.8}
     # load packages ------------------------------------------------------------
     library(tidyverse)
     library(openintro)
@@ -242,14 +242,10 @@ This visualization was constructed based on a dataset where each observation is 
 
     # plot unvotes by issues ---------------------------------------------------
     un_votes %>%
-      mutate(country = ifelse(country == "United States of America", "US", country)) %>%
-      filter(country %in% c("US", "Mexico", "Canada")) %>%
+      filter(country %in% c("United States", "Mexico", "Canada")) %>%
       inner_join(un_roll_calls, by = "rcid") %>%
       inner_join(un_roll_call_issues, by = "rcid") %>%
-      mutate(
-        issue = ifelse(issue == "Nuclear weapons and nuclear material", "Nuclear weapons and materials", issue),
-        vote = fct_relevel(vote, "yes", "no", "abstain")
-        ) %>%
+      mutate(vote = fct_relevel(vote, "yes", "no", "abstain")) %>%
       group_by(country, year = year(date), issue) %>%
       summarize(
         votes = n(),
@@ -260,14 +256,18 @@ This visualization was constructed based on a dataset where each observation is 
       ggplot(mapping = aes(x = year, y = percent_yes, color = country)) +
         geom_point(alpha = 0.5) +
         geom_smooth(method = "loess", se = FALSE) +
-        facet_wrap(~ issue) +
+        facet_wrap(~ issue, labeller = label_wrap_gen(width = 20)) +
         labs(
           y = "% Yes",
           x = "Year",
           color = "Country"
         ) +
-        scale_color_manual(values = c(COL[1,1], COL[2,1], COL[4,1])) +
-        scale_y_continuous(labels = label_percent(scale = 100))
+        scale_color_openintro("three") +
+        scale_y_continuous(breaks = c(0, 0.5, 1), labels = label_percent(scale = 100)) +
+      theme(
+        legend.position = "bottom",
+        legend.direction = "horizontal"
+      )
     ```
 
     a.  List the variables used in creating this visualization.
