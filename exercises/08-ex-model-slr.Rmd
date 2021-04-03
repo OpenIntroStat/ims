@@ -344,7 +344,7 @@ Suppose we fit a regression line to predict the number of incidents of skin canc
 For a particular year, we predict the incidence of skin cancer to be 1.5 per 1,000 people, and the residual for this year is 0.5. 
 Did we over or under estimate the incidence of skin cancer? Explain your reasoning.
 
-1.  **Starbucks, calories and protein.** 
+1.  **Starbucks, calories, and protein.** 
 The scatterplot below shows the relationship between the number of calories and amount of protein (in grams) Starbucks food menu items contain. Since Starbucks only lists the number of calories on the display items, we might be interested in predicting the amount of protein a menu item has based on its calorie content.^[The data used in this exercise can be found in the **openintro** package: [`starbucks`](http://openintrostat.github.io/openintro/reference/starbucks.html).]
 
     ```{r}
@@ -702,49 +702,80 @@ The diameter of the tree is measured 4.5 feet above the ground.^[The data used i
 
     c.  Suppose you have height and diameter measurements for another black cherry tree. Which of these variables would be preferable to use to predict the volume of timber in this tree using a simple linear regression model? Explain your reasoning.
 
-1.  **Match the correlation, Part III** Match each correlation to the
-    corresponding scatterplot.^[The data used in this exercise can be found in the **openintro** package: [`corr_match`](http://openintrostat.github.io/openintro/reference/corr_match.html).]
+1.  **Match the correlation, Part III.**
+Match each correlation to the corresponding scatterplot.^[The data used in this exercise can be found in the **openintro** package: [`corr_match`](http://openintrostat.github.io/openintro/reference/corr_match.html).]
 
-    1.  $r = -0.72$
+    ```{r out.width="100%", fig.asp=0.3}
+    library(openintro)
+    library(tidyverse)
+    library(glue)
+    
+    set.seed(1234)
+    
+    x <- runif(100, min = 1, max = 100) %>% round()
+    y1 <- (2 * x) + 30 + rnorm(100, mean = 0, sd = 60)
+    y2 <- -1*x ^ 3 + x^2 + rnorm(100, mean = 0, sd = 20000)
+    y3 <- x + rnorm(100, mean = 0, sd = 8)
+    y4 <- 50  + rnorm(100, mean = 0, sd = 2) 
+    
+    corr_match_2 <- tibble(
+      x  = x, 
+      y1 = y1,
+      y2 = y2,
+      y3 = y3,
+      y4 = y4
+    )
+    
+    corr_match_2 %>%
+      select(x, y1:y4) %>%
+      pivot_longer(cols = -x, names_to = "type", values_to = "y") %>%
+      mutate(
+        type_label = str_remove(type, "y"),
+        type_label = glue("({type_label})")
+        ) %>%
+      ggplot(aes(x = x, y = y)) +
+      geom_point(alpha = 0.8) +
+      facet_wrap(~type_label, scales = "free_y", nrow = 1) +
+      labs(x = NULL, y = NULL) +
+      theme(axis.text = element_blank())
+    ```
+    
+    a.  r = `r round(cor(corr_match_2$x, corr_match_2$y1), 2)`
 
-    2.  $r = 0.07$
+    b.  r = `r round(cor(corr_match_2$x, corr_match_2$y4), 2)`
 
-    3.  $r = 0.86$
+    c.  r = `r round(cor(corr_match_2$x, corr_match_2$y2), 2)`
 
-    4.  $r = 0.99$
+    d.  r = `r round(cor(corr_match_2$x, corr_match_2$y3), 2)`
 
-    ![](figures/scatter_1){width="24.5%"}
-    ![](figures/scatter_2){width="24.5%"}
-    ![](figures/scatter_3){width="24.5%"}
-    ![](figures/scatter_4){width="24.5%"}
+1.  **Helmets and lunches.** 
+The scatterplot shows the relationship between socioeconomic status measured as the percentage of children in a neighborhood receiving reduced-fee lunches at school (`lunch`) and the percentage of bike riders in the neighborhood wearing helmets (`helmet`). 
+The average percentage of children receiving reduced-fee lunches is `r mean(helmet$lunch)`% with a standard deviation of `r sd(helmet$lunch)`% and the average percentage of bike riders wearing helmets is `r mean(helmet$helmet)`% with a standard deviation of `r sd(helmet$helmet)`%.
 
-1.  **Helmets and lunches** The scatterplot shows the relationship
-    between socioeconomic status measured as the percentage of children
-    in a neighborhood receiving reduced-fee lunches at school (`lunch`)
-    and the percentage of bike riders in the neighborhood wearing
-    helmets (`helmet`). The average percentage of children receiving
-    reduced-fee lunches is 30.8% with a standard deviation of 26.7% and
-    the average percentage of bike riders wearing helmets is 38.8% with
-    a standard deviation of 16.9%.
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(broom)
+    
+    helmet_mod <- lm(helmet ~ lunch, data = helmet)
+    helmet_rsq <- round(glance(helmet_mod)$r.squared * 100)
+    
+    ggplot(helmet, aes(x = lunch, y = helmet)) +
+      geom_point(size = 2) +
+      scale_x_continuous(labels = label_percent(scale = 1)) +
+      scale_y_continuous(labels = label_percent(scale = 1)) +
+      labs(
+        x = "Percentage receiving a reduced-fee lunch",
+        y = "Percentage wearing helmet"
+      )
+    ```             
 
-    1.  If the $R^2$ for the least-squares regression line for these
-        data is $72\%$, what is the correlation between `lunch` and
-        `helmet`?
+    a.  If the $R^2$ for the least-squares regression line for these data is `r helmet_rsq`%$, what is the correlation between `lunch` and `helmet`?
 
-    2.  Calculate the slope and intercept for the least-squares
-        regression line for these data.
+    b.  Calculate the slope and intercept for the least-squares regression line for these data.
 
-    3.  Interpret the intercept of the least-squares regression line in
-        the context of the application.
+    c.  Interpret the intercept of the least-squares regression line in the context of the application.
 
-    4.  Interpret the slope of the least-squares regression line in the
-        context of the application.
+    d.  Interpret the slope of the least-squares regression line in the context of the application.
 
-    5.  What would the value of the residual be for a neighborhood where
-        40% of the children receive reduced-fee lunches and 40% of the
-        bike riders wear helmets? Interpret the meaning of this residual
-        in the context of the application.
-
-    $\:$\
-
-    ![](figures/helmet_lunch.png){width="\\textwidth"}\
+    5.  What would the value of the residual be for a neighborhood where 40% of the children receive reduced-fee lunches and 40% of the bike riders wear helmets? Interpret the meaning of this residual in the context of the application.
