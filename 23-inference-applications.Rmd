@@ -1,5 +1,113 @@
 # Applications: Infer {#inference-applications}
 
+## Mathematical Models Summary {#math-models-summary}
+
+The mathematical models which have been used to produce inferential analyses follow a consistent framework for different parameters of interest.
+As a way to contrast and compare the mathematical approach, we offer the following summaries in Tables \@ref(tab:zcompare) and \@ref(tab:tcompare).
+
+### z-procedures
+
+Generally, when the response variable is categorical (or binary), the summary statistic is a proportion and the model used to describe the proportion is the standard normal curve (also referred to as a $z$-curve or a $z$-distribution).
+We provide Table \@ref(tab:zcompare) partly as a mechanism for understanding $z$-procedures and partly to highlight the extremely common usage of the $z$-distribution in practice.
+
+```{r zcompare}
+zsim_table <- tribble(
+  ~variable,    ~col1, ~col2, 
+"response variable",  "binary",   "binary",
+
+"parameter of interest", "proportion: $p$", "diff in proportions: $p_1 - p_2$",
+
+
+"statistic of interest", "proportion: $\\hat{p}$", "diff in proportions: $\\hat{p}_1 - \\hat{p}_2$",
+
+"standard error: HT", "$\\sqrt{\\frac{p_0(1-p_0)}{n}}$", "$\\sqrt{\\hat{p}_{pool}\\bigg(1-\\hat{p}_{pool}\\bigg)\\bigg(\\frac{1}{n_1} + \\frac{1}{n_2}}\\bigg)$",
+
+"standard error: CI", "$\\sqrt{\\frac{\\hat{p}(1-\\hat{p})}{n}}$", "$\\sqrt{\\frac{\\hat{p}_{1}(1-\\hat{p}_{1})}{n_1} + \\frac{\\hat{p}_{2}(1-\\hat{p}_{2})}{n_2}}$",
+
+"conditions", "1. independence,<br>2. success-failure", "1. independence,<br>2. success-failure"
+)
+
+zsim_table %>%
+ kable(caption = "Similarities of $z$-methods across one and two independent samples analysis of a binary response variable.", 
+    col.names = c("", " one sample ", "two indep. samples"),
+    escape = FALSE) %>%
+ kable_styling()
+```
+
+**Hypothesis tests.** When applying the $z$-distribution for a hypothesis test, we proceed as follows:
+
+-   Write appropriate hypotheses.
+
+-   Verify conditions for using the $z$-distribution.
+
+    -   One-sample: the observations (or differences) must be independent. The success-failure condition of at least 10 success and at least 10 failures should hold.\
+    -   For a difference of proportions: each sample must separately satisfy the success-failure conditions, and the data in the groups must also be independent.
+
+-   Compute the point estimate of interest and the standard error.\
+
+-   Compute the Z score and p-value.
+
+-   Make a conclusion based on the p-value, and write a conclusion in context and in plain language so anyone can understand the result.
+
+**Confidence intervals.** Similarly, the following is how we generally computed a confidence interval using a $z$-distribution:
+
+-   Verify conditions for using the $z$-distribution. (See above.)\
+-   Compute the point estimate of interest, the standard error, and $z^{\star}.$\
+-   Calculate the confidence interval using the general formula, point estimate $\pm\ z^{\star} SE.$\
+-   Put the conclusions in context and in plain language so even non-statisticians and data scientists can understand the results.
+
+### t-procedures
+
+With quantitative response variables, the $t$-distribution was applied as the appropriate mathematical model in three distinct settings.
+Although the three data structures are different, their similarities and differences are worth pointing out.
+We provide Table \@ref(tab:tcompare) partly as a mechanism for understanding $t$-procedures and partly to highlight the extremely common usage of the $t$-distribution in practice.
+
+```{r tcompare}
+tsim_table <- tribble(
+  ~variable,    ~col1, ~col2, ~col3,
+"response variable",  "numeric", "numeric",  "numeric",
+
+"parameter of interest", "mean: $\\mu$", "paired mean: $\\mu_{diff}$",  "diff in means: $\\mu_1 - \\mu_2$",
+
+
+"statistic of interest", "mean: $\\bar{x}$", "paired mean: $\\bar{x}_{diff}$",  "diff in means: $\\bar{x}_1 - \\bar{x}_2$",
+
+"standard error", "$\\frac{s}{\\sqrt{n}}$", "$\\frac{s_{diff}}{\\sqrt{n_{diff}}}$", "$\\sqrt{\\frac{s_1^2}{n_1} + \\frac{s_2^2}{n_2}}$",
+
+"degrees of freedom", "$n-1$", "$n_{diff} -1$", "$\\min(n_1 -1, n_2 - 1)$",
+
+"conditions", "1. independence,<br>2. normality or large samples", "1. independence,<br>2. normality or large samples", "1. independence,<br>2. normality or large samples"
+)
+
+tsim_table %>%
+ kable(caption = "Similarities of $t$-methods across one sample, paired sample, and two independent samples analysis of a numeric response variable.", 
+    col.names = c("", " one sample ", "paired sample", "two indep. samples"),
+    escape = FALSE) %>%
+ kable_styling()
+```
+
+**Hypothesis tests.** When applying the $t$-distribution for a hypothesis test, we proceed as follows:
+
+-   Write appropriate hypotheses.
+
+-   Verify conditions for using the $t$-distribution.
+
+    -   One-sample or differences from paired data: the observations (or differences) must be independent and nearly normal. For larger sample sizes, we can relax the nearly normal requirement, e.g., slight skew is okay for sample sizes of 15, moderate skew for sample sizes of 30, and strong skew for sample sizes of 60.\
+    -   For a difference of means when the data are not paired: each sample mean must separately satisfy the one-sample conditions for the $t$-distribution, and the data in the groups must also be independent.
+
+-   Compute the point estimate of interest, the standard error, and the degrees of freedom For $df,$ use $n-1$ for one sample, and for two samples use either statistical software or the smaller of $n_1 - 1$ and $n_2 - 1.$\
+
+-   Compute the T score and p-value.
+
+-   Make a conclusion based on the p-value, and write a conclusion in context and in plain language so anyone can understand the result.
+
+**Confidence intervals.** Similarly, the following is how we generally computed a confidence interval using a $t$-distribution:
+
+-   Verify conditions for using the $t$-distribution. (See above.)\
+-   Compute the point estimate of interest, the standard error, the degrees of freedom, and $t^{\star}_{df}.$\
+-   Calculate the confidence interval using the general formula, point estimate $\pm\ t_{df}^{\star} SE.$\
+-   Put the conclusions in context and in plain language so even non-statisticians and data scientists can understand the results.
+
 ## Case study: General Social Survey {#case-study-gss}
 
 The data for the first part of the lab come from the General Social Survey, <https://gss.norc.org/About-The-GSS>
