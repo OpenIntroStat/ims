@@ -176,7 +176,7 @@ p_mosaic_1 <- ggplot(loans_full_schema) +
 p_mosaic_2 <- ggplot(loans_full_schema) +
   geom_mosaic(aes(x = product(homeownership), fill = application_type)) +
   scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["yellow", "full"])) +
-  labs(x = "Homeownership", y = "") +
+  labs(x = "Homeownership", y = NULL) +
   guides(fill = FALSE)
 
 p_mosaic_1 + p_mosaic_2 +
@@ -187,11 +187,11 @@ In Figure \@ref(fig:loan-homeownership-type-mosaic-plot), we chose to first spli
 However, we could have instead first split by the application type, as in Figure \@ref(fig:loan-app-type-mosaic-plot).
 Like with the bar plots, it's common to use the explanatory variable to represent the first split in a mosaic plot, and then for the response to break up each level of the explanatory variable, if these labels are reasonable to attach to the variables under consideration.
 
-```{r loan-app-type-mosaic-plot, fig.cap = "Mosaic plot where loans are grouped by homeownership after they have been divided into individual and joint application types.", fig.asp=1}
+```{r loan-app-type-mosaic-plot, fig.cap = "Mosaic plot where loans are grouped by homeownership after they have been divided into individual and joint application types."}
 ggplot(loans_full_schema) +
   geom_mosaic(aes(x = product(application_type), fill = homeownership)) +
   scale_fill_openintro("hot") +
-  labs(x = "Application type", y = "") +
+  labs(x = "Application type", y = NULL) +
   guides(fill = FALSE)
 ```
 
@@ -309,7 +309,7 @@ Pie charts can be useful for giving a high-level overview to show how a set of c
 However, it is also difficult to decipher certain details in a pie chart.
 For example, it's not immediately obvious that there are more loans where the borrower has a mortgage than rent when looking at the pie chart, while this detail is very obvious in the bar plot.
 
-```{r loan-homeownership-pie-chart, fig.cap = "A pie chart and bar plot of homeownership."}
+```{r loan-homeownership-pie-chart, fig.cap = "A pie chart and bar plot of homeownership.", out.width = "100%"}
 p_pie <- loans_full_schema %>% 
   mutate(homeownership = fct_infreq(homeownership)) %>%
   count(homeownership) %>%
@@ -337,7 +337,7 @@ However they can be quite difficult to read when they are used to visualize a ca
 For example, the pie chart and the bar plot in Figure \@ref(fig:loan-grade-pie-chart) both represent the distribution of loan grades (A through G).
 In this case, it is far easier to compare the counts of each loan grade using the bar plot than the pie chart.
 
-```{r loan-grade-pie-chart, fig.cap = "A pie chart and bar plot of loan grades."}
+```{r loan-grade-pie-chart, fig.cap = "A pie chart and bar plot of loan grades.", out.width = "100%"}
 p_pie <- loans_full_schema %>% 
   count(grade) %>% 
   mutate(text_y = cumsum(n) - n/2) %>% 
@@ -366,7 +366,7 @@ Just like with pie charts, they work best when the number of levels represented 
 However, unlike pie charts, they can make it easier to compare proportions that represent non-simple fractions.
 Figure \@ref(fig:loan-waffle) displays two examples of waffle charts: one for the distribution of homeownership and the other for the distribution of loan status.
 
-```{r loan-waffle, fig.alt = "Plot A: Waffle chart of homeownership, with levels rent, morgage, and own. Plot B: Waffle chart of loan status, with levels current, fully paid, in grade period, and late.", out.width = "100%"}
+```{r loan-waffle, fig.cap = "Plot A: Waffle chart of homeownership, with levels rent, morgage, and own. Plot B: Waffle chart of loan status, with levels current, fully paid, in grade period, and late.", out.width = "100%", fig.asp = 1}
 p_waffle_homeownership <- loans_full_schema %>%
   count(homeownership) %>%
   ggplot(aes(fill = homeownership, values = n)) +
@@ -374,8 +374,7 @@ p_waffle_homeownership <- loans_full_schema %>%
   labs(fill = "Homeownership") +
   scale_fill_openintro("hot") +
   coord_equal() +
-  theme_enhance_waffle() +
-  theme(legend.position = "bottom", legend.direction = "horizontal")
+  theme_enhance_waffle()
 
 p_waffle_loan_status <- loans_full_schema %>%
   count(loan_status) %>%
@@ -384,12 +383,11 @@ p_waffle_loan_status <- loans_full_schema %>%
   labs(fill = "Loan status") +
   scale_fill_openintro("four") +
   coord_equal() +
-  theme_enhance_waffle() +
-  theme(legend.position = "bottom", legend.direction = "horizontal")
+  theme_enhance_waffle()
 
-p_waffle_homeownership + p_waffle_loan_status +
-  plot_annotation(tag_levels = "A") & 
-  theme(plot.tag = element_text(size = 10))
+p_waffle_homeownership /
+  p_waffle_loan_status +
+  plot_annotation(tag_levels = "A")
 ```
 
 ## Comparing numerical data across groups
