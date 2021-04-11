@@ -109,8 +109,6 @@ bscars_mean <- bscars %>%
   summarize(car_bsmean = mean(price)) %>%
   pull()
 
-#sd(bscars_mean)
-
 bsq1 <- quantile(bscars_mean, probs = c(0.005, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.995))
 
 bsmeans_up <- bscars_mean[bscars_mean >= bsq1[7]]
@@ -124,10 +122,7 @@ breaks <- seq(umeans[1] - 1, umeans[length(umeans)] + bin.width, by = bin.width)
 
 histPlot(bscars_mean, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
      xlab = "", ylab="")
-#histPlot(bsmeans_up, breaks = breaks, col = COL[1], add = TRUE)
-#histPlot(bsmeans_low, breaks = breaks, col = COL[1], add = TRUE)
 axis(1)
-#axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
 lines(c(bsq1[6], bsq1[6]), c(0, 85), lty = 3, lwd = 3)
 lines(c(bsq1[3], bsq1[3]), c(0, 85), lty = 3, lwd = 3)
 lines(c(bsq1[7], bsq1[7]), c(0, 65), lty = 3, lwd = 3)
@@ -259,8 +254,8 @@ breaks <- seq(umeans[1] - 1, umeans[length(umeans)] + bin.width, by = bin.width)
 
 histPlot(bscars_sd, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
      xlab = "", ylab="")
-#histPlot(bsmeans_up, breaks = breaks, col = COL[1], add = TRUE)
-#histPlot(bsmeans_low, breaks = breaks, col = COL[1], add = TRUE)
+#histPlot(bsmeans_up, breaks = breaks, col = openintro_cols("blue"), add = TRUE)
+#histPlot(bsmeans_low, breaks = breaks, col = openintro_cols("blue"), add = TRUE)
 axis(1)
 #axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
 lines(c(bsq1[6], bsq1[6]), c(0, 125), lty = 3, lwd = 3)
@@ -354,7 +349,7 @@ However, you are expected to be able to handle clear cut cases based on the rule
     However, we'll leave further discussion here to a future course.
 
 ::: {.workedexample}
-Consider the following two plots that come from simple random samples from different populations.
+Consider the four plots provided in Figure \@ref(fig:outliersandsscondition) that come from simple random samples from different populations.
 Their sample sizes are $n_1 = 15$ and $n_2 = 50.$
 
 Are the independence and normality conditions met in each case?
@@ -365,36 +360,49 @@ Each samples is from a simple random sample of its respective population, so the
 Let's next check the normality condition for each using the rule of thumb.
 
 The first sample has fewer than 30 observations, so we are watching for any clear outliers.
-None are present; while there is a small gap in the histogram on the right, this gap is small and 20% of the observations in this small sample are represented in that far right bar of the histogram, so we can hardly call these clear outliers.
-With no clear outliers, the normality condition is reasonably met.
+None are present; while there is a small gap in the histogram on the right, this gap is small and over 20% of the observations in this small sample are represented to the left of the gap, so we can hardly call these clear outliers.
+With no clear outliers, the normality condition can be reasonably assumed to be met.
 
 The second sample has a sample size greater than 30 and includes an outlier that appears to be roughly 5 times further from the center of the distribution than the next furthest observation.
 This is an example of a particularly extreme outlier, so the normality condition would not be satisfied.
+
+It's often helpful to also visualize the data using a box plot to assess skewness and existence of outliers.
+The box plots provided underneath each histogram confirms our conclusions that the first sample does not have any outliers and the second sample does, with one outlier being particularly more extreme than the others.
 :::
 
-```{r outliersandsscondition, fig.cap="", warning=FALSE, fig.width=10}
+```{r outliersandsscondition, fig.cap = "Histograms of two samples from different populations.", warning = FALSE}
+set.seed(3456)
+df1 <- tibble(x = rnorm(15, 3, 2))
+df2 <- tibble(x = c(exp(rnorm(49, 0, 0.7)), 22))
 
-d1 <- rnorm(15, 3, 2)
-d2 <- c(exp(rnorm(49, 0, 0.7)), 22)
+p1 <- ggplot(df1, aes(x = x)) +
+  geom_histogram(binwidth = 1) +
+  labs(x = NULL, y = "Count", title = "Sample 1", subtitle = expression(n[1]~"="~15))
 
-histPlot(d1, axes = FALSE, # breaks = 20,
-         xlab = "Sample 1 Observations (n = 15)",
-         ylab = "",
-         col = COL[1])
-axis(1, at = seq(-10, 10, 2))
-axis(2)
-par(las = 0)
-mtext("Count", 2, 1.8)
+p2 <- ggplot(df2, aes(x = x)) +
+  geom_histogram(binwidth = 1) +
+  labs(x = NULL, y = "Count", title = "Sample 2", subtitle = expression(n[2]~"="~50))
 
-par(las = 1, mar = c(3, 4, 0.5, 0.5))
-histPlot(d2, axes = FALSE, breaks = 20,
-         xlab = "Sample 2 Observations (n = 50)",
-         ylab = "",
-         col = COL[1])
-axis(1, at = seq(-10, 30, 10))
-axis(2)
-par(las = 0)
-mtext("Count", 2, 2)
+p3 <- ggplot(df1, aes(x = x)) +
+  geom_boxplot() +
+  theme(
+    axis.text.y = element_blank(), 
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    ) +
+  labs(x = NULL)
+
+p4 <- ggplot(df2, aes(x = x)) +
+  geom_boxplot() +
+  theme(
+    axis.text.y = element_blank(), 
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    )+
+  labs(x = NULL)
+
+p1 + p2 + p3 + p4 + 
+  plot_layout(nrow = 2, heights = c(3, 1, 3, 1))
 ```
 
 In practice, it's typical to also do a mental check to evaluate whether we have reason to believe the underlying population would have moderate skew (if $n < 30)$ or have particularly extreme outliers $(n \geq 30)$ beyond what we observe in the data.
@@ -424,41 +432,28 @@ However, its tails are thicker than the normal distribution's, meaning observati
 
 The extra thick tails of the $t$-distribution are exactly the correction needed to resolve the problem (due to extra variability of the T score) of using $s$ in place of $\sigma$ in the $SE$ calculation.
 
-```{r tDistCompareToNormalDist, fig.cap="Comparison of a $t$-distribution and a normal distribution.", warning=FALSE, fig.width=10}
+```{r tDistCompareToNormalDist, fig.cap="Comparison of a $t$-distribution and a normal distribution."}
+df <- tibble(
+  x = rep(seq(-5, 5, 0.01), 2),
+  distribution = c(rep("Normal distribution", 1001), rep("t-distribution", 1001))
+) %>%
+  mutate(y = if_else(distribution == "Normal distribution", dnorm(x), dt(x, df = 1)))
 
-plot(c(-5, 5),
-     c(0, dnorm(0)),
-     type = 'n',
-     axes = FALSE)
-axis(1, seq(-6, 6, 2))
-abline(h = 0)
-
-xleg <- 2
-yleg <- 0.35
-yleg.line.offset <- -0.07
-line.leg.width <- 0.55
-lines(
-    c(xleg, xleg + line.leg.width),
-    rep(yleg, 2),
-    col = COL[1], lty = 3, lwd = 1.8)
-lines(
-    c(xleg, xleg + line.leg.width),
-    rep(yleg + yleg.line.offset, 2),
-    col = COL[4], lty = 1, lwd = 2.5)
-text(xleg + line.leg.width, yleg,
-    "Normal",
-    col = COL[1], pos = 4)
-text(xleg + line.leg.width, yleg + yleg.line.offset,
-    "t-distribution",
-    col = COL[4], pos = 4)
-
-X <- seq(-6, 6, 0.01)
-Y <- dnorm(X)
-lines(X, Y, lty=3, lwd = 1.8, col = COL[1])
-
-Y <- dt(X, 2)
-lines(X, Y, lty = 1, lwd = 2.5, col = COL[4])
-
+ggplot(df, aes(x = x, y = y, color = distribution, linetype = distribution, size = distribution)) +
+  geom_hline(yintercept = 0) +
+  geom_line() +
+  scale_color_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"])) +
+  scale_linetype_manual(values = c("dashed", "solid")) +
+  scale_size_manual(values = c(0.5, 1)) +
+  theme(
+    axis.text = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = c(0.2, 0.7),
+    legend.background = element_rect(fill = "white", color = NA),
+    legend.text = element_text(size = 12)
+  ) +
+  labs(x = NULL, y = NULL, color = NULL, linetype = NULL, size = NULL)
 ```
 
 The $t$-distribution is always centered at zero and has a single parameter: degrees of freedom.
@@ -484,8 +479,8 @@ axis(1, at)
 axis(1, at - 1, rep("", length(at)), tcl = -0.1)
 abline(h = 0)
 
-COL. <- fadeColor(COL[1], c("FF", "89", "68", "4C", "33"))
-COLt <- fadeColor(COL[1], c("FF", "AA", "85", "60", "45"))
+COL. <- fadeColor(openintro_cols("blue"), c("FF", "89", "68", "4C", "33"))
+COLt <- fadeColor(openintro_cols("blue"), c("FF", "AA", "85", "60", "45"))
 DF   <- c('normal', 8, 4, 2, 1)
 
 X <- seq(-10, 10, 0.02)
@@ -539,12 +534,12 @@ Using statistical software, we can obtain a precise value: 0.0250.
 pt(-2.10, df = 18)
 ```
 
-```{r tDistDF18LeftTail2Point10, fig.cap="The $t$-distribution with 18 degrees of freedom. The area below -2.10 has been shaded.", warning=FALSE, fig.width=10}
+```{r tDistDF18LeftTail2Point10, fig.cap="The $t$-distribution with 18 degrees of freedom. The area below -2.10 has been shaded."}
 
 normTail(L = -2.10,
          df = 10,
          xlim = c(-4, 4),
-         col = COL[1],
+         col = openintro_cols("blue"),
          axes = FALSE)
 axis(1)
 ```
@@ -560,19 +555,19 @@ With a normal distribution, this would correspond to about 0.05, so we should ex
 Using statistical software: 0.0573.
 :::
 
-```{r tDistDF20RightTail1Point65, fig.cap="Top: The $t$-distribution with 20 degrees of freedom, with the area above 1.65 shaded. Bottom: The $t$-distribution with 2 degrees of freedom, with the area further than 3 units from 0 shaded.", warning=FALSE, fig.width=10}
+```{r tDistDF20RightTail1Point65, fig.cap="Top: The $t$-distribution with 20 degrees of freedom, with the area above 1.65 shaded. Bottom: The $t$-distribution with 2 degrees of freedom, with the area further than 3 units from 0 shaded."}
 
 normTail(U = 1.65,
          df = 12,
          xlim = c(-4, 4),
-         col = COL[1],
+         col = openintro_cols("blue"),
          axes = FALSE)
 axis(1)
 normTail(L = -3,
          U = 3,
          df = 2.3,
          xlim = c(-4.5, 4.5),
-         col = COL[1],
+         col = openintro_cols("blue"),
          axes = FALSE)
 axis(1)
 ```
@@ -813,7 +808,7 @@ histPlot(d$time,
          main = "",
          xlab = "Time (Minutes)",
          ylab = "Count",
-         col = COL[1])
+         col = openintro_cols("blue"))
 ```
 
 A histogram of the race times is given to evaluate if we can move forward with a t-test.

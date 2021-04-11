@@ -213,35 +213,33 @@ include_graphics("images/emailCV2.png")
 
 ```{r}
 set.seed(470)
-data(email)
 emailfolds <- caret::createFolds(email$spam, k = 4)
 
-logCV2 <- data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold1,], family = "binomial") %>% 
-             predict(newdata = email[emailfolds$Fold1,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
-           obs = email[emailfolds$Fold1,]$spam,
-           fold = rep("1st quarter", length(emailfolds$Fold1))) %>%
-  rbind(data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold2,], family = "binomial") %>% 
-             predict(newdata = email[emailfolds$Fold2,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
-           obs = email[emailfolds$Fold2,]$spam,
-           fold = rep("2nd quarter", length(emailfolds$Fold2))) )%>%
-  rbind(data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold3,], family = "binomial") %>% 
-             predict(newdata = email[emailfolds$Fold3,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
-           obs = email[emailfolds$Fold3,]$spam,
-           fold = rep("3rd quarter", length(emailfolds$Fold3))) )%>%
-  rbind(data.frame(predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold4,], family = "binomial") %>% 
-             predict(newdata = email[emailfolds$Fold4,c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type="response") ,
-           obs = email[emailfolds$Fold4,]$spam,
-           fold = rep("4th quarter", length(emailfolds$Fold4))) )%>%
-  mutate(predspam = ifelse(predicted <= 0.1, 0, 1)) 
-
-#logCV2 %>%
-#  select(obs, predspam, fold) %>%
-#  table()
-
-#glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, 
-#    data = email[-emailfolds$Fold1,], family = "binomial") %>% tidy() %>%
-#  select(term, estimate) %>%
-#  mutate(estimate = round(estimate,2))
+logCV2 <- data.frame(
+  predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold1, ], family = "binomial") %>%
+    predict(newdata = email[emailfolds$Fold1, c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type = "response"),
+  obs = email[emailfolds$Fold1, ]$spam,
+  fold = rep("1st quarter", length(emailfolds$Fold1))
+) %>%
+  rbind(data.frame(
+    predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold2, ], family = "binomial") %>%
+      predict(newdata = email[emailfolds$Fold2, c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type = "response"),
+    obs = email[emailfolds$Fold2, ]$spam,
+    fold = rep("2nd quarter", length(emailfolds$Fold2))
+  )) %>%
+  rbind(data.frame(
+    predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold3, ], family = "binomial") %>%
+      predict(newdata = email[emailfolds$Fold3, c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type = "response"),
+    obs = email[emailfolds$Fold3, ]$spam,
+    fold = rep("3rd quarter", length(emailfolds$Fold3))
+  )) %>%
+  rbind(data.frame(
+    predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold4, ], family = "binomial") %>%
+      predict(newdata = email[emailfolds$Fold4, c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type = "response"),
+    obs = email[emailfolds$Fold4, ]$spam,
+    fold = rep("4th quarter", length(emailfolds$Fold4))
+  )) %>%
+  mutate(predspam = ifelse(predicted <= 0.1, 0, 1))
 ```
 
 ```{r email-spam2}

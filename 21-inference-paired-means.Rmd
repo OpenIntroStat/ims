@@ -126,7 +126,6 @@ origplot4 <- tires %>%
   mutate(`Tire Brand` = brand) %>%
   filter(car == "car  4") %>%
 ggplot(aes( x = `Tire Brand`, y = tread, color = `Tire Brand`)) +
- # geom_boxplot() +
   geom_point() +
   geom_line(aes(group = car), color = "grey") +
   ylab("") + 
@@ -145,7 +144,6 @@ permdata <- tires %>%
 shuffbrand4 <- permdata %>%
     filter(car == "car  4") %>%
 ggplot(aes( x = `Tire Brand`, y = tread, color = `Randomized Brand`)) +
- # geom_boxplot() +
   geom_text(aes(label = car),color = "grey", hjust = rep(c(-0.15,1.3), each = 1),
             show.legend = FALSE, size = 3) +
   geom_line(aes(group = car), color = "grey") +
@@ -159,7 +157,6 @@ ggplot(aes( x = `Tire Brand`, y = tread, color = `Randomized Brand`)) +
 shuffbrandfull4 <- permdata %>%
     filter(car == "car  4") %>%
 ggplot(aes( x = `Randomized Brand`, y = tread, color = `Randomized Brand`)) +
- # geom_boxplot() +
   geom_point() +
   geom_line(aes(group = car), color = "grey") +
   ylab("") + 
@@ -202,7 +199,6 @@ ggplot(aes( x = `Tire Brand`, y = tread, color = `Tire Brand`)) +
 shuffbrand5 <- permdata %>%
     filter(car == "car  5") %>%
 ggplot(aes( x = `Tire Brand`, y = tread, color = `Randomized Brand`)) +
- # geom_boxplot() +
   geom_point(show.legend = FALSE) +
   geom_line(aes(group = car), color = "grey") +
   ylab("") + 
@@ -216,7 +212,6 @@ ggplot(aes( x = `Tire Brand`, y = tread, color = `Randomized Brand`)) +
 shuffbrandfull5 <- permdata %>%
     filter(car == "car  5") %>%
 ggplot(aes( x = `Randomized Brand`, y = tread, color = `Randomized Brand`)) +
- # geom_boxplot() +
   geom_point() +
   geom_line(aes(group = car), color = "grey") +
   ylab("") + 
@@ -242,7 +237,6 @@ theme_set(
 origplot <- tires %>%
   mutate(`Tire Brand` = brand) %>%
 ggplot(aes( x = `Tire Brand`, y = tread, color = `Tire Brand`)) +
- # geom_boxplot() +
   geom_text(aes(label = car), color = "grey",hjust = rep(c(-0.15, 1.3), each = 25),
             show.legend = FALSE, size = 2) +
   geom_line(aes(group = car), color = "grey") +
@@ -254,7 +248,6 @@ ggplot(aes( x = `Tire Brand`, y = tread, color = `Tire Brand`)) +
 
 shuffbrand <-permdata %>%
 ggplot(aes( x = `Tire Brand`, y = tread, color = `Randomized Brand`)) +
- # geom_boxplot() +
   geom_point(show.legend = FALSE) +
   geom_line(aes(group = car), color = "grey") +
   ylab("") + 
@@ -273,7 +266,6 @@ permed_means <- permdata %>%
 
 shuffbrandfull <- permdata %>%
 ggplot(aes( x = `Randomized Brand`, y = tread, color = `Randomized Brand`)) +
- # geom_boxplot() +
   geom_text(aes(label = car), color = "grey",hjust = rep(c(-0.15, 1.3), each = 25),
             show.legend = FALSE, size = 2) +
   geom_line(aes(group = car), color = "grey") +
@@ -287,7 +279,6 @@ ggplot(aes( x = `Randomized Brand`, y = tread, color = `Randomized Brand`)) +
   ggtitle("Sorted data")
 
 origplot + shuffbrand
-
 ```
 
 The next step in the randomization test is to sort the brands so that the assigned brand value on the x-axis aligns with the assigned group from the randomization.
@@ -441,9 +432,7 @@ The bootstrap SE interval is found by computing the SE of the bootstrapped diffe
 However, if the analysis required a strong degree of certainty (e.g., 99% confidence), and the bootstrap SE interval was most appropriate (given a second course in statistics the nuances of the methods were investigated), the results of which book seller is higher is not well determined.
 That is, the 99% bootstrap SE interval gives potential for UCLA to be lower, on average, than Amazon (because of the possible negative values for the true mean difference in price).
 
-```{r pairboot, fig.cap = "Bootstrap distribution for the average difference in new book price at the UCLA bookstore versus Amazon.  99% confidence intervals are superimposed using blue (bootstrap percentile interval) and green (bootstrap SE interval) lines.", warning = FALSE, fig.width=10}
-# inches  about 1/32" per 3500 mi
-
+```{r pairboot, fig.cap = "Bootstrap distribution for the average difference in new book price at the UCLA bookstore versus Amazon. 99% confidence intervals are superimposed using blue (bootstrap percentile interval) and red (bootstrap SE interval) lines."}
 diff_price <- ucla_textbooks_f18 %>% 
   select(subject, course_num, bookstore_new, amazon_new) %>%
   mutate(price_diff = bookstore_new - amazon_new) %>%
@@ -467,27 +456,35 @@ ci_se_diff <- boot_diff %>%
                           point_estimate = diff_price)
 boot_diff %>%
   infer::visualize(bins = 20) +
-  infer::shade_confidence_interval(ci_perc_diff, 
-                                   color = "#569BBD", 
-                                   fill = NULL, size = .5) +
-  infer::shade_confidence_interval(ci_se_diff, 
-                                   color = "#4C721D",
-                                   fill = NULL, size = .5) +
-  ggtitle("Simulation-Based Bootstrap Distribution for Mean Difference") +
-  geom_vline(xintercept = diff_price$stat) +  
-  geom_line(aes(y = replicate, x = stat, color = "a"), alpha = 0) +  # bogus code
-  geom_line(aes(y = replicate, x = stat, color = "b"), alpha = 0) +  # bogus code
-  geom_line(aes(y = replicate, x = stat, color = "c"), alpha = 0) +  # bogus code
-  ylim(c(0,200)) + 
+  infer::shade_confidence_interval(ci_perc_diff,
+    color = IMSCOL["blue", "full"],
+    fill = NULL, size = 0.5
+  ) +
+  infer::shade_confidence_interval(ci_se_diff,
+    color = IMSCOL["red", "full"],
+    fill = NULL, size = 0.5
+  ) +
+  geom_vline(xintercept = diff_price$stat) +
+  geom_line(aes(y = replicate, x = stat, color = "a"), alpha = 0) + # bogus code
+  geom_line(aes(y = replicate, x = stat, color = "b"), alpha = 0) + # bogus code
+  geom_line(aes(y = replicate, x = stat, color = "c"), alpha = 0) + # bogus code
+  ylim(c(0, 200)) +
   guides(color = guide_legend(override.aes = list(alpha = 1))) +
-  scale_color_manual(name = "CI type",
-                       values = c("a" = "#569BBD", "b" = "#4C721D", "c" = "#000000"),
-                       labels = c("Percentile", "SE", "Observed stat"),
-                     guide = "legend")
-
-#ci_perc_diff
-#ci_se_diff
-
+  scale_color_manual(
+    name = "CI type",
+    values = c("a" = IMSCOL["blue", "full"], "b" = IMSCOL["red", "full"], "c" = IMSCOL["black", "full"]),
+    labels = c("Percentile", "SE", "Observed statistic"),
+    guide = "legend"
+  ) +
+  labs(
+    title = "Bootstrap distribution for mean difference",
+    y = "Count",
+    x = "Bootstrap statistics"
+  ) +
+  theme(
+    legend.position = c(0.9, 0.8),
+    legend.background = element_rect(color = "white")
+  )
 ```
 
 ## Mathematical model {#mathparied}
@@ -507,24 +504,19 @@ It is important that we always subtract using a consistent order; here Amazon pr
 The first difference shown in Table \@ref(tab:textbooksDF) is computed as $47.97 - 47.45 = 0.52.$ Similarly, the second difference is computed as $14.26 - 13.55 = 0.71,$ and the third is $13.50 - 12.53 = 0.97.$ A histogram of the differences is shown in Figure \@ref(fig:diffInTextbookPricesF18).
 Using differences between paired observations is a common and useful way to analyze paired data.
 
-```{r diffInTextbookPricesF18, fig.cap = "Histogram of the difference in price for each book sampled.", warning = FALSE, fig.width = 10}
-
-data("ucla_textbooks_f18")
-
-d <- ucla_textbooks_f18 %>% 
+```{r diffInTextbookPricesF18, fig.cap = "Histogram of the difference in price for each book sampled."}
+ucla_textbooks_f18 <- ucla_textbooks_f18 %>% 
   select(subject, course_num, bookstore_new, amazon_new) %>%
-  mutate(price_diff = bookstore_new - amazon_new) %>%
-  filter(!is.na(bookstore_new) & !is.na(amazon_new))
+  filter(!is.na(bookstore_new), !is.na(amazon_new)) %>%
+  mutate(price_diff = bookstore_new - amazon_new)
 
-histPlot(d$price_diff, axes = FALSE, # breaks = 20,
-         xlab = "UCLA Bookstore Price - Amazon Price (USD)",
-         ylab = "",
-         col = COL[1])
-AxisInDollars(1, at = pretty(d$price_diff), tck = -0.03)
-axis(2, at = seq(0, 30, 10), tck = -0.02)
-# axis(2, at = seq(0, 15, 5), tck = -0.02)
-par(las = 0)
-mtext("Count", 2, 2.4)
+ggplot(ucla_textbooks_f18, aes(x = price_diff)) +
+  geom_histogram(binwidth = 10) +
+  scale_x_continuous(labels = label_dollar(accuracy = 1), limits = c(-20, 100), breaks = seq(-20, 100, 20)) +
+  labs(
+    x = "UCLA Bookstore Price - Amazon Price (USD)",
+    y = "Count"
+  )
 ```
 
 ### Variability of the statistic
@@ -604,32 +596,29 @@ $$
 T = \frac{\bar{x}_{diff} - 0}{SE_{x_{diff}}} = \frac{3.58 - 0}{1.63} = 2.20
 $$
 
-To visualize the p-value, the sampling distribution of $\bar{x}_{diff}$ is drawn as though $H_0$ is true, and the p-value is represented by the two shaded tails in Figure \@ref(fig:textbooksF18HTTails).\
+To visualize the p-value, the sampling distribution of $\bar{x}_{diff}$ is drawn as though $H_0$ is true, and the p-value is represented by the two shaded tails in Figure \@ref(fig:textbooksF18HTTails).
 The degrees of freedom is $df = 68 - 1 = 67.$ Using statistical software, we find the one-tail area of 0.0156.
-Doubling this area gives the p-value: 0.0312.\
-Because the p-value is less than 0.05, we reject the null hypothesis
-. Amazon prices are, on average, lower than the UCLA Bookstore prices for UCLA courses
-.
+Doubling this area gives the p-value: 0.0312.
+Because the p-value is less than 0.05, we reject the null hypothesis.
+Amazon prices are, on average, lower than the UCLA Bookstore prices for UCLA courses.
 
-```{r textbooksF18HTTails, fig.cap = "Distribution of $\\bar{x}_{diff}$ under the null hypothesis of no difference.  The observed average difference of 2.98 is marked with the shaded areas more extreme than the observed difference given as the p-value.", warning = FALSE, echo = FALSE}
+```{r textbooksF18HTTails, fig.cap = "Distribution of $\\bar{x}_{diff}$ under the null hypothesis of no difference.  The observed average difference of 2.98 is marked with the shaded areas more extreme than the observed difference given as the p-value."}
+m  <- mean(ucla_textbooks_f18$price_diff)
+s  <- sd(ucla_textbooks_f18$price_diff)
+se <- s / sqrt(length(ucla_textbooks_f18$price_diff))
+z  <- m / se
 
-m <- mean(d$price_diff)
-s <- sd(d$price_diff)
-se <- s / sqrt(length(d$price_diff))
-z <- m / se
-
-normTail(L = -abs(m),
-         U = abs(m),
-         s = se,
-         df = 20,
-         # xlim = 5 * c(-1, 1),
-         col = COL[1],
-         # border = COL[4],
-         axes = FALSE)
+normTail(
+  L = -abs(m),
+  U = abs(m),
+  s = se,
+  df = 20,
+  col = IMSCOL["blue", "full"],
+  axes = FALSE
+)
 at <- c(-100, 0, m, 100)
-labels <- expression(0, mu[0]*' = 0', bar(x)[diff]*" = 2.98", 0)
+labels <- expression(0, mu[0] * " = 0", bar(x)[diff] * " = 2.98", 0)
 axis(1, at, labels, cex.axis = 0.9)
-
 ```
 
 ::: {.guidedpractice}

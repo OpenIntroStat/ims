@@ -367,29 +367,14 @@ We check the two conditions necessary to model the difference in sample means us
 
 Since both conditions are satisfied, the difference in sample means may be modeled using a $t$-distribution.
 
-```{r babySmokePlotOfTwoGroupsToExamineSkew, fig.cap="The top panel represents birth weights for infants whose mothers smoked. The bottom panel represents the birth weights for infants whose mothers who did not smoke.", warning=FALSE, fig.width=10}
-
-
-data(births)
-d <- births
-
-xlab.start <- 'Newborn Weights (lbs)'
-histPlot(d$weight[d$smoke == 'smoker'],
-         xlim = c(0, 11),
-         axes = FALSE,
-         xlab = xlab.start,
-         main = 'Mothers Who Smoked',
-         col = COL[1])
-axis(1)
-
-# par(mar = c(2.8, 1, 0.5, 1))
-histPlot(d$weight[d$smoke == 'nonsmoker'],
-         xlim = c(0, 11),
-         axes = FALSE,
-         xlab = xlab.start,
-         main = 'Mothers Who Did Not Smoke',
-         col = COL[1])
-axis(1)
+```{r babySmokePlotOfTwoGroupsToExamineSkew, fig.cap="The top panel represents birth weights for infants whose mothers smoked during pregnancy. The bottom panel represents the birth weights for infants whose mothers who did not smoke during pregnancy.", warning=FALSE, fig.width=10}
+births %>%
+  mutate(smoke = fct_rev(if_else(smoke == "smoker", "Mothers who smoked", "Mothers who did not smoke"))) %>%
+  ggplot(aes(x = weight)) +
+  geom_histogram(binwidth = 1) +
+  facet_wrap(~smoke, ncol = 1, scales = "free_y") +
+  scale_x_continuous(breaks = seq(0, 10, 2), limits = c(0, 10)) +
+  labs(x = "Newborn weights (lbs)", y = "Count")
 ```
 
 ::: {.guidedpractice}
@@ -461,21 +446,17 @@ The p-value is larger than the significance value, 0.05, so we do not reject the
 There is insufficient evidence to say there is a difference in average birth weight of newborns from North Carolina mothers who did smoke during pregnancy and newborns from North Carolina mothers who did not smoke during pregnancy.
 :::
 
-```{r distOfDiffOfSampleMeansForBWOfBabySmokeData, fig.cap="The mathematical model for the T statistic when the null hypothesis is true.  As expected, the curve is centered at zero (the null value).  The observered statistic is also plotted with the area more extreme than the observed statistic plotted to indicate the p-value.", warning=FALSE, fig.width=10}
-
-data(births)
-d <- births
-
+```{r distOfDiffOfSampleMeansForBWOfBabySmokeData, fig.cap="The mathematical model for the T statistic when the null hypothesis is true.  As expected, the curve is centered at zero (the null value).  The observered statistic is also plotted with the area more extreme than the observed statistic plotted to indicate the p-value."}
 normTail(0, 1,
-         L = -1.54,
-         U = 1.54,
-         df = 20, # Aesthetics
-         col = COL[1],
-         axes = FALSE)
+  L = -1.54,
+  U = 1.54,
+  df = 20, # Aesthetics
+  col = IMSCOL["blue", "full"],
+  axes = FALSE
+)
 at <- c(-5, 0, 1.54, 5)
-labels <- expression(0, mu[n]-mu[s]*' = 0', 'obs. diff', 0)
-axis(1, at, labels, cex.axis=0.9)
-
+labels <- expression(0, mu[n] - mu[s] * " = 0", "obs. diff", 0)
+axis(1, at, labels, cex.axis = 0.9)
 ```
 
 ::: {.guidedpractice}

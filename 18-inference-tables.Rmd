@@ -90,9 +90,9 @@ temptbl <- tribble(
 temptbl %>%
  kable(caption = "The observed counts and the (expected counts).", 
     col.names = c( "", "", "", "", "", "", "", "")) %>%
-  column_spec(3, color = COL[1,1], italic = TRUE) %>%
-  column_spec(5, color = COL[1,1], italic = TRUE) %>%
-  column_spec(7, color = COL[1,1], italic = TRUE) %>%
+  column_spec(3, color = IMSCOL["blue", "full"], italic = TRUE) %>%
+  column_spec(5, color = IMSCOL["blue", "full"], italic = TRUE) %>%
+  column_spec(7, color = IMSCOL["blue", "full"], italic = TRUE) %>%
    add_header_above(c(" ", "General" =2, "Positive Assumptions" = 2, "Negative Assumptions" = 2, "Total")) %>%
  kable_styling()
 ```
@@ -229,47 +229,47 @@ In this case we can conclude that the decision of whether or not to disclose the
 (We use the causal language of "changed" because the study was an experiment.) Note that with a chi-squared test, we only know that the two variables (here: `question` and `disclosure`) are related (i.e., not independent).
 We are not able to claim which type of question causes which type of disclosure.
 
-```{r ipodRandDotPlot, fig.cap="A stacked dot plot of chi-squared statisics from 1000 simulations produced under the null hypothesis, $H_0,$ where the question is independent of the disclosure. None of the 1000 simulations had a chi-squared value of at least 40.13, the chi-squared value observed in the study.  Indeed, none of the simulated chi-squared statistics came anywhere close to the observed statistic!", warning=FALSE, fig.width=10}
+```{r ipodRandDotPlot, fig.cap="A stacked dot plot of chi-squared statisics from 1000 simulations produced under the null hypothesis, $H_0,$ where the question is independent of the disclosure. None of the 1000 simulations had a chi-squared value of at least 40.13, the chi-squared value observed in the study.  Indeed, none of the simulated chi-squared statistics came anywhere close to the observed statistic!"}
 
-disclosure <- c(rep("disclose", 2), rep("hide", 71), rep("disclose", 23), rep("hide", 50),rep("disclose", 36), rep("hide", 37))
+disclosure <- c(rep("disclose", 2), rep("hide", 71), rep("disclose", 23), rep("hide", 50), rep("disclose", 36), rep("hide", 37))
 ques <- c(rep("general", 73), rep("positive", 73), rep("negative", 73))
 
 
 set.seed(40)
-nsim = 1000
-n   = length(disclosure)
-group = disclosure
-var1 = ques
-sim  = matrix(NA, nrow = n, ncol = nsim)
+nsim <- 1000
+n <- length(disclosure)
+group <- disclosure
+var1 <- ques
+sim <- matrix(NA, nrow = n, ncol = nsim)
 
-statistic <- function(var1, disclosure){	
+statistic <- function(var1, disclosure) {
   chisq.test(table(disclosure, var1))$stat
 }
 
-for(i in 1:nsim){
-	sim[,i] = sample(ques, n, replace = FALSE)
+for (i in 1:nsim) {
+  sim[, i] <- sample(ques, n, replace = FALSE)
 }
 
-sim_dist = apply(sim, 2, statistic, var1 = ques)
-chis  = sim_dist
-pval   = sum(chis >= 40.1) / nsim
+sim_dist <- apply(sim, 2, statistic, var1 = ques)
+chis <- sim_dist
+pval <- sum(chis >= 40.1) / nsim
 values <- table(sim_dist)
 
 
 X <- c()
 Y <- c()
-for(i in 1:length(chis)){
-	x  <- chis[i]
-	rec <- sum(sim_dist == x)
-	X  <- append(X, rep(x, rec))
-	Y  <- append(Y, 1:rec)
+for (i in 1:length(chis)) {
+  x <- chis[i]
+  rec <- sum(sim_dist == x)
+  X <- append(X, rep(x, rec))
+  Y <- append(Y, 1:rec)
 }
 
 
-plot(X, Y, xlim=c(0,40), xlab = "Chi-squared statistics assuming a true null hypothesis.", axes = FALSE, ylim=c(0,max(Y)), col=COL[1], cex=0.8, pch=1, lwd=1.5)
-axis(1, at = seq(0, 40, 2.5), labels = c(0,"",5,"",10,"",15,"",20,"",25,"",30,"", 35, "", 40))
-theta <- seq(0, 2*pi, length.out = 500)
-points(X[X >= 40.1], Y[X >= 40.1], lwd=3, col = COL[4], cex=0.4)
+plot(X, Y, xlim = c(0, 40), xlab = "Chi-squared statistics assuming a true null hypothesis.", axes = FALSE, ylim = c(0, max(Y)), col = IMSCOL["blue", "full"], cex = 0.8, pch = 1, lwd = 1.5)
+axis(1, at = seq(0, 40, 2.5), labels = c(0, "", 5, "", 10, "", 15, "", 20, "", 25, "", 30, "", 35, "", 40))
+theta <- seq(0, 2 * pi, length.out = 500)
+points(X[X >= 40.1], Y[X >= 40.1], lwd = 3, col = IMSCOL["red", "full"], cex = 0.4)
 ```
 
 ## Mathematical model {#mathchisq}
@@ -282,7 +282,7 @@ The important specification to make in describing the chi-squared distribution i
 The degrees of freedom change the shape of the chi-squared distribution to fit the problem at hand.
 Figure \@ref(fig:chisqDistDF) visualizes different chi-squared distributions corresponding to different degrees of freedom.
 
-```{r chisqDistDF, fig.cap="The chi-squared distribution for differing degrees of freedom.  The larger the degrees of freedom, the longer the right tail extends.", warning=FALSE, fig.width=10}
+```{r chisqDistDF, fig.cap="The chi-squared distribution for differing degrees of freedom.  The larger the degrees of freedom, the longer the right tail extends."}
 
 x <- c(0, seq(0.0000001, 40, 0.05))
 DF <- c(2.0000001, 4, 9)
@@ -291,25 +291,28 @@ for (i in 1:length(DF)) {
   y[[i]] <- dchisq(x, DF[i])
 }
 plot(0, 0,
-     type = 'n',
-     xlim = c(0, 25),
-     ylim = range(c(y, recursive = TRUE)),
-     axes = FALSE)
+  type = "n",
+  xlim = c(0, 25),
+  ylim = range(c(y, recursive = TRUE)),
+  axes = FALSE
+)
 for (i in 1:length(DF)) {
   lines(x, y[[i]],
-        lty = i,
-        col = COL[ifelse(i == 3, 4, i)],
-        lwd = 1.5 + i / 2)
+    lty = i,
+    col = IMSCOL[ifelse(i == 3, 4, i)],
+    lwd = 1.5 + i / 2
+  )
 }
 abline(h = 0)
 axis(1)
-legend('topright',
-       lwd = 0.3 + 1:4 / 1.25,
-       col = COL[c(1, 2, 4)],
-       lty = 1:4,
-       legend = paste(round(DF)),
-       title = 'Degrees of Freedom',
-       cex = 1)
+legend("topright",
+  lwd = 0.3 + 1:4 / 1.25,
+  col = IMSCOL[c(1, 2, 4)],
+  lty = 1:4,
+  legend = paste(round(DF)),
+  title = "Degrees of Freedom",
+  cex = 1
+)
 ```
 
 #### Variability of the statistic {.unnumbered}
@@ -361,9 +364,9 @@ x = 40.13
 
 ChiSquareTail(x, 2,
               c(0, 50),
-              col = COL[1])
+              col = IMSCOL["blue", "full"])
 text(x, 0, "Tail area (1 / 500 million)\nis too small to see", pos = 3)
-lines(c(x, 1000 * x), rep(0, 2), col = COL[1], lwd = 3)
+lines(c(x, 1000 * x), rep(0, 2), col = IMSCOL["blue", "full"], lwd = 3)
 ```
 
 The software R can be used to find the p-value with the function `pchisq()`.

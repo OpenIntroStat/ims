@@ -72,41 +72,15 @@ For instance, group V appears to have a higher mean than that of the other two g
 Investigating groups IV, V, and VI, we see the differences in the groups' centers are noticeable because those differences are large *relative to the variability in the individual observations within each group*.
 :::
 
-```{r toyANOVA, fig.cap="Side-by-side dot plot for the outcomes for six groups.", warning=FALSE, fig.width=10}
- plot(toy_anova$outcome,
-     xlim = c(0.5, 6.5),
-     type = "n",
-     axes = FALSE,
-     xlab = "",
-     ylab = "Outcome")
-rect(-100, -100,
-     100, 100,
-     col = COL[7,3])
-abline(h = seq(-10, 10, 2), col = "#FFFFFF", lwd = 3)
-abline(h = seq(-10, 10, 1), col = "#FFFFFF", lwd = 0.8)
-these <- toy_anova$group %in% c("I", "II", "III")
-openintro::dotPlot(toy_anova$outcome[these], toy_anova$group[these],
-        vertical = TRUE,
-        at = 1:3,
-        add = TRUE,
-        col = COL[1, 3],
-        cex = 0.9, pch = 19)
-openintro::dotPlot(toy_anova$outcome[!these], toy_anova$group[!these],
-        vertical = TRUE,
-        at = 1:3 + 3,
-        add = TRUE,
-        col = COL[4, 3],
-        cex = 0.9,
-        pch = 19)
-abline(v = 3.5, col = COL[7], lwd = 5.5)
-abline(v = 3.5, col = "#AAAAAA", lwd = 3)
-abline(v = 3.5, col = "#333333", lwd = 0.8)
-axis(2)
-par(mgp = c(2, 0.45, 0.1))
-axis(1, at = 1:3, c("I", "II", "III"))
-axis(1, at = 4:6, c("IV", "V", "VI"))
-box()
-
+```{r toyANOVA, fig.cap="Side-by-side dot plot for the outcomes for six groups."}
+toy_anova %>%
+  mutate(group2 = if_else(group %in% c("I", "II", "III"), "A", "B")) %>%
+  ggplot(aes(x = group, y = outcome, color = group2, shape = group2)) +
+  geom_point(alpha = 0.7, size = 2, show.legend = FALSE) +
+  scale_color_openintro() +
+  facet_wrap(~group2, nrow = 1, scales = "free_x") +
+  labs(x = "Group", y = "Outcome") +
+  theme(strip.text = element_blank())
 ```
 
 ## Case study: Batting
@@ -181,37 +155,28 @@ temptbl %>%
  kable_styling() 
 ```
 
-```{r mlbANOVABoxPlot, fig.cap="Side-by-side box plot of the on-base percentage for 429 players across three groups. There is one prominent outlier visible in the infield group, but with 154 observations in the infield group, this outlier is not extreme enough to have an impact on the calculations, so it is not a concern for moving forward with the analysis.", warning=FALSE, fig.width=10}
+```{r mlbANOVABoxPlot, fig.cap="Side-by-side box plot of the on-base percentage for 429 players across three groups. There is one prominent outlier visible in the infield group, but with 154 observations in the infield group, this outlier is not extreme enough to have an impact on the calculations, so it is not a concern for moving forward with the analysis."}
+mlb_players_18 <- mlb_players_18 %>%
+  filter(
+    AB >= 100, 
+    !position %in% c("P", "DH")
+  ) %>%
+  mutate(
+    position = case_when(
+      position %in% c("LF", "CF", "RF")       ~ "OF",
+      position %in% c("1B", "2B", "3B", "SS") ~ "IF",
+      TRUE                                    ~ position
+    ),
+    position = fct_relevel(position, "OF", "IF", "C")
+  )
 
-d   <- subset(mlb_players_18, AB >= 100)
-d   <- subset(d, !position %in% c("P", "DH"))
-pos <- list(c("LF", "CF", "RF"), c("1B", "2B", "3B", "SS"), "DH", "C")
-POS <- c("OF", "IF", "DH", "C")
-
-for (i in 1:length(pos)) {
-  these <- which(d$position %in% pos[[i]])
-  #cat(length(these), "\n")
-  d$position[these] <- POS[i]
-}
-d <- select(d, name, team, position, AB, H, HR, RBI, AVG, OBP)
-d <- d[order(d$name, d$team), ]
-rownames(d) <- NULL
-
-
-mod <- lm(OBP ~ position, data = d)
-
-key <- POS[c(1, 2, 4)]
-boxPlot(d$OBP, d$position,
-        xlab = "",
-        ylab = "On-Base Percentage",
-        axes = FALSE,
-        pchCex = 1,
-        key = key,
-        col = COL[1, 3],
-        lcol = COL[1])
-mtext("Position", 1, 1.5)
-axis(1, 1:3, key)
-axis(2)
+ggplot(mlb_players_18, aes(x = position, y = OBP)) +
+  geom_boxplot() +
+  scale_y_continuous(breaks = seq(0.15, 0.45, 0.05)) +
+  labs(
+    x = "Position",
+    y = "On-base percentage"
+  )
 ```
 
 ::: {.workedexample}
@@ -309,10 +274,6 @@ Again, we'd like to investigate whether or not the difficult of the exams is the
 -   $H_A:$ not $H_0.$ At least one of the exams is inherently more (or less) difficult than the others.
 
 ```{r summaryStatsForThreeVersionsOfExams}
-# classdata %>%
-# group_by(lecture) %>%
-# skim(m1)
-
 temptbl <- tribble(
  ~variable, ~col0,    ~col1, ~col2, ~col3, ~col4,
  "A", 58, 75.1, 13.9, 44, 100,
@@ -440,15 +401,6 @@ terms_chp_22 <- c(terms_chp_22, "F-test")
 X <- seq(0, 8, len = 300)
 Y <- df(X, 2.00001, 426)
 
-#plot(X, Y,
-#     type = "l",
-#     xlab = "F",
-#     ylab = "",
-#     axes = FALSE,
-#     lwd = 1.5)
-#lines(c(0, 8), rep(0, 2))
-#axis(1)
-
 plot(X, Y,
      type = "l",
      xlab = "F",
@@ -459,7 +411,7 @@ axis(1)
 temp <- which(X > 5.077)
 x    <- X[c(temp, rev(temp), temp[1])]
 y    <- c(Y[temp], rep(0, length(temp)), Y[temp[1]])
-polygon(x, y, col = COL[4], border = COL[4], lwd = 2)
+polygon(x, y, col = IMSCOL["red", "full"], border = IMSCOL["red", "full"], lwd = 2)
 arrows(6.3, 0.3, 6.5, 0.05, length = 0.05)
 text(6.3, 0.3, "Small tail area", pos = 3)
 ```
@@ -494,27 +446,10 @@ Table \@ref(tab:anovaSummaryTableForOBPAgainstPosition) shows an ANOVA summary t
 Many of these values should look familiar; in particular, the $F$-test statistic and p-value can be retrieved from the last two columns.
 
 ```{r anovaSummaryTableForOBPAgainstPosition}
-d   <- subset(mlb_players_18, AB >= 100)
-d   <- subset(d, !position %in% c("P", "DH"))
-pos <- list(c("LF", "CF", "RF"), c("1B", "2B", "3B", "SS"), "DH", "C")
-POS <- c("OF", "IF", "DH", "C")
-
-for (i in 1:length(pos)) {
-  these <- which(d$position %in% pos[[i]])
-  #cat(length(these), "\n")
-  d$position[these] <- POS[i]
-}
-d <- select(d, name, team, position, AB, H, HR, RBI, AVG, OBP)
-d <- d[order(d$name, d$team), ]
-rownames(d) <- NULL
-mod <- lm(OBP ~ position, data = d)
-
-options(knitr.kable.NA = '')
 anova(mod) %>%
- kable(digits = 4, 
-       caption = "ANOVA summary for testing whether the average on-base percentage differs across player positions.") %>% 
- # add_footnote("$s_{pooled} = 0.040$ on $df = 423$") %>%
- kable_styling()
+  kable(digits = 4, 
+        caption = "ANOVA summary for testing whether the average on-base percentage differs across player positions.") %>% 
+  kable_styling()
 ```
 
 ### Conditions for an ANOVA analysis
@@ -531,37 +466,23 @@ There are three conditions we must check for an ANOVA analysis: all observations
     Since each of the groups we're considering have relatively large sample sizes, what we're looking for are major outliers.
     None are apparent, so this conditions is reasonably met.
 
-```{r mlbANOVADiagNormalityGroups, fig.cap = "Histograms of OBP for each field position.", warning=FALSE, fig.width=10}
-d   <- subset(mlb_players_18, AB >= 100)
-d   <- subset(d, !position %in% c("P", "DH"))
-pos <- list(c("LF", "CF", "RF"), c("1B", "2B", "3B", "SS"), "DH", "C")
-POS <- c("OF", "IF", "DH", "C")
-
-for (i in 1:length(pos)) {
-  these <- which(d$position %in% pos[[i]])
-  d$position[these] <- POS[i]
-}
-d <- select(d, name, team, position, AB, H, HR, RBI, AVG, OBP)
-d <- d[order(d$name, d$team), ]
-
-xlim <- range(d$OBP)
-at <- pretty(xlim, 3)
-breaks <- pretty(xlim, 15)
-HistOfOBP <- function(x, main) {
-  histPlot(x,
-      main = main,
-      xlim = xlim,
-      breaks = breaks,
-      xlab = "On-Base Percentage",
-      ylab = "Count",
-      col = COL[1],
-      axes = FALSE)
-  axis(1, at)
-  axis(2)
-}
-HistOfOBP(d$OBP[d$position == "OF"], "Outfielders")
-HistOfOBP(d$OBP[d$position == "IF"], "In-fielders")
-HistOfOBP(d$OBP[d$position == "C"], "Catchers")
+```{r mlbANOVADiagNormalityGroups, fig.cap = "Histograms of OBP for each field position.", fig.asp = 1}
+mlb_players_18 %>%
+  mutate(
+    position = case_when(
+      position == "OF" ~ "Outfielders",
+      position == "IF" ~ "Infielders",
+      position == "C" ~ "Catchers"
+    ),
+    position = fct_relevel(position, "Outfielders", "Infielders", "Catchers")
+  ) %>%
+  ggplot(aes(x = OBP)) +
+  geom_histogram() +
+  facet_wrap(~position, ncol = 1, scales = "free_y") +
+  labs(
+    x = "On-base percentage",
+    y = "Count"
+  )
 ```
 
 -   **Constant variance.** The last assumption is that the variance in the groups is about equal from one group to the next. This assumption can be checked by examining a side-by-side box plot of the outcomes across the groups, as in Figure \@ref(fig:mlbANOVABoxPlot). In this case, the variability is similar in the four groups but not identical. We see in Table \@ref(tab:mlbHRPerABSummaryTable) that the standard deviation doesn't vary much from one group to the next.
