@@ -414,11 +414,6 @@ terms_chp_8 <- c(terms_chp_8, "correlation")
 
 We can compute the correlation using a formula, just as we did with the sample mean and standard deviation.
 The formula for correlation, however, is rather complex[^model-slr-3], and like with other statistics, we generally perform the calculations on a computer or calculator.
-One important aspect of the correlation can be seen in the formula, however.
-The value of the correlation is *unitless*. That is, unlike a measurement of the slope of a line (see the next section) which provides an increase in the y-coordinate for a one unit increase in the x-coordinates (in units of the x and y variable), there are no units associated with the correlation.
-Consider a plot with inches on the x-axis and pounds on the y-axis.
-If the observations are transformed to be cm versus kg, the spread of the points will not change.
-The only visual change to the plot itself will be the axis *labelling* of the points.
 
 [^model-slr-3]: Formally, we can compute the correlation for observations $(x_1, y_1),$ $(x_2, y_2),$ ..., $(x_n, y_n)$ using the formula $$r = \frac{1}{n-1} \sum_{i=1}^{n} \frac{x_i-\bar{x}}{s_x}\frac{y_i-\bar{y}}{s_y}$$ where $\bar{x},$ $\bar{y},$ $s_x,$ and $s_y$ are the sample means and standard deviations for each variable.
 
@@ -602,6 +597,36 @@ temptbl %>%
  kable_styling() 
 ```
 :::
+
+One important aspect of the correlation can be seen in the formula, however.
+The value of the correlation is *unitless*.
+That is, unlike a measurement of the slope of a line (see the next section) which provides an increase in the y-coordinate for a one unit increase in the x-coordinates (in units of the x and y variable), there are no units associated with the correlation.
+Figure \@ref(fig:bdims-units) shows the relationship between weights and heights of 507 physically active individuals.
+In Plot A, weight is measured in kilograms (kg) and height in centimeters (cm).
+In Plot B, weight has been converted to pounds (lbs) and height to inches (in).
+The correlation coefficient ($r = 0.72$) is also noted on both plots.
+We can see that the shape of the relationship has not changed, and neither has the correlation coefficient.
+The only visual change to the plot is the axis *labelling* of the points.
+
+```{r bdims-units, fig.cap = "Two scatterplots, both displaying the relationship between weights and heights of 507 physically healthy adults. In Plot A, the units are kilograms and centimeters. In Plot B, the units are pounds and inches. Also noted on both plots is the correlation coefficient, $r = 0.72.$"}
+p_1 <- ggplot(bdims, aes(x = hgt, y = wgt)) +
+  geom_point(alpha = 0.8) +
+  labs(x = "Height (cm)", y = "Weight (kg)") + 
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
+
+p_2 <- bdims %>%
+  mutate(
+    hgt = hgt * 0.393701,
+    wgt = wgt * 2.20462
+  ) %>%
+  ggplot(aes(x = hgt, y = wgt)) +
+  geom_point(alpha = 0.8) +
+  labs(x = "Height (in)", y = "Weight (lbs)") + 
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
+
+p_1 + p_2 +
+  plot_annotation(tag_levels = "A")
+```
 
 ## Least squares regression {#least-squares-regression}
 
