@@ -24,6 +24,7 @@ suppressMessages(library(skimr))
 suppressMessages(library(caret))
 suppressMessages(library(palmerpenguins))
 suppressMessages(library(survival))
+suppressMessages(library(waffle))
 
 # knitr chunk options ----------------------------------------------------------
 
