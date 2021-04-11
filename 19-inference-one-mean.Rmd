@@ -254,10 +254,7 @@ breaks <- seq(umeans[1] - 1, umeans[length(umeans)] + bin.width, by = bin.width)
 
 histPlot(bscars_sd, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
      xlab = "", ylab="")
-#histPlot(bsmeans_up, breaks = breaks, col = openintro_cols("blue"), add = TRUE)
-#histPlot(bsmeans_low, breaks = breaks, col = openintro_cols("blue"), add = TRUE)
 axis(1)
-#axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
 lines(c(bsq1[6], bsq1[6]), c(0, 125), lty = 3, lwd = 3)
 lines(c(bsq1[3], bsq1[3]), c(0, 125), lty = 3, lwd = 3)
 lines(c(bsq1[7], bsq1[7]), c(0, 55), lty = 3, lwd = 3)
@@ -479,8 +476,8 @@ axis(1, at)
 axis(1, at - 1, rep("", length(at)), tcl = -0.1)
 abline(h = 0)
 
-COL. <- fadeColor(openintro_cols("blue"), c("FF", "89", "68", "4C", "33"))
-COLt <- fadeColor(openintro_cols("blue"), c("FF", "AA", "85", "60", "45"))
+COL. <- fadeColor(IMSCOL["blue", "full"], c("FF", "89", "68", "4C", "33"))
+COLt <- fadeColor(IMSCOL["blue", "full"], c("FF", "AA", "85", "60", "45"))
 DF   <- c('normal', 8, 4, 2, 1)
 
 X <- seq(-10, 10, 0.02)
@@ -539,7 +536,7 @@ pt(-2.10, df = 18)
 normTail(L = -2.10,
          df = 10,
          xlim = c(-4, 4),
-         col = openintro_cols("blue"),
+         col = IMSCOL["full", "blue"],
          axes = FALSE)
 axis(1)
 ```
@@ -560,14 +557,14 @@ Using statistical software: 0.0573.
 normTail(U = 1.65,
          df = 12,
          xlim = c(-4, 4),
-         col = openintro_cols("blue"),
+         col = IMSCOL["full", "blue"],
          axes = FALSE)
 axis(1)
 normTail(L = -3,
          U = 3,
          df = 2.3,
          xlim = c(-4.5, 4.5),
-         col = openintro_cols("blue"),
+         col = IMSCOL["full", "blue"],
          axes = FALSE)
 axis(1)
 ```
@@ -700,7 +697,7 @@ We are 95% confident the average mercury content of muscles in Risso's dolphins 
 \index{data!dolphins and mercury|)}
 
 ::: {.important}
-**Finding a** $t$-confidence interval for the mean, $\mu.$
+**Calculating a** $t$-confidence interval for the mean, $\mu.$
 
 Based on a sample of $n$ independent and nearly normal observations, a confidence interval for the population mean is
 
@@ -723,8 +720,6 @@ Based on the summary statistics of the data, do you have any objections to the n
 :::
 
 [^inference-one-mean-6]: The sample size is under 30, so we check for obvious outliers: since all observations are within 2 standard deviations of the mean, there are no such clear outliers.
-
-\index{data!white fish and mercury|(}
 
 ::: {.workedexample}
 Estimate the standard error of $\bar{x} = 0.287$ ppm using the data summaries in the previous Guided Practice.
@@ -776,8 +771,8 @@ When the null hypothesis is true and the conditions are met, T has a t-distribut
 
 Conditions:
 
--   independently observed data\
--   large samples and no extreme outliers\
+-   Independently observed data.
+-   Large samples and no extreme outliers.
 :::
 
 Is the typical US runner getting faster or slower over time?
@@ -800,15 +795,19 @@ The data come from a simple random sample of all participants, so the observatio
 
 ```{r}
 set.seed(1)
-run17 <- subset(run17, event == "10 Mile")
-d <- run17[sample(nrow(run17), 100), ] %>%
+
+run17_sample_100 <- run17 %>%
+  filter(event == "10 Mile") %>%
+  sample_n(size = 100) %>%
   mutate(time = net_sec / 60)
 
-histPlot(d$time,
-         main = "",
-         xlab = "Time (Minutes)",
-         ylab = "Count",
-         col = openintro_cols("blue"))
+run17_sample_100_time_mean <- round(mean(run17_sample_100$time), 2)
+run17_sample_100_time_sd   <- round(sd(run17_sample_100$time), 2)
+run17_sample_100_time_n    <- nrow(run17_sample_100)
+
+ggplot(run17_sample_100, aes(x = time)) +
+  geom_histogram(binwidth = 5) +
+  labs(x = "Time (minutes)", y = "Count")
 ```
 
 A histogram of the race times is given to evaluate if we can move forward with a t-test.
@@ -828,8 +827,8 @@ terms_chp_19 <- c(terms_chp_19, "T score single mean")
 
 ::: {.workedexample}
 With both the independence and normality conditions satisfied, we can proceed with a hypothesis test using the $t$-distribution.
-The sample mean and sample standard deviation of the sample of 100 runners from the 2017 Cherry Blossom Race are 97.32 and 16.98 minutes, respectively.
-Recall that the sample size is 100 and the average run time in 2006 was 93.29 minutes.
+The sample mean and sample standard deviation of the sample of `r run17_sample_100_time_n` runners from the 2017 Cherry Blossom Race are `r run17_sample_100_time_mean` and `r run17_sample_100_time_sd` minutes, respectively.
+Recall that the average run time in 2006 was 93.29 minutes.
 Find the test statistic and p-value.
 What is your conclusion?
 
@@ -837,26 +836,26 @@ What is your conclusion?
 
 To find the test statistic (T score), we first must determine the standard error:
 
-$$  SE = 16.98 / \sqrt{100} = 1.70 $$
+$$  SE = 16.6 / \sqrt{100} = 1.66 $$
 
-Now we can compute the **T score** using the sample mean (97.32), null value (98.29), and $SE:$
+Now we can compute the **T score** using the sample mean (`r run17_sample_100_time_mean`), null value (93.29), and $SE:$
 
-$$ T = \frac{97.32 - 93.29}{1.70} = 2.37 $$
+$$ T = \frac{98.8 - 93.29}{1.66} = 3.32 $$
 
-For $df = 100 - 1 = 99,$ we can determine using statistical software (or a $t$-table, see below) that the one-tail area is 0.01, which we double to get the p-value: 0.02.
+For $df = 100 - 1 = 99,$ we can determine using statistical software (or a $t$-table) that the one-tail area is 0.000631, which we double to get the p-value: 0.00126.
 
 Because the p-value is smaller than 0.05, we reject the null hypothesis.
 That is, the data provide strong evidence that the average run time for the Cherry Blossom Run in 2017 is different than the 2006 average.
-Since the observed value is above the null value and we have rejected the null hypothesis, we would conclude that runners in the race were slower on average in 2017 than in 2006.
+Since the observed value is above the null value and we have rejected the null hypothesis, we would conclude that the data provide evidence of runners being slower, on average, in 2017 than in 2006.
 :::
 
 ```{r echo = TRUE}
-# using pt() to find the p-value
-1 - pt(2.37, df = 99)
+# using pt() to find the tail area
+1 - pt(3.32, df = 99)
 ```
 
 ::: {.important}
-**When using a** $t$-distribution, we use a T score (similar to a Z score).
+When using a $t$-distribution, we use a T score (similar to a Z score).
 
 To help us remember to use the $t$-distribution, we use a $T$ to represent the test statistic, and we often call this a **T score**.
 The Z score and T score are computed in the exact same way and are conceptually identical: each represents how many standard errors the observed value is from the null value.
