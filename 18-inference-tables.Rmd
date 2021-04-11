@@ -12,7 +12,7 @@ Because there is not a population parameter to estimate, bootstrapping to find t
 As such, for two-way tables, we will focus on the randomization test and corresponding mathematical approximation (and not bootstrapping).
 :::
 
-## Randomization test of $H_0:$ independence
+## Randomization test of independence
 
 We all buy used products -- cars, computers, textbooks, and so on -- and we sometimes assume the sellers of those products will be forthright about any underlying problems with what they're selling.
 This is not something we should take for granted.
@@ -26,28 +26,42 @@ The researchers wanted to understand what types of questions would elicit the se
 Unbeknownst to the participants who were the sellers in the study, the buyers were collaborating with the researchers to evaluate the influence of different questions on the likelihood of getting the sellers to disclose the past issues with the iPod.
 The scripted buyers started with "Okay, I guess I'm supposed to go first. So you've had the iPod for 2 years ..." and ended with one of three questions:
 
--   General: What can you tell me about it?\
--   Positive Assumption: It doesn't have any problems, does it?\
+-   General: What can you tell me about it?
+-   Positive Assumption: It doesn't have any problems, does it?
 -   Negative Assumption: What problems does it have?
 
 The question is the treatment given to the sellers, and the response is whether the question prompted them to disclose the freezing issue with the iPod.
 The results are shown in Table \@ref(tab:ipod-ask-data-summary), and the data suggest that asking the, *What problems does it have?*, was the most effective at getting the seller to disclose the past freezing issues.
 However, you should also be asking yourself: could we see these results due to chance alone, or is this in fact evidence that some questions are more effective for getting at the truth?
 
-```{r ipod-ask-data-summary}
-temptbl <- tribble(
- ~variable,    ~col1, ~col2, ~col3, ~col4,
- "Disclose Problem", "2", "23", "36", "61",
- "Hide Problem", "71", "50", "37", "158",
- "Total", "73", "73", "73", "219"
-)
-
-temptbl %>%
- kable(caption = "Summary of the iPod study, where a question was
-  posed to the study participant who acted.", 
-    col.names = c( "", "General", "Positive Assumptions", "Negative Assumptions", "Total")) %>%
- kable_styling()
+```{r ask-data-prep}
+ask <- ask %>%
+  mutate(
+    response = if_else(response == "disclose", "Disclose problem", "Hide problem"),
+    question_class = case_when(
+      question_class == "general" ~ "General",
+      question_class == "neg_assumption" ~ "Negative assumption",
+      question_class == "pos_assumption" ~ "Positive assumption"
+    ),
+    question_class = fct_relevel(question_class, "General", "Positive assumption", "Negative assumption")
+  )
 ```
+
+```{r ipod-ask-data-summary}
+ask %>%
+  count(question_class, response) %>%
+  pivot_wider(names_from = question_class, values_from = n) %>%
+  adorn_totals(where = c("row", "col")) %>%
+  kable(
+    caption = "Summary of the iPod study, where a question was posed to the study participant who acted.",
+    col.names = c("Response", "General", "Positive assumption", "Negative assumption", "Total")
+    ) %>%
+  kable_styling()
+```
+
+::: {.data}
+These data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`ask`](http://openintrostat.github.io/openintro/reference/ask.html).
+:::
 
 The hypothesis test for the iPod experiment is really about assessing whether there is statistically significant evidence that there was a difference in the success rates that each question had on getting the participant to disclose the problem with the iPod.
 In other words, the goal is to check whether the buyer's question was independent of whether the seller disclosed a problem.
@@ -58,7 +72,7 @@ terms_chp_18 <- c("independence")
 
 ### Expected counts in two-way tables
 
-While we would not expect the number of disclosures to be exactly the same across the three groups, the rate of disclosure seems substantially different across the three groups.
+While we would not expect the number of disclosures to be exactly the same across the three question classes, the rate of disclosure seems substantially different across the three groups.
 In order to investigate whether the differences in rates is due to natural variability or due to a treatment effect (i.e., the question causing the differences), we need to compute estimated counts for each cell in a two-way table.
 
 ::: {.workedexample}
@@ -80,61 +94,99 @@ We can compute the expected number of sellers who we would expect to disclose or
 These expected counts were used to construct Table \@ref(tab:ipod-ask-data-summary-expected), which is the same as Table \@ref(tab:ipod-ask-data-summary), except now the expected counts have been added in parentheses.
 
 ```{r ipod-ask-data-summary-expected}
-temptbl <- tribble(
- ~variable,    ~col1, ~col1b, ~col2, ~col2b, ~col3, ~col3b, ~col4,
- "Disclose Problem", "2", "(20.33)", "23", "(20.33)", "36", "(20.33)", "61",
- "Hide Problem", "71", "(52.67)", "50", "(52.67)", "37", "(52.67)", "158",
- "Total", "73", "", "73", "", "73", "", "219"
-)
+ask_chi_sq <- chisq.test(ask$response, ask$question_class)
 
-temptbl %>%
- kable(caption = "The observed counts and the (expected counts).", 
-    col.names = c( "", "", "", "", "", "", "", "")) %>%
+ask_chi_sq_obs <- ask_chi_sq$observed %>% 
+  as_tibble() %>% 
+  mutate(type = "observed")
+
+ask_chi_sq_exp <- ask_chi_sq$expected %>%
+  as.table() %>%
+  as_tibble() %>% 
+  mutate(type = "expected")
+
+ask_chi_sq_tabs <- bind_rows(ask_chi_sq_obs, ask_chi_sq_exp) %>%
+  rename_with(.fn = str_remove, .cols = everything(), "ask\\$")
+
+ask_chi_sq_tabs %>%
+  mutate(question_class_type = paste0(question_class, "-", type)) %>%
+  select(-question_class, -type) %>%
+  pivot_wider(names_from = question_class_type, values_from = n) %>%
+  relocate(
+    response,
+    contains("General"),
+    contains("Positive"),
+    contains("Negative")
+  ) %>%
+  mutate(across(contains("expected"), ~paste0("(", round(.x, 2), ")"))) %>%
+  rowwise() %>%
+  mutate(Total = sum(c_across(contains("observed")))) %>%
+  adorn_totals(where = "row") %>%
+  mutate(
+    `General-expected` = ifelse(`General-expected` == "-", NA, `General-expected`),
+    `Positive assumption-expected` = ifelse(`Positive assumption-expected` == "-", NA, `Positive assumption-expected`),
+    `Negative assumption-expected` = ifelse(`Negative assumption-expected` == "-", NA, `Negative assumption-expected`)
+  ) %>%
+ kable(
+   caption = "The observed counts and the expected counts for the iPod experiment.", 
+   col.names = c( "", "", "", "", "", "", "", "")
+   ) %>%
   column_spec(3, color = IMSCOL["blue", "full"], italic = TRUE) %>%
   column_spec(5, color = IMSCOL["blue", "full"], italic = TRUE) %>%
   column_spec(7, color = IMSCOL["blue", "full"], italic = TRUE) %>%
-   add_header_above(c(" ", "General" =2, "Positive Assumptions" = 2, "Negative Assumptions" = 2, "Total")) %>%
- kable_styling()
+  add_header_above(c(" ", "General" =2, "Positive assumption" = 2, "Negative assumption" = 2, "Total")) %>%
+  kable_styling()
 ```
 
 The examples and exercises above provided some help in computing expected counts.
 In general, expected counts for a two-way table may be computed using the row totals, column totals, and the table total.
 For instance, if there was no difference between the groups, then about 27.85% of each column should be in the first row:
 
+$$
 \begin{align*}
 0.2785\times (\text{column 1 total}) &= 20.33 \\
 0.2785\times (\text{column 2 total}) &= 20.33 \\
 0.2785\times (\text{column 3 total}) &= 20.33
-\end{align*} Looking back to how 0.2785 was computed -- as the fraction of sellers who disclosed the freezing issue $(158/219)$ -- these three expected counts could have been computed as \begin{align*}
+\end{align*} 
+$$
+
+Looking back to how 0.2785 was computed -- as the fraction of sellers who disclosed the freezing issue $(158/219)$ -- these three expected counts could have been computed as
+
+$$
+\begin{align*}
 \left(\frac{\text{row 1 total}}{\text{table total}}\right)
     \text{(column 1 total)} &= 20.33 \\
 \left(\frac{\text{row 1 total}}{\text{table total}}\right)
     \text{(column 2 total)} &= 20.33 \\
 \left(\frac{\text{row 1 total}}{\text{table total}}\right)
     \text{(column 3 total)} &= 20.33
-\end{align*} This leads us to a general formula for computing expected counts in a two-way table when we would like to test whether there is strong evidence of an association between the column variable and row variable.
+\end{align*} 
+$$
+
+This leads us to a general formula for computing expected counts in a two-way table when we would like to test whether there is strong evidence of an association between the column variable and row variable.
 
 ::: {.important}
 **Computing expected counts in a two-way table.**
 
-To identify the expected count for the $i^{th}$ row and $j^{th}$ column, compute \begin{align*}
-  \text{Expected Count}_{\text{row }i,\text{ col }j}
-    = \frac{(\text{row $i$ total}) \times
-        (\text{column $j$ total})}{\text{table total}}
-  \end{align*}
+To calculate the expected count for the $i^{th}$ row and $j^{th}$ column, compute
+
+$$
+\text{Expected Count}_{\text{row }i,\text{ col }j}
+  = \frac{(\text{row $i$ total}) \times
+  (\text{column $j$ total})}{\text{table total}}
+$$
 :::
 
 ```{r include=FALSE}
 terms_chp_18 <- c(terms_chp_18, "expected counts")
 ```
 
-### The chi-squared statistic
-
-#### Observed data {.unnumbered}
+### The observed chi-squared statistic
 
 The chi-squared test statistic for a two-way table is found by comparing the observed and expected counts for each cell in the table.
 For each table count, compute:
 
+$$
 \begin{align*}
 &\text{General formula} &&
     \frac{(\text{observed count } - \text{expected count})^2}
@@ -147,13 +199,16 @@ For each table count, compute:
     \hspace{13mm}\vdots \\
 &\text{Row 2, Col 3} &&
     \frac{(37 - 52.67)^2}{52.67} = 4.66
-\end{align*} Adding the computed value for each cell gives the chi-squared test statistic $X^2:$ \begin{align*}
-X^2 = 16.53 + 0.35 + \dots + 4.66 = 40.13
 \end{align*}
+$$
+
+Adding the computed value for each cell gives the chi-squared test statistic $X^2:$
+
+$$
+X^2 = 16.53 + 0.35 + \dots + 4.66 = 40.13
+$$
 
 ### Randomization distribution of the chi-squared statistic
-
-#### Variability of the statistic {.unnumbered}
 
 Is 40.13 a big number?
 That is, does it indicate that the observed and expected values are really different?
@@ -161,27 +216,30 @@ Or is 40.13 a value of the statistic that we'd expect to see just due to natural
 Previously, we applied the randomization test to the setting where the research question investigated a difference in proportions.
 The same idea of shuffling the data under the null hypothesis can be used in the setting of the two-way table.
 
+#### Variability of the statistic {.unnumbered}
+
 Assuming that the individuals would disclose or hide the problems **regardless** of the question they are given (i.e., that the null hypothesis is true), we can randomize the data by reassigning the 61 disclosed problems and 158 hidden problems to the three groups at random.
 Table \@ref(tab:ipod-ask-data-summary-rand) shows a possible randomization of the observed data under the condition that the null hypothesis is true (in contrast to the original observed data in Table \@ref(tab:ipod-ask-data-summary)).
 
 ```{r ipod-ask-data-summary-rand}
-temptbl <- tribble(
- ~variable,    ~col1, ~col2, ~col3, ~col4,
- "Disclose Problem", "15", "26", "20", "61",
- "Hide Problem", "58", "47", "53", "158",
- "Total", "73", "73", "73", "219"
-)
-
-temptbl %>%
- kable(caption = "Randomized allocation of the data to the question posed in the iPod study.", 
-    col.names = c( "", "General", "Positive Assumptions", "Negative Assumptions", "Total")) %>%
- kable_styling()
+set.seed(4747)
+ask %>%
+  mutate(question_class = sample(question_class)) %>% # randomize
+  count(question_class, response) %>%
+  pivot_wider(names_from = question_class, values_from = n) %>%
+  adorn_totals(where = c("row", "col")) %>%
+  kable(
+    caption = "Randomized allocation of the data to the question posed in the iPod study.",
+    col.names = c("Response", "General", "Positive assumption", "Negative assumption", "Total")
+    ) %>%
+  kable_styling()
 ```
 
 As before, the randomized data is used to find a single value for the test statistic (here a chi-squared statistic).
 The chi-squared statistic for the randomized two-way table is found by comparing the observed and expected counts for each cell in the *randomized* table.
 For each cell, compute:
 
+$$
 \begin{align*}
 &\text{General formula} &&
     \frac{(\text{observed count } - \text{expected count})^2}
@@ -194,87 +252,52 @@ For each cell, compute:
     \hspace{13mm}\vdots \\
 &\text{Row 2, Col 3} &&
     \frac{(53 - 52.67)^2}{52.67} = 0.002
-\end{align*} Adding the computed value for each cell gives the chi-squared test statistic $X^2:$ \begin{align*}
+\end{align*} 
+$$
+
+Adding the computed value for each cell gives the chi-squared test statistic $X^2:$
+
+$$
 X^2 = 1.399 + 1.579 + \dots + 0.002 = 4.136
-\end{align*}
+$$
 
 ```{r include=FALSE}
 terms_chp_18 <- c(terms_chp_18, "chi-squared statistic")
 ```
 
-```{r eval = FALSE, echo = FALSE}
-
-prob <- c(rep("disclose", 2), rep("hide", 71), rep("disclose", 23), rep("hide", 50),rep("disclose", 36), rep("hide", 37))
-ques <- c(rep("general", 73), rep("positive", 73), rep("negative", 73))
-
-table(prob, ques)
-
-set.seed(4747)
-rand.ipod <- table(prob, sample(ques))
-
-chisq.test(rand.ipod, correct = FALSE)$expected
-(chisq.test(rand.ipod, correct = FALSE)$resid)^2
-
-chisq.test(rand.ipod, correct = FALSE)$stat
-```
-
-#### Observed statistic vs null statistics {.unnumbered}
+#### Observed statistic vs. null chi-squared statistics {.unnumbered}
 
 As before, one randomization will not be sufficient for understanding if the observed data are particularly different from the expected chi-squared statistics when $H_0$ is true.
-To investigate whether 40.13 is large enough to indicate the the observed and expected counts are significantly different, we need to understand what values of the chi-squared statistic would happen just due to change.
-Figure \@ref(fig:ipodRandDotPlot) plots 1000 chi-squared statistics generated under the null hypothesis.
+To investigate whether 40.13 is large enough to indicate the observed and expected counts are significantly different, we need to understand what values of the chi-squared statistic would happen just due to change.
+Figure \@ref(fig:ipodRandDotPlot) plots 1,000 chi-squared statistics generated under the null hypothesis.
 We can see that the observed value is so far from the null statistics that the simulated p-value is zero.
 That is, the probability of seeing the observed statistic when the null hypothesis is true is virtually zero.
 In this case we can conclude that the decision of whether or not to disclose the iPod's problem is changed by the question asked.
-(We use the causal language of "changed" because the study was an experiment.) Note that with a chi-squared test, we only know that the two variables (here: `question` and `disclosure`) are related (i.e., not independent).
-We are not able to claim which type of question causes which type of disclosure.
+We use the causal language of "changed" because the study was an experiment.
+Note that with a chi-squared test, we only know that the two variables (`question_class` and `response`) are related (i.e., not independent).
+We are not able to claim which type of question causes which type of response.
 
-```{r ipodRandDotPlot, fig.cap="A stacked dot plot of chi-squared statisics from 1000 simulations produced under the null hypothesis, $H_0,$ where the question is independent of the disclosure. None of the 1000 simulations had a chi-squared value of at least 40.13, the chi-squared value observed in the study.  Indeed, none of the simulated chi-squared statistics came anywhere close to the observed statistic!"}
+```{r ipodRandDotPlot, fig.cap="A histogram of chi-squared statisics from 1,000 simulations produced under the null hypothesis, $H_0,$ where the question is independent of the response. None of the 1,000 simulations had a chi-squared value of at least 40.13, the chi-squared value observed in the study. In fact, none of the simulated chi-squared statistics came anywhere close to the observed statistic!"}
+set.seed(4747)
 
-disclosure <- c(rep("disclose", 2), rep("hide", 71), rep("disclose", 23), rep("hide", 50), rep("disclose", 36), rep("hide", 37))
-ques <- c(rep("general", 73), rep("positive", 73), rep("negative", 73))
+ask_rand_dist <- ask %>%
+  specify(response ~ question_class) %>%
+  hypothesise(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "Chisq")
 
-
-set.seed(40)
-nsim <- 1000
-n <- length(disclosure)
-group <- disclosure
-var1 <- ques
-sim <- matrix(NA, nrow = n, ncol = nsim)
-
-statistic <- function(var1, disclosure) {
-  chisq.test(table(disclosure, var1))$stat
-}
-
-for (i in 1:nsim) {
-  sim[, i] <- sample(ques, n, replace = FALSE)
-}
-
-sim_dist <- apply(sim, 2, statistic, var1 = ques)
-chis <- sim_dist
-pval <- sum(chis >= 40.1) / nsim
-values <- table(sim_dist)
-
-
-X <- c()
-Y <- c()
-for (i in 1:length(chis)) {
-  x <- chis[i]
-  rec <- sum(sim_dist == x)
-  X <- append(X, rep(x, rec))
-  Y <- append(Y, 1:rec)
-}
-
-
-plot(X, Y, xlim = c(0, 40), xlab = "Chi-squared statistics assuming a true null hypothesis.", axes = FALSE, ylim = c(0, max(Y)), col = IMSCOL["blue", "full"], cex = 0.8, pch = 1, lwd = 1.5)
-axis(1, at = seq(0, 40, 2.5), labels = c(0, "", 5, "", 10, "", 15, "", 20, "", 25, "", 30, "", 35, "", 40))
-theta <- seq(0, 2 * pi, length.out = 500)
-points(X[X >= 40.1], Y[X >= 40.1], lwd = 3, col = IMSCOL["red", "full"], cex = 0.4)
+ggplot(ask_rand_dist, aes(x = stat)) +
+  geom_histogram(binwidth = 1) +
+  expand_limits(x = 40.13) +
+  labs(
+    x = "Chi-squared statistics assuming a true null hypothesis",
+    y = "Count"
+  )
 ```
 
 ## Mathematical model {#mathchisq}
 
-### The chi-squared test of $H_0:$ independence
+### The chi-squared test of independence
 
 Previously, in Section \@ref(math-2prop), we applied the Central Limit Theorem to the sampling variability of $\hat{p}_1 - \hat{p}_2.$ The result was that we could use the normal distribution (e.g., $z^*$ values (see Figure \@ref(fig:choosingZForCI) ) and p-values from $Z$ scores) to complete the mathematical inferential procedure.
 The chi-squared test statistic has a different mathematical distribution called the chi-squared distribution.
@@ -282,7 +305,7 @@ The important specification to make in describing the chi-squared distribution i
 The degrees of freedom change the shape of the chi-squared distribution to fit the problem at hand.
 Figure \@ref(fig:chisqDistDF) visualizes different chi-squared distributions corresponding to different degrees of freedom.
 
-```{r chisqDistDF, fig.cap="The chi-squared distribution for differing degrees of freedom.  The larger the degrees of freedom, the longer the right tail extends."}
+```{r chisqDistDF, fig.cap = "The chi-squared distribution for differing degrees of freedom. The larger the degrees of freedom, the longer the right tail extends."}
 
 x <- c(0, seq(0.0000001, 40, 0.05))
 DF <- c(2.0000001, 4, 9)
@@ -315,38 +338,34 @@ legend("topright",
 )
 ```
 
-#### Variability of the statistic {.unnumbered}
+### Variability of the chi-squared statistic
 
 As it turns out, the chi-squared test statistic follows a chi-squared distribution when the null hypothesis is true.
-For two way tables, the degrees of freedom is equal to: \begin{align*}
-df = \text{(number of rows minus 1)}\times \text{(number of columns minus 1)}
-\end{align*} In our example, the degrees of freedom parameter is \begin{align*}
-df = (2-1)\times (3-1) = 2
-\end{align*}
+For two way tables, the degrees of freedom is equal to: $df = \text{(number of rows minus 1)}\times \text{(number of columns minus 1)}$.
+In our example, the degrees of freedom parameter is $df = (2-1)\times (3-1) = 2$.
 
 ```{r include=FALSE}
 terms_chp_18 <- c(terms_chp_18, "chi-squared distribution")
 ```
 
-#### Observed statistic vs. null statistics {.unnumbered}
+### Observed statistic vs. null chi-squared statistics
 
 ::: {.important}
-**The test statistic for assessing two categorical variables is a** $X^2.$
+**The test statistic for assessing the independence between two categorical variables is a** $X^2.$
 
 The $X^2$ statistic is a ratio of how the expected counts vary from the observed counts as compared to the expected counts (which are a measure of how large the sample size is).
 
-```{=tex}
-\begin{align*}
-X^2 = \sum_{i,j} \frac{(\text{observed count } - \text{expected count})^2}
+$$
+X^2 = \sum_{i,j} \frac{(\text{observed count} - \text{expected count})^2}
         {\text{expected count}} 
-\end{align*}
-```
+$$
+
 When the null hypothesis is true and the conditions are met, $X^2$ has a chi-squared distribution with $df = (r-1) \times (c-1).$
 
 Conditions:
 
--   independently observed data\
--   large samples (5 observed values in each cell)\
+-   Independently observed data
+-   Large samples: 5 expected observations in each cell
 :::
 
 To bring it back to the example, if the null hypothesis is true (i.e., the questions had no impact on the sellers in the experiment), then the test statistic $X^2 = 40.13$ closely follows a chi-squared distribution with 2 degrees of freedom.
@@ -358,13 +377,12 @@ Using this information, we can compute the p-value for the test, which is depict
   \end{align*} where $R$ is the number of rows in the table and $C$ is the number of columns.
 :::
 
-```{r iPodChiSqTail, fig.cap="Visualization of the p-value for $X^2 = 40.13$ when $df = 2.$", warning=FALSE, fig.width=10}
-
-x = 40.13
-
-ChiSquareTail(x, 2,
-              c(0, 50),
-              col = IMSCOL["blue", "full"])
+```{r iPodChiSqTail, fig.cap="Visualization of the p-value for $X^2 = 40.13$ when $df = 2.$"}
+ChiSquareTail(
+  40.13, 2,
+  c(0, 50),
+  col = IMSCOL["blue", "full"]
+)
 text(x, 0, "Tail area (1 / 500 million)\nis too small to see", pos = 3)
 lines(c(x, 1000 * x), rep(0, 2), col = IMSCOL["blue", "full"], lwd = 3)
 ```
@@ -388,10 +406,6 @@ Using a significance level of $\alpha=0.05,$ the null hypothesis is rejected sin
 That is, the data provide convincing evidence that the question asked did affect a seller's likelihood to tell the truth about problems with the iPod.
 :::
 
-\index{data!iPod|)}
-
-\index{data!diabetes|(}
-
 ::: {.workedexample}
 Table \@ref(tab:diabetes2ExpMetRosiLifestyleSummary) summarizes the results of an experiment evaluating three treatments for Type 2 Diabetes in patients aged 10-17 who were being treated with metformin.
 The three treatments considered were continued treatment with metformin (`met`), treatment with metformin combined with rosiglitazone (`rosi`), or a lifestyle intervention program.
@@ -405,19 +419,20 @@ What are appropriate hypotheses for this test?
 :::
 
 ```{r diabetes2ExpMetRosiLifestyleSummary}
-temptbl <- tribble(
- ~variable,    ~col1, ~col2, ~col3, 
- "`lifestyle`", "109",  "125",  "234",
- "`met`", "120",  "112", "232",  
- "`rosi`", "90",  "143",  "233",
- "Total", "319", "380", "699"
-)
-
-temptbl %>%
- kable(caption = "Results for the Type 2 Diabetes study.", 
-    col.names = c( "", "Failure", "Success", "Total")) %>%
+diabetes2 %>%
+  count(outcome, treatment) %>%
+  pivot_wider(names_from = outcome, values_from = n) %>%
+  adorn_totals(where = c("row", "col")) %>%
+  kable(
+    caption = "Results for the Type 2 Diabetes study.", 
+    col.names = c( "Treatment", "Failure", "Success", "Total")
+    ) %>%
  kable_styling()
 ```
+
+::: {.data}
+These data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`diabetes2`](http://openintrostat.github.io/openintro/reference/diabetes2.html).
+:::
 
 Typically we will use a computer to do the computational work of finding the chi-squared statistic.
 However, it is always good to have a sense for what the computer is doing, and in particular, calculating the values which would be expected if the null hypothesis is true can help to understand the null hypothesis claim.
