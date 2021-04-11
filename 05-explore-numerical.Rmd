@@ -6,7 +6,7 @@ The summaries and graphs presented in this chapter are created using statistical
 Mastery of the content presented in this chapter will be crucial for understanding the methods and techniques introduced in rest of the book.
 :::
 
-Consider the `loan_amount` variable from the `loan50` data set, which represents the loan size for each of 50 loans in the data set.
+Consider the `loan_amount` variable from the `loan50` data set, which represents the loan size for each of 50 loans in tghe data set.
 This variable is numerical since we can sensibly discuss the numerical difference of the size of two loans.
 On the other hand, area codes and zip codes are not numerical, but rather they are categorical variables.
 
@@ -786,31 +786,47 @@ If you were wanting to understand the typical loan size, should you be more inte
 ## Transforming data {#transforming-data}
 
 When data are very strongly skewed, we sometimes transform them so they are easier to model.
+Figure \@ref(fig:county-unemployed-pop-transform) shows two right skewed distributions: distribution of the percentage of unemployed people and the distribution of the population in all counties in the United States.
+The distribution of population is more strongly skewed than the distribution of unemployed, hence the log transformation results in a much bigger change in the shape of the distribution.
 
-```{r county-pop-transform, fig.cap="Plot A: A histogram of the populations of all US counties. Plot B: A histogram of log$_{10}$-transformed county populations. For the right plot, the x-value corresponds to the power of 10, e.g., 4 on the x-axis corresponds to $10^4 =$ 10,000. Data are from 2017.", warning = FALSE}
+```{r county-unemployed-pop-transform, fig.cap="Plot A: A histogram of the percentage of unemployed in all US counties. Plot B: A histogram of log$_{10}$-transformed unemployed percentages. Plot C: A histogram of population in all US counties. Plot D: A histogram of log$_{10}$-transformed populations. For Plots B and D, the x-value corresponds to the power of 10, e.g., 1 on the x-axis corresponds to $10^1 =$ 10 and 5 on the x-axis corresponds to $10^5 =$ 100,000. Data are from 2017.", warning = FALSE}
+p_unemployed <- ggplot(county, aes(x = unemployment_rate)) +
+  geom_histogram(binwidth = 1) +
+  scale_x_continuous(labels = label_percent(scale = 1)) +
+  labs(
+    x = "Percenage of unemployed", 
+    y = "Count"
+    )
 
-p_pop <- ggplot(county, aes(x = pop2017)) +
+p_unemployed_log <- ggplot(county, aes(x = log(unemployment_rate, base = 10))) +
+  geom_histogram(binwidth = 0.1) +
+  labs(
+    x = expression(log[10]*"(Percentage of unemployed)"), 
+    y = "Count"
+    )
+
+p_pop <- ggplot(county_complete, aes(x = pop_2019)) +
   geom_histogram(binwidth = 500000) +
   scale_x_continuous(labels = label_number(scale = 0.000001, suffix = "M", accuracy = 1)) +
   labs(
-    x = "Population (M = millions)", 
+    x = "Population (M = millions)",
     y = "Count"
-    )
-
-p_pop_log <- ggplot(county, aes(x = log(pop2017, base = 10))) +
+  )
+p_pop_log <- ggplot(county_complete, aes(x = log(pop_2019, base = 10))) +
   geom_histogram(binwidth = 0.5) +
   labs(
-    x = expression(log[10]*"(Population)"), 
+    x = expression(log[10] * "(Population)"),
     y = "Count"
-    )
+  )
 
-p_pop + p_pop_log +
+p_unemployed + p_unemployed_log +
+  p_pop + p_pop_log +
   plot_annotation(tag_levels = "A") & 
   theme(plot.tag = element_text(size = 10))
 ```
 
 ::: {.workedexample}
-Consider the histogram of county populations shown on the left in Figure \@ref(fig:county-pop-transform), which shows extreme skew\index{skew!extreme}.
+Consider the histogram of county populations shown in Plot C of Figure \@ref(fig:county-unemployed-pop-transform), which shows extreme skew.
 What characteristics of the plot keep it from being useful?
 
 ------------------------------------------------------------------------
@@ -820,7 +836,7 @@ Nearly all of the data fall into the left-most bin, and the extreme skew obscure
 
 There are some standard transformations that may be useful for strongly right skewed data where much of the data is positive but clustered near zero.
 A **transformation** is a rescaling of the data using a function.
-For instance, a plot of the logarithm (base 10) of county populations results in the new histogram on the right in Figure \@ref(fig:county-pop-transform).
+For instance, a plot of the logarithm (base 10) of unemployment rates and county populations results in the new histograms on the right in Figure \@ref(fig:county-unemployed-pop-transform).
 The transformed data is symmetric, and any potential outliers appear much less extreme than in the original data set.
 By reigning in the outliers and extreme skew, transformations often make it easier to build statistical models for the data.
 

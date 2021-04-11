@@ -306,18 +306,56 @@ For instance, in the email example, the email format was seen as a possible expl
 
 A **pie chart** is shown in Figure \@ref(fig:loan-homeownership-pie-chart) alongside a bar plot representing the same information.
 Pie charts can be useful for giving a high-level overview to show how a set of cases break down.
-However, it is also difficult to decipher details in a pie chart.
-For example, it;s not immediately obvious that there are more loans where the borrower has a mortgage than rent when looking at the pie chart, while this detail is very obvious in the bar plot.
-While pie charts can be useful, we prefer bar plots for their ease in comparing groups.
+However, it is also difficult to decipher certain details in a pie chart.
+For example, it's not immediately obvious that there are more loans where the borrower has a mortgage than rent when looking at the pie chart, while this detail is very obvious in the bar plot.
 
-```{r loan-homeownership-pie-chart, fig.cap="A pie chart of homeownership."}
-loans_full_schema %>% 
+```{r loan-homeownership-pie-chart, fig.cap = "A pie chart and bar plot of homeownership."}
+p_pie <- loans_full_schema %>% 
+  mutate(homeownership = fct_infreq(homeownership)) %>%
   count(homeownership) %>%
+  mutate(text_y = cumsum(n) - n/2) %>%
   ggplot(aes(x = "", fill = homeownership, y = n)) + 
-  geom_bar(stat = "identity") +
+  geom_col(position = position_stack(reverse = TRUE), show.legend = FALSE) +
+  geom_text_repel(aes(x = 1, label = homeownership, y = text_y)) +
   coord_polar("y", start = 0) +
   scale_fill_openintro("hot") +
-  theme_void()
+  theme_void() +
+  labs(title = "Homeownership")
+
+p_bar <- loans_full_schema %>%
+  mutate(homeownership = fct_infreq(homeownership)) %>%
+  ggplot(aes(x = homeownership, fill = homeownership)) +
+  geom_bar(show.legend = FALSE) +
+  scale_fill_openintro("hot") +
+  labs(x = "Homeownership", y = "Count")
+
+p_pie + p_bar
+```
+
+Pie charts can work well when the goal is to visualize a categorical variable with very few levels, and especially if each level represents a simple fraction (e.g. one-half, one-quarter, etc.).
+However they can be quite difficult to read when they are used to visualize a categorical variable with many levels.
+For example, the pie chart and the bar plot in Figure \@ref(fig:loan-grade-pie-chart) both represent the distribution of loan grades (A through G).
+In this case, it is far easier to compare the counts of each loan grade using the bar plot than the pie chart.
+
+```{r loan-grade-pie-chart, fig.cap = "A pie chart and bar plot of loan grades."}
+p_pie <- loans_full_schema %>% 
+  count(grade) %>% 
+  mutate(text_y = cumsum(n) - n/2) %>% 
+  ggplot(aes(x = "", fill = grade, y = n)) + 
+  geom_col(position = position_stack(reverse = TRUE), show.legend = FALSE) +
+  geom_text_repel(aes(x = 1.4, label = grade, y = text_y), nudge_x = 0.3, segment.size = 0.5) + 
+  coord_polar(theta = "y") + 
+  scale_fill_openintro("cool") +
+  theme_void() +
+  labs(title = "Loan grade")
+
+p_bar <- loans_full_schema %>%
+  ggplot(aes(x = grade, fill = grade)) +
+  geom_bar(show.legend = FALSE) +
+  scale_fill_openintro("cool") +
+  labs(x = "Loan grade", y = "Count")
+
+p_pie + p_bar
 ```
 
 ## Comparing numerical data across groups
