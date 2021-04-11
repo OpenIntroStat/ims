@@ -32,26 +32,24 @@ ANOVA uses a single hypothesis test to check whether the means across many group
 
 Generally we must check three conditions on the data before performing ANOVA:
 
--   the observations are independent within and across groups,\
--   the data within each group are nearly normal, and\
+-   the observations are independent within and across groups,
+-   the data within each group are nearly normal, and
 -   the variability across the groups is about equal.
 
 When these three conditions are met, we may perform an ANOVA to determine whether the data provide strong evidence against the null hypothesis that all the $\mu_i$ are equal.
 
 ::: {.workedexample}
-College departments commonly run multiple lectures of the same introductory course each semester because of high demand.
-Consider a statistics department that runs three lectures of an introductory statistics course.
-We might like to determine whether there are statistically significant differences in first exam scores in these three classes $(A,$ $B,$ and $C).$ Describe appropriate hypotheses to determine whether there are any differences between the three classes.
+College departments commonly run multiple sections of the same introductory course each semester because of high demand.
+Consider a statistics department that runs three sections of an introductory statistics course.
+We might like to determine whether there are statistically significant differences in first exam scores in these three classes (Section A, Section B, and Section C).
+Describe appropriate hypotheses to determine whether there are any differences between the three classes.
 
 ------------------------------------------------------------------------
 
-The hypotheses may be written in the following form:\
-- $H_0:$ The average score is identical in all lectures.
-Any observed difference is due to chance.\
-The notation used is: $\mu_A=\mu_B=\mu_C.$\
-- $H_A:$ The average score varies by clas
-s. We would reject the null hypothesis in favor of the alternative hypothesis if there were larger differences among the class averages than what we might expect from chance alon
-e.
+The hypotheses may be written in the following form:
+
+-   $H_0:$ The average score is identical in all sections, $\mu_A = \mu_B = \mu_C$. Any observed difference is due to chance.
+-   $H_A:$ The average score varies by class. We would reject the null hypothesis in favor of the alternative hypothesis if there were larger differences among the class averages than what we might expect from chance alone.
 :::
 
 Strong evidence favoring the alternative hypothesis in ANOVA is described by unusually large differences among the group means.
@@ -87,11 +85,27 @@ toy_anova %>%
 
 We would like to discern whether there are real differences between the batting performance of baseball players according to their position: outfielder (OF), infielder (IF), and catcher (C).
 We will use a data set called `mlb_players_18`, which includes batting records of 429 Major League Baseball (MLB) players from the 2018 season who had at least 100 at bats.
-Six of the 429 cases represented in `mlb_players_18` are shown in Figure \@ref(tab:mlbBat18DataMatrix), and descriptions for each variable are provided in Figure \@ref(tab:mlbBat18Variables).
+Six of the 429 cases represented in `mlb_players_18` are shown in Figure \@ref(tab:mlbBat18DataFrame), and descriptions for each variable are provided in Figure \@ref(tab:mlbBat18Variables).
 The measure we will use for the player batting performance (the outcome variable) is on-base percentage (`OBP`).
 The on-base percentage roughly represents the fraction of the time a player successfully gets on base or hits a home run.
 
-```{r mlbBat18DataMatrix}
+```{r mlb_players_18-data-prep}
+mlb_players_18 <- mlb_players_18 %>%
+  filter(
+    AB >= 100, 
+    !position %in% c("P", "DH")
+  ) %>%
+  mutate(
+    position = case_when(
+      position %in% c("LF", "CF", "RF")       ~ "OF",
+      position %in% c("1B", "2B", "3B", "SS") ~ "IF",
+      TRUE                                    ~ position
+    ),
+    position = fct_relevel(position, "OF", "IF", "C")
+  )
+```
+
+```{r mlbBat18DataFrame}
 mlb_players_18 %>%
   arrange(name) %>% 
   select(name, team, position, AB, H, HR, RBI, AVG, OBP) %>%
@@ -142,34 +156,21 @@ A side-by-side box plot for the on-base percentage is shown in Figure \@ref(fig:
 Notice that the variability appears to be approximately constant across groups; nearly constant variance across groups is an important assumption that must be satisfied before we consider the ANOVA approach.
 
 ```{r mlbHRPerABSummaryTable}
-temptbl <- tribble(
- ~variable,    ~col1, ~col2, ~col3,
-"Sample size $(n_i)$", 160 , 205 , 64,
-"Sample mean $(\\bar{x}_i)$" , 0.320 , 0.318 , 0.302,
-"Sample SD $(s_i)$" , 0.043 , 0.038 , 0.038
-)
-
-temptbl %>%
- kable(caption = "Summary statistics of on-base percentage, split by player position.",
-    col.names = c( "", "OF", "IF", "C")) %>%
- kable_styling() 
+mlb_players_18 %>% 
+  group_by(position) %>% 
+  summarise(
+    n    = n(),
+    mean = round(mean(OBP), 3),
+    sd   = round(sd(OBP), 3)
+    ) %>%
+  kable(
+    caption = "Summary statistics of on-base percentage, split by player position.",
+    col.names = c("Position", "$n$", "$\\bar{x}$", "$s$")
+  ) %>%
+  kable_styling()
 ```
 
 ```{r mlbANOVABoxPlot, fig.cap="Side-by-side box plot of the on-base percentage for 429 players across three groups. There is one prominent outlier visible in the infield group, but with 154 observations in the infield group, this outlier is not extreme enough to have an impact on the calculations, so it is not a concern for moving forward with the analysis."}
-mlb_players_18 <- mlb_players_18 %>%
-  filter(
-    AB >= 100, 
-    !position %in% c("P", "DH")
-  ) %>%
-  mutate(
-    position = case_when(
-      position %in% c("LF", "CF", "RF")       ~ "OF",
-      position %in% c("1B", "2B", "3B", "SS") ~ "IF",
-      TRUE                                    ~ position
-    ),
-    position = fct_relevel(position, "OF", "IF", "C")
-  )
-
 ggplot(mlb_players_18, aes(x = position, y = OBP)) +
   geom_boxplot() +
   scale_y_continuous(breaks = seq(0.15, 0.45, 0.05)) +
@@ -274,27 +275,36 @@ Again, we'd like to investigate whether or not the difficult of the exams is the
 -   $H_A:$ not $H_0.$ At least one of the exams is inherently more (or less) difficult than the others.
 
 ```{r summaryStatsForThreeVersionsOfExams}
-temptbl <- tribble(
- ~variable, ~col0,    ~col1, ~col2, ~col3, ~col4,
- "A", 58, 75.1, 13.9, 44, 100,
- "B", 55, 72.0, 13.8, 38, 100,
- "C", 51, 78.9, 13.1, 45, 100
-)
+classdata <- classdata %>%
+  mutate(exam = str_to_upper(lecture))
 
-temptbl %>%
- kable(caption = "Summary statistics of scores for each exam version.",
-    col.names = c("", "$n$", "$\\bar{x}$", "s", "minimum", "maximum")) %>%
- kable_styling() 
+classdata %>% 
+  group_by(exam) %>% 
+  summarise(
+    n    = n(),
+    mean = round(mean(m1), 1),
+    sd   = round(sd(m1), 1),
+    min  = min(m1),
+    max  = max(m1)
+    ) %>%
+  kable(
+    caption = "Summary statistics of scores for each exam version.",
+    col.names = c("Exam", "$n$", "$\\bar{x}$", "$s$", "minimum", "maximum")
+  ) %>%
+  kable_styling()
 ```
 
-```{r boxplotThreeVersionsOfExams, fig.cap="Exam scores for students given one of three different exams.", warning=FALSE, fig.width=10}
-
+```{r boxplotThreeVersionsOfExams, fig.cap = "Exam scores for students given one of three different exams."}
 classdata %>%
-  mutate(exam = lecture) %>%
   ggplot(aes(x = exam, y = m1, color = exam)) +
-  geom_boxplot() +
-  geom_point() +
-  ggtitle("Boxplot of exam score broken down by version of exam.")
+  geom_boxplot(show.legend = FALSE) +
+  geom_point(show.legend = FALSE) +
+  scale_color_manual(values = c(IMSCOL["red", "full"], IMSCOL["green", "full"], IMSCOL["blue", "full"])) +
+  labs(
+    x = "Exam",
+    y = "Score",
+    title = "Boxplot of exam score broken down by version of exam."
+    )
 ```
 
 Figure \@ref(fig:randANOVA) shows the process of randomizing the three different exams to the observed exam scores.
@@ -318,35 +328,32 @@ We see that, just by chance, the F statistic can be as large as 7.
 ```{r rand3exams, fig.cap = "Histogram of F statistics calculated from 1000 different randomizations of the exam type.", warning = FALSE, fig.width = 10}
 set.seed(47)
 classdata %>% 
-  specify(m1 ~ lecture) %>%
+  specify(m1 ~ exam) %>%
   hypothesize(null = "independence") %>%
   generate(reps = 1000, type = "permute") %>%
   calculate(stat = "F") %>%
   visualize() +
-  ggtitle("") +
-  xlab("F statistic across 1000 randomizations of the exams.")
+  labs(y = "Count", title = NULL, x = "F statistic across 1000 randomizations of the exams.")
 ```
 
 ### Observed statistic vs. null statistic
 
 ```{r rand3examspval, fig.cap = "Histogram of F statistics calculated from 1000 different randomizations of the exam type. The observed F statistic is given as a red vertical line 3.48.  The area to the right is more extreme than the observed value and represents the p-value.", warning = FALSE, fig.width = 10}
 class_Fstat <- classdata %>% 
-  specify(m1 ~ lecture) %>%
+  specify(m1 ~ exam) %>%
   calculate(stat = "F") %>%
   pull()
 
 set.seed(47)
 classdata %>% 
-  specify(m1 ~ lecture) %>%
+  specify(m1 ~ exam) %>%
   hypothesize(null = "independence") %>%
   generate(reps = 1000, type = "permute") %>%
   calculate(stat = "F") %>% # get_p_value(obs_stat = class_Fstat, direction = "greater")
   visualize() +
   shade_p_value(obs_stat = class_Fstat, direction = "greater", 
                 fill = "#F0513318", color = "#F05133") +
-  ggtitle("") +
-  ylab("") +
-  xlab("F statistics across 1000 randomizations of the exams.")
+  labs(y = "Count", title = NULL, x = "F statistic across 1000 randomizations of the exams.")
 ```
 
 Using statistical software, we can calculate that 3.6% of the randomized F test statistics were at or above the observed test statistic of $F= 3.48.$ That is, the p-value of the test is 0.036.
@@ -355,7 +362,7 @@ We claim that the difficulty level (i.e., the true average score, $\mu)$ is diff
 
 While it is temping to say that exam C is harder than the other two (given the inability to differentiate between exam A and exam B in Section \@ref(rand2mean)), we must be very careful about conclusions made using different techniques on the same data.
 
-When the null hypothesis is true, random variability that exists in nature produces data with p-values less than 0.05.\
+When the null hypothesis is true, random variability that exists in nature produces data with p-values less than 0.05.
 How often does that happen?
 5% of the time.
 That is to say, if you use 20 different models applied to the same data where there is no signal (i.e., the null hypothesis is true), you are reasonably likely to to get a p-value less than 0.05 in one of the tests you run.
@@ -446,6 +453,8 @@ Table \@ref(tab:anovaSummaryTableForOBPAgainstPosition) shows an ANOVA summary t
 Many of these values should look familiar; in particular, the $F$-test statistic and p-value can be retrieved from the last two columns.
 
 ```{r anovaSummaryTableForOBPAgainstPosition}
+mod <- lm(OBP ~ position, data = mlb_players_18)
+
 anova(mod) %>%
   kable(digits = 4, 
         caption = "ANOVA summary for testing whether the average on-base percentage differs across player positions.") %>% 
