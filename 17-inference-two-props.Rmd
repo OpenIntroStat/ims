@@ -398,7 +398,7 @@ The choice of 95% or 90% or even 99% as a confidence level is admittedly somewha
 Indeed, one can show mathematically, that a 95% confidence interval and a two-sided hypothesis test at a cutoff of 0.05 will provide the same conclusion when the same data and mathematical tools are applied for the analysis.
 A full derivation of the explicit connection between confidence intervals and hypothesis tests is beyond the scope of this text.
 
-## Mathematical model {#math-2prop}
+## Mathematical model for $p_1 - p_2$ {#math-2prop}
 
 ### Variability of $\hat{p}_1 - \hat{p}_2$
 
@@ -520,7 +520,7 @@ fish_oil_18[[3]] %>%
   kable_styling()
 ```
 
-### Hypothesis test for $H_0: p_1 - p_2 = 0$
+### Hypothesis test for the difference between two proportions
 
 The details for calculating a SE and for checking technical conditions are very similar to that of confidence intervals.
 However, when the null hypothesis is that $p_1 - p_2 = 0,$ we use a special proportion called the **pooled proportion**\index{pooled proportion} to estimate the SE and to check the success-failure condition.
@@ -530,10 +530,10 @@ However, when the null hypothesis is that $p_1 - p_2 = 0,$ we use a special prop
 
 When the null hypothesis is that the proportions are equal, use the pooled proportion $(\hat{p}_{\textit{pool}})$ of successes to verify the success-failure condition and estimate the standard error:
 
-$$ \hat{p}_{\textit{pool}}
-    = \frac{\mbox{number of } ``\mbox{successes}"}
-      {\mbox{number of cases}}
-    = \frac{\hat{p}_1 n_1 + \hat{p}_2 n_2}{n_1 + n_2}$$
+$$ 
+\hat{p}_{\textit{pool}} = \frac{\text{number of successes}}{\text{number of cases}}
+= \frac{\hat{p}_1 n_1 + \hat{p}_2 n_2}{n_1 + n_2}
+$$
 
 Here $\hat{p}_1 n_1$ represents the number of successes in sample 1 because $$ \hat{p}_1
  = \frac{\text{number of successes in sample 1}}{n_1} $$
@@ -546,23 +546,23 @@ Similarly, $\hat{p}_2 n_2$ represents the number of successes in sample 2.
 
 The Z score is a ratio of how the two sample proportions differs as compared to the expected variability of the two $\hat{p}$ values.
 
-$$ Z = \frac{\hat{p}_1 - \hat{p}_2}{\sqrt{\hat{p}_{pool}(1-\hat{p}_{pool}) \bigg(\frac{1}{n_1} + \frac{1}{n_2} \bigg)}} $$
+$$ 
+Z = \frac{\hat{p}_1 - \hat{p}_2}{\sqrt{\hat{p}_{pool}(1-\hat{p}_{pool}) \bigg(\frac{1}{n_1} + \frac{1}{n_2} \bigg)}} 
+$$
 
 When the null hypothesis is true and the conditions are met, Z has a standard normal distribution.
 See the box below for calculation of the pooled proportion of successes.
 
 Conditions:
 
--   independently observed data\
--   large samples: $(n_1 p_1 \geq 10$ and $n_1 (1-p_1) \geq 10$ and $n_2 p_2 \geq 10$ and $n_2 (1-p_2) \geq 10)$\
--   check conditions using: $(n_1 \hat{p}_{\textit{pool}} \geq 10$ and $n_1 (1-\hat{p}_{\textit{pool}}) \geq 10$ and $n_2 \hat{p}_{\textit{pool}}\geq 10$ and $n_2 (1-\hat{p}_{\textit{pool}}) \geq 10)$
+-   Independently observed data
+-   Large samples: $(n_1 p_1 \geq 10$ and $n_1 (1-p_1) \geq 10$ and $n_2 p_2 \geq 10$ and $n_2 (1-p_2) \geq 10)$
+-   Check conditions using: $(n_1 \hat{p}_{\textit{pool}} \geq 10$ and $n_1 (1-\hat{p}_{\textit{pool}}) \geq 10$ and $n_2 \hat{p}_{\textit{pool}}\geq 10$ and $n_2 (1-\hat{p}_{\textit{pool}}) \geq 10)$
 :::
 
 ```{r include=FALSE}
 terms_chp_17 <- c(terms_chp_17, "Z score two proportions")
 ```
-
-\index{data!mammography|(} \index{data!breast cancer|(}
 
 A mammogram is an X-ray procedure used to check for breast cancer.
 Whether mammograms should be used is part of a controversial discussion, and it's the topic of our next example where we learn about 2-proportion hypothesis tests when $H_0$ is $p_1 - p_2 = 0$ (or equivalently, $p_1 = p_2).$
@@ -572,21 +572,25 @@ During a 5-year screening period, each woman was randomized to one of two groups
 No intervention was made during the following 25 years of the study, and we'll consider death resulting from breast cancer over the full 30-year period.
 Results from the study are summarized in Figure \@ref(tab:mammogramStudySummaryTable).
 
+::: {.data}
+These data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`mammogram`](http://openintrostat.github.io/openintro/reference/mammogram.html).
+:::
+
 If mammograms are much more effective than non-mammogram breast cancer exams, then we would expect to see additional deaths from breast cancer in the control group.
 On the other hand, if mammograms are not as effective as regular breast cancer exams, we would expect to see an increase in breast cancer deaths in the mammogram group.
 
 ```{r mammogramStudySummaryTable}
-temptbl <- tribble(
- ~variable,    ~col1, ~col2,
- "Mammogram", "500", "44,425",
- "Control", "505", "44,405"
-)
-
-temptbl %>%
- kable(caption = "Summary results for breast cancer study.", 
-    col.names = c( "", "Yes", "No")) %>%
- add_header_above( c("", "Death from breast cancer?" = 2)) %>%
- kable_styling()
+mammogram %>%
+  mutate(breast_cancer_death = fct_rev(breast_cancer_death)) %>%
+  count(treatment, breast_cancer_death) %>%
+  pivot_wider(names_from = breast_cancer_death, values_from = n) %>%
+  kable(
+    caption = "Summary results for breast cancer study.",
+    col.names = c("Treatment", "Yes", "No"),
+    format.args = list(big.mark = ",")
+  ) %>%
+  add_header_above( c("", "Death from breast cancer?" = 2)) %>%
+  kable_styling()
 ```
 
 ::: {.guidedpractice}
