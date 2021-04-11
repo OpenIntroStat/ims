@@ -190,45 +190,6 @@ Repetition will produce $k$ bootstrapped differences in means, and the histogram
 terms_chp_20 <- c(terms_chp_20, "difference in means")
 ```
 
-```{r echo = FALSE, eval = FALSE}
-
-aa_cars <- data.frame(price = c(18300, 20100, 9600, 10700, 27000))
-aa_cars2 <- data.frame(price = c(18200, 9100, 12900, 54000, 13500))
-
-set.seed(47)
-bscars <- aa_cars %>%
-  rep_sample_n(size = 5, reps = 1000, replace = TRUE) 
-bscars2 <- aa_cars2 %>%
-  rep_sample_n(size = 5, reps = 1000, replace = TRUE) 
-
-
-bscars_mean <- bscars %>%
-  group_by(replicate) %>% 
-  summarize(car_bsmean = mean(price)) %>%
-  pull()
-
-bscars_mean2 <- bscars2 %>%
-  group_by(replicate) %>% 
-  summarize(car_bsmean = mean(price)) %>%
-  pull()
-
-bscars_diff <- bscars_mean - bscars_mean2
-
-#sd(bscars_mean)
-
-bsq1 <- quantile(bscars_diff, probs = c(0.005, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.995))
-
-umeans <- sort(unique(bscars_diff))
-bin.width <- (umeans[length(umeans)] - umeans[1])/15
-#breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
-breaks <- seq(umeans[1] - 1, umeans[length(umeans)] + bin.width, by = bin.width)
-
-
-histPlot(bscars_diff, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
-     xlab = "", ylab="")
-axis(1)
-```
-
 ```{r bootmeans2means, fig.cap = "For the two group comparison, the bootstrap resampling is done separately on each group, but the statistic is calculated as a difference.  The set of k differences is then analyzed as the statistic of interest with conclusions drawn on the parameter of interest.", warning = FALSE,  out.width="75%"}
 include_graphics("images/bootmeans2means.png")
 ```
@@ -238,7 +199,7 @@ include_graphics("images/bootmeans2means.png")
 Does treatment using embryonic stem cells (ESCs) help improve heart function following a heart attack?
 Table \@ref(tab:statsSheepEscStudy) contains summary statistics for an experiment to test ESCs in sheep that had a heart attack.
 Each of these sheep was randomly assigned to the ESC or control group, and the change in their hearts' pumping capacity was measured in the study.
-Figure \@ref(fig:stemCellTherapyForHearts) provides histograms of the two data sets.
+Figure \@ref(fig:stem-cell-histograms) provides histograms of the two data sets.
 A positive value corresponds to increased pumping capacity, which generally suggests a stronger recovery.
 Our goal will be to identify a 95% confidence interval for the effect of ESCs on the change in heart pumping capacity relative to the control group.
 
@@ -354,7 +315,7 @@ Set up appropriate hypotheses to evaluate whether there is a relationship betwee
 
 The null hypothesis represents the case of no difference between the groups.
 
--   $H_0:$ There is no difference in average birth weight for newborns from mothers who did and did not smoke. In statistical notation: $\mu_{n} - \mu_{s} = 0,$ where $\mu_{n}$ represents non-smoking mothers and $\mu_s$ represents mothers who smoked.\
+-   $H_0:$ There is no difference in average birth weight for newborns from mothers who did and did not smoke. In statistical notation: $\mu_{n} - \mu_{s} = 0,$ where $\mu_{n}$ represents non-smoking mothers and $\mu_s$ represents mothers who smoked.
 -   $H_A:$ There is some difference in average newborn weights from mothers who did and did not smoke $(\mu_{n} - \mu_{s} \neq 0).$
 :::
 
@@ -362,7 +323,7 @@ The null hypothesis represents the case of no difference between the groups.
 
 We check the two conditions necessary to model the difference in sample means using the $t$-distribution.
 
--   Because the data come from a simple random sample, the observations are independent, both within and between samples.\
+-   Because the data come from a simple random sample, the observations are independent, both within and between samples.
 -   With both data sets over 30 observations, we inspect the data in Figure \@ref(fig:babySmokePlotOfTwoGroupsToExamineSkew) for any particularly extreme outliers and find none.
 
 Since both conditions are satisfied, the difference in sample means may be modeled using a $t$-distribution.
@@ -501,11 +462,11 @@ terms_chp_20 <- c(terms_chp_20, "t-CI")
 \index{point estimate!difference of means|)}
 
 ::: {.important}
-**Using the** $t$-distribution for a difference in means.
+**Using the** $t$**-distribution for a difference in means.**
 
 The $t$-distribution can be used for inference when working with the standardized difference of two means if
 
--   *Independence* (extended). The data are independent within and between the two groups, e.g., the data come from independent random samples or from a randomized experiment.\
+-   *Independence* (extended). The data are independent within and between the two groups, e.g., the data come from independent random samples or from a randomized experiment.
 -   *Normality*. We check the outliers for each group separately.
 
 The standard error may be computed as
@@ -531,50 +492,31 @@ Can the $t$-distribution be used to make inference using the point estimate, $\b
 First, we check for independence.
 Because the sheep were randomized into the groups, independence within and between groups is satisfied.
 
-Figure \@ref(fig:stemCellTherapyForHearts) does not reveal any clear outliers in either group.
+Figure \@ref(fig:stem-cell-histograms) does not reveal any clear outliers in either group.
 (The ESC group does look a bit more variability, but this is not the same as having clear outliers.)
 
 With both conditions met, we can use the $t$-distribution to model the difference of sample means.
 :::
 
-```{r stemCellTherapyForHearts, fig.cap="Histograms for both the embryonic stem cell and control group.", warning=FALSE, fig.width=10}
+```{r stem-cell-data-prep}
+stem_cell <- stem_cell %>%
+  mutate(change = after - before)
+```
 
-data(stem_cell)
-d <- stem_cell
-
-change <- d$after - d$before
-#t.test(change ~ trmt, data = d)
-histPlot(change[d[,1] == 'esc'],
-         xlim=c(-10, 15),
-         axes=FALSE,
-         xlab='',
-         main='',
-         breaks=seq(-10, 15, 2.5),
-         col=COL[1])
-x.axis.at <- seq(-10, 15, 5)
-x.axis.labels <- paste0(seq(-10, 15, 5), "%")
-cex.axis <- 0.85
-axis(1, x.axis.at, x.axis.labels, cex.axis=cex.axis)
-mtext('Embryonic stem cell transplant', line=0.5, cex=1.1)
-mtext('Change in heart pumping function', 1, line=1.3, cex = 0.9)
-par(mgp=c(2, 0.6, 0))
-axis(2, at=0:3, cex.axis=0.925)
-
-par(mar=c(2.4, 1.8, 2, 0.7),
-    mgp=c(2, 0.3, 0))
-histPlot(change[d[,1] == 'ctrl'],
-         xlim=c(-10, 15),
-         axes=FALSE,
-         xlab='',
-         main='',
-         breaks=seq(-10, 15, 2.5),
-         col=COL[1])
-axis(1, x.axis.at, x.axis.labels, cex.axis=cex.axis)
-par(mgp=c(2, 0.6, 0))
-axis(2, at=0:3, cex.axis=0.925)
-mtext('Control (no treatment)', line=0.5, cex=1.1)
-mtext('Change in heart pumping function', 1, line=1.3, cex = 0.9)
-
+```{r stem-cell-histograms, fig.cap = "Histograms for both the treatment group (which received an the embryonic stem cell treatment) and the control group (which did not receive that treatment)."}
+stem_cell %>%
+  mutate(
+    trmt = if_else(trmt == "ctrl", "Control", "Treatment"),
+    trmt = fct_rev(trmt)
+    ) %>%
+  ggplot(aes(x = change)) +
+  geom_histogram(binwidth = 2.5) +
+  facet_wrap(~trmt, ncol = 1) +
+  scale_x_continuous(labels = label_percent(scale = 1, accuracy = 1), breaks = seq(-10, 15, 5)) +
+  labs(
+    x = "Change in heart pumping function",
+    y = "Count"
+  )
 ```
 
 Generally, we use statistical software to find the appropriate degrees of freedom, or if software isn't available, we can use the smaller of $n_1 - 1$ and $n_2 - 1$ for the degrees of freedom, e.g., if using a $t$-table to find tail areas.
