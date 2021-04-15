@@ -1,0 +1,319 @@
+# Effective communication of exploratory results {#explore-effective}
+
+::: {.chapterintro}
+Graphs can powerfully communicate ideas directly and quickly.
+We all know, after all, that "a picture is worth 1000 words." Unfortunately, however, there are times when an image conveys a message which is inaccurate or misleading.
+
+This chapter focuses on how graphs can best be utilized to present data accurately and effectively.
+Along with data modeling, creative visualization is somewhat of an art.
+However, even with an art, there are recommended guiding principles.
+We provide a few best practices for creating data visualizations.
+:::
+
+## Keep it simple
+
+When creating a graphic, keep in mind what it is that you'd like your reader to see.
+Colors should be used to group items or differentiate levels in meaningful ways.
+Colors can be distracting when they are only used to brighten up the plot.
+
+Consider a manufacturing company who has summarized their costs into five different categories.
+In the two graphics provided in Figure \@ref(fig:pie-to-bar), notice that the magnitudes in the pie chart are difficult for the eye to compare.
+That is, can your eye tell how much smaller "Cutting tools" are from "Machinery" when looking at the slices of pie?
+Additionally, the colors in the pie chart do not mean anything and are therefore distracting.
+Last, the three-dimensional aspect of the image does not improve the reader's ability to understand the data presented.
+
+As an alternative, a bar plot has been provided.
+Notice how much easier it is to identify the magnitude of the differences across categories while not being distracted by other aspects of the image.
+Typically, a bar plot will be easier for the reader to digest than a pie chart.
+
+```{r}
+expenses <- tribble(
+  ~category,                     ~value,
+  "Cutting tools"                , 0.03,
+  "Buildings and administration" , 0.22,
+  "Labor"                        , 0.31,
+  "Machinery"                    , 0.27,
+  "Workplace materials"          , 0.17
+) %>%
+  mutate(value =  value * 100) %>%
+  uncount(weights = value)
+```
+
+```{r pie-to-bar, out.width="30%", fig.show = 'hold', fig.ncol = 2, fig.cap = "A pie chart (with added irrelevant features) as compared to a simple bar plot."}
+knitr::include_graphics("images/pie-3d.jpg")
+ggplot(expenses, aes(x = fct_infreq(category))) +
+  geom_bar() +
+  theme_minimal() +
+  coord_flip() +
+  labs(x = "", y = "")
+```
+
+```{r include=FALSE}
+terms_chp_6 <- c("bar plot", "pie chart")
+```
+
+### Use color to draw attention
+
+Another important principle, mentioned above, is to avoid adding color just to add color, instead use it to draw attention.
+Of course, you should still think about how visually pleasing your visualization is, and if you're adding color for making it visually pleasing without drawing attention to a particular feature, that might be fine.
+But you should be critical of default coloring and explicitly decide whether to include color and how.
+Notice that in Figure \@ref(fig:red-bar) the coloring is done in such a way to draw the reader's attention to one particular piece of information.
+The default coloring is distracting and makes the reader question, for example, is there something similar about the red and purple bars?
+Also note that not everyone sees color the same way, often it's useful to add color and one more feature (e.g., pattern) so that you can refer to the features you're drawing attention to in multiple ways.
+
+```{r red-bar, fig.width = 5, fig.asp=0.8, fig.cap = "The default coloring in the first bar plot does nothing for the udnerstanding of the data.  In the second plot, the color draws attention directly to the bar on Buildings and Administration."}
+p_bad <- ggplot(expenses, aes(y = fct_infreq(category), fill = category)) +
+  geom_bar(show.legend = FALSE) +
+  scale_color_openintro("five") +
+  labs(x = NULL, y = NULL)
+
+p_good <- ggplot(expenses, aes(y = fct_infreq(category), fill = category)) +
+  geom_bar(show.legend = FALSE) +
+  scale_fill_manual(values = c(IMSCOL["red", "full"], rep(IMSCOL["lgray", "full"], 4))) +
+  labs(x = NULL, y = NULL)
+
+
+p_bad / p_good
+```
+
+```{r include=FALSE}
+terms_chp_6 <- c(terms_chp_6, "color in graphs")
+```
+
+### Tell a story
+
+For many graphs, an important aspect is the inclusion of information which is not provided in the data table.
+The external information serves to contextualize the data and helps communicate the narrative of the research.
+In Figure \@ref(fig:duke-hires), the graph on the right includes information about the start of Duke's fiscal year which contextualizes the information provided by the data.
+Sometimes the additional information may be a diagonal line given by $y=x$, points above the line quickly show the reader which values have a $y$ coordinate larger than the $x$ coordinate; points below the line show the opposite.
+
+```{r duke-hires, fig.cap = "Credit: Angela Zoss and Eric Monson, Duke Data Visualization Services", out.width="100%"}
+knitr::include_graphics("images/time-series.story.png")
+```
+
+### Order matters
+
+Most software programs have built in methods for some of the plot details.\
+For example, the default option for the software program used in this text, R, is to order the bars in a bar plot alphabetically.
+As seen in Figure \@ref(fig:brexit-bars), the alphabetical ordering isn't particularly meaningful for describing the data.
+Sometimes it makes sense to order the bars from tallest to shortest (or vice versa).
+But in this case, the best ordering is probably the one in which the questions were asked.
+An ordering which doesn't make sense in the context of the problem (e.g., alphabetically here), can mislead the reader who might take a quick glance at the axes and not read the bar labels carefully.
+
+```{r include=FALSE}
+terms_chp_6 <- c(terms_chp_6, "order in graphics")
+```
+
+In September 2019, YouGov survey asked 1,639 Great Britain adults the following question[^explore-effective-1]:
+
+[^explore-effective-1]: Source: [YouGov Survey Results](https://d25d2506sfb94s.cloudfront.net/cumulus_uploads/document/x0msmggx08/YouGov%20-%20Brexit%20and%202019%20election.pdf), retrieved Oct 7, 2019.
+
+> How well or badly do you think the government are doing at handling Britain's exit from the European Union?
+>
+> -   Very well\
+> -   Fairly well\
+> -   Fairly badly\
+> -   Very badly\
+> -   Don't know
+
+```{r}
+brexit <- tibble(
+  opinion = c(
+    rep("Very well", 123), rep("Fairly well", 219), rep("Fairly badly", 332),
+    rep("Very badly", 818), rep("Don't know", 151)
+    ),
+  region = c(
+    rep("london", 10), rep("rest_of_south", 49), rep("midlands_wales", 32), rep("north", 24), rep("scot", 8),
+    rep("london", 18), rep("rest_of_south", 93), rep("midlands_wales", 50), rep("north", 48), rep("scot", 10),
+    rep("london", 33), rep("rest_of_south", 126), rep("midlands_wales", 74), rep("north", 76), rep("scot", 23),
+    rep("london", 118), rep("rest_of_south", 246), rep("midlands_wales", 152), rep("north", 212), rep("scot", 90),
+    rep("london", 16), rep("rest_of_south", 38), rep("midlands_wales", 46), rep("north", 40), rep("scot", 11)
+    )
+)
+```
+
+```{r brexit-bars, out.width="30%", fig.show = 'hold', fig.ncol = 3, fig.cap = "Bar plot three different ways.  The first graph is the default (with bars alphabetically ordered); the middle graph sorts the bars in descending order; the last graph orders the bars in the same order the original question was asked."}
+p_bad <- ggplot(data = brexit, aes(x = opinion)) +
+  geom_bar() + 
+  labs(x = "Opinion", y = "Count")
+
+p_desc <- ggplot(data = brexit, aes(x = fct_infreq(opinion))) +
+  geom_bar() + 
+  labs(x = "Opinion", y = "Count")
+
+p_ordered <- ggplot(data = brexit, 
+                    aes(x = fct_relevel(opinion, c("Very well", "Fairly well", "Fairly badly", "Very badly", "Don't know")))) +
+  geom_bar() + 
+    labs(x = "Opinion", y = "Count")
+
+p_bad  
+p_desc
+p_ordered
+```
+
+```{r eval = FALSE, include = FALSE, echo = FALSE}
+#There may also be inherent ordering to levels of your categorical variables.
+#If so, the visualization should respect that.
+brexit <- brexit %>%
+  mutate(
+    region = fct_relevel(
+      region,
+      "london", "rest_of_south", "midlands_wales", "north", "scot"
+    ),
+    region = fct_recode(
+      region,
+      London = "london", 
+      `Rest of South` = "rest_of_south", 
+      `Midlands / Wales` = "midlands_wales", 
+      North = "north", 
+      Scotland = "scot"
+    )
+  )
+
+ggplot(data = brexit, aes(x = region)) +
+  geom_bar()
+```
+
+### Make the labels as easy to read as possible
+
+The Brexit survey results were additionally broken down by region in Great Britain.
+The segmented bar plot allows for comparison of Brexit opinion across the five regions.
+In Figure \@ref(fig:Brex-region) the bars are vertical in the left graphic and horizontal in the right graphic.
+While the quantitative information in the two graphics is identical, rotating the graph and creating horizontal bars provides the long categories with more space to be written.
+The easier the categories are to see, the more the reader will learn from the visualization.
+Remember, the goal is to convey as much information as possible in a succinct and clear manner.
+
+```{r Brex-region,  out.width="45%", fig.show = 'hold', fig.ncol = 2, fig.cap = "Segmented bar plots vertically and horizontally.  The horizontal orientation makes the region labels easier to read."}
+brexit <- brexit %>%
+  mutate(
+    region = fct_relevel(
+      region,
+      "london", "rest_of_south", "midlands_wales", "north", "scot"
+    ),
+    region = fct_recode(
+      region,
+      London = "london", 
+      `Rest of South` = "rest_of_south", 
+      `Midlands / Wales` = "midlands_wales", 
+      North = "north", 
+      Scotland = "scot"
+    )
+  ) %>%
+  mutate(Opinion = fct_relevel(opinion, c("Very well", "Fairly well", "Fairly badly", "Very badly", "Don't know")))
+
+p_bad <- ggplot(data = brexit, aes(x = region, fill = Opinion)) +
+  geom_bar() +
+  scale_fill_openintro("five")
+
+p_good <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
+  geom_bar() +
+  labs(x = "Region", y = NULL) +
+  scale_fill_openintro("five")
+
+p_bad
+p_good
+```
+
+```{r include=FALSE}
+terms_chp_6 <- c(terms_chp_6, "labels on graphics")
+```
+
+### Pick a purpose
+
+Every graphical decision should be made with a purpose.
+As previously mentioned, sticking with default options is not always best for conveying the narrative of your data story.
+Segmented bar plots tell one part of a story.
+Depending on your research question, they may not tell the part of the story most important to the research.
+Figure \@ref(fig:seg-three-ways) provides three different ways of representing the same information.
+If the most important comparison across regions is proportion, you might prefer the left image.
+If the most important comparison across regions also considers the total number of individuals in the region, you might prefer the right image.
+If a separate bar plot for each region makes the point you'd like, use the bottom image which has been **faceted** by region.
+
+```{r include=FALSE}
+terms_chp_6 <- c(terms_chp_6, "faceting graphics")
+```
+
+The bottom figure in Figure \@ref(fig:seg-three-ways) also provides full titles and a succinct URL with the data source.
+Other deliberate decisions to consider include using informative labels and avoiding redundancy.
+
+```{r seg-three-ways,fig.cap = "Three different representations of the two variables including survey opinion and region.  Use the graphic that best conveys the data narrative at hand."}
+p_bad <- ggplot(data = brexit, aes(y = region,  fill = Opinion)) +
+  geom_bar(position = "fill") +
+  labs(x = "Percent", y = NULL)
+
+p_bad2 <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
+  geom_bar() + 
+  labs(x = "Count", y = NULL)
+
+p_good <- ggplot(data = brexit, aes(y = Opinion)) +
+  geom_bar() +
+  facet_grid(. ~ region, labeller = label_wrap_gen(width = 12)) +
+  scale_x_continuous(breaks = c(0, 100, 200)) +
+  labs(
+    title = "How well or badly do you think the government are doing \nat handling Britain's exit from the European Union?",
+    subtitle = "YouGov Survey Results, 2-3 September 2019",
+    caption = "Source: bit.ly/2lCJZVg", 
+    x = NULL, y = NULL
+  )
+
+(p_bad + p_bad2) / p_good
+```
+
+### Select meaningful colors
+
+<!-- An example with an ordinal variable with more levels would be better. -->
+
+One last consideration for building graphs is to consider color choices.
+Default or rainbow colors are not always the choice which will best distinguish the level of your variables.
+Much research has been done to find color combinations which are distinct and also which are clear for differently sighted individuals.
+The Viridis scale[^explore-effective-2] works well with ordinal data.
+Figure \@ref(fig:Brexit-viridis) shows the same plot with two different colorings; the left is the default rainbow colors, the right are the colors from the viridis scale.
+
+[^explore-effective-2]: originally developed as colormap in the Matplotlib library of Python <https://bids.github.io/colormap>
+
+```{r Brexit-viridis, out.width="45%", fig.show = 'hold', fig.ncol = 2, fig.cap = "Identical bar plots with two different coloring options.  The left uses default rainbow colors; the right uses viridis colors."}
+p <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
+  geom_bar(position = "fill") +
+  labs(
+    title = "How well or badly do you think the government are doing \nat handling Britain's exit from the European Union?",
+    subtitle = "YouGov Survey Results, 2-3 September 2019",
+    caption = "Source: bit.ly/2lCJZVg",
+    x = NULL, y = NULL, fill = NULL
+  ) 
+
+p_bad <- p +
+  scale_fill_openintro("five")
+
+p_good <- p +
+  scale_fill_viridis_d()
+
+p_bad 
+p_good
+```
+
+## Chapter review {#chp6-review}
+
+### Summary
+
+In this chapter different representations are contrasted to demonstrate best practices in creating graphs.
+The fundamental principle is that your graph should provide maximal information succinctly and clearly.
+Labels should be clear and oriented horizontally for the reader.
+Don't forget titles and, if possible, include the source of the data.
+
+### Terms
+
+We introduced the following terms in the chapter.
+If you're not sure what some of these terms mean, we recommend you go back in the text and review their definitions.
+We are purposefully presenting them in alphabetical order, instead of in order of appearance, so they will be a little more challenging to locate.
+However you should be able to easily spot them as **bolded text**.
+
+```{r}
+make_terms_table(terms_chp_6)
+```
+
+## Exercises {#chp6-exercises}
+
+::: {.exercises}
+```{r exercises-06, child = "exercises/06-ex-explore-effective.Rmd", eval=FALSE}
+```
+:::

@@ -4,7 +4,7 @@ options(digits = 3)
 
 # packages ---------------------------------------------------------------------
 
-suppressMessages(library(broom))
+suppressMessages(library(tidymodels))
 suppressMessages(library(gghighlight))
 suppressMessages(library(glue))
 suppressMessages(library(ggmosaic))
@@ -21,9 +21,11 @@ suppressMessages(library(quantreg))
 suppressMessages(library(tidyverse))
 suppressMessages(library(scales))
 suppressMessages(library(skimr))
-suppressMessages(library(threed))
-suppressMessages(library(ggthreed))
 suppressMessages(library(caret))
+suppressMessages(library(palmerpenguins))
+suppressMessages(library(survival))
+suppressMessages(library(waffle))
+suppressMessages(library(ggrepel))
 
 # knitr chunk options ----------------------------------------------------------
 
@@ -34,7 +36,7 @@ knitr::opts_chunk$set(
   warning = FALSE,
   #cache = TRUE,
   echo = FALSE, # hide code unless otherwise noted in chunk options
-  out.width = "70%",
+  out.width = "90%",
   fig.align = 'center',
   fig.width = 6,
   fig.asp = 0.618,  # 1 / phi
@@ -53,10 +55,22 @@ options(kableExtra.html.bsTable = TRUE)
 
 options(dplyr.print_min = 6, dplyr.print_max = 6)
 
-# ggplot2 theme ----------------------------------------------------------------
-# to be replaced with theme_openintro...
+# ggplot2 theme and colors -----------------------------------------------------
 
-theme_set(theme_minimal(base_size = 14))
+ggplot2::theme_set(ggplot2::theme_minimal(base_size = 14))
+
+ggplot2::update_geom_defaults("point", list(color = openintro::IMSCOL["blue","full"], 
+                                            fill = openintro::IMSCOL["blue","full"]))
+ggplot2::update_geom_defaults("bar", list(fill = openintro::IMSCOL["blue","full"], 
+                                          color = "#FFFFFF"))
+ggplot2::update_geom_defaults("col", list(fill = openintro::IMSCOL["blue","full"], 
+                                          color = "#FFFFFF"))
+ggplot2::update_geom_defaults("boxplot", list(color = openintro::IMSCOL["blue","full"]))
+ggplot2::update_geom_defaults("density", list(color = openintro::IMSCOL["blue","full"]))
+ggplot2::update_geom_defaults("line", list(color = openintro::IMSCOL["gray", "full"]))
+ggplot2::update_geom_defaults("smooth", list(color = openintro::IMSCOL["gray", "full"]))
+ggplot2::update_geom_defaults("dotplot", list(color = openintro::IMSCOL["blue","full"], 
+                                              fill = openintro::IMSCOL["blue","full"]))
 
 # function to print terms ------------------------------------------------------
 
@@ -68,3 +82,36 @@ make_terms_table <- function(x, n_cols = 4){
   matrix(x_updated, nrow = n_rows) %>%
     kable()
 }
+
+# for foundation chapters ------------------------------------------------------
+
+inference_method_summary_table <- tribble(
+  ~question, 
+    ~randomization, 
+    ~bootstrapping, 
+    ~mathematical,
+  "What does it do?", 
+    "Shuffles the explanatory variable to mimic the natural variability  found in a randomized experiment", 
+    "Resamples (with replacement) from the observed data to mimic the sampling variability found by collecting data from a population", 
+    "Uses theory (primarily the Central Limit Theorem) to describe the hypothetical variability resulting from either repeated randomized experiments or random samples",
+  "What is the random process described?", 
+    "Randomized experiment", 
+    "Random sampling from a population", 
+    "Randomized experiment or random sampling",
+  "What other random processes can be approximated?", 
+    "Can also be used to describe random sampling in an observational model", 
+    "Can also be used to describe random allocation in an experiment", 
+    "Randomized experiment or random sampling",
+  "What is it best for?", 
+    "Hypothesis Testing (can be used for confidence intervals, but not covered in this text).", 
+    "Confidence Intervals (bootstrap hypothesis testing for one proportion covered in Chapter 16).", 
+    "Quick analyses through, for example, calculating a Z score.",
+  "What physical object represents the simulation process?", 
+    "Shuffling cards", 
+    "Pulling marbles from a bag", 
+    "Not applicable",
+  "What are the technical conditions?", 
+    "Independence", 
+    "Independence, large n", 
+    "Independence, large n"
+)
