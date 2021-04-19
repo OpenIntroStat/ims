@@ -207,59 +207,19 @@ When using the mathematical model (see Section \@ref(math-2prop)), the standard 
 include_graphics("images/boot2prop1.png")
 ```
 
-```{r bootCPR1000, fig.cap="A histogram of differences in proportions from 1000 bootstrap simulations of the CPR data.  Note that because the CPR data has a larger sample size than the toy example, the variability of the difference in proportions is much smaller with the CPR histogram.", warning=FALSE, fig.width=10}
-
+```{r bootCPR1000, fig.cap="A histogram of differences in proportions from 1000 bootstrap simulations of the CPR data.  Note that because the CPR data has a larger sample size than the toy example, the variability of the difference in proportions is much smaller with the CPR histogram."}
 set.seed(47)
-exp_gp  <- rep(c("blood_thinner", "control"), c(40, 50))
-outcome <- c(rep(c('survived', 'died'), c(11, 39)),
-             rep(c('survived', 'died'), c(14, 26)))
+cpr_boot_dist <- cpr %>%
+  specify(response = outcome, explanatory = group, success = "survived") %>%
+  generate(reps = 1000, type = "bootstrap") %>%
+  calculate(stat = "diff in props", order = c("treatment", "control"))
 
-nsim    <- 1000
-n       <- length(exp_gp)
-success <- "survived"
-
-SimulateTable <- function(exp_gp, outcome, ...) {
-  bsobs <- sample(1:n, replace = TRUE)
-  table(exp_gp[bsobs], outcome[bsobs])
-}
-
-
-sim_tables <-
-    lapply(1:nsim, SimulateTable,
-        exp_gp = exp_gp,
-        outcome = outcome)
-result <- sim_tables %>%
-    lapply(function(x) {
-    	  x[1, 1] / sum(x[1, ]) - x[2, 1] / sum(x[2, ])
-    	}) %>%
-    	unlist()
-
-values <- table(result)
-diffs <- unique(result)
-
-X <- c()
-Y <- c()
-for (i in 1:length(diffs)) {
-  x   <- diffs[i]
-  rec <- sum(result == x)
-  X   <- append(X, rep(x, rec))
-  Y   <- append(Y, 1:rec)
-}
-
-breaks <- seq(min(result)-.05, max(result)+ .05, by = (max(result) - min(result) )/ 20)
-
-histPlot(X, Y, breaks = breaks,
-     xlim = c(-.3,.3),
-     xlab = "Difference in Survival Rates",
-     ylab = "",
-     axes = FALSE,
-     #ylim = c(0, max(Y)),
-     col = IMSCOL["blue", "full"],
-     pch = 20)
- at <- seq(-0.3, 0.3, 0.1)
- labels <- c(-0.3, "", -0.1, 0, 0.1, "", 0.3)
-axis(1, at, labels)
-abline(h = 0)
+ggplot(cpr_boot_dist, aes(x = stat)) +
+  geom_histogram(binwidth = 0.05) +
+  labs(
+    x = "Difference in bootstrapped survival rates\n(treatment - control)",
+    y = "Count"
+  )
 ```
 
 ### Bootstrap percentile vs. SE confidence intervals
@@ -268,50 +228,56 @@ Figure \@ref(fig:bootCPR1000) provides an estimate for the variability of the di
 
 #### Bootstrap percentile confidence interval {.unnumbered}
 
+```{r}
+cpr_boot_90 <- cpr_boot_dist %>%
+  summarise(
+    lower = round(quantile(stat, 0.05), 3),
+    upper = round(quantile(stat, 0.95), 3)
+  )
+
+cpr_boot_90_lower_perc <- cpr_boot_90 %>% pull(lower)
+cpr_boot_90_upper_perc <- cpr_boot_90 %>% pull(upper)
+```
+
 As in Chapter \@ref(foundations-bootstrapping), the bootstrap confidence interval can be calculated directly from the bootstrapped differences in Figure \@ref(fig:bootCPR1000).
 The interval created from the percentiles of the distribution is called the **percentile interval**.
 Note that here we calculate the 90% confidence interval by finding the $5^{th}$ and $95^{th}$ percentile values from the bootstrapped differences.
-The bootstrap 5 percentile proportion is -0.155 and the 95 percentile is 0.167.
-The result is: we are 90% confident that, in the population, the true difference in probability of survival is between -0.155 and 0.167.
+The bootstrap 5 percentile proportion is `r cpr_boot_90_lower_perc` and the 95 percentile is `r cpr_boot_90_upper_perc`.
+The result is: we are 90% confident that, in the population, the true difference in probability of survival is between `r cpr_boot_90_lower_perc` and `r cpr_boot_90_upper_perc`.
 The interval shows that we do not have much definitive evidence of the affect of blood thinners, one way or another.
 
 ```{r include=FALSE}
 terms_chp_17 <- c(terms_chp_17, "percentile interval")
 ```
 
-```{r bootCPR1000CI, fig.cap="The CPR data is bootstrapped 1000 times. Each simulation creates a sample from the original data where the probability of survival in the treatment group is $\\hat{p}_{T}  = 14/40$ and the probability of survival in the control group is $\\hat{p}_{C} = 11/50.$ ", warning=FALSE, fig.width=10}
+```{r bootCPR1000CI, fig.cap = "The CPR data is bootstrapped 1000 times. Each simulation creates a sample from the original data where the probability of survival in the treatment group is $\\hat{p}_{T}  = 14/40$ and the probability of survival in the control group is $\\hat{p}_{C} = 11/50.$ ", out.width = "100%"}
 
-#result from previous R chunk
-bsq <- quantile(result, probs = c(0.01, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.99))
-
-bsprops_up <- result[result >= bsq[6]]
-bsprops_low <- result[result <= bsq[3]]
-
-#uprops <- sort(unique(result))
-#bin.width <- diff(uprops)[1]*100
-#breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
-
-breaks <- seq(min(result)-.05, max(result)+ .05, by = (max(result) - min(result) )/ 20)
-
-histPlot(result, breaks = breaks, 
-         axes = FALSE, col = rgb(1,1,1),
-     xlab = "", ylab="")
-histPlot(bsprops_up, breaks = breaks,
-         col = IMSCOL["blue", "full"], add = TRUE)
-histPlot(bsprops_low, breaks = breaks, 
-         col = IMSCOL["blue", "full"], add = TRUE)
-axis(1)
-#axis(2, at = seq(0, 100, 50), labels = format(seq(0, 50, 25) / nsim))
-lines(c(bsq[6], bsq[6]), c(0, 80), lty = 3, lwd = 3)
-lines(c(bsq[3], bsq[3]), c(0, 80), lty = 3, lwd = 3)
-text(bsq[6], 80, "95 percentile", pos = 3)
-text(bsq[3], 80, "5 percentile", pos = 3)
-par(las = 0)
-mtext("Bootstrapped values of the proportion of surgical complications", 1, 2.5)
-
+ggplot(cpr_boot_dist, aes(x = stat)) +
+  geom_histogram(binwidth = 0.05) +
+  labs(
+    x = "Difference in bootstrapped survival rates\n(treatment - control)",
+    y = "Count"
+  ) +
+  gghighlight(stat <= cpr_boot_90_lower_perc | stat >= cpr_boot_90_upper_perc) +
+  annotate(
+    "segment",
+    x = c(cpr_boot_90_lower_perc, cpr_boot_90_upper_perc), xend = c(cpr_boot_90_lower_perc, cpr_boot_90_upper_perc),
+    y = 0, yend = 175
+  ) +
+  annotate("text", x = cpr_boot_90_lower_perc, y = 190, label = "5 percentile") +
+  annotate("text", x = cpr_boot_90_upper_perc, y = 190, label = "95 percentile")
 ```
 
 #### Bootstrap SE confidence interval {.unnumbered}
+
+```{r}
+cpr_boot_se <- cpr_boot_dist %>%
+  summarise(se = round(sd(stat), 4)) %>%
+  pull(se)
+
+cpr_boot_90_lower_se <- round((14/40 - 11/50) - 2 * cpr_boot_se, 3)
+cpr_boot_90_upper_se <- round((14/40 - 11/50) + 2 * cpr_boot_se, 3)
+```
 
 Alternatively, we can use the variability in the bootstrapped differences to calculate a standard error of the difference.
 The resulting interval is called the **SE interval**.
@@ -321,7 +287,7 @@ Section \@ref(math-2prop) details the mathematical model for the standard error 
 terms_chp_17 <- c(terms_chp_17, "SE interval")
 ```
 
-$$SE(\hat{p}_T - \hat{p}_C) \approx SE(\hat{p}_{T, boot} - \hat{p}_{C, boot}) = 0.0975$$
+$$SE(\hat{p}_T - \hat{p}_C) \approx SE(\hat{p}_{T, boot} - \hat{p}_{C, boot}) = `r cpr_boot_se`$$
 
 The variability of the difference in proportions was calculated in R using the `sd()` function, but any statistical software will calculate the standard deviation of the differences, here, the exact quantity we hope to approximate.
 
@@ -329,13 +295,12 @@ Note that we do not know know the true distribution of $\hat{p}_T - \hat{p}_C,$ 
 So for a rough approximation, we will apply the 67-95-99.7 rule which tells us that 95% of observed differences should be roughly no farther than 2 SE from the true parameter difference.
 A 95% confidence interval for $p_T - p_C$ is given by:
 
-```{=tex}
-\begin{align*}
-\hat{p}_T - \hat{p}_C \pm 2 \cdot SE \ \ \ \rightarrow \ \ \ 14/40 - 11/50 \pm 2 \cdot 0.0975 \ \ \  \rightarrow \ \ \  (-0.065, 0.325)
-\end{align*}
-```
-We are 95% confident that the true value of $p_T - p_C$ is between -0.065 and 0.325.
-Again, the wide confidence interval that overlaps zero indicates that the study provides very little evidence about the effectiveness of blood thinners.
+$$
+\hat{p}_T - \hat{p}_C \pm 2 \cdot SE \ \ \ \rightarrow \ \ \ 14/40 - 11/50 \pm 2 \cdot `r cpr_boot_se` \ \ \  \rightarrow \ \ \  (`r cpr_boot_90_lower_se`, `r cpr_boot_90_upper_se`)
+$$
+
+We are 95% confident that the true value of $p_T - p_C$ is between `r cpr_boot_90_lower_se` and `r cpr_boot_90_upper_se`.
+Again, the wide confidence interval that contains zero indicates that the study provides very little evidence about the effectiveness of blood thinners.
 For other percentages, e.g., a 90% bootstrap SE confidence interval, we will use quantiles given by the standard normal distribution, as seen in Section \@ref(normalDist) and Figure \@ref(fig:er6895997).
 
 ### What does 95% mean?
@@ -390,8 +355,6 @@ for(i in 1:k){
   points(means[i], i, pch = 20, cex = 1.2, col = col)
   lines(ci, rep(i, 2), col = col)
 }
-
-
 ```
 
 The choice of 95% or 90% or even 99% as a confidence level is admittedly somewhat arbitrary; however, it is related to the logic we used when deciding that a p-value should be declared as significant if it is lower than 0.05 (or 0.10 or 0.01, respectively).
