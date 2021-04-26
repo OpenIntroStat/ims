@@ -1,6 +1,7 @@
 1.  **Marvel Cinematic Universe films.**
-The data frame below contains information on Marvel Cinematic Universe films through the Infinity saga (a 23 movie storyline spanning from Ironman in 2008 to Endgame in 2019). 
-For each of the movies the data frame contains information on the title (`movies`), the number of hours (`length_hrs`) and number of minutes (`length_min`) of the movie length, the release date (`release_date`), the box office totals for opening weekend in the US (`opening_weekend_us`), all box office totals in the US (`gross_us`), and all box office totals worldwide (`gross_world`). These values are given in millions of US Dollars. How many observations and how many variables does this data frame have?^[The data used in this exercise can be found in the **openintro** package: [`mcu_films`](http://openintrostat.github.io/openintro/reference/mcu_films.html).]
+The data frame below contains information on Marvel Cinematic Universe films through the Infinity saga (a movie storyline spanning from Ironman in 2008 to Endgame in 2019). 
+Box office totals are given in millions of US Dollars.
+How many observations and how many variables does this data frame have?^[The data used in this exercise can be found in the **openintro** package: [`mcu_films`](http://openintrostat.github.io/openintro/reference/mcu_films.html).]
 
     ```{r}
     library(openintro)
@@ -13,6 +14,17 @@ For each of the movies the data frame contains information on the title (`movies
         opening_weekend_us = round(opening_weekend_us / 1000000, 2),
         gross_us = round(gross_us / 1000000, 2),
         gross_world = round(gross_world / 1000000, 2),
+      ) %>%
+      rownames_to_column() %>%
+      rename(
+        ` ` = rowname,
+        Title = movie,
+        Hrs = length_hrs,
+        Mins = length_min,
+        `Release Date` = release_date,
+        `Opening Wknd US` = opening_weekend_us,
+        US = gross_us,
+        World = gross_world
       )
     
     mcu_films_1_to_5 <- mcu_films_scaled %>%
@@ -30,7 +42,9 @@ For each of the movies the data frame contains information on the title (`movies
     mcu_films_1_to_5 %>%
       bind_rows(mcu_films_filler) %>%
       bind_rows(mcu_films_n) %>%
-      kable(align = "lcccccc")
+      kable(align = "clcccccc") %>%
+      kable_styling("striped") %>%
+      add_header_above(c(" " = 2, "Length" = 2, " " = 2, "Gross" = 2))
     ```
 
 1.  **Cherry Blossom Run.**
@@ -44,22 +58,35 @@ How many observations and how many variables does this data frame have?^[The dat
     library(knitr)
     library(kableExtra)
     
-    run17_1_to_5 <- run17 %>%
+    run17_to_print <- run17 %>%
+      rownames_to_column() %>%
+      rename_with(str_to_title) %>%
+      rename(
+        ` ` = Rowname,
+        Net = Net_sec,
+        Clock = Clock_sec,
+        Pace = Pace_sec,
+        `City / Country` = City
+      )
+    
+    run17_1_to_5 <- run17_to_print %>%
       slice(n = 1:5) %>%
       mutate(across(everything(), as.character))
     
-    run17_n <- run17 %>%
+    run17_n <- run17_to_print %>%
       slice(n = nrow(run17)) %>%
       mutate(across(everything(), as.character))
     
-    run17_filler <- run17 %>%
+    run17_filler <- run17_to_print %>%
       slice(n = 1) %>%
       mutate(across(everything(), str_replace, ".*", "..."))
     
     run17_1_to_5 %>%
       bind_rows(run17_filler) %>%
       bind_rows(run17_n) %>%
-      kable(align = "lllclcccl")
+      kable(align = "llllclcccl") %>%
+      kable_styling("striped") %>%
+      add_header_above(c(" " = 6, "Time" = 2, " " = 2))
     ```
 
 1.  **Air pollution and birth outcomes, study components.** 
@@ -87,11 +114,7 @@ Researchers studying the relationship between honesty, age and self-control cond
 1.  **Gamification and statistics, study components.** 
 Gamification is the application of game-design elements and game principles in non-game contexts. 
 In educational settings, gamification is often implemented as educational activities to solve problems by using characteristics of game elements.
-Researchers investigating the effects of gamification on learning statistics conducted a study where they split college students in a statistics class into four groups: 
-- no reading exercises and no gamification
-- reading exercises but no gamification
-- gamification but no reading exercises
-- gamification and reading exercises
+Researchers investigating the effects of gamification on learning statistics conducted a study where they split college students in a statistics class into four groups: (1) no reading exercises and no gamification, (2) reading exercises but no gamification, (3) gamification but no reading exercises, and (4) gamification and reading exercises.
 Students in all groups also attended lectures. 
 Students in the class were from two majors: Electrical and Computer Engineering (n = 279) and Business Administration (n = 86). 
 After their assigned learning experience, each student took a final evaluation comprised of 30 multiple choice question and their score was measured as the number of questions they answered correctly.
@@ -227,6 +250,7 @@ The study found that the number of late-coming parents increased significantly w
       bind_rows(daycare_fines_filler) %>%
       bind_rows(daycare_fines_200) %>%
       kable(align = "cclcl") %>%
+      kable_styling("striped") %>%
       kable_styling(full_width = FALSE)
     ```
 
@@ -258,7 +282,7 @@ In addition to which island each penguin lives on, the data contains information
 
 1.  **Smoking habits of UK residents.** 
 A survey was conducted to study the smoking habits of 1,691 UK residents. Below is a data frame displaying a portion of the data collected in this survey. 
-Note that £ stands for British Pounds Sterling, "cig" stands for cigarettes, and "N/A" refers to a missing component of the data.^[The data used in this exercise can be found in the **openintro** package: [`smoking`](http://openintrostat.github.io/openintro/reference/smoking.html).] 
+A blank cell indicates that ^[The data used in this exercise can be found in the **openintro** package: [`smoking`](http://openintrostat.github.io/openintro/reference/smoking.html).] 
 
     ```{r echo=FALSE, message=FALSE}
     library(openintro)
@@ -266,13 +290,36 @@ Note that £ stands for British Pounds Sterling, "cig" stands for cigarettes, an
     library(knitr)
     library(kableExtra)
     
-    smoking %>%
+    set.seed(456)
+    smoking_to_print <- smoking %>%
       rename(sex = gender) %>%
       select(sex, age, marital_status, gross_income, smoke, amt_weekends, amt_weekdays) %>%
-      mutate(across(contains("amt_"), replace_na, "N/A")) %>%
-      slice_head(n = 5) %>%
-      kable() %>%
-      kable_styling(full_width = FALSE)
+      slice_sample(n = nrow(smoking)) %>%
+      rownames_to_column() %>%
+      rename(
+        weekend = amt_weekends,
+        weekday = amt_weekdays,
+        ` ` = rowname
+        )
+    
+    smoking_1_to_5 <- smoking_to_print %>%
+      slice(n = 1:5) %>%
+      mutate(across(everything(), as.character))
+    
+    smoking_n <- smoking_to_print %>%
+      slice(n = nrow(smoking)) %>%
+      mutate(across(everything(), as.character))
+    
+    smoking_filler <- smoking_to_print %>%
+      slice(n = 1) %>%
+      mutate(across(everything(), str_replace, ".*", "..."))
+    
+    smoking_1_to_5 %>%
+      bind_rows(smoking_filler) %>%
+      bind_rows(smoking_n) %>%
+      kable(align = "llllclcccl") %>%
+      kable_styling("striped") %>%
+      add_header_above(c(" " = 6, "amount" = 2))
     ```
 
     a.  What does each row of the data frame represent?
@@ -399,7 +446,7 @@ This visualization was constructed based on a dataset where each observation is 
     b.  Indicate whether each variable in the study is numerical or categorical. If numerical, identify as continuous or discrete. If categorical, indicate if the variable is ordinal.
 
 1.  **UK baby names.** 
-The visualization below shows the number of baby girls born in the United Kingdom (comprised of England & Wales, Northern Ireland, and Scotland) over the years.^[The data used in this exercise can be found in the **ukbabynames** package: [`ukbabynames`](https://mine-cetinkaya-rundel.github.io/ukbabynames/reference/ukbabynames.html).]
+The visualization below shows the number of baby girls born in the United Kingdom (comprised of England & Wales, Northern Ireland, and Scotland) who were given the name "Fiona" over the years.^[The data used in this exercise can be found in the **ukbabynames** package: [`ukbabynames`](https://mine-cetinkaya-rundel.github.io/ukbabynames/reference/ukbabynames.html).]
 
     ```{r echo=FALSE, message=FALSE, warning=FALSE, out.width="100%"}
     library(tidyverse)
@@ -435,7 +482,7 @@ The visualization below shows the distribution of ratings of TV shows on Netflix
     library(tidyverse)
     library(openintro)
 
-    # data from https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-04-20/readme.md
+    # data from https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-04-20/netflix_titles.csv
     netflix_titles <- read_csv("data/netflix_titles.csv")
     
     netflix_to_plot <- netflix_titles %>%
@@ -478,7 +525,8 @@ The visualization below shows the distribution of ratings of TV shows on Netflix
       facet_wrap(
         ~`Production country`, ncol = 1, 
         labeller = labeller(`Production country` = label_both)
-      )
+      ) +
+      theme(legend.position = "bottom")
     ```
 
     a.  List the variables you believe were necessary to create this visualization.
@@ -495,29 +543,37 @@ The Stanford Open Policing project gathers, analyzes, and releases records from 
     library(kableExtra)
     
     # data from https://raw.githubusercontent.com/5harad/openpolicing/master/results/data_for_figures/combined_data.csv
-    sop <- read_csv("data/stanford-open-policing-combined-data.csv") %>%
+    sop <- read_csv("data/stanford-open-policing-combined-data.csv")
+      
+    sop_to_print <- sop %>%
       select(location, state, driver_race, stops_per_year, search_rate, arrest_rate) %>%
       filter(
         location %in% c("APACHE COUNTY", "COCHISE COUNTY", "WOOD COUNTY"),
         state %in% c("AZ", "WI")
         ) %>%
       mutate(location = str_to_title(location)) %>%
+      relocate(arrest_rate, .after = driver_race) %>%
+      rename_with(str_to_title) %>%
       rename(
-        drvier_race_eth    = driver_race,
-        car_search_rate    = search_rate,
-        driver_arrest_rate = arrest_rate
+        `County`       = Location,
+        `Race / Ethnicity`   = Driver_race,
+        `Arrest rate`  = Arrest_rate,
+        `Stops / year` = Stops_per_year,
+        `Search rate`  = Search_rate,
         ) %>%
       mutate(across(everything(), as.character))
     
-    sop_top    <- sop %>% filter(state == "AZ")
-    sop_filler <- sop %>% slice(n = 1) %>% 
+    sop_top    <- sop_to_print %>% filter(State == "AZ")
+    sop_filler <- sop_to_print %>% slice(n = 1) %>% 
       mutate(across(everything(), str_replace, ".*", "..."))
-    sop_bottom <- sop %>% filter(state == "WI")
+    sop_bottom <- sop_to_print %>% filter(State == "WI")
 
     sop_top %>%
       bind_rows(sop_filler) %>%
       bind_rows(sop_bottom) %>%
-      kable(align = "lllccc")
+      kable(align = "lllccc") %>%
+      kable_styling("striped") %>%
+      add_header_above(c(" " = 2, "Driver" = 2, "Car" = 2))
     ```
 
     a.  What variables were collected on each individual traffic stop in order to create to the summary table above?
