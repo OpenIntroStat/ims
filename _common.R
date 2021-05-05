@@ -30,6 +30,7 @@ suppressMessages(library(ggrepel))
 # knitr chunk options ----------------------------------------------------------
 
 knitr::opts_chunk$set(
+  #eval = FALSE,
   comment = "#>",
   collapse = TRUE,
   message = FALSE,
@@ -50,6 +51,7 @@ options(knitr.kable.NA = "")
 # kableExtra options -----------------------------------------------------------
 
 options(kableExtra.html.bsTable = TRUE)
+#options(knitr.table.format = if (knitr::is_latex_output()) "latex" else "html")
 
 # dplyr options ----------------------------------------------------------------
 
@@ -74,13 +76,16 @@ ggplot2::update_geom_defaults("dotplot", list(color = openintro::IMSCOL["blue","
 
 # function to print terms ------------------------------------------------------
 
-make_terms_table <- function(x, n_cols = 4){
+make_terms_table <- function(x, n_cols = 3){
   x <- sort(x) %>% unique()
   n_rows <- (length(x) / n_cols) %>% ceiling()
   desired_length <- n_rows * n_cols
   x_updated <- c(x, rep("", (desired_length - length(x))))
   matrix(x_updated, nrow = n_rows) %>%
-    kable()
+    kbl(booktabs = TRUE) %>%
+    kable_styling(bootstrap_options = c("striped", "condensed"), 
+                  latex_options = "striped",
+                  full_width = TRUE)
 }
 
 # for foundation chapters ------------------------------------------------------
