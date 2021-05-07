@@ -1,0 +1,259 @@
+1. **Difference of means, Part 1.** 
+Suppose we will collect two random samples from the following distributions.
+In each of the parts below, consider the sample means $\bar{x}_1$ and $\bar{x}_2$ that we might observe from these two samples.
+    
+    ```{r}
+    library(tidyverse)
+    library(kableExtra)
+    
+    sample_stats <- tribble(
+      ~` `,    ~Mean, ~`Standard deviation`, ~`Sample size`,
+      "Sample 1", 15,    20,                    50,
+      "Sample 2", 20,    10,                    30,
+    )
+    
+    sample_stats %>%
+      kbl(align = "lccc") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = "striped",
+                    full_width = FALSE)
+    ```
+
+    a.  What is the associated mean and standard deviation of $\bar{x}_1$?
+
+    b.  What is the associated mean and standard deviation of $\bar{x}_2$?
+
+    c.  Calculate and interpret the mean and standard deviation associated with the difference in sample means for the two groups, $\bar{x}_2 - \bar{x}_1$.
+
+    d.  How are the standard deviations from parts (a), (b), and (c) related?
+
+1. **True / False: comparing means.**
+Determine if the following statements are true or false, and explain your reasoning for statements you identify as false.
+
+    a.  As the degrees of freedom increases, the $t$-distribution approaches normality.
+
+    b.  If a 95% confidence interval for the difference between two population means contains 0, a 99% confidence interval calculated based on the same two samples will also contain 0.
+    
+    c.  If a 95% confidence interval for the difference between two population means contains 0, a 90% confidence interval calculated based on the same two samples will also contain 0.
+
+1. **Chicken diet: horsebean vs. linseed.** 
+Chicken farming is a multi-billion dollar industry, and any methods that increase the growth rate of young chicks can reduce consumer costs while increasing company profits, possibly by millions of dollars. 
+An experiment was conducted to measure and compare the effectiveness of various feed supplements on the growth rate of chickens. 
+Newly hatched chicks were randomly allocated into six groups, and each group was given a different feed supplement. 
+In this exercise we consider chicks that were fed horsebean and linseed.
+Below are some summary statistics from this data set along with box plots showing the distribution of weights by feed type.^[The data used in this exercise can be found in the **datasets** R package: [`chickwts`](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/chickwts.html).] [@data:chickwts]
+
+    ```{r}
+    library(tidyverse)
+    library(kableExtra)
+    library(patchwork)
+    
+    chickwts_h_l <- chickwts %>%
+      filter(feed %in% c("horsebean", "linseed"))
+    
+    chickwts_h_l %>%
+      group_by(feed) %>%
+      summarise(
+        mean = format(mean(weight), digits = 2, nsmall = 2),
+        sd   = format(sd(weight), digits = 2, nsmall = 2),
+        n    = n()
+      ) %>%
+      kbl(align = "lccc", 
+          col.names = c("Feed type", "Mean", "SD", "n")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = "striped",
+                    full_width = FALSE)
+    
+    p_box <- chickwts_h_l %>%
+      ggplot(aes(y = fct_rev(feed), x = weight)) +
+      geom_boxplot() +
+      labs(y = "Feed type", x = "Weight (in grams)")
+    
+    p_hist <- chickwts_h_l %>%
+      ggplot(aes(x = weight)) +
+      geom_histogram(binwidth = 25) +
+      facet_wrap(~feed, ncol = 1) +
+      labs(y = "Feed type", x = "Weight (in grams)")    
+    
+    p_box + p_hist
+    ````
+
+    a.  Describe the distributions of weights of chickens that were fed horsebean and linseed.
+
+    b.  Do these data provide strong evidence that the average weights of chickens that were fed linseed and horsebean are different? Use a 5% significance level.
+
+    c.  What type of error might we have committed? Explain.
+
+    d.  Would your conclusion change if we used $\alpha = 0.01$?
+
+1. **Diamonds, Part I.** 
+Prices of diamonds are determined by what is known as the 4 Cs: cut, clarity, color, and carat weight. 
+The prices of diamonds go up as the carat weight increases, but the increase is not smooth. 
+For example, the difference between the size of a 0.99 carat diamond and a 1 carat diamond is undetectable to the naked human eye, but the price of a 1 carat diamond tends to be much higher than the price of a 0.99 diamond. 
+In this question we use two random samples of diamonds, 0.99 carats and 1 carat, each sample of size 23, and compare the average prices of the diamonds. 
+In order to be able to compare equivalent units, we first divide the price for each diamond by 100 times its weight in carats. 
+That is, for a 0.99 carat diamond, we divide the price by 99. 
+For a 1 carat diamond, we divide the price by 100. The distributions and some sample statistics are shown below.
+Conduct a hypothesis test to evaluate if there is a difference between the average standardized prices of 0.99 and 1 carat diamonds. 
+Make sure to state your hypotheses clearly, check relevant conditions, and interpret your results in context of the data.[@ggplot2]
+
+    ```{r}
+    library(tidyverse)
+    library(scales)
+    library(kableExtra)
+    
+    diamonds_100_99 <- diamonds %>%
+      mutate(ppc = price / (carat*100)) %>%
+      filter(carat %in% c(0.99, 1))
+    
+    nn_df <- diamonds_100_99 %>%
+      filter(carat == 0.99)
+    
+    # weird sampling to match old code/data
+    set.seed(123)
+    rows_to_sample <- sample(1:length(diamonds_100_99$ppc[diamonds_100_99$carat == 1]), size = 23, replace = FALSE)
+    one_df <- diamonds_100_99 %>% 
+      filter(carat == 1) %>% 
+      slice(rows_to_sample)
+    
+    diamonds_100_99_sample <- bind_rows(nn_df, one_df) %>%
+      mutate(carat = paste(carat, "carats"))
+    
+    diamonds_100_99_summary <- diamonds_100_99_sample %>%
+      group_by(carat) %>%
+      summarise(
+        Mean = format(mean(ppc), digits = 4, nsmall = 2),
+        SD = format(sd(ppc), digits = 4, nsmall = 2),
+        n = n()
+      ) %>%
+      mutate(
+        Mean = paste0("$", Mean),
+        SD = paste0("$", SD)
+        )
+    
+    diamonds_100_99_summary %>%
+      kbl(align = "lccc", col.names = c("", "Mean", "SD", "n"), digits = 2) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = "striped",
+                    full_width = FALSE)    
+    
+    ggplot(diamonds_100_99_sample, aes(y = carat, x = ppc)) +
+      geom_boxplot() +
+      labs(y = NULL, x = "Point price (in USD)") +
+      scale_x_continuous(labels = label_dollar())
+    ```
+
+1. **Chicken diet: casein vs. soybean.** 
+Casein is a common weight gain supplement for humans. 
+Does it have an effect on chickens? 
+An experiment was conducted to measure and compare the effectiveness of various feed supplements on the growth rate of chickens. 
+Newly hatched chicks were randomly allocated into six groups, and each group was given a different feed supplement. 
+In this exercise we consider chicks that were fed casein and soybean.
+Assume that the conditions for conducting inference using mathematical models are met, and using the data provided below, test the hypothesis that the average weight of chickens that were fed casein is different than the average weight of chickens that were fed soybean. 
+If your hypothesis test yields a statistically significant result, discuss whether or not the higher average weight of chickens can be attributed to the casein diet.^[The data used in this exercise can be found in the **datasets** R package: [`chickwts`](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/chickwts.html).] [@data:chickwts]
+
+    ```{r}
+    library(tidyverse)
+    library(kableExtra)
+    
+    chickwts %>%
+      filter(feed %in% c("casein", "soybean")) %>%
+      group_by(feed) %>%
+      summarise(
+        mean = format(mean(weight), digits = 2, nsmall = 2),
+        sd   = format(sd(weight), digits = 2, nsmall = 2),
+        n    = n()
+      ) %>%
+      kbl(align = "lccc", 
+          col.names = c("Feed type", "Mean", "SD", "n")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = "striped",
+                    full_width = FALSE)
+    ````
+
+1. **Diamonds, Part II.** 
+We have data on two random samples of diamonds: one with diamonds that weigh 0.99 carats and one with diamonds that weigh 1 caract. 
+Each sample has 23 diamonds. 
+Sample statistics for the price per carat of diamonds in each sample are provided below.
+Assuming that the conditions for conducting inference using a mathematical model are satisfied, construct a 95% confidence interval for the average difference between the standardized prices of 0.99 and 1 carat diamonds. [@ggplot2]
+
+1. **Gaming, distracted eating, and intake.** 
+A group of researchers who are interested in the possible effects of distracting stimuli during eating, such as an increase or decrease in the amount of food consumption, monitored food intake for a group of 44 patients who were randomized into two equal groups. 
+The treatment group ate lunch while playing solitaire, and the control group ate lunch without any added distractions. 
+Patients in the treatment group ate 52.1 grams of biscuits, with a standard deviation of 45.1 grams, and patients in the control group ate 27.1 grams of biscuits, with a standard deviation of 26.4 grams. 
+Do these data provide convincing evidence that the average food intake (measured in amount of biscuits consumed) is different for the patients in the treatment group compared to the control group? 
+Assume that conditions for conducting inference using mathematical models are satisfied. [@Oldham:2011]
+
+1. **Fuel efficiency in the city.** 
+Each year the US Environmental Protection Agency (EPA) releases fuel economy data on cars manufactured in that year. 
+Below are summary statistics on fuel efficiency (in miles/gallon) from random samples of cars with manual and automatic transmissions manufactured in 2021. 
+Do these data provide strong evidence of a difference between the average fuel efficiency of cars with manual and automatic transmissions in terms of their average city mileage?^[The data used in this exercise can be found in the **openintro** R package: [`epa2021`](http://openintrostat.github.io/openintro/reference/epa2021.html).] [@data:epaMPG2021]
+
+    ```{r}
+    library(tidyverse)
+    library(kableExtra)
+    library(openintro)
+    
+    set.seed(1234)
+    epa2021_sample <- epa2021 %>%
+      filter(transmission_desc %in% c("Manual", "Automatic")) %>%
+      group_by(transmission_desc) %>%
+      sample_n(size = 25)
+    
+    epa2021_sample %>%
+      group_by(transmission_desc) %>%
+      summarise(
+        Mean = mean(city_mpg),
+        SD   = sd(city_mpg),
+        n    = n()
+      ) %>%
+      kbl(align = "lccc", col.names = c("CITY", "Mean", "SD", "n"), digits = 2) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = "striped",
+                    full_width = FALSE)
+    
+    ggplot(epa2021_sample, aes(y = fct_rev(transmission_desc), x = city_mpg)) +
+      geom_boxplot() +
+      labs(y = NULL, x = "City mileage (MPG)")
+    ```
+
+1. **Gaming, distracted eating, and recall.** 
+A group of researchers who are interested in the possible effects of distracting stimuli during eating, such as an increase or decrease in the amount of food consumption, monitored food intake for a group of 44 patients who were randomized into two equal groups. 
+The 22 patients in the treatment group who ate their lunch while playing solitaire were asked to do a serial-order recall of the food lunch items they ate. 
+The average number of items recalled by the patients in this group was 4. 9, with a standard deviation of 1.8. 
+The average number of items recalled by the patients in the control group (no distraction) was 6.1, with a standard deviation of 1.8. 
+Do these data provide strong evidence that the average numbers of food items recalled by the patients in the treatment and control groups are different?
+Assume that conditions for conducting inference using mathematical models are satisfied. [@Oldham:2011]
+
+1. **Fuel efficiency on the highway.** 
+Each year the US Environmental Protection Agency (EPA) releases fuel economy data on cars manufactured in that year. 
+Below are summary statistics on fuel efficiency (in miles/gallon) from random samples of cars with manual and automatic transmissions manufactured in 2021. 
+Do these data provide strong evidence of a difference between the average fuel efficiency of cars with manual and automatic transmissions in terms of their average highway mileage?^[The data used in this exercise can be found in the **openintro** R package: [`epa2021`](http://openintrostat.github.io/openintro/reference/epa2021.html).] [@data:epaMPG2021]
+
+    ```{r}
+    library(tidyverse)
+    library(kableExtra)
+    library(openintro)
+    
+    set.seed(1234)
+    epa2021_sample <- epa2021 %>%
+      filter(transmission_desc %in% c("Manual", "Automatic")) %>%
+      group_by(transmission_desc) %>%
+      sample_n(size = 25)
+    
+    epa2021_sample %>%
+      group_by(transmission_desc) %>%
+      summarise(
+        Mean = mean(hwy_mpg),
+        SD   = sd(hwy_mpg),
+        n    = n()
+      ) %>%
+      kbl(align = "lccc", col.names = c("HIGHWAY", "Mean", "SD", "n"), digits = 2) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = "striped",
+                    full_width = FALSE)
+    
+    ggplot(epa2021_sample, aes(y = fct_rev(transmission_desc), x = city_mpg)) +
+      geom_boxplot() +
+      labs(y = NULL, x = "Highway mileage (MPG)")
+    ```
