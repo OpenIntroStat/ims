@@ -231,16 +231,20 @@ births14_100 <- births14 %>%
 
 p_gained <- ggplot(births14_100) +
   geom_jitter(aes( y = weight, x = gained)) +
-  xlab("Weight gained by mother")
+  xlab("weight gained by mother") +
+  ylab("weight of baby")
 p_mage <- ggplot(births14_100) +
   geom_jitter(aes(y = weight, x = mage)) +
-  xlab("Mother's age")
+  xlab("mother's age") +
+  ylab("weight of baby")
 p_visits <- ggplot(births14_100) +
   geom_jitter(aes(y = weight, x = visits)) +
-  xlab("Number of hospital visits during pregnancy")
+  xlab("number of hospital visits during pregnancy") +
+  ylab("weight of baby")
 p_weeks <- ggplot(births14_100) +
   geom_jitter(aes(x = weeks, y = weight)) +
-  xlab("Weeks of gestation")
+  xlab("weeks of gestation") +
+  ylab("weight of baby")
 
 p_gained + p_mage + p_visits + p_weeks + plot_layout(ncol = 2)
 
@@ -265,11 +269,14 @@ That is, each `weight` value is randomly assigned to a new `weeks` gestation.
 set.seed(4747)
 ggplot(births14_100) +
   geom_point(aes(x = weeks, y = weight)) +
+  xlab("weeks gestation") +
+  ylab("weight of baby")
   ggtitle("Original Data") 
 
 ggplot(births14_100) +
   geom_point(aes(x = weeks, y = sample(weight))) +
-  ylab("permuted weight") +
+  ylab("permuted weight of baby") +
+  xlab("weeks gestation") +
   ggtitle("Permuted Data") 
 ```
 
@@ -301,13 +308,15 @@ set.seed(470)
 ggplot(births14_100, aes(x = weeks, y = sample(weight))) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
-  ylab("permuted weight") +
+  ylab("permuted weight of baby") +
+  xlab("weeks gestation") +
   ggtitle("First permutation of weight") 
 
 ggplot(births14_100, aes(x = weeks, y = sample(weight))) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
-  ylab("permuted wheat") +
+  ylab("permuted weight of baby") +
+  xlab("weeks gestation") +
   ggtitle("Second permutation of weight") 
 ```
 
@@ -330,7 +339,8 @@ obs_slope <- births14_100 %>%
 
 ggplot(data = perm_slope, aes(x = stat)) +
   geom_histogram() +
-  geom_vline(xintercept = obs_slope, color = IMSCOL["red", "full"])
+  geom_vline(xintercept = obs_slope, color = IMSCOL["red", "full"]) +
+  xlab("randomized slopes")
 ```
 
 As we can see from Figure \@ref(fig:nulldistBirths), a slope estimate as extreme as the observed slope estimate (the red line) never happened in many repeated permutations of the `weight` variable.
@@ -370,7 +380,9 @@ ggplot(births14_100) +
   geom_smooth(aes(x = mage, y = weight),
     method = "lm", se = FALSE,
     fullrange = TRUE, 
-  ) 
+  ) +
+  xlab("mother's age") +
+  ylab("weight of baby") 
 ```
 
 ### Variability of the statistic
@@ -389,6 +401,8 @@ ggplot(births14_100) +
     method = "lm", se = FALSE,
     fullrange = TRUE
   ) +
+  xlab("mother's age") +
+  ylab("weight of baby") +
   ggtitle("Original births data.") +
   geom_point(x = 29, y = 9, color = IMSCOL["green", "full"], pch = 1, size = 8) +
   geom_point(x = 20, y = 6, color = IMSCOL["red", "full"], pch = 1, size = 8) +
@@ -402,6 +416,8 @@ ggplot(births5) +
     method = "lm", se = FALSE,
     fullrange = TRUE
   ) +
+  xlab("mother's age") +
+  ylab("weight of baby") +
   ggtitle("Bootstrap sample from the births data.") +
   geom_point(x = 29, y = 9, color = IMSCOL["green", "full"], pch = 1, size = 8) +
   geom_point(x = 20, y = 6, color = IMSCOL["red", "full"], pch = 1, size = 8) +
@@ -418,7 +434,9 @@ By repeatedly resampling, we can see dozens of bootstrapped slopes on the same p
 ```{r birthBS, echo = FALSE, fig.cap = "Repeated bootstrap resamples of size 100 are taken from the original data.  Each of the bootstrapped linear model is slightly different."}
 ggplot(births_many_BS, aes(x = mage, y = weight, group = replicate)) +
   # geom_point() +
-  geom_smooth(method = "lm", se = FALSE, color = IMSCOL[1, 1], fullrange = TRUE) 
+  geom_smooth(method = "lm", se = FALSE, color = IMSCOL[1, 1], fullrange = TRUE) +
+  xlab("mother's age") +
+  ylab("weight of baby") 
 ```
 
 Recall that in order to create a confidence interval for the slope, we need to find the range of values that the statistic (here the slope) takes on from different bootstrap samples.
@@ -442,12 +460,12 @@ upper <- round(quantile(births_many_lm_BS$estimate, 0.975), 3)
 
 ggplot(births_many_lm_BS, aes(x = estimate)) +
   geom_histogram() +
-  annotate("segment", x = lower, xend = lower, y = 0, yend = 18, linetype = "dashed") +
-  annotate("segment", x = upper, xend = upper, y = 0, yend = 18, linetype = "dashed") +
-  annotate("text", x = lower, y = 20, label = "2.5 percentile\n-0.01", size = 6) +
-  annotate("text", x = upper, y = 20, label = "97.5 percentile\n0.081", size = 6) +
+  annotate("segment", x = lower, xend = lower, y = 0, yend = 20, linetype = "dashed") +
+  annotate("segment", x = upper, xend = upper, y = 0, yend = 20, linetype = "dashed") +
+  annotate("text", x = lower, y = 25, label = "2.5 percentile\n-0.01", size = 6) +
+  annotate("text", x = upper, y = 25, label = "97.5 percentile\n0.081", size = 6) +
   labs(
-    x = "Bootstrapped values of the slope statistic describing `weight` and `mage`",
+    x = "Bootstrapped values of the slope statistic describing weight and mother's age",
     y = NULL
   ) +
   theme(axis.text.y = element_blank())
