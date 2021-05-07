@@ -6,7 +6,7 @@ Recall that one of the important conditions in doing a two-sample analysis is th
 Here, independence across groups means that knowledge of the observations in one group doesn't change what we'd expect to happen in the other group.
 But what happens if the groups are **dependent**?
 Sometimes dependency is not something that can be addressed through a statistical method.
-However, a particular dependency, **pairing** can be modeled quite effectively using many of the same tools we have already covered in this chapter.
+However, a particular dependency, **pairing** can be modeled quite effectively using many of the same tools we have already covered in this text.
 :::
 
 Paired data represent a particular type of experimental structure where the analysis is somewhat akin to a one-sample analysis (see Chapter \@ref(inference-one-mean)) but has other features that resemble a two-sample analysis (see Chapter \@ref(inference-two-means)).
@@ -23,7 +23,7 @@ temptbl <- tribble(
 )
 
 temptbl %>%
-  kable(
+  kbl(
     caption = "Examples of studies where a paired design is used to measure the difference in the measurement over two conditions.",
     col.names = c("Observational unit", "Comparison groups", "Measurement", "Value of interest")
   ) %>%
@@ -35,6 +35,10 @@ temptbl %>%
 
 Two sets of observations are *paired* if each observation in one set has a special correspondence or connection with exactly one observation in the other data set.
 :::
+
+It is worth noting that if mathematical modeling is chosen as the analysis tool, paired data inference on the difference in measurements will be identical to the one-sample mathematical techniques described in Chapter \@ref(inference-one-mean).
+However, recall from Chapter \@ref(inference-one-mean) that with pure one-sample data, the computational tools for hypothesis testing are not easy to implement and were not presented (although the bootstrap was presented as a computational approach for constructing a one sample confidence interval).
+With paired data, the randomization test fits nicely with the structure of the experiment and is presented here.
 
 ```{r include=FALSE}
 terms_chp_22 <- c("paired data")
@@ -124,7 +128,7 @@ Remember, if the null hypothesis is true, it will not matter which brand is put 
 
 Figures \@ref(fig:tiredata4) and \@ref(fig:tiredata5) show that the random assignment of group (tire brand) happens within a single car.
 That is, every single car will still have one tire of each type.
-It just so happens that the 4th car's tire brands were swapped and the 5th car's tire brands were not swapped.
+In the first randomization, it just so happens that the 4th car's tire brands were swapped and the 5th car's tire brands were not swapped.
 
 ```{r tiredata4, fig.cap = "The 4th car: the tire brand was randomly permuted, and in the randomization calculation, the measurements (in cm) ended up in different groups.", out.width = "100%"}
 
@@ -226,7 +230,7 @@ origplot5 + shuffbrand5
 
 We can put the shuffled assignments for all the cars into one plot as seen in Figure \@ref(fig:tiredataPerm).
 
-```{r tiredataPerm, fig.cap = "Boxplots of the tire tread data (in cm) with: the brand of tire from which the original measurements came (left) and shuffled brand assignment (right).  As evidenced by the colors, some of the cars kept their original tire assignments and some cars swapped the tire assignments.", out.width = "100%"}
+```{r tiredataPerm, fig.cap = "Tire tread data (in cm) with: the brand of tire from which the original measurements came (left) and shuffled brand assignment (right).  As evidenced by the colors, some of the cars kept their original tire assignments and some cars swapped the tire assignments.", out.width = "100%"}
 
 origplot <- tires %>%
   ggplot(aes(x = brand, y = tread, 
@@ -271,7 +275,7 @@ The next step in the randomization test is to sort the brands so that the assign
 See Figure \@ref(fig:tiredataPermSort) which has the same randomized groups (right image in Figure \@ref(fig:tiredataPerm) and left image in Figure \@ref(fig:tiredataPermSort)) as seen previously.
 However, the right image in Figure \@ref(fig:tiredataPermSort) sorts the randomized groups so that we can measure the variability across groups as compared to the variability within groups.
 
-```{r tiredataPermSort, fig.cap = "The brand of tire from which the original measurements came, (left) shuffled brand assignment, (right) sorted by randomized brand.", out.width = "100%"}
+```{r tiredataPermSort, fig.cap = "Tire tread from (left) randomized brand assignment, (right) sorted by randomized brand.", out.width = "100%"}
 
 permed_means <- permdata %>%
   group_by(random_brand) %>%
@@ -303,10 +307,10 @@ shuffbrandfull <- permdata %>%
 shuffbrand + shuffbrandfull
 ```
 
-Figure \@ref(fig:tiredatarand1) presents another randomization of the data.
+Figure \@ref(fig:tiredatarand1) presents a second randomization of the data.
 Notice how the two observations from the same car are linked by a grey line; some of the tread values have been randomly assigned to the opposite tire brand than they were originally (while some are still connected to their original tire brands).
 
-```{r tiredatarand1, fig.cap = "One randomization where the brand is randomly swapped (or not) across the two tread wear measurements (in cm) from the same car."}
+```{r tiredatarand1, fig.cap = "A second randomization where the brand is randomly swapped (or not) across the two tread wear measurements (in cm) from the same car."}
 set.seed(47)
 tires1 <- tires %>%
   group_by(car) %>%
@@ -373,15 +377,15 @@ ggplot(tires2, aes(x = random_brand, y = tread,
 
 By repeating the randomization process, we can create a distribution of the average of the differences in tire treads, as seen in Figure \@ref(fig:pairRandomiz).
 As expected (because the differences were generated under the null hypothesis), the center of the histogram is zero.
-A line has been drawn at the observed difference which is nowhere near the differences simulated from natural variability by mixing up which the tire received Smooth Turn and which received Quick Spin.
+A line has been drawn at the observed difference which is well outside the majority of the null differences simulated from natural variability by mixing up which the tire received Smooth Turn and which received Quick Spin.
 Because the observed statistic is so far away from the natural variability of the randomized differences, we believe that there is a significant difference between Smooth Turn and Quick Spin.
-Our conclusion is that the extra amount of average tire tread in Smooth Turn is due to more than just natural variability: we reject $H_0$ and conclude that $\mu_{ST} > \mu_{QS}.$
+Our conclusion is that the extra amount of average tire tread in Smooth Turn is due to more than just natural variability: we reject $H_0$ and conclude that $\mu_{ST} \ne \mu_{QS}.$
 
 ```{r pairrandfull, fig.cap = "process of randomizing across pairs.", warning = FALSE,  out.width="75%", eval = FALSE, echo = FALSE}
 include_graphics("images/pairrandfull.png")
 ```
 
-```{r pairRandomiz, fig.cap = "Histogram of 1000 average differences with tire brand randomly assigned across the two observations (in cm) per pair."}
+```{r pairRandomiz, fig.cap = "Histogram of 1000 average differences with tire brand randomly assigned across the two tread measurements (in cm) per pair."}
 
 set.seed(474756)
 tires_shuffled <- tires %>%
@@ -403,7 +407,7 @@ ggplot(tires_shuffled, aes(x = stat)) +
 
 ## Bootstrap confidence interval for $\mu_d$
 
-For both the bootstrap and the mathematical models applied to paired data, the analysis is virtually identical to the one-sample approach given in Section \@ref(inference-one-mean).
+For both the bootstrap and the mathematical models applied to paired data, the analysis is virtually identical to the one-sample approach given in Chapter \@ref(inference-one-mean).
 The key to working with paired data (for bootstrapping and mathematical approaches) is to consider the measurement of interest to be the difference in measured values across the pair of observations.
 
 ```{r include=FALSE}
@@ -417,7 +421,9 @@ It's been several years, and many stores have adapted to the online market, so w
 
 We sampled 201 UCLA courses.
 Of those, 68 required books could be found on Amazon.
-A portion of the data set from these courses is shown in Figure \@ref(tab:textbooksDF), where prices are in US dollars.
+A portion of the data set from these courses is shown in Figure \@ref(tab:textbooksDF), where prices are in US dollars.[^inference-paired-means-1]
+
+[^inference-paired-means-1]: The data used in this section can be found in the **openintro** R package: [`ucla_textbooks_f18`](http://openintrostat.github.io/openintro/reference/ucla_textbooks_f18.html).
 
 ```{r textbooksDF}
 ucla_textbooks_f18 %>% 
@@ -443,8 +449,11 @@ The bootstrap procedure for paired differences is quite similar to the procedure
 
 In Figure \@ref(fig:pairboot), two 99% confidence intervals for the difference in the cost of a new book at the UCLA bookstore compared with Amazon have been calculated.
 The bootstrap percentile confidence interval is computing using the 0.5 percentile and 99.5 percentile bootstrapped differences and is found to be (\$0.25, \$7.87).
-The bootstrap SE interval is found by computing the SE of the bootstrapped differences $(SE_{\overline{x}_{diff}} = \$1.64)$ and the normal multiplier of $z^* = 2.58.$ The averaged difference is $\bar{x} = \$3.58.$ The 99% confidence interval is: $\$3.58 \pm 2.58 \cdot \$ 1.64 \rightarrow (\$-0.65, \$7.81).$ The confidence intervals seem to indicate that the UCLA bookstore price is, on average, higher than the Amazon price.
-However, if the analysis required a strong degree of certainty (e.g., 99% confidence), and the bootstrap SE interval was most appropriate (given a second course in statistics the nuances of the methods were investigated), the results of which book seller is higher is not well determined.
+
+The bootstrap SE interval is found by computing the SE of the bootstrapped differences $(SE_{\overline{x}_{diff}} = \$1.64)$ and the normal multiplier of $z^* = 2.58.$ The averaged difference is $\bar{x} = \$3.58.$ The 99% confidence interval is: $$\$3.58 \pm 2.58 \cdot \$ 1.64 \rightarrow (\$-0.65, \$7.81).$$
+
+The confidence intervals seem to indicate that the UCLA bookstore price is, on average, higher than the Amazon price.
+However, if the analysis required a strong degree of certainty (e.g., 99% confidence), and the bootstrap SE interval was most appropriate (given a second course in statistics the nuances of the methods can be investigated), the results of which book seller is higher is not well determined (because the bootstrap SE interval overlaps zero).
 That is, the 99% bootstrap SE interval gives potential for UCLA to be lower, on average, than Amazon (because of the possible negative values for the true mean difference in price).
 
 ```{r pairboot, fig.cap = "Bootstrap distribution for the average difference in new book price at the UCLA bookstore versus Amazon. 99% confidence intervals are superimposed using blue (bootstrap percentile interval) and red (bootstrap SE interval) lines."}
@@ -553,8 +562,7 @@ temptbl %>%
  kable_styling() 
 ```
 
-::: {.workedexample data-latex=""}}
-Set up a hypothesis test to determine whether, on average, there is a difference between Amazon's price for a book and the UCLA bookstore's price.
+::: {.workedexample data-latex=""}} Set up a hypothesis test to determine whether, on average, there is a difference between Amazon's price for a book and the UCLA bookstore's price.
 Also, check the conditions for whether we can move forward with the test using the $t$-distribution.
 
 ------------------------------------------------------------------------
@@ -569,7 +577,7 @@ We are considering two scenarios: there is no difference or there is some differ
     The observations are based on a simple random sample, so independence is reasonable.
     While there are some outliers, $n = 68$ and none of the outliers are particularly extreme, so the normality of $\bar{x}$ is satisfied.
     With these conditions satisfied, we can move forward with the $t$-distribution.
-:::
+    :::
 
 ### Observed statistic vs. null statistics
 
@@ -596,10 +604,10 @@ terms_chp_22 <- c(terms_chp_22, "T score paired difference")
 ```
 
 ::: {.guidedpractice data-latex=""}
-Complete the hypothesis test started in the previous Example.[^inference-paired-means-1]
+Complete the hypothesis test started in the previous Example.[^inference-paired-means-2]
 :::
 
-[^inference-paired-means-1]: To compute the test compute the standard error associated with $\bar{x}_{diff}$ using the standard deviation of the differences $(s_{diff} = 13.42)$ and the number of differences $(n_{diff} = 68):$
+[^inference-paired-means-2]: To compute the test compute the standard error associated with $\bar{x}_{diff}$ using the standard deviation of the differences $(s_{diff} = 13.42)$ and the number of differences $(n_{diff} = 68):$
 
 $$
 SE_{\bar{x}_{diff}} = \frac{s_{diff}}{\sqrt{n_{diff}}} = \frac{13.42}{\sqrt{68}} = 1.63
@@ -637,10 +645,10 @@ axis(1, at, labels, cex.axis = 0.9)
 ```
 
 ::: {.guidedpractice data-latex=""}
-Create a 95% confidence interval for the average price difference between books at the UCLA bookstore and books on Amazon.[^inference-paired-means-2]
+Create a 95% confidence interval for the average price difference between books at the UCLA bookstore and books on Amazon.[^inference-paired-means-3]
 :::
 
-[^inference-paired-means-2]: Conditions have already verified and the standard error computed in a previous Example.\
+[^inference-paired-means-3]: Conditions have already verified and the standard error computed in a previous Example.\
     To find the confidence interval, identify $t^{\star}_{67}$ using statistical software or the $t$-table $(t^{\star}_{67} = 2.00),$ and plug it, the point estimate, and the standard error into the confidence interval formula:
 
 $$
@@ -655,10 +663,10 @@ We are 95% confident that Amazon is, on average, between \$0.32 and \$6.84 less 
 ::: {.guidedpractice data-latex=""}
 We have strong evidence that Amazon is, on average, less expensive.
 How should this conclusion affect UCLA student buying habits?
-Should UCLA students always buy their books on Amazon?[^inference-paired-means-3]
+Should UCLA students always buy their books on Amazon?[^inference-paired-means-4]
 :::
 
-[^inference-paired-means-3]: The average price difference is only mildly useful for this question.
+[^inference-paired-means-4]: The average price difference is only mildly useful for this question.
     Examine the distribution shown in Figure \@ref(fig:diffInTextbookPricesF18).
     There are certainly a handful of cases where Amazon prices are far below the UCLA Bookstore's, which suggests it is worth checking Amazon (and probably other online sites) before purchasing.
     However, in many cases the Amazon price is above what the UCLA Bookstore charges, and most of the time the price isn't that different.
