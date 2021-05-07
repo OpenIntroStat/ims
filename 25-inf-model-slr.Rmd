@@ -210,73 +210,67 @@ And last (in Section \@ref(mathslope)), we use mathematical tools to describe th
 
 ## Randomization test for $H_0: \beta_1= 0$ {#randslope}
 
-Consider the data on Global Crop Yields compiled by [Our World in Data](https://ourworldindata.org/crop-yields) and presented as part of the [TidyTuesday](https://github.com/rfordatascience/tidytuesday/trunk/data/2020/2020-09-01) series seen in Figure \@ref(fig:allcrops).
-The scientific research interest at hand will be in determining the linear relationship between wheat yield (for a country-year) and other crop yields.
-The dataset is quite rich and deserves exploring, but for this example, we will focus only on the annual crop yield in the United States.
+Consider data on 100 randomly selected births gathered originally from the US Department of Health and Human Services.[^inf-model-slr-1]
+Some of the variables are plotted in Figure \@ref(fig:babyweight).
+
+[^inf-model-slr-1]: The data used in this exercise can be found in the **openintro** R package: [`births14`](http://openintrostat.github.io/openintro/reference/births14.html).
+
+The scientific research interest at hand will be in determining the linear relationship between weight of baby at birth (in lbs) and number of weeks of gestation.
+The dataset is quite rich and deserves exploring, but for this example, we will focus only on the weight of the baby.
 
 ```{r include=FALSE}
 terms_chp_25 <- c(terms_chp_25, "randomization test for the slope")
 ```
 
-```{r allcrops, echo = FALSE, fig.cap = "Yield (in tonnes per hectare) for six different crops in the US.  The color of the dot indicates the year."}
-key_crop_yields <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-01/key_crop_yields.csv") %>%
-  rename(
-    wheat = `Wheat (tonnes per hectare)`,
-    rice = `Rice (tonnes per hectare)`,
-    maize = `Maize (tonnes per hectare)`,
-    soybeans = `Soybeans (tonnes per hectare)`,
-    potatoes = `Potatoes (tonnes per hectare)`,
-    beans = `Beans (tonnes per hectare)`,
-    peas = `Peas (tonnes per hectare)`,
-    cassava = `Cassava (tonnes per hectare)`,
-    barley = `Barley (tonnes per hectare)`,
-    cocoa = `Cocoa beans (tonnes per hectare)`,
-    bananas = `Bananas (tonnes per hectare)`
-  )
+```{r babyweight, echo = FALSE, fig.cap = "Weight of baby at birth (in lbs) as plotted by four other birth variables (mother's weight gain, mother's age, number of hospital visits, and weeks gestation)."}
 
-crops_USA <- key_crop_yields %>%
-  filter(Code == "USA") %>%
-  select(-cassava, -cocoa, -potatoes, -bananas)
+set.seed(47)
+births14_100 <- births14 %>%
+  drop_na() %>%
+  sample_n(100)
 
-crops_USA_long <- crops_USA %>%
-  pivot_longer(rice:barley,
-    names_to = "crop", values_to = "yield"
-  )
+p_gained <- ggplot(births14_100) +
+  geom_jitter(aes( y = weight, x = gained)) +
+  xlab("Weight gained by mother")
+p_mage <- ggplot(births14_100) +
+  geom_jitter(aes(y = weight, x = mage)) +
+  xlab("Mother's age")
+p_visits <- ggplot(births14_100) +
+  geom_jitter(aes(y = weight, x = visits)) +
+  xlab("Number of hospital visits during pregnancy")
+p_weeks <- ggplot(births14_100) +
+  geom_jitter(aes(x = weeks, y = weight)) +
+  xlab("Weeks of gestation")
 
-ggplot(crops_USA_long) +
-  geom_point(aes(x = yield, y = wheat, color = Year)) +
-  facet_wrap(~crop) +
-  ylim(c(1.4, 3.6)) +
-  scale_color_gradient(low = IMSCOL["blue", "f3"], high = IMSCOL["blue", "full"])
+p_gained + p_mage + p_visits + p_weeks + plot_layout(ncol = 2)
+
 ```
 
 As you have seen previously, statistical inference typically relies on setting a null hypothesis which is hoped to be subsequently rejected.
-In the linear model setting, we might hope to have a linear relationship between `maize` and `wheat` in settings where `maize` production is known and `wheat` production needs to be predicted.
+In the linear model setting, we might hope to have a linear relationship between `weeks` and `weight` in settings where `weeks` gestation is known and `weight` of baby needs to be predicted.
 
 The relevant hypotheses for the linear model setting can be written in terms of the population slope parameter.
-Here the population refers to a larger set of years where `maize` and `wheat` are both grown in the US.
+Here the population refers to a larger population of births in the US.
 
--   $H_0: \beta_1= 0$, there is no linear relationship between `wheat` and `maize`.
--   $H_A: \beta_1 \ne 0$, there is some linear relationship between `wheat` and `maize`.
+-   $H_0: \beta_1= 0$, there is no linear relationship between `weight` and `weeks`.
+-   $H_A: \beta_1 \ne 0$, there is some linear relationship between `weight` and `weeks`.
 
 Recall that for the randomization test, we permute one variables to eliminate any existing relationship between the variables.
 That is, we set the null hypothesis to be true, and we measure the natural variability in the data due to sampling but **not** due to variables being correlated.
-Figure \@ref(fig:permwheatScatter) shows the observed data and a scatterplot of one permutation of the `wheat` variable.
-The careful observer can see that each of the observed the values for `wheat` (and for `maize`) exist in both the original data plot as well as the permuted `wheat` plot, but the given `wheat` and `maize` yields are no longer matched for a given year.
-That is, each `wheat` yield is randomly assigned to a new `maize` yield.
+Figure \@ref(fig:permweightScatter) shows the observed data and a scatterplot of one permutation of the `weight` variable.
+The careful observer can see that each of the observed the values for `weight` (and for `weeks`) exist in both the original data plot as well as the permuted `weight` plot, but the `weight` and `weeks` gestation are no longer matched for a given birth.
+That is, each `weight` value is randomly assigned to a new `weeks` gestation.
 
-```{r permwheatScatter, fig.cap = "Original (left) and permuted (right) data.  The permutation removes the linear relationship between `wheat` and `maize`.  Repeated permutations allow for quantifying the variability in the slope under the condition that there is no linear relationship (i.e., that the null hypothesis is true).", fig.show = 'hold', out.width='47%', fig.ncol = 2}
+```{r permweightScatter, fig.cap = "Original (left) and permuted (right) data.  The permutation removes the linear relationship between `weight` and `weeks`.  Repeated permutations allow for quantifying the variability in the slope under the condition that there is no linear relationship (i.e., that the null hypothesis is true).", fig.show = 'hold', out.width='47%', fig.ncol = 2}
 set.seed(4747)
-ggplot(crops_USA) +
-  geom_point(aes(x = maize, y = wheat)) +
-  ggtitle("Original Data") +
-  ylim(c(1.4, 3.6))
+ggplot(births14_100) +
+  geom_point(aes(x = weeks, y = weight)) +
+  ggtitle("Original Data") 
 
-ggplot(crops_USA) +
-  geom_point(aes(x = maize, y = sample(wheat))) +
-  ylab("permuted wheat") +
-  ggtitle("Permuted Data") +
-  ylim(c(1.4, 3.6))
+ggplot(births14_100) +
+  geom_point(aes(x = weeks, y = sample(weight))) +
+  ylab("permuted weight") +
+  ggtitle("Permuted Data") 
 ```
 
 By repeatedly permuting the response variable any pattern in the linear model that is observed is due only to random chance (and not an underlying relationship).
@@ -285,38 +279,36 @@ If the observed slope is inconsistent with the slopes from permuting, we can con
 
 ### Observed data
 
-We will continue to use the crop data to investigate the linear relationship between `wheat` and `maize`.
-Note that the least squares model (see Chapter \@ref(model-slr)) describing the relationship is given in Table \@ref(tab:lsCrops).
-The columns in Table \@ref(tab:lsCrops) are further described in Section \@ref(mathslope).
+We will continue to use the births data to investigate the linear relationship between `weight` and `weeks` gestation.
+Note that the least squares model (see Chapter \@ref(model-slr)) describing the relationship is given in Table \@ref(tab:ls-births).
+The columns in Table \@ref(tab:ls-births) are further described in Section \@ref(mathslope).
 
-```{r lsCrops}
-lm(wheat ~ maize, data = crops_USA) %>%
+```{r ls-births}
+lm(weight ~ weeks, data = births14_100) %>%
   tidy() %>%
-  kable(caption = "The least squares estimates of the intercept and slope are given in the `estimate` column.  The observed slope is 0.195.") %>%
+  kbl(caption = "The least squares estimates of the intercept and slope are given in the `estimate` column.  The observed slope is 0.335.") %>%
   kable_styling()
 ```
 
 ### Variability of the statistic
 
 After permuting the data, the least squares estimate of the line can be computed.
-Repeated permutations and slope calculations describe the variability in the line (i.e., in the slope) due only to the natural variability and not due to a relationship between `wheat` and `maize`.
-Figure \@ref(fig:permwheatlm) shows two different permutations of `wheat` and the resulting linear models.
+Repeated permutations and slope calculations describe the variability in the line (i.e., in the slope) due only to the natural variability and not due to a relationship between `weight` and `weeks` gestation.
+Figure \@ref(fig:permweekslm) shows two different permutations of `weight` and the resulting linear models.
 
-```{r permwheatlm, fig.cap = "Two different permutations of the wheat variable with slightly different least squares regression lines.", fig.show = 'hold', fig.ncol = 2, out.width='47%'}
-set.seed(47)
-ggplot(crops_USA, aes(x = maize, y = sample(wheat))) +
+```{r permweekslm, fig.cap = "Two different permutations of the `weight` variable with slightly different least squares regression lines.", fig.show = 'hold', fig.ncol = 2, out.width='47%'}
+set.seed(470)
+ggplot(births14_100, aes(x = weeks, y = sample(weight))) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
+  ylab("permuted weight") +
+  ggtitle("First permutation of weight") 
+
+ggplot(births14_100, aes(x = weeks, y = sample(weight))) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
   ylab("permuted wheat") +
-  ggtitle("First Permutation of Wheat") +
-  ylim(c(1.4, 3.6))
-
-ggplot(crops_USA, aes(x = maize, y = sample(wheat))) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
-  ylab("permuted wheat") +
-  ggtitle("Second Permutation of Wheat") +
-  ylim(c(1.4, 3.6))
+  ggtitle("Second permutation of weight") 
 ```
 
 As you can see, sometimes the slope of the permuted data is positive, sometimes it is negative.
@@ -324,15 +316,15 @@ Because the randomization happens under the condition of no underlying relations
 
 ### Observed statistic vs. null statistics
 
-```{r nulldistCrop, echo=FALSE, fig.cap = "Histogram of slopes given different permutations of the wheat variable.  The vertical red line is at the observed value of the slope, 0.195."}
-perm_slope <- crops_USA %>%
-  specify(wheat ~ maize) %>%
+```{r nulldistBirths, echo=FALSE, fig.cap = "Histogram of slopes given different permutations of the `weight` variable.  The vertical red line is at the observed value of the slope, 0.335."}
+perm_slope <- births14_100 %>%
+  specify(weight ~ weeks) %>%
   hypothesize(null = "independence") %>%
   generate(reps = 1000, type = "permute") %>%
   calculate(stat = "slope")
 
-obs_slope <- crops_USA %>%
-  specify(wheat ~ maize) %>%
+obs_slope <- births14_100 %>%
+  specify(weight ~ weeks) %>%
   calculate(stat = "slope") %>%
   pull()
 
@@ -341,10 +333,10 @@ ggplot(data = perm_slope, aes(x = stat)) +
   geom_vline(xintercept = obs_slope, color = IMSCOL["red", "full"])
 ```
 
-As we can see from Figure \@ref(fig:nulldistCrop), a slope estimate as extreme as the observed slope estimate (the red line) never happened in many repeated permutations of the `wheat` variable.
-That is, if indeed there were no linear relationship between `wheat` and `maize`, the natural variability of the slopes would produce estimates between approximately -0.1 and +0.1.
+As we can see from Figure \@ref(fig:nulldistBirths), a slope estimate as extreme as the observed slope estimate (the red line) never happened in many repeated permutations of the `weight` variable.
+That is, if indeed there were no linear relationship between `weight` and `weeks`, the natural variability of the slopes would produce estimates between approximately -0.15 and +0.15.
 We reject the null hypothesis.
-Therefore, we believe that the slope observed on the original data is not just due to natural variability and indeed, there is a linear relationship between `wheat` and `maize` crop yield in the US.
+Therefore, we believe that the slope observed on the original data is not just due to natural variability and indeed, there is a linear relationship between `weight` of baby and `weeks` gestation for births in the US.
 
 ## Bootstrap confidence interval for $\beta_1$ {#bootbeta1}
 
@@ -357,104 +349,105 @@ terms_chp_25 <- c(terms_chp_25, "bootstrap CI for the slope")
 
 ### Observed data
 
-Returning to the crop data, we may want to consider the relationship between `peas` and `wheat`.
-Are `peas` a good predictor of `wheat`?
-And if so, what is their relationship?
-That is, what is the slope that models `average wheat yield` as a function of `peas`?
+Returning to the births data, we may want to consider the relationship between `mage` (mother's age) and `weight`.
+Is `mage` a good predictor of `weight`?
+And if so, what is the relationship?
+That is, what is the slope that models `average weight` of baby as a function of `mage` (mother's age)?
 
 ```{r echo = FALSE}
 set.seed(4747)
-crops4 <- crops_USA %>%
-  sample_n(size = 58, replace = TRUE)
-crops5 <- crops_USA %>%
-  sample_n(size = 58, replace = TRUE)
-crops_many_BS <- crops_USA %>%
-  rep_sample_n(size = 58, replace = TRUE, reps = 50)
+births4 <- births14_100 %>%
+  sample_n(size = 100, replace = TRUE)
+births5 <- births14_100 %>%
+  sample_n(size = 100, replace = TRUE)
+births_many_BS <- births14_100 %>%
+  rep_sample_n(size = 100, replace = TRUE, reps = 50)
 ```
 
-```{r peasPlot, echo = FALSE, fig.cap = "Original data: wheat yield as a linear model of peas yield, in tonnes per hectare.  Notice that the relationship between `peas` and `wheat` is not as strong as the relationship we saw previously between `maize` and `wheat`."}
-ggplot(crops_USA) +
-  geom_point(aes(x = peas, y = wheat)) +
-  geom_smooth(aes(x = peas, y = wheat),
+```{r magePlot, echo = FALSE, fig.cap = "Original data: `weight` of baby as a linear model of mother's age.  Notice that the relationship between `mage` and `weight` is not as strong as the relationship we saw previously between `weeks` and `weight`."}
+ggplot(births14_100) +
+  geom_point(aes(x = mage, y = weight)) +
+  geom_smooth(aes(x = mage, y = weight),
     method = "lm", se = FALSE,
     fullrange = TRUE, 
-  ) +
-  coord_cartesian(ylim = c(1.4, 3.6))
+  ) 
 ```
 
 ### Variability of the statistic
 
-Because we are not focused on a null distribution, we sample with replacement $n=58$ observations from the original dataset.
-Recall that with bootstrapping we always resample the same number of observations as we start with in order to mimic the process of taking a sample from the population.
+Because the focused is not on a null distribution, sample with replacement $n=100$ observations from the original dataset.
+Recall that with bootstrapping the resample always has the same number of observations as the original dataset in order to mimic the process of taking a sample from the population.
 When sampling in the linear model case, consider each observation to be a single dot.
-If the dot is resampled, both the `wheat` and the `peas` measurement are observed.
-The measurements are linked to the dot (i.e., to the year in which the measurements were taken).
+If the dot is resampled, both the `weight` and the `mage` measurement are observed.
+The measurements are linked to the dot (i.e., to the birth in the sample).
 
-```{r crop2BS, echo = FALSE, fig.cap = "Original and one bootstrap sample of the crop data.  Note that it is difficult to differentiate the two plots, as (within a single bootstrap sample) the observations which have been resampled twice are plotted as points on top of one another.  The orange circle represent points in the original data which were not included in the bootstrap sample.  The blue circle represents a point that was repeatedly resampled (and is therefore darker) in the bootstrap sample.  The green circle represents a particular structure to the data which is observed in both the original and bootstrap samples.",  fig.show = 'hold', out.width = '47%', fig.ncol = 2}
+```{r birth2BS, echo = FALSE, fig.cap = "Original and one bootstrap sample of the births data.  Note that it is difficult to differentiate the two plots, as (within a single bootstrap sample) the observations which have been resampled twice are plotted as points on top of one another.  The red circles represent points in the original data which were not included in the bootstrap sample.  The blue circles represents a data point that was repeatedly resampled (and is therefore darker) in the bootstrap sample.  The green circles represents a particular structure to the data which is observed in both the original and bootstrap samples.",  fig.show = 'hold', out.width = '47%', fig.ncol = 2}
 
-ggplot(crops_USA) +
-  geom_point(aes(x = maize, y = wheat), alpha = 0.4) +
-  geom_smooth(aes(x = maize, y = wheat),
+ggplot(births14_100) +
+  geom_point(aes(x = mage, y = weight), alpha = 0.4) +
+  geom_smooth(aes(x = mage, y = weight),
     method = "lm", se = FALSE,
     fullrange = TRUE
   ) +
-  ggtitle("Original crop data.") +
-  geom_point(x = 8.38, y = 2.89, color = IMSCOL["green", "full"], pch = 1, size = 8) +
-  geom_point(x = 4.15, y = 1.7, color = IMSCOL["red", "full"], pch = 1, size = 8) +
-  geom_point(x = 5.53, y = 2.28, pch = 1, size = 8) +
-  ylim(c(1.4, 3.6))
+  ggtitle("Original births data.") +
+  geom_point(x = 29, y = 9, color = IMSCOL["green", "full"], pch = 1, size = 8) +
+  geom_point(x = 20, y = 6, color = IMSCOL["red", "full"], pch = 1, size = 8) +
+  geom_point(x = 39, y = 9, pch = 1, size = 8) #+
+  #ylim(c(1.4, 3.6))
 
 
-ggplot(crops5) +
-  geom_point(aes(x = maize, y = wheat), alpha = 0.4) +
-  geom_smooth(aes(x = maize, y = wheat),
+ggplot(births5) +
+  geom_point(aes(x = mage, y = weight), alpha = 0.4) +
+  geom_smooth(aes(x = mage, y = weight),
     method = "lm", se = FALSE,
     fullrange = TRUE
   ) +
-  ggtitle("Bootstrap sample from the crop data.") +
-  geom_point(x = 8.38, y = 2.89, color = IMSCOL["green", "full"], pch = 1, size = 8) +
-  geom_point(x = 4.15, y = 1.7, color = IMSCOL["red", "full"], pch = 1, size = 8) +
-  geom_point(x = 5.53, y = 2.28, pch = 1, size = 8) +
-  ylim(c(1.4, 3.6))
+  ggtitle("Bootstrap sample from the births data.") +
+  geom_point(x = 29, y = 9, color = IMSCOL["green", "full"], pch = 1, size = 8) +
+  geom_point(x = 20, y = 6, color = IMSCOL["red", "full"], pch = 1, size = 8) +
+  geom_point(x = 39, y = 9, pch = 1, size = 8) #+
+  #ylim(c(1.4, 3.6))
 ```
 
-Figure \@ref(fig:crop2BS) shows the original data as compared with a single bootstrap sample, resulting in (slightly) different linear models.
-The orange circle represent points in the original data which were not included in the bootstrap sample.
-The blue circle represents a point that was repeatedly resampled (and is therefore darker) in the bootstrap sample.
-The green circle represents a particular structure to the data which is observed in both the original and bootstrap samples.
-By repeatedly resampling, we can see dozens of bootstrapped slopes on the same plot in Figure \@ref(fig:cropBS).
+Figure \@ref(fig:birth2BS) shows the original data as compared with a single bootstrap sample, resulting in (slightly) different linear models.
+The red circles represent points in the original data which were not included in the bootstrap sample.
+The blue circles represents a point that was repeatedly resampled (and is therefore darker) in the bootstrap sample.
+The green circles represents a particular structure to the data which is observed in both the original and bootstrap samples.
+By repeatedly resampling, we can see dozens of bootstrapped slopes on the same plot in Figure \@ref(fig:birthBS).
 
-```{r cropBS, echo = FALSE, fig.cap = "Repeated bootstrap resamples of size 58 are taken from the original data.  Each of the bootstrapped linear model is slightly different."}
-ggplot(crops_many_BS, aes(x = peas, y = wheat, group = replicate)) +
+```{r birthBS, echo = FALSE, fig.cap = "Repeated bootstrap resamples of size 100 are taken from the original data.  Each of the bootstrapped linear model is slightly different."}
+ggplot(births_many_BS, aes(x = mage, y = weight, group = replicate)) +
   # geom_point() +
-  geom_smooth(method = "lm", se = FALSE, color = IMSCOL[1, 1], fullrange = TRUE) +
-  ylim(c(1.4, 3.6))
+  geom_smooth(method = "lm", se = FALSE, color = IMSCOL[1, 1], fullrange = TRUE) 
 ```
 
 Recall that in order to create a confidence interval for the slope, we need to find the range of values that the statistic (here the slope) takes on from different bootstrap samples.
-Figure \@ref(fig:peasBSslopes) is a histogram of the relevant bootstrapped slopes.
-We can see that a 95% bootstrap percentile interval for the true population slope is given by (0.061, 0.52).
-We are 95% confident that for the model describing the population of crops of `peas` and `wheat`, a one unit increase in `peas` yield (in tonnes per hectare) will be associated with an increase in predicted average `wheat` yield of between 0.061 and 0.52 tonnes per hectare.
+Figure \@ref(fig:mageBSslopes) is a histogram of the relevant bootstrapped slopes.
+We can see that a 95% bootstrap percentile interval for the true population slope is given by (-0.01, 0.081).
+We are 95% confident that for the model describing the population of births, described by mother's age and `weight` of baby, a one unit increase in `mage` (in years) will be associated with an increase in predicted average baby `weight` of between -0.01 and 0.081 pounds (notice that the CI overlaps zero!).
 
-```{r peasBSslopes, fig.cap = "The original crop data on wheat and peas is bootstrapped 1,000 times. The histogram provides a sense for the variability of the slope of the linear model slope from sample to sample.", warning=FALSE, fig.width=15}
+```{r mageBSslopes, fig.cap = "The original births data on `weight` and `mage` is bootstrapped 1,000 times. The histogram provides a sense for the variability of the slope of the linear model slope from sample to sample.", warning=FALSE, fig.width=15}
 
-set.seed(4747)
-crops_many_lm_BS <- crops_many_BS %>%
+set.seed(47)
+births_many_BS_1000 <- births14_100 %>%
+  rep_sample_n(size = 100, replace = TRUE, reps = 1000)
+
+births_many_lm_BS <- births_many_BS_1000 %>%
   group_by(replicate) %>%
-  do(tidy(lm(wheat ~ peas, data = .))) %>%
-  filter(term == "peas")
+  do(tidy(lm(weight ~ mage, data = .))) %>%
+  filter(term == "mage")
 
-lower <- round(quantile(crops_many_lm_BS$estimate, 0.025), 3)
-upper <- round(quantile(crops_many_lm_BS$estimate, 0.975), 2)
+lower <- round(quantile(births_many_lm_BS$estimate, 0.025), 3)
+upper <- round(quantile(births_many_lm_BS$estimate, 0.975), 3)
 
-ggplot(crops_many_lm_BS, aes(x = estimate)) +
-  geom_histogram(binwidth = 0.04) +
-  annotate("segment", x = lower, xend = lower, y = 0, yend = 6, linetype = "dashed") +
-  annotate("segment", x = upper, xend = upper, y = 0, yend = 6, linetype = "dashed") +
-  annotate("text", x = lower, y = 7, label = "2.5 percentile\n0.061", size = 6) +
-  annotate("text", x = upper, y = 7, label = "97.5 percentile\n0.52", size = 6) +
+ggplot(births_many_lm_BS, aes(x = estimate)) +
+  geom_histogram() +
+  annotate("segment", x = lower, xend = lower, y = 0, yend = 18, linetype = "dashed") +
+  annotate("segment", x = upper, xend = upper, y = 0, yend = 18, linetype = "dashed") +
+  annotate("text", x = lower, y = 20, label = "2.5 percentile\n-0.01", size = 6) +
+  annotate("text", x = upper, y = 20, label = "97.5 percentile\n0.081", size = 6) +
   labs(
-    x = "Bootstrapped values of the slope statistic describing wheat and peas",
+    x = "Bootstrapped values of the slope statistic describing `weight` and `mage`",
     y = NULL
   ) +
   theme(axis.text.y = element_blank())
@@ -535,10 +528,10 @@ midterms_house_with_labels %>%
 ::: {.guidedpractice data-latex=""}
 The data for the Great Depression (1934 and 1938) were removed because the unemployment rate was 21% and 18%, respectively.
 Do you agree that they should be removed for this investigation?
-Why or why not?[^inf-model-slr-1]
+Why or why not?[^inf-model-slr-2]
 :::
 
-[^inf-model-slr-1]: The answer to this question relies on the idea that statistical data analysis is somewhat of an art.
+[^inf-model-slr-2]: The answer to this question relies on the idea that statistical data analysis is somewhat of an art.
     That is, in many situations, there is no "right" answer.
     As you do more and more analyses on your own, you will come to recognize the nuanced understanding which is needed for a particular dataset.
     In terms of the Great Depression, we will provide two contrasting considerations.
@@ -581,8 +574,7 @@ lm(house_change ~ unemp, d[th, ]) %>%
   kable_styling()
 ```
 
-::: {.workedexample data-latex=""}}
-What do the first and second columns of Table \@ref(tab:midtermUnempRegTable) represent?
+::: {.workedexample data-latex=""}} What do the first and second columns of Table \@ref(tab:midtermUnempRegTable) represent?
 
 ------------------------------------------------------------------------
 
@@ -604,8 +596,7 @@ $$
 
 This corresponds to the third column of Table \@ref(tab:midtermUnempRegTable) .
 
-::: {.workedexample data-latex=""}}
-Use Table \@ref(tab:midtermUnempRegTable) to determine the p-value for th hypothesis test
+::: {.workedexample data-latex=""}} Use Table \@ref(tab:midtermUnempRegTable) to determine the p-value for th hypothesis test
 
 ------------------------------------------------------------------------
 
@@ -618,8 +609,7 @@ As the final step in a mathematical hypothesis test for the slope, we use the in
 Before evaluating the formal hypothesis claim, sometimes it is important to check your intuition.
 Based on everything we've seen in the examples above describing the variability of a line from sample to sample, as yourself if the linear relationship given by the data could have come from a population in which the slope was truly zero.
 
-::: {.workedexample data-latex=""}}
-Examine Figure \@ref(fig:elmhurstScatterWLSROnly-CLTsection), which relates the Elmhurst College aid and student family income.
+::: {.workedexample data-latex=""}} Examine Figure \@ref(fig:elmhurstScatterWLSROnly-CLTsection), which relates the Elmhurst College aid and student family income.
 How sure are you that the slope is statistically significantly different from zero?
 That is, do you think a formal hypothesis test would reject the claim that the true slope of the line should be zero?
 
@@ -643,13 +633,13 @@ lm(gift_aid ~ family_income, d) %>%
 
 ::: {.guidedpractice data-latex=""}
 Table \@ref(tab:rOutputForIncomeAidLSRLineInInferenceSection) shows statistical software output from fitting the least squares regression line shown in Figure \@ref(fig:elmhurstScatterWLSROnly-CLTsection).
-Use the output to formally evaluate the following hypotheses.[^inf-model-slr-2]
+Use the output to formally evaluate the following hypotheses.[^inf-model-slr-3]
 
 -   $H_0$: The true coefficient for family income is zero.
 -   $H_A$: The true coefficient for family income is not zero.
 :::
 
-[^inf-model-slr-2]: We look in the second row corresponding to the family income variable.
+[^inf-model-slr-3]: We look in the second row corresponding to the family income variable.
     We see the point estimate of the slope of the line is -0.0431, the standard error of this estimate is 0.0108, and the $t$-test statistic is $T = -3.98$.
     The p-value corresponds exactly to the two-sided test we are interested in: 0.0002.
     The p-value is so small that we reject the null hypothesis and conclude that family income and financial aid at Elmhurst College for freshman entering in the year 2011 are negatively correlated and the true slope parameter is indeed less than 0, just as we believed in our analysis of Figure \@ref(fig:elmhurstScatterWLSROnly-CLTsection).
@@ -668,8 +658,7 @@ See Section \@ref(tech-cond-linmod).
 
 Similar to how we can conduct a hypothesis test for a model coefficient using regression output, we can also construct a confidence interval for that coefficient.
 
-::: {.workedexample data-latex=""}}
-Compute the 95% confidence interval for the coefficient using the regression output from Table \@ref(tab:rOutputForIncomeAidLSRLineInInferenceSection).
+::: {.workedexample data-latex=""}} Compute the 95% confidence interval for the coefficient using the regression output from Table \@ref(tab:rOutputForIncomeAidLSRLineInInferenceSection).
 
 ------------------------------------------------------------------------
 
@@ -890,10 +879,10 @@ makeTubeAdv(x, y, col =  IMSCOL["lgray", "f2"])
 ```
 
 ::: {.guidedpractice data-latex=""}
-Should we have concerns about applying least squares regression to the Elmhurst data in Figure \@ref(fig:elmhurstScatterW2Lines)?[^inf-model-slr-3]
+Should we have concerns about applying least squares regression to the Elmhurst data in Figure \@ref(fig:elmhurstScatterW2Lines)?[^inf-model-slr-4]
 :::
 
-[^inf-model-slr-3]: The trend appears to be linear, the data fall around the line with no obvious outliers, the variance is roughly constant.
+[^inf-model-slr-4]: The trend appears to be linear, the data fall around the line with no obvious outliers, the variance is roughly constant.
     These are also not time series observations.
     Least squares regression can be applied to these data.
 
