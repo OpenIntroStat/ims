@@ -95,29 +95,22 @@ In order to be able to compare equivalent units, we first divide the price for e
 That is, for a 0.99 carat diamond, we divide the price by 99. 
 For a 1 carat diamond, we divide the price by 100. The distributions and some sample statistics are shown below.
 Conduct a hypothesis test to evaluate if there is a difference between the average standardized prices of 0.99 and 1 carat diamonds. 
-Make sure to state your hypotheses clearly, check relevant conditions, and interpret your results in context of the data.[@ggplot2]
+Make sure to state your hypotheses clearly, check relevant conditions, and interpret your results in context of the data. [@ggplot2]
 
     ```{r}
     library(tidyverse)
     library(scales)
     library(kableExtra)
     
-    diamonds_100_99 <- diamonds %>%
-      mutate(ppc = price / (carat*100)) %>%
-      filter(carat %in% c(0.99, 1))
-    
-    nn_df <- diamonds_100_99 %>%
-      filter(carat == 0.99)
-    
-    # weird sampling to match old code/data
-    set.seed(123)
-    rows_to_sample <- sample(1:length(diamonds_100_99$ppc[diamonds_100_99$carat == 1]), size = 23, replace = FALSE)
-    one_df <- diamonds_100_99 %>% 
-      filter(carat == 1) %>% 
-      slice(rows_to_sample)
-    
-    diamonds_100_99_sample <- bind_rows(nn_df, one_df) %>%
-      mutate(carat = paste(carat, "carats"))
+    set.seed(47)
+    diamonds_100_99_sample <- diamonds %>%
+      filter(carat %in% c(1, 0.99)) %>%
+      group_by(carat) %>%
+      slice_sample(n = 23) %>% 
+      mutate(
+        ppc   = price/carat/100,
+        carat = if_else(carat == 1, paste(carat, "carat"), paste(carat, "carats"))
+        )
     
     diamonds_100_99_summary <- diamonds_100_99_sample %>%
       group_by(carat) %>%
@@ -137,7 +130,7 @@ Make sure to state your hypotheses clearly, check relevant conditions, and inter
                     latex_options = "striped",
                     full_width = FALSE)    
     
-    ggplot(diamonds_100_99_sample, aes(y = carat, x = ppc)) +
+    ggplot(diamonds_100_99_sample, aes(y = fct_rev(carat), x = ppc)) +
       geom_boxplot() +
       labs(y = NULL, x = "Point price (in USD)") +
       scale_x_continuous(labels = label_dollar())
@@ -172,10 +165,45 @@ If your hypothesis test yields a statistically significant result, discuss wheth
     ````
 
 1. **Diamonds, Part II.** 
-We have data on two random samples of diamonds: one with diamonds that weigh 0.99 carats and one with diamonds that weigh 1 caract. 
+We have data on two random samples of diamonds: one with diamonds that weigh 0.99 carats and one with diamonds that weigh 1 carat. 
 Each sample has 23 diamonds. 
 Sample statistics for the price per carat of diamonds in each sample are provided below.
-Assuming that the conditions for conducting inference using a mathematical model are satisfied, construct a 95% confidence interval for the average difference between the standardized prices of 0.99 and 1 carat diamonds. [@ggplot2]
+
+    ```{r}
+    library(tidyverse)
+    library(scales)
+    library(kableExtra)
+    
+    set.seed(47)
+    diamonds_100_99_sample <- diamonds %>%
+      filter(carat %in% c(1, 0.99)) %>%
+      group_by(carat) %>%
+      slice_sample(n = 23) %>% 
+      mutate(
+        ppc   = price/carat/100,
+        carat = if_else(carat == 1, paste(carat, "carat"), paste(carat, "carats"))
+        )
+    
+    diamonds_100_99_summary <- diamonds_100_99_sample %>%
+      group_by(carat) %>%
+      summarise(
+        Mean = format(mean(ppc), digits = 4, nsmall = 2),
+        SD = format(sd(ppc), digits = 4, nsmall = 2),
+        n = n()
+      ) %>%
+      mutate(
+        Mean = paste0("$", Mean),
+        SD = paste0("$", SD)
+        )
+    
+    diamonds_100_99_summary %>%
+      kbl(align = "lccc", col.names = c("", "Mean", "SD", "n"), digits = 2) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = "striped",
+                    full_width = FALSE)
+    ```
+
+    Assuming that the conditions for conducting inference using a mathematical model are satisfied, construct a 95% confidence interval for the average difference between the standardized prices of 0.99 and 1 carat diamonds. [@ggplot2]
 
 1. **Gaming, distracted eating, and intake.** 
 A group of researchers who are interested in the possible effects of distracting stimuli during eating, such as an increase or decrease in the amount of food consumption, monitored food intake for a group of 44 patients who were randomized into two equal groups. 
