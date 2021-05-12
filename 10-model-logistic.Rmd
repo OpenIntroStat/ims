@@ -116,7 +116,6 @@ resume_variables <- tribble(
 )
 
 resume_variables %>%
-  mutate(variable = cell_spec(variable, monospace = TRUE)) %>%
   kbl(booktabs = TRUE, caption = caption_helper("Descriptions of nine variables from the `resume` dataset. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = "striped", full_width = TRUE) %>%
@@ -246,9 +245,7 @@ b.  What would the probability be if the resume did list some honors?
     Notice that we could examine -2.4998 and -1.6330 in Figure \@ref(fig:logit-transformation) to estimate the probability before formally calculating the value.
 :::
 
-To convert from values on the logistic regression scale (e.g. -2.4998 and -1.6330), use the following formula,
-
-which is the result of solving for $p_i$ in the regression model:
+To convert from values on the logistic regression scale (e.g. -2.4998 and -1.6330), use the following formula, which is the result of solving for $p_i$ in the regression model:
 
 $$
 p_i = \frac{e^{b_0 + b_1 x_{1,i}+\cdots+b_k x_{k,i}}}{1 + e^{b_0 + b_1 x_{1,i}+\cdots+b_k x_{k,i}}}
@@ -283,7 +280,8 @@ resume_full_fit %>%
   mutate(p.value = "<0.0001") %>%
   kbl(booktabs = TRUE, caption = "Summary table for the full logistic regression model for the resume callback example.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = "striped", full_width = FALSE) %>%
+  column_spec(1, monospace = TRUE)
 ```
 
 Just like multiple regression, we could trim some variables from the model.
@@ -304,7 +302,8 @@ resume_fit %>%
   mutate(p.value = "<0.0001") %>%
   kbl(booktabs = TRUE, caption = "Summary table for the logistic regression model for the resume callback example, where variable selection has been performed using AIC.", digits = 4) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = "striped", full_width = FALSE) %>%
+  column_spec(1, monospace = TRUE)
 ```
 
 ::: {.workedexample data-latex=""}
@@ -381,7 +380,7 @@ The second condition of the logistic regression model is not easily checked with
 Luckily, we have 4870 resume submissions in the dataset!
 Let's first visualize these data by plotting the true classification of the resumes against the model's fitted probabilities, as shown in Figure \@ref(fig:resume-predict).
 
-```{r resume-predict, fig.cap = "The predicted probability that each of the 4870 resumes results in a callback. Points have been jittered so that those with nearly identical values aren’t plotted exactly on top of one another.", fig.asp = 0.5}
+```{r resume-predict, fig.cap = "The predicted probability that each of the 4870 resumes results in a callback. Points have been jittered so that those with nearly identical values aren’t plotted exactly on top of one another.", fig.asp = 0.4}
 resume_pred <- predict(resume_fit, new_data = resume, type = "prob") %>%
   bind_cols(resume %>% select(received_callback))
 
@@ -428,7 +427,7 @@ Of the 500 colleagues providing feedback on the promotion packet for these women
 This example highlights something profound: even in a hypothetical setting where each demographic has the same degree of prejudice against the other demographic, the smaller group experiences the negative effects more frequently.
 Additionally, if we would complete a handful of examples like the one above with different numbers, we'd learn that the greater the imbalance in the population groups, the more the smaller group is disproportionately impacted.[^model-logistic-3]
 
-[^model-logistic-3]: If a proportion $p$ of a company are women and the rest of the company consists of men, then under the hypothetical situation the ratio of rates of discrimination against women vs men would be given by $\frac{1 - p}{p}$; this ratio is always greater than 1 when $p < 0.5$.
+[^model-logistic-3]: If a proportion $p$ of a company are women and the rest of the company consists of men, then under the hypothetical situation the ratio of rates of discrimination against women versus men would be given by $(1 - p) / p$; this ratio is always greater than 1 when $p < 0.5$.
 
 Of course, there are other considerable real-world omissions from the hypothetical example.
 For example, studies have found instances where people from an oppressed group also discriminate against others within their own oppressed group.
