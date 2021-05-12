@@ -79,7 +79,17 @@ ggplot2::update_geom_defaults("smooth", list(color = openintro::IMSCOL["gray", "
 ggplot2::update_geom_defaults("dotplot", list(color = openintro::IMSCOL["blue","full"], 
                                               fill = openintro::IMSCOL["blue","full"]))
 
-# function to print terms ------------------------------------------------------
+# function: caption helper -----------------------------------------------------
+
+caption_helper <- function(txt) {
+  if (knitr::is_latex_output())
+    stringr::str_replace_all(txt, "([^`]*)`(.*?)`", "\\1\\\\texttt{\\2}") %>%
+    stringr::str_replace_all("_", "\\\\_")
+  else
+    txt
+}
+
+# function: make terms table ---------------------------------------------------
 
 make_terms_table <- function(x, n_cols = 3){
   x <- sort(x) %>% unique()
