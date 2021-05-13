@@ -1,6 +1,10 @@
 # Confidence intervals with bootstrapping {#foundations-bootstrapping}
 
-::: {.chapterintro}
+```{r, include = FALSE}
+source("_common.R")
+```
+
+::: {.chapterintro data-latex=""}
 In this chapter, we expand on the familiar idea of using a sample proportion to estimate a population proportion.
 That is, we create what is called a **confidence interval**\index{confidence interval}, which is a range of plausible values where we may find the true population value.
 The process for creating a confidence interval is based on understanding how a statistic (here the sample proportion) *varies* around the parameter (here the population proportion) when many different statistics are calculated from many different samples.
@@ -56,13 +60,11 @@ Quantifying the variability of a statistic from sample to sample is a hard probl
 Fortunately, sometimes the mathematical theory for how a statistic varies (across different samples) is well-known; this is the case for the sample proportion as seen in Chapter \@ref(foundations-mathematical).
 
 However, some statistics don't have simple theory for how they vary, and bootstrapping provides a computational approach for providing interval estimates for almost any population parameter.
-In this chapter we will focus on bootstrapping to estimate a single proportion, and we will revisit bootstrapping in Chapters \@ref(inference-one-mean) through \@ref(inference-paired-means), so you'll get plenty of practice as well as exposure to bootstrapping in many different data settings.
+In this chapter we will focus on bootstrapping to estimate a single proportion, and we will revisit bootstrapping in Chapters \@ref(inference-one-mean) through \@ref(inference-paired-means), so you'll get plenty of practice as well as exposure to bootstrapping in many different datasettings.
 
 Our goal with bootstrapping will be to produce an interval estimate (a range of plausible values) for the population parameter.
 
 ## Medical consultant case study {#case-study-med-consult}
-
-\index{data!medical consultant}
 
 People providing an organ for donation sometimes seek the help of a special medical consultant.
 These consultants assist the patient in all aspects of the surgery, with the goal of reducing the possibility of complications during the medical procedure and recovery.
@@ -73,7 +75,7 @@ Patients might choose a consultant based in part on the historical complication 
 One consultant tried to attract patients by noting the average complication rate for liver donor surgeries in the US is about 10%, but her clients have had only 3 complications in the 62 liver donor surgeries she has facilitated.
 She claims this is strong evidence that her work meaningfully contributes to reducing complications (and therefore she should be hired!).
 
-::: {.workedexample}
+::: {.workedexample data-latex=""}
 We will let $p$ represent the true complication rate for liver donors working with this consultant.
 (The "true" complication rate will be referred to as the **parameter**.) We estimate $p$ using the data, and label the estimate $\hat{p}.$
 
@@ -82,7 +84,7 @@ We will let $p$ represent the true complication rate for liver donors working wi
 The sample proportion for the complication rate is 3 complications divided by the 62 surgeries the consultant has worked on: $\hat{p} = 3/62 = 0.048.$
 :::
 
-::: {.workedexample}
+::: {.workedexample data-latex=""}
 Is it possible to assess the consultant's claim (that the reduction in complications is due to her work) using the data?
 
 ------------------------------------------------------------------------
@@ -96,7 +98,7 @@ For example, maybe patients who can afford a medical consultant can afford bette
 While it is not possible to assess the causal claim, it is still possible to understand the consultant's true rate of complications.
 :::
 
-::: {.important}
+::: {.important data-latex=""}
 **Parameter.**\index{parameter}
 
 A **parameter** is the "true" value of interest.
@@ -121,7 +123,7 @@ There is no reason to believe that $p$ is exactly $\hat{p} = 3/62,$ but there is
 
 By sampling with replacement from the dataset (a process called bootstrapping\index{bootstrapping}), the variability of the possible $\hat{p}$ values can be approximated.
 
-Most of the inferential procedures covered in this text are grounded in quantifying how one data set would differ from another when they are both taken from the same population.
+Most of the inferential procedures covered in this text are grounded in quantifying how one dataset would differ from another when they are both taken from the same population.
 
 It doesn't make sense to take repeated samples from the same population because if you have the means to take more samples, a larger sample size will benefit you more than separately evaluating two sample of the exact same size.
 
@@ -173,7 +175,7 @@ There will be 59 white marbles (no complication) and 3 red marbles (complication
 
 If we choose 62 marbles out of the bag (one at a time with replacement) and compute the proportion of simulated patients with complications, $\hat{p}_{boot},$ then this "bootstrap" proportion represents a single simulated proportion from the "resample from the sample" approach.
 
-::: {.guidedpractice}
+::: {.guidedpractice data-latex=""}
 In a simulation of 62 patients, about how many would we expect to have had a complication?[^foundations-bootstrapping-1]
 :::
 
@@ -189,7 +191,7 @@ The variability in the bootstrapped proportions leads us to believe that the tru
 
 The range of values for the true proportion is called a **bootstrap percentile confidence interval**, and we will see it again in throughout the next few sections and chapters.
 
-```{r MedConsBSSim, fig.cap = "The original medical consultant data is bootstrapped 10,000 times. Each simulation creates a sample from the original data where the probability of a complication is $\\hat{p} = 3/62.$ The bootstrap 2.5 percentile proportion is 0 and the 97.5 percentile is 0.113. The result is: we are confident that, in the population, the true probability of a complication is between 0% and 11.3%.", fig.width = 10}
+```{r MedConsBSSim, fig.cap = "(ref:MedConsBSSim-cap)", fig.width = 10}
 bsprop_med <- tibble(
   bsprop = rbinom(10000, size=62, prob=(3/62))/62
 )
@@ -222,7 +224,9 @@ ggplot(bsprop_med, aes(x = bsprop)) +
   )
 ```
 
-::: {.workedexample}
+(ref:MedConsBSSim-cap) The original medical consultant data is bootstrapped 10,000 times. Each simulation creates a sample from the original data where the probability of a complication is $\hat{p} = 3/62.$ The bootstrap 2.5 percentile proportion is 0 and the 97.5 percentile is 0.113. The result is: we are confident that, in the population, the true probability of a complication is between 0% and 11.3%.
+
+::: {.workedexample data-latex=""}
 The original claim was that the consultant's true rate of complication was under the national rate of 10%.
 Does the interval estimate of 0 to 11.3% for the true probability of complication indicate that the surgical consultant has a lower rate of complications than the national average?
 Explain.
@@ -233,8 +237,6 @@ No.
 Because the interval overlaps 10%, it might be that the consultant's work is associated with a lower risk of complications, or it might be that the consultant's work is associated with a higher risk (i.e., greater than 10%) of complications!
 Additionally, as previously mentioned, because this is an observational study, even if an association can be measured, there is no evidence that the consultant's work is the cause of the complication rate (being higher or lower).
 :::
-
-\index{data!medical consultant|)}
 
 ## Tappers and listeners case study {#tapperscasestudy}
 
@@ -278,7 +280,7 @@ As before, we'll run a total of 10,000 simulations using a computer.
 As seen in Figure \@ref(fig:tappers-bs-sim), the range of 95% of the resampled values of $\hat{p}_{boot}$ is 0.000 to 0.0583.
 That is, we expect that between 0% and 5.83% of people are truly able to guess the tapper's tune.
 
-```{r tappers-bs-sim, fig.cap = "The original listener-tapper data is bootstrapped 10,000 times. Each simulation creates a sample where the probability of being correct is $\\hat{p} = 3/120.$ The 2.5 percentile proportion is 0 and the 97.5 percentile is 0.0583. The result is that we are confident that, in the population, the true percent of people who can guess correctly is between 0% and 5.83%.", fig.width = 10}
+```{r tappers-bs-sim, fig.cap = "(ref:tappers-bs-sim-cap)", fig.width = 10}
 bsprop_tap <- tibble(
   bsprop = rbinom(10000, size=120, prob=(3/120))/120
 )
@@ -311,7 +313,9 @@ ggplot(bsprop_tap, aes(x = bsprop)) +
   )
 ```
 
-::: {.guidedpractice}
+(ref:tappers-bs-sim-cap) The original listener-tapper data is bootstrapped 10,000 times. Each simulation creates a sample where the probability of being correct is $\hat{p} = 3/120.$ The 2.5 percentile proportion is 0 and the 97.5 percentile is 0.0583. The result is that we are confident that, in the population, the true percent of people who can guess correctly is between 0% and 5.83%.
+
+::: {.guidedpractice data-latex=""}
 Do the data provide "statistically significant" evidence against the claim that 50% of listeners can guess the tapper's tune?[^foundations-bootstrapping-3]
 :::
 
@@ -336,7 +340,7 @@ On the other hand, if we toss a net in that area, we have a good chance of catch
 If we report a point estimate, we probably will not hit the exact population parameter.
 On the other hand, if we report a range of plausible values -- a confidence interval -- we have a good shot at capturing the parameter.
 
-::: {.guidedpractice}
+::: {.guidedpractice data-latex=""}
 If we want to be very certain we capture the population parameter, should we use a wider interval or a smaller interval?[^foundations-bootstrapping-4]
 :::
 
@@ -365,7 +369,7 @@ Due to theory that is beyond this text, we know that the bootstrap proportions $
 
 Therefore, an interval estimate for $p$ can be produced using the $\hat{p}_{boot}$ values themselves.
 
-::: {.important}
+::: {.important data-latex=""}
 **95% Bootstrap percentile confidence interval for a parameter** $p.$
 
 The 95% bootstrap confidence interval for the parameter $p$ can be obtained directly using the ordered values $\hat{p}_{boot}$ values.
@@ -379,6 +383,8 @@ The 95% confidence interval is given by: (lower, upper)
 In Section \@ref(one-prop-null-boot) we will discuss different percentages for the confidence interval (e.g., 90% confidence interval or 99% confidence interval).
 
 Section \@ref(one-prop-null-boot) also provides a longer discussion on what "95% confidence" actually means.
+
+\clearpage
 
 ## Chapter review {#chp13-review}
 
@@ -404,9 +410,11 @@ Table \@ref(tab:chp13-summary) is another look at the Bootstrap process summary.
 inference_method_summary_table %>%
   filter(question != "What are the technical conditions?") %>%
   select(question, bootstrapping) %>%
-  kable(caption = "Summary of bootstrapping as an inferential statistical method.", 
-        col.names = c("", "Bootstrapping")) %>%
-  kable_styling()
+  kbl(booktabs = TRUE, caption = "Summary of bootstrapping as an inferential statistical method.",
+      col.names = c("Question", "Answer")) %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
+  column_spec(1, width = "15em")
 ```
 
 ### Terms
@@ -419,6 +427,8 @@ However you should be able to easily spot them as **bolded text**.
 ```{r}
 make_terms_table(terms_chp_13)
 ```
+
+\clearpage
 
 ## Exercises {#chp13-exercises}
 
