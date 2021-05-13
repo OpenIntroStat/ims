@@ -7,7 +7,6 @@ source("_common.R")
 ::: {.chapterintro data-latex=""}
 In this chapter we introduce **logistic regression** as a tool for building models when there is a categorical response variable with two levels, e.g. yes and no.
 Logistic regression is a type of **generalized linear model (GLM)** for response variables where regular multiple regression does not work very well.
-In particular, the response variable in these settings often takes a form where residuals look completely different from the normal distribution.
 GLMs can be thought of as a two-stage modeling approach.
 We first model the response variable using a probability distribution, such as the binomial or Poisson distribution.
 Second, we model the parameter of the distribution using a collection of predictors and a special form of multiple regression.
@@ -231,13 +230,13 @@ The following logistic regression model was fit using statistical software:
 
 $$\log_e \left( \frac{p_i}{1-p_i} \right) = -2.4998 + 0.8668 \times {\texttt{honors}}$$
 
-a.  If a resume is randomly selected from the study and it does not have any honors listed, what is the probability resulted in a callback?
+a.  If a resume is randomly selected from the study and it does not have any honors listed, what is the probability it resulted in a callback?
 
 b.  What would the probability be if the resume did list some honors?
 
 ------------------------------------------------------------------------
 
-(a) If a randomly chosen resume from those sent out is considered, and it does not list honors, then takes value 0 and the right side of the model equation equals -2.4998.
+(a) If a randomly chosen resume from those sent out is considered, and it does not list honors, then `honors` takes the value 0 and the right side of the model equation equals -2.4998.
     Solving for $p_i$: $\frac{e^{-2.4998}}{1 + e^{-2.4998}} = 0.076$.
     Just as we labeled a fitted value of $y_i$ with a "hat" in single-variable and multiple regression, we do the same for this probability: $\hat{p}_i = 0.076{}$.
 
@@ -268,7 +267,6 @@ While knowing whether a resume listed honors provides some signal when predictin
 
 We used statistical software to fit the logistic regression model with all 8 predictors described in Table \@ref(tab:resume-variables).
 Like multiple regression, the result may be presented in a summary table, which is shown in Table \@ref(tab:resume-full-fit).
-The structure of this table is almost identical to that of multiple regression; the only notable difference is that the p-values are calculated using the normal distribution rather than the $t$-distribution.
 
 ```{r resume-full-fit}
 resume_full_fit <- logistic_reg() %>%
@@ -277,11 +275,12 @@ resume_full_fit <- logistic_reg() %>%
 
 resume_full_fit %>%
   tidy() %>%
-  mutate(p.value = "<0.0001") %>%
-  kbl(booktabs = TRUE, caption = "Summary table for the full logistic regression model for the resume callback example.") %>%
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+  kbl(booktabs = TRUE, 
+      caption = "Summary table for the full logistic regression model for the resume callback example.", digits = 2, align = "lrrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  column_spec(1, monospace = TRUE)
+  column_spec(1:5, width= "6em")
 ```
 
 Just like multiple regression, we could trim some variables from the model.
@@ -299,23 +298,24 @@ resume_fit <- logistic_reg() %>%
 
 resume_fit %>%
   tidy() %>%
-  mutate(p.value = "<0.0001") %>%
-  kbl(booktabs = TRUE, caption = "Summary table for the logistic regression model for the resume callback example, where variable selection has been performed using AIC.", digits = 4) %>%
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+  kbl(booktabs = TRUE, 
+      caption = "Summary table for the logistic regression model for the resume callback example, where variable selection has been performed using AIC.",
+      digits = 2, align = "lrrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  column_spec(1, monospace = TRUE)
+  column_spec(1:5, width= "6em")
 ```
 
 ::: {.workedexample data-latex=""}
 The `race` variable had taken only two levels: `Black` and `White`.
-Based on the model results, was race a meaningful factor for if a prospective employer would call back?
+Based on the model results, what does the coefficient of this variable say about callback decisions?
 
 ------------------------------------------------------------------------
 
-We see that the p-value for this coefficient is very small (very nearly zero), which implies that race played a statistically significant role in whether a candidate received a callback.
-Additionally, we see that the coefficient shown corresponds to the level of `White`, and it is positive.
+The coefficient shown corresponds to the level of `White`, and it is positive.
 This positive coefficient reflects a positive gain in callback rate for resumes where the candidate's first name implied they were White.
-The data provide very strong evidence of racism by prospective employers that favors resumes where the first name is typically interpreted to be White.
+The model results suggest that prospective employers favor resumes where the first name is typically interpreted to be White.
 :::
 
 The coefficient of $\texttt{race}_{\texttt{White}}$ in the full model in Table \@ref(tab:resume-full-fit), is nearly identical to the model shown in Table \@ref(tab:resume-fit).
