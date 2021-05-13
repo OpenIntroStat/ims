@@ -1,5 +1,9 @@
 # Inference with mathematical models {#foundations-mathematical}
 
+```{r, include = FALSE}
+source("_common.R")
+```
+
 ::: {.chapterintro data-latex=""}
 In Chapters \@ref(foundations-randomization) and \@ref(foundations-bootstrapping) questions about population parameters were addressed using computational techniques.
 With randomization tests, the data were permuted assuming the null hypothesis.
@@ -216,7 +220,7 @@ ggplot(ucla_textbooks_f18, aes(x = diff)) +
 ```
 
 ::: {.data data-latex=""}
-The data from this study can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`ucla_textbooks_f18`](http://openintrostat.github.io/openintro/reference/ucla_textbooks_f18.html).
+The data from this study can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package: [`ucla_textbooks_f18`](http://openintrostat.github.io/openintro/reference/ucla_textbooks_f18.html).
 :::
 
 ::: {.workedexample data-latex=""}
@@ -351,21 +355,10 @@ Write down the short-hand for a normal distribution with (a) mean 5 and standard
 ### Standardizing with Z scores
 
 ::: {.guidedpractice data-latex=""}
-The table below shows the mean and standard deviation for total scores on the SAT and ACT.
-The distribution of SAT and ACT scores are both nearly normal.
-Suppose Nel scored 1800 on their SAT and Sian scored 24 on their ACT.
+SAT scores follow a nearly normal distribution with a mean of 1500 points and a standard deviation of 300 points.
+ACT scores also follow a nearly normal distribution with mean of 21 points and a standard deviation of 5 points.
+Suppose Nel scored 1800 points on their SAT and Sian scored 24 points on their ACT.
 Who performed better?[^foundations-mathematical-5]
-
-```{r satACTstats}
-tribble(
- ~variable,  ~col1, ~col2, 
- "Mean", "1500", "21",
- "SD", "300", "5"
-) %>%
- kbl(col.names = c("", "SAT", "ACT")) %>%
- kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) 
-```
 :::
 
 [^foundations-mathematical-5]: We use the standard deviation as a guide.
@@ -507,11 +500,11 @@ Normal probabilities are most commonly found using statistical software which we
 We use the software to identify the percentile corresponding to any particular Z score.
 For instance, the percentile of $Z=0.43$ is 0.6664, or the $66.64^{th}$ percentile.
 The `pnorm()` function is available in default R and will provide the percentile associated with any cutoff on a normal curve.
-The `normTail()` function is available in the [**openintro**](http://openintrostat.github.io/openintro/) R package and will draw the associated.
+The `normTail()` function is available in the [**openintro**](http://openintrostat.github.io/openintro/) R package and will draw the associated curve.
 
 ```{r echo = TRUE, fig.asp = 0.5}
 pnorm(0.43, mean = 0, sd = 1)
-openintro::normTail(m = 0, s = 1, L = 0.43)
+normTail(m = 0, s = 1, L = 0.43)
 ```
 
 We can also find the Z score associated with a percentile.
@@ -1108,17 +1101,15 @@ These results are surprising!
 The point estimate suggests that patients who received stents may have a *higher* risk of stroke: $p_{trmt} - p_{ctrl} = 0.090.$
 
 ```{r stentStudyResultsCIsection}
-temptbl <- tribble(
- ~variable,    ~col1, ~col2, ~col3, 
- "treatment", "33", "191", "224",
- "control", "13", "214","227",
- "Total", "46", "405", "451"
-)
-temptbl %>%
- kbl(caption = "Descriptive statistics for 30-day results for the stent study.",
-    col.names = c( "", "stroke", "no event", "Total")) %>%
- kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) 
+stent30 %>%
+  count(group, outcome) %>%
+  pivot_wider(names_from = outcome, values_from = n, values_fill = 0) %>%
+  janitor::adorn_totals(where = c("row", "col")) %>%
+  kbl(booktabs = TRUE, caption = "Descriptive statistics for 30-day results for the stent study.",
+      col.names = c("Group", "Stroke", "No event", "Total")) %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(1:4, width = "7em")
 ```
 
 ### Variability of the statistic
@@ -1205,6 +1196,8 @@ Confidence intervals provide an interval estimate for and attempt to capture **p
 
 \index{confidence interval}
 
+\clearpage
+
 ## Chapter review {#chp14-review}
 
 ### Summary
@@ -1224,10 +1217,11 @@ Table \@ref(tab:chp14-summary) is another look at the mathematical model approac
 inference_method_summary_table %>%
   filter(question != "What are the technical conditions?") %>%
   select(question, mathematical) %>%
-  kbl(caption = "Summary of mathematical models as an inferential statistical method.", 
-        col.names = c("", "Mathematical models")) %>%
+  kbl(booktabs = TRUE, caption = "Summary of mathematical models as an inferential statistical method.", 
+      col.names = c("Question", "Answer")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
+  column_spec(1, width = "15em")
 ```
 
 ### Terms
@@ -1240,6 +1234,8 @@ However you should be able to easily spot them as **bolded text**.
 ```{r}
 make_terms_table(terms_chp_14)
 ```
+
+\clearpage
 
 ## Exercises {#chp14-exercises}
 

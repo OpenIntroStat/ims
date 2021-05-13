@@ -1,5 +1,9 @@
 # Logistic regression {#model-logistic}
 
+```{r, include = FALSE}
+source("_common.R")
+```
+
 ::: {.chapterintro data-latex=""}
 In this chapter we introduce **logistic regression** as a tool for building models when there is a categorical response variable with two levels, e.g. yes and no.
 Logistic regression is a type of **generalized linear model (GLM)** for response variables where regular multiple regression does not work very well.
@@ -26,8 +30,55 @@ Finally, they randomly assigned a name to each resume, where the name would impl
     That is, the most interesting conclusions in the study are unaffected even when completing a more sophisticated analysis.
 
 ::: {.data data-latex=""}
-The data from this study can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`resume`](http://openintrostat.github.io/openintro/reference/resume.html).
+The data from this study can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package: [`resume`](http://openintrostat.github.io/openintro/reference/resume.html).
 :::
+
+The first names that were used and randomly assigned in this experiment were selected so that they would predominantly be recognized as belonging to Black or White individuals; other races were not considered in this study.
+While no name would definitively be inferred as pertaining to a Black individual or to a White individual, the researchers conducted a survey to check for racial association of the names; names that did not pass this survey check were excluded from usage in the experiment.
+You can find the full set of names that did pass the survey test and were ultimately used in the study in Table \@ref(tab:resume-names).
+For example, Lakisha was a name that their survey indicated would be interpreted as a Black woman, while Greg was a name that would generally be interpreted to be associated with a White male.
+
+```{r resume-names}
+resume_names_full <- resume %>% 
+  select(firstname, race, gender) %>% 
+  distinct(firstname, .keep_all = TRUE) %>% 
+  arrange(firstname) %>%
+  rownames_to_column() %>% 
+  mutate(
+    rowname = as.numeric(rowname), 
+    column = cut(rowname, breaks = c(0, 12, 24, 36)),
+    race = str_to_title(race),
+    sex = if_else(gender == "f", "female", "male"),
+    column = as.numeric(column)
+    ) %>%
+  select(-rowname, -gender) %>%
+  relocate(column)
+
+resume_names_1 <- resume_names_full %>% 
+  filter(column == 1) %>%
+  select(-column)
+
+resume_names_2 <- resume_names_full %>% 
+  filter(column == 2) %>%
+  select(-column)
+
+resume_names_3 <- resume_names_full %>% 
+  filter(column == 3) %>%
+  select(-column)
+
+resume_names_1 %>%
+  bind_cols(resume_names_2) %>%
+  bind_cols(resume_names_3) %>%
+  kbl(booktabs = TRUE, align = "lllllllll", 
+      col.names = c("first_name", "race", "sex",
+                    "first_name", "race", "sex",
+                    "first_name", "race", "sex"),
+      caption = "List of all 36 unique names along with the commonly inferred race and sex associated with these names.") %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(4, border_left = T) %>% 
+  column_spec(7, border_left = T)
+```
 
 ```{r resume-data-prep}
 resume <- resume %>%
@@ -44,55 +95,6 @@ resume <- resume %>%
     ) %>%
   select(received_callback, job_city, college_degree, years_experience,
          honors, military, has_email_address, race, sex)
-```
-
-The first names that were used and randomly assigned in this experiment were selected so that they would predominantly be recognized as belonging to Black or White individuals; other races were not considered in this study.
-While no name would definitively be inferred as pertaining to a Black individual or to a White individual, the researchers conducted a survey to check for racial association of the names; names that did not pass this survey check were excluded from usage in the experiment.
-You can find the full set of names that did pass the survey test and were ultimately used in the study in Table \@ref(tab:resume-names).
-For example, Lakisha was a name that their survey indicated would be interpreted as a Black woman, while Greg was a name that would generally be interpreted to be associated with a White male.
-
-```{r resume-names}
-resume_names <- tribble(
-  ~first_name, ~race, ~sex,
-  "Aisha", "Black", "female",
-  "Allison", "White", "female",
-  "Anne", "White", "female",
-  "Brad", "White", "male",
-  "Brendan", "White", "male",
-  "Brett", "White", "male",
-  "Carrie", "White", "female",
-  "Darnell", "Black", "male",
-  "Ebony", "Black", "female",
-  "Emily", "White", "female",
-  "Geoffrey", "White", "male",
-  "Greg", "White", "male",
-  "Hakim", "Black", "male",
-  "Jamal", "Black", "male",
-  "Jay", "White", "male",
-  "Jermaine", "Black", "male",
-  "Jill", "White", "female",
-  "Kareem", "Black", "male",
-  "Keisha", "Black", "female",
-  "Kenya", "Black", "female",
-  "Kristen", "White", "female",
-  "Lakisha", "Black", "female",
-  "Latonya", "Black", "female",
-  "Latoya", "Black", "female",
-  "Laurie", "White", "female",
-  "Leroy", "Black", "male",
-  "Matthew", "White", "male",
-  "Meredith", "White", "female",
-  "Neil", "White", "male",
-  "Rasheed", "Black", "male",
-  "Sarah", "White", "female",
-  "Tamika", "Black", "female",
-  "Tanisha", "Black", "female",
-  "Todd", "White", "male",
-  "Tremayne", "Black", "male",
-  "Tyrone", "Black", "male"
-)
-kbl(resume_names, 
-      caption = "List of all 36 unique names along with the commonly inferred race and sex associated with these names.")
 ```
 
 The response variable of interest is whether or not there was a callback from the employer for the applicant, and there were 8 attributes that were randomly assigned that we'll consider, with special interest in the race and sex variables.
@@ -114,10 +116,11 @@ resume_variables <- tribble(
 )
 
 resume_variables %>%
-  mutate(variable = cell_spec(variable, monospace = TRUE)) %>%
-  kbl(escape = FALSE, caption = "Descriptions for the `received_callback` variable along with 8 other variables in the `resume` data set. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.") %>%
+  kbl(booktabs = TRUE, caption = caption_helper("Descriptions of nine variables from the `resume` dataset. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
+  column_spec(1, monospace = TRUE) %>%
+  column_spec(2, width = "30em")
 ```
 
 All of the attributes listed on each resume were randomly assigned.
@@ -242,9 +245,7 @@ b.  What would the probability be if the resume did list some honors?
     Notice that we could examine -2.4998 and -1.6330 in Figure \@ref(fig:logit-transformation) to estimate the probability before formally calculating the value.
 :::
 
-To convert from values on the logistic regression scale (e.g. -2.4998 and -1.6330), use the following formula,
-
-which is the result of solving for $p_i$ in the regression model:
+To convert from values on the logistic regression scale (e.g. -2.4998 and -1.6330), use the following formula, which is the result of solving for $p_i$ in the regression model:
 
 $$
 p_i = \frac{e^{b_0 + b_1 x_{1,i}+\cdots+b_k x_{k,i}}}{1 + e^{b_0 + b_1 x_{1,i}+\cdots+b_k x_{k,i}}}
@@ -277,9 +278,10 @@ resume_full_fit <- logistic_reg() %>%
 resume_full_fit %>%
   tidy() %>%
   mutate(p.value = "<0.0001") %>%
-  kbl(caption = "Summary table for the full logistic regression model for the resume callback example.") %>%
+  kbl(booktabs = TRUE, caption = "Summary table for the full logistic regression model for the resume callback example.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(1, monospace = TRUE)
 ```
 
 Just like multiple regression, we could trim some variables from the model.
@@ -298,9 +300,10 @@ resume_fit <- logistic_reg() %>%
 resume_fit %>%
   tidy() %>%
   mutate(p.value = "<0.0001") %>%
-  kbl(caption = "Summary table for the logistic regression model for the resume callback example, where variable selection has been performed using AIC.", digits = 4) %>%
+  kbl(booktabs = TRUE, caption = "Summary table for the logistic regression model for the resume callback example, where variable selection has been performed using AIC.", digits = 4) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(1, monospace = TRUE)
 ```
 
 ::: {.workedexample data-latex=""}
@@ -329,7 +332,7 @@ We can start by writing out the equation using the coefficients from the model, 
 $$
 \begin{aligned}
 &log_e \left(\frac{p}{1 - p}\right) \\
-&\quad= - 2.7162 - 0.4364 \times \texttt{job_city}_{\texttt{Chicago}}        + 0.0206 \times \texttt{years_experience} \\
+&\quad= - 2.7162 - 0.4364 \times \texttt{job\_city}_{\texttt{Chicago}}        + 0.0206 \times \texttt{years\_experience} \\
 &\quad\qquad + 0.7634 \times \texttt{honors} - 0.3443 \times \texttt{military} + 0.2221 \times \texttt{email} \\
 &\quad\qquad + 0.4429 \times \texttt{race}_{\texttt{White}} - 0.1959 \times \texttt{sex}_{\texttt{man}} \\
 &\quad= - 2.7162 - 0.4364 \times 1 + 0.0206 \times 14 \\
@@ -374,17 +377,18 @@ There are two key conditions for fitting a logistic regression model:
 The first logistic regression model condition --- independence of the outcomes --- is reasonable for the experiment since characteristics of resumes were randomly assigned to the resumes that were sent out.
 
 The second condition of the logistic regression model is not easily checked without a fairly sizable amount of data.
-Luckily, we have 4870 resume submissions in the data set!
+Luckily, we have 4870 resume submissions in the dataset!
 Let's first visualize these data by plotting the true classification of the resumes against the model's fitted probabilities, as shown in Figure \@ref(fig:resume-predict).
 
-```{r resume-predict, fig.cap = "The predicted probability that each of the 4870 resumes results in a callback. Points have been jittered so that those with nearly identical values aren’t plotted exactly on top of one another."}
+```{r resume-predict, fig.cap = "The predicted probability that each of the 4870 resumes results in a callback. Points have been jittered so that those with nearly identical values aren’t plotted exactly on top of one another.", fig.asp = 0.4}
 resume_pred <- predict(resume_fit, new_data = resume, type = "prob") %>%
   bind_cols(resume %>% select(received_callback))
 
 ggplot(resume_pred, aes(x = .pred_1, y = received_callback)) +
   geom_jitter(alpha = 0.15) +
   coord_cartesian(xlim = c(0, 1)) +
-  labs(y = "Recevied callback", y = "Predicticted probability that resume results in a callback")
+  labs(y = "Recevied callback",
+       x = "Predicticted probability that resume results in a callback")
 ```
 
 <!--# Omitting bucket diagram for diagnostics since it uses 95% CI which we haven't discussed yet. Should it go in the final chapter? -->
@@ -423,7 +427,7 @@ Of the 500 colleagues providing feedback on the promotion packet for these women
 This example highlights something profound: even in a hypothetical setting where each demographic has the same degree of prejudice against the other demographic, the smaller group experiences the negative effects more frequently.
 Additionally, if we would complete a handful of examples like the one above with different numbers, we'd learn that the greater the imbalance in the population groups, the more the smaller group is disproportionately impacted.[^model-logistic-3]
 
-[^model-logistic-3]: If a proportion $p$ of a company are women and the rest of the company consists of men, then under the hypothetical situation the ratio of rates of discrimination against women vs men would be given by $\frac{1 - p}{p}$; this ratio is always greater than 1 when $p < 0.5$.
+[^model-logistic-3]: If a proportion $p$ of a company are women and the rest of the company consists of men, then under the hypothetical situation the ratio of rates of discrimination against women versus men would be given by $(1 - p) / p$; this ratio is always greater than 1 when $p < 0.5$.
 
 Of course, there are other considerable real-world omissions from the hypothetical example.
 For example, studies have found instances where people from an oppressed group also discriminate against others within their own oppressed group.
@@ -432,6 +436,8 @@ Ultimately, discrimination is complex, and there are many factors at play beyond
 
 We close this book on this serious topic, and we hope it inspires you to think about the power of reasoning with data.
 Whether it is with a formal statistical model or by using critical thinking skills to structure a problem, we hope the ideas you have learned will help you do more and do better in life.
+
+\clearpage
 
 ## Chapter review {#chp10-review}
 
@@ -452,6 +458,8 @@ However you should be able to easily spot them as **bolded text**.
 ```{r}
 make_terms_table(terms_chp_10)
 ```
+
+\clearpage
 
 ## Exercises {#chp10-exercises}
 

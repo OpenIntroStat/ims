@@ -1,5 +1,9 @@
 # Inference for a single mean {#inference-one-mean}
 
+```{r, include = FALSE}
+source("_common.R")
+```
+
 ::: {.chapterintro data-latex=""}
 Focusing now on Statistical Inference for **numerical data**, again, we will revisit and expand upon the foundational aspects of hypothesis testing from Chapter \@ref(foundations-randomization).
 
@@ -235,10 +239,9 @@ Using Figure \@ref(fig:carsbssd), find *and interpret* a 90% confidence interval
     A lower degree of confidence increases potential for error, but it also produces a more narrow interval.
 
 ```{r carsbssd, fig.cap="The original Awesome Auto data is bootstrapped 1,000 times. The histogram provides a sense for the variability of the standard deviation of the car prices from sample to sample.", warning=FALSE, fig.width=15}
-
 bscars_sd <- bscars %>%
   group_by(replicate) %>% 
-  summarize( car_bssd = sd(price)) %>%
+  summarize(car_bssd = sd(price)) %>%
   pull()
 
 bsq1 <- quantile(bscars_sd, probs = c(0.005, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.995))
@@ -407,11 +410,11 @@ For example, consider the number of followers for each individual account on Twi
 The large majority of accounts have built up a couple thousand followers or fewer, while a relatively tiny fraction have amassed tens of millions of followers, meaning the distribution is extremely skewed.
 When we know the data come from such an extremely skewed distribution, it takes some effort to understand what sample size is large enough for the normality condition to be satisfied.
 
-\index{Central Limit Theorem!normal data|)}
+\index{Central Limit Theorem}
 
 ### Introducing the t-distribution
 
-\index{t-distribution@$t$-distribution|(} \index{distribution!t@$t$|(}
+\index{t-distribution}
 
 In practice, we cannot directly calculate the standard error for $\bar{x}$ since we do not know the population standard deviation, $\sigma.$ We encountered a similar issue when computing the standard error for a sample proportion, which relied on the population proportion, $p.$ Our solution in the proportion context was to use sample value in place of the population value when computing the standard error.
 We'll employ a similar strategy for computing the standard error of $\bar{x},$ using the sample standard deviation $s$ in place of $\sigma:$
@@ -456,8 +459,6 @@ ggplot(df, aes(x = x, y = y, color = distribution, linetype = distribution, size
 The $t$-distribution is always centered at zero and has a single parameter: degrees of freedom.
 The **degrees of freedom** describes the precise form of the bell-shaped $t$-distribution.
 Several $t$-distributions are shown in Figure \@ref(fig:tDistConvergeToNormalDist) in comparison to the normal distribution.
-
-\termsub{degrees of freedom $(\pmb{df})$}{degrees of freedom $(df)$!$t$-distribution}
 
 In general, we'll use a $t$-distribution with $df = n - 1$ to model the sample mean when the sample size is $n.$ That is, when we have more observations, the degrees of freedom will be larger and the $t$-distribution will look more like the standard normal distribution; when the degrees of freedom is about 30 or more, the $t$-distribution is nearly indistinguishable from the normal distribution.
 
@@ -589,11 +590,9 @@ Use your preferred method for finding tail areas.[^inference-one-mean-5]
 [^inference-one-mean-5]: We want to find the shaded area *above* -1.79 (we leave the picture to you).
     The lower tail area has an area of 0.0447, so the upper area would have an area of $1 - 0.0447 = 0.9553.$
 
-\index{distribution!t@$t$|)} \index{t-distribution@$t$-distribution|)}
+\index{t-distribution}
 
 ### One sample t-intervals
-
-\index{data!dolphins and mercury|(}
 
 Let's get our first taste of applying the $t$-distribution in the context of an example about the mercury content of dolphin muscle.
 Elevated mercury concentrations are an important problem for both dolphins and other animals, like humans, who occasionally eat them.
@@ -607,21 +606,21 @@ The data are summarized in Table \@ref(tab:summaryStatsOfHgInMuscleOfRissosDolph
 The minimum and maximum observed values can be used to evaluate whether or not there are clear outliers.
 
 ```{r summaryStatsOfHgInMuscleOfRissosDolphins}
-temptbl <- tribble(
- ~col0,    ~col1, ~col2, ~col3, ~col4,
- 19, 4.4, 2.3, 1.7, 9.2
+dolphin_summary_stats <- tribble(
+  ~col0, ~col1, ~col2, ~col3, ~col4,
+  19,    4.4,   2.3,   1.7,   9.2
 )
 
-temptbl %>%
- kbl(caption = "Summary of mercury content in the muscle of 19 Risso's dolphins from the Taiji area. Measurements are in micrograms of mercury per wet gram
-    of muscle $(\\mu$g/wet g).",
-    col.names = c( "$n$", "$\\bar{x}$", "s", "minimum", "maximum")) %>%
- kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) 
+dolphin_summary_stats %>%
+  kbl(booktabs = TRUE, caption = "Summary of mercury content in the muscle of 19 Risso's dolphins from the Taiji area. Measurements are in micrograms of mercury per wet gram of muscle $(\\mu$g/wet g).",
+      col.names = c("$n$", "$\\bar{x}$", "s", "min", "max"), align = "ccccc") %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+               latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(1:5, width = "8em")
 ```
 
 ::: {.workedexample data-latex=""}
-Are the independence and normality conditions satisfied for this data set?
+Are the independence and normality conditions satisfied for this dataset?
 
 ------------------------------------------------------------------------
 
@@ -634,10 +633,10 @@ In the normal model, we used $z^{\star}$ and the standard error to determine the
 We revise the confidence interval formula slightly when using the $t$-distribution:
 
 $$
-\begin{align*}
+\begin{aligned}
 \text{point estimate} \ &\pm\  t^{\star}_{df} \times SE \\
 \bar{x} \ &\pm\  t^{\star}_{df} \times \frac{s}{\sqrt{n}}
-\end{align*}
+\end{aligned}
 $$
 
 ::: {.workedexample data-latex=""}
@@ -683,17 +682,15 @@ Compute and interpret the 95% confidence interval for the average mercury conten
 We can construct the confidence interval as
 
 $$
-\begin{align*}
+\begin{aligned}
 \bar{x} \ &\pm\  t^{\star}_{18} \times SE \\
 4.4 \ &\pm\  2.10 \times 0.528 \\
 (3.29 \  &, \ 5.51)
-\end{align*} 
+\end{aligned} 
 $$
 
 We are 95% confident the average mercury content of muscles in Risso's dolphins is between 3.29 and 5.51 $\mu$g/wet gram, which is considered extremely high.
 :::
-
-\index{data!dolphins and mercury|)}
 
 ::: {.important data-latex=""}
 **Calculating a** $t$**-confidence interval for the mean,** $\mu.$
@@ -701,10 +698,10 @@ We are 95% confident the average mercury content of muscles in Risso's dolphins 
 Based on a sample of $n$ independent and nearly normal observations, a confidence interval for the population mean is
 
 $$
-\begin{align*}
+\begin{aligned}
 \text{point estimate} \ &\pm\  t^{\star}_{df} \times SE \\
 \bar{x} \ &\pm\  t^{\star}_{df} \times \frac{s}{\sqrt{n}}
-\end{align*}
+\end{aligned}
 $$
 
 where $\bar{x}$ is the sample mean, $t^{\star}_{df}$ corresponds to the confidence level and degrees of freedom $df,$ and $SE$ is the standard error as estimated by the sample.
@@ -752,8 +749,6 @@ Can we say that 90% of croaker white fish (Pacific) have mercury levels between 
 
 [^inference-one-mean-8]: No, a confidence interval only provides a range of plausible values for a population parameter, in this case the population mean.
     It does not describe what we might observe for individual observations.
-
-\index{data!white fish and mercury|)}
 
 ### One sample t-tests
 
@@ -860,6 +855,8 @@ To help us remember to use the $t$-distribution, we use a $T$ to represent the t
 The Z score and T score are computed in the exact same way and are conceptually identical: each represents how many standard errors the observed value is from the null value.
 :::
 
+\clearpage
+
 ## Chapter review {#chp20-review}
 
 ### Summary
@@ -883,6 +880,8 @@ However you should be able to easily spot them as **bolded text**.
 ```{r}
 make_terms_table(terms_chp_20)
 ```
+
+\clearpage
 
 ## Exercises {#chp20-exercises}
 

@@ -1,5 +1,9 @@
 # Applications: Data {#data-applications}
 
+```{r, include = FALSE}
+source("_common.R")
+```
+
 ## Case study: Passwords {#case-study-passwords}
 
 Stop for a second and think about how many passwords you've used so far today.
@@ -14,7 +18,7 @@ In this case study we introduce a dataset on passwords.
 The goal of the case study is to walk you through what a data scientist does when they first get a hold of a dataset as well as to provide some "foreshadowing" of concepts and techniques we'll introduce in the next few chapters on exploratory data analysis.
 
 ::: {.data data-latex=""}
-The data can be found in the [tidytuesdayR](https://thebioengineer.github.io/tidytuesdayR/) package: [`passwords`](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-01-14/readme.md).
+The data can be found in the [**tidytuesdayR**](https://thebioengineer.github.io/tidytuesdayR/) R package: [`passwords`](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-01-14/readme.md).
 :::
 
 Table \@ref(tab:passwords-df-head) shows the first ten rows from the dataset, which are the ten most common passwords.
@@ -30,10 +34,10 @@ passwords <- passwords %>%
 
 passwords %>%
   slice_head(n = 10) %>%
-  kbl(caption = "Top ten rows of the `passwords` dataset.",
+  kbl(booktabs = TRUE, caption = caption_helper("Top ten rows of the `passwords` dataset."),
       row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped")
+                latex_options = c("striped", "hold_position"))
 ```
 
 When you encounter a new dataset, taking a peek at the first few rows we we did in Table \@ref(tab:passwords-df-head) is almost instinctual.
@@ -43,10 +47,10 @@ Table \@ref(tab:passwords-df-tail) shows the bottom ten rows of the passwords da
 ```{r passwords-df-tail}
 passwords %>%
   slice_tail(n = 10) %>%
-  kbl(caption = "Bottom ten rows of the `passwords` dataset.",
+  kbl(booktabs = TRUE, caption = caption_helper("Bottom ten rows of the `passwords` dataset."),
       row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped")  
+                latex_options = c("striped", "hold_position"))  
 ```
 
 At this stage it's also useful to think about how these data were collected, as that will inform the scope of any inference you can make based on your analysis of the data.
@@ -81,11 +85,12 @@ passwords_var_def <- tribble(
 )
 
 passwords_var_def %>%
-  mutate(variable = cell_spec(variable, monospace = TRUE)) %>%
-  kbl(escape = FALSE, 
-      caption = "Variables and their descriptions for the `passwords` data set.") %>%
+  kbl(booktabs = TRUE, caption = caption_helper("Variables and their descriptions for the `passwords` dataset."), 
+      col.names = c("Variable", "Description")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped")
+                latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
+  column_spec(1, monospace = TRUE) %>%
+  column_spec(2, width = "30em")
 ```
 
 We now have a better sense of what each column represents, but we don't yet know much about the characteristics of each of the variables.
@@ -114,7 +119,7 @@ The most common password category is name (e.g. michael, jennifer, jordan, etc.)
 Many passwords can be cracked in the matter of days by online cracking with some taking as little as seconds and some as long as years to break.
 Each of these visualizations is a bar plot, which you will learn more about in Chapter \@ref(explore-categorical).
 
-```{r passwords-cat, fig.cap = "Distributions of the categorical variables in the `passwords` dataset. Plot A shows the distribution of password strengths, Plot B password categories, and Plot C length of time it takes to crack the passwords by online guessing.", out.width = "100%", fig.asp = 1}
+```{r passwords-cat, fig.cap = "(ref:passwords-cat-cap)", out.width = "100%", fig.asp = 1}
 p_category <- passwords %>%
   count(category, sort = TRUE) %>%
   mutate(category = fct_reorder(category, n)) %>%
@@ -161,6 +166,8 @@ patchwork +
   theme(plot.tag = element_text(size = 12, color = "darkgray"))
 ```
 
+(ref:passwords-cat-cap) Distributions of the categorical variables in the `passwords` dataset. Plot A shows the distribution of password strengths, Plot B password categories, and Plot C length of time it takes to crack the passwords by online guessing.
+
 Similarly, we can examine the distributions of the numerical variables as well.
 We already know that rank ranges between 1 and 500 in this dataset, based on Table \@ref(tab:passwords-df-head) and Table \@ref(tab:passwords-df-tail).
 The value variable is slightly more complicated to consider since the numerical values in that column are meaningless without the time unit that accompanies them.
@@ -176,9 +183,9 @@ passwords %>%
     min = min(value),
     max = max(value)
   ) %>%
-  kbl(caption = "Minimum and maximum amount of time it takes to crack a password by online guessing as well as the number of observations that fall into each time unit category.") %>%
+  kbl(booktabs = TRUE, caption = "Minimum and maximum amount of time it takes to crack a password by online guessing as well as the number of observations that fall into each time unit category.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped")
+                latex_options = c("striped", "hold_position"))
 ```
 
 Even though passwords that take a large number of years to crack can seem like good options (see Table \@ref(tab:passwords-long-crack) for a list of them), now that you've seen them here (and the fact that they are in a dataset of 500 most common passwords), you should not use them as secure passwords!
@@ -186,10 +193,10 @@ Even though passwords that take a large number of years to crack can seem like g
 ```{r passwords-long-crack}
 passwords %>% 
   filter(value == 92.27) %>%
-  kbl(caption = "Passwords that take the longest amount of time to crack by online guessing.",
+  kbl(booktabs = TRUE, caption = "Passwords that take the longest amount of time to crack by online guessing.",
       row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped")  
+                latex_options = c("striped", "hold_position"))  
 ```
 
 The last numerical variable in the dataset is `offline_crack_sec`.
@@ -248,23 +255,23 @@ All you need is your browser to get started!
 Update tutorial links
 :::
 
-::: {.alltutorials}
+::: {.alltutorials data-latex=""}
 [Tutorial 1: Getting Started with Data](https://openintrostat.github.io/ims-tutorials/01-getting-started-with-data/)
 :::
 
-::: {.singletutorial}
+::: {.singletutorial data-latex=""}
 [Tutorial 1 - Lesson 1: Language of data](https://openintro.shinyapps.io/ims-01-getting-started-with-data-01/)
 :::
 
-::: {.singletutorial}
+::: {.singletutorial data-latex=""}
 [Tutorial 1 - Lesson 2: Types of studies](https://openintro.shinyapps.io/ims-01-getting-started-with-data-02/)
 :::
 
-::: {.singletutorial}
+::: {.singletutorial data-latex=""}
 [Tutorial 1 - Lesson 3: Sampling strategies and Experimental design](https://openintro.shinyapps.io/ims-01-getting-started-with-data-03/)
 :::
 
-::: {.singletutorial}
+::: {.singletutorial data-latex=""}
 [Tutorial 1 - Lesson 4: Case study](https://openintro.shinyapps.io/ims-01-getting-started-with-data-04/)
 :::
 
@@ -274,10 +281,10 @@ You can also access the full list of tutorials supporting this book [here](https
 
 Further apply the concepts you've learned in this chapter in R with computational labs that walk you through a data analysis case study.
 
-::: {.singlelab}
+::: {.singlelab data-latex=""}
 [Intro to R - Birth rates](http://openintrostat.github.io/oilabs-tidy/01_intro_to_r/intro_to_r.html)
 :::
 
-::: {.alllabs}
+::: {.alllabs data-latex=""}
 [Full list of labs supporting OpenIntro::Introduction to Modern Statistics](http://openintrostat.github.io/oilabs-tidy/)
 :::

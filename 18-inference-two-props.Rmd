@@ -1,5 +1,9 @@
 # Inference for comparing two proportions {#inference-two-props}
 
+```{r, include = FALSE}
+source("_common.R")
+```
+
 ::: {.chapterintro data-latex=""}
 We now extend the methods from Chapter \@ref(inference-one-prop) to apply confidence intervals and hypothesis tests to differences in population proportions that come from two groups, Group 1 and Group 2: $p_1 - p_2.$
 
@@ -20,19 +24,15 @@ Nineteen weeks later, all 20 patients were exposed to a drug-sensitive malaria v
 The results are summarized in Table \@ref(tab:malaria-vaccine-20-exp-summary), where 9 of the 14 treatment patients remained free of signs of infection while all of the 6 patients in the control group patients showed some baseline signs of infection.
 
 ```{r malaria-vaccine-20-exp-summary}
-temptbl <- tribble(
- ~variable,    ~col1, ~col2, ~col3, ~col4, 
- "", "vaccine", "5", "9", "14",
- "`treatment`", "placebo", "6", "0","6",
- "", "Total", "11", "9", "20"
-)
-
-temptbl %>%
- kbl(caption = "Summary results for the malaria vaccine experiment.",
-    col.names = c("", "", "infection", "no infection", "Total")) %>%
- kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) %>%
- add_header_above(c(" ", " ", "`outcome`" = 2, " "))
+malaria %>%
+  count(treatment, outcome) %>%
+  pivot_wider(names_from = outcome, values_from = n, values_fill = 0) %>%
+  janitor::adorn_totals(where = c("row", "col")) %>%
+  kbl(booktabs = TRUE, caption = "Summary results for the malaria vaccine experiment.",
+      col.names = c("Group", "Infection", "No infection", "Total")) %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(1:4, width = "7em")
 ```
 
 ::: {.guidedpractice data-latex=""}
@@ -51,60 +51,27 @@ The process by which we randomize observations to two groups is summarized and v
 
 ### Variability of the statistic
 
-Figure \@ref(fig:malaria-rand-dot-plot) shows a stacked plot of the differences found from 100 randomization simulations (i.e., repeated iterations as described in Figure \@ref(fig:fullrand)), where each dot represents a simulated difference between the infection rates (control rate minus treatment rate).
+Figure \@ref(fig:malaria-rand-dot-plot-18) shows a stacked plot of the differences found from 100 randomization simulations (i.e., repeated iterations as described in Figure \@ref(fig:fullrand)), where each dot represents a simulated difference between the infection rates (control rate minus treatment rate).
 
-```{r malaria-rand-dot-plot, fig.cap="A stacked dot plot of differences from 100 simulations produced under the independence model $H_0,$ where in these simulations infections are unaffected by the vaccine. Two of the 100 simulations had a difference of at least 64.3%, the difference observed in the study."}
-
-set.seed(47)
-
-exp_gp  <- rep(c("vaccine", "placebo"), c(14, 6))
-outcome <- c(rep(c('infection', 'no infection'), c(5, 9)),
-             rep(c('infection', 'no infection'), c(6, 0)))
-
-nsim    <- 100
-n       <- length(exp_gp)
-success <- "infection"
-
-SimulateTable <- function(exp_gp, outcome, ...) {
-  table(sample(exp_gp), outcome)
-}
-# SimulateTable(exp_gp, outcome)
-
-sim_tables <-
-    lapply(1:nsim, SimulateTable,
-        exp_gp = exp_gp,
-        outcome = outcome)
-result <- sim_tables %>%
-    lapply(function(x) {
-    	  x[1, 1] / sum(x[1, ]) - x[2, 1] / sum(x[2, ])
-    	}) %>%
-    	unlist()
-
-
-pval <- sum(result >= 0.64) / nsim
-values <- table(result)
-diffs <- unique(result)
-
-X <- c()
-Y <- c()
-for (i in 1:length(diffs)) {
-  x   <- diffs[i]
-  rec <- sum(result == x)
-  X   <- append(X, rep(x, rec))
-  Y   <- append(Y, 1:rec)
-}
-
-plot(X, Y,
-     xlim = range(diffs) + c(-1, 1) * sd(diffs) / 4,
-     xlab = "Difference in Infection Rates",
-     axes = FALSE,
-     ylim = c(0, max(Y)),
-     col = IMSCOL["blue", "full"],
-     pch = 20)
-axis(1) #, at, labels)
-abline(h = 0)
-points(X[X > 0.64], Y[X > 0.64], lwd=3, col = IMSCOL["red", "full"], cex=0.4)
+```{r malaria-rand-dot-plot-18, fig.cap="(ref:malaria-rand-dot-plot-18-cap)"}
+set.seed(19)
+malaria %>%
+  specify(response = outcome, explanatory = treatment, success = "infection") %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 100, type = "permute") %>%
+  calculate(stat = "diff in props", order = c("placebo", "vaccine")) %>%
+  # simplify by rounding
+  mutate(stat = round(stat, 3)) %>%
+  ggplot(aes(x = stat)) +
+  geom_dotplot(binwidth = 0.1, dotsize = 0.2) +
+  labs(y = NULL, x = "Difference in infection rates") +
+  theme(axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) +
+  gghighlight(stat >= 0.643)
 ```
+
+(ref:malaria-rand-dot-plot-18-cap) A stacked dot plot of differences from 100 simulations produced under the independence model $H_0,$ where in these simulations infections are unaffected by the vaccine. Two of the 100 simulations had a difference of at least 64.3%, the difference observed in the study.
 
 ### Observed statistic vs null statistics
 
@@ -112,12 +79,12 @@ Note that the distribution of these simulated differences is centered around 0.
 We simulated the differences assuming that the independence model was true, and under this condition, we expect the difference to be near zero with some random fluctuation, where *near* is pretty generous in this case since the sample sizes are so small in this study.
 
 ::: {.workedexample data-latex=""}
-How often would you observe a difference of at least 64.3% (0.643) according to Figure \@ref(fig:malaria-rand-dot-plot)?
+How often would you observe a difference of at least 64.3% (0.643) according to Figure \@ref(fig:malaria-rand-dot-plot-18)?
 Often, sometimes, rarely, or never?
 
 ------------------------------------------------------------------------
 
-It appears that a difference of at least 64.3% due to chance alone would only happen about 2% of the time according to Figure \@ref(fig:malaria-rand-dot-plot).
+It appears that a difference of at least 64.3% due to chance alone would only happen about 2% of the time according to Figure \@ref(fig:malaria-rand-dot-plot-18).
 Such a low probability indicates a rare event.
 :::
 
@@ -144,8 +111,6 @@ Based on the simulations, we have two options:
     That is, *any set of numbers we could have observed would ultimately be incredibly rare*.
     This type of situation is typical of our daily lives: each possible event in itself seems incredibly rare, but if we consider every alternative, those outcomes are also incredibly rare.
     We should be cautious not to misinterpret such anecdotal evidence.
-
-\index{data!malaria vaccine|)}
 
 Statistical inference, is built on evaluating whether such differences are due to chance.
 In statistical inference, data scientists evaluate which model is most reasonable given the data.
@@ -296,9 +261,7 @@ Note that we do not know know the true distribution of $\hat{p}_T - \hat{p}_C,$ 
 So for a rough approximation, we will apply the 67-95-99.7 rule which tells us that 95% of observed differences should be roughly no farther than 2 SE from the true parameter difference.
 A 95% confidence interval for $p_T - p_C$ is given by:
 
-$$
-\hat{p}_T - \hat{p}_C \pm 2 \cdot SE \ \ \ \rightarrow \ \ \ 14/40 - 11/50 \pm 2 \cdot `r cpr_boot_se` \ \ \  \rightarrow \ \ \  (`r cpr_boot_90_lower_se`, `r cpr_boot_90_upper_se`)
-$$
+$$\hat{p}_T - \hat{p}_C \pm 2 \cdot SE \ \ \ \rightarrow \ \ \ 14/40 - 11/50 \pm 2 \cdot `r cpr_boot_se` \ \ \  \rightarrow \ \ \  (`r cpr_boot_90_lower_se`, `r cpr_boot_90_upper_se`)$$
 
 We are 95% confident that the true value of $p_T - p_C$ is between `r cpr_boot_90_lower_se` and `r cpr_boot_90_upper_se`.
 Again, the wide confidence interval that contains zero indicates that the study provides very little evidence about the effectiveness of blood thinners.
@@ -398,20 +361,21 @@ terms_chp_18 <- c(terms_chp_18, "SE difference in proportions")
 
 ### Confidence interval for $p_1 - p_2$
 
-\index{data!CPR and blood thinner|(}
-
 We can apply the generic confidence interval formula for a difference of two proportions, where we use $\hat{p}_1 - \hat{p}_2$ as the point estimate and substitute the $SE$ formula:
 
-$$\text{point estimate} \ \pm\  z^{\star} \times SE \to \hat{p}_1 - \hat{p}_2 \ \pm\ 
-    z^{\star} \times
-   \sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}} $$
+$$
+\begin{aligned}
+\text{point estimate} \ \pm \  z^{\star} \ \times \ SE \\
+(\hat{p}_1 - \hat{p}_2) \ \pm \ z^{\star} \times \sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}
+\end{aligned}
+$$
 
 ::: {.important data-latex=""}
 **Standard error of the difference in two proportions,** $\hat{p}_1 -\hat{p}_2.$
 
 When the conditions are met so that the distribution of $\hat{p}_1$ and $\hat{p}_2$ are both nearly normal, the **variability** of the difference in proportions, $\hat{p}_1 -\hat{p}_2,$ is well described by:
 
-$$ SE(\hat{p}_1 -\hat{p}_2) = \sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}} $$
+$$SE(\hat{p}_1 -\hat{p}_2) = \sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}$$
 :::
 
 ::: {.workedexample data-latex=""}
@@ -438,14 +402,22 @@ Create and interpret a 90% confidence interval of the difference for the surviva
 
 We'll use $p_T$ for the survival rate in the treatment group and $p_C$ for the control group:
 
-$$ \hat{p}_{T} - \hat{p}_{C} = \frac{14}{40} - \frac{11}{50}  = 0.35 - 0.22 = 0.13$$ We use the standard error formula previously provided.
+$$\hat{p}_{T} - \hat{p}_{C} = \frac{14}{40} - \frac{11}{50}  = 0.35 - 0.22 = 0.13$$
+
+We use the standard error formula previously provided.
 As with the one-sample proportion case, we use the sample estimates of each proportion in the formula in the confidence interval context:
 
-$$  SE \approx \sqrt{\frac{0.35 (1 - 0.35)}{40} + \frac{0.22 (1 - 0.22)}{50}}  = 0.095 $$
+$$SE \approx \sqrt{\frac{0.35 (1 - 0.35)}{40} + \frac{0.22 (1 - 0.22)}{50}}  = 0.095$$
 
 For a 90% confidence interval, we use $z^{\star} = 1.65:$
 
-$$ \text{point estimate} \ \pm\ z^{\star} \times SE  \to $$ $$0.13 \ \pm\ 1.65 \times  0.095 \to (-0.027, 0.287) $$
+$$
+\begin{aligned}
+\text{point estimate} \ \pm \ z^{\star} \ \times \ SE \\
+0.13 \ \pm \ 1.65 \ \times \ 0.095 \\
+(-0.027 \ &, \ 0.287)
+\end{aligned}
+$$
 
 We are 90% confident that blood thinners have a difference of -2.7% to +28.7% percentage point impact on survival rate for patients who are like those in the study.
 Because 0% is contained in the interval, we do not have enough information to say whether blood thinners help or harm heart attack patients who have been admitted after they have undergone CPR.
@@ -453,8 +425,6 @@ Because 0% is contained in the interval, we do not have enough information to sa
 Note, the problem was set up as 90% to indicate that there was not a need for a high level of confidence (such a 95% or 99%).
 A lower degree of confidence increases potential for error, but it also produces a more narrow interval.
 :::
-
-\index{data!CPR and blood thinner|)}
 
 ::: {.guidedpractice data-latex=""}
 A 5-year experiment was conducted to evaluate the effectiveness of fish oils on reducing cardiovascular events, where each subject was randomized into one of two treatment groups.
@@ -468,7 +438,7 @@ Also interpret the interval in the context of the study.[^inference-two-props-3]
     The success-failure condition is also met for both groups as all counts are at least 10.
     This satisfies the conditions necessary to model the difference in proportions using a normal distribution.\
     Compute the sample proportions $(\hat{p}_{\text{fish oil}} = 0.0112,$ $\hat{p}_{\text{placebo}} = 0.0155),$ point estimate of the difference $(0.0112 - 0.0155 = -0.0043),$ and standard error $SE = \sqrt{\frac{0.0112 \times 0.9888}{12933} + \frac{0.0155 \times 0.9845}{12938}},$ $SE = 0.00145.$\
-    Next, plug the values into the general formula for a confidence interval, where we'll use a 95% confidence level with $z^{\star} = 1.96:$ $$-0.0043 \pm 1.96 \times 0.00145$$ $$(-0.0071, -0.0015)$$ We are 95% confident that fish oils decreases heart attacks by 0.15 to 0.71 percentage points (off of a baseline of about 1.55%) over a 5-year period for subjects who are similar to those in the study
+    Next, plug the values into the general formula for a confidence interval, where we'll use a 95% confidence level with $z^{\star} = 1.96:$ $-0.0043 \pm 1.96 \times 0.00145 = (-0.0071, -0.0015).$ We are 95% confident that fish oils decreases heart attacks by 0.15 to 0.71 percentage points (off of a baseline of about 1.55%) over a 5-year period for subjects who are similar to those in the study
     . Because the interval is entirely below 0, and the treatment was randomly assigned the data provide strong evidence that fish oil supplements reduce heart attacks in patients like those in the study
     .
 
@@ -478,11 +448,11 @@ fish_oil_18[[3]] %>%
   mutate(group = c("fish oil", "placebo")) %>%
   mutate(total = myocardioal_infarction + no_event) %>%
   column_to_rownames(var = "group") %>%
-  kbl(caption = "Results for the study on n-3 fatty acid supplement and related health benefits.", 
-        col.names = c( "heart attack", "no event", "Total"),
-        row.names = TRUE) %>%
+  kbl(booktabs = TRUE, caption = "Results for the study on n-3 fatty acid supplement and related health benefits.", 
+      col.names = c("heart attack", "no event", "Total"),
+      row.names = TRUE) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 ### Hypothesis test for the difference between two proportions
@@ -495,13 +465,9 @@ However, when the null hypothesis is that $p_1 - p_2 = 0,$ we use a special prop
 
 When the null hypothesis is that the proportions are equal, use the pooled proportion $(\hat{p}_{\textit{pool}})$ of successes to verify the success-failure condition and estimate the standard error:
 
-$$ 
-\hat{p}_{\textit{pool}} = \frac{\text{number of successes}}{\text{number of cases}}
-= \frac{\hat{p}_1 n_1 + \hat{p}_2 n_2}{n_1 + n_2}
-$$
+$$\hat{p}_{\textit{pool}} = \frac{\text{number of successes}}{\text{number of cases}} = \frac{\hat{p}_1 n_1 + \hat{p}_2 n_2}{n_1 + n_2}$$
 
-Here $\hat{p}_1 n_1$ represents the number of successes in sample 1 because $$ \hat{p}_1
- = \frac{\text{number of successes in sample 1}}{n_1} $$
+Here $\hat{p}_1 n_1$ represents the number of successes in sample 1 because $\hat{p}_1 = \frac{\text{number of successes in sample 1}}{n_1}.$
 
 Similarly, $\hat{p}_2 n_2$ represents the number of successes in sample 2.
 :::
@@ -511,9 +477,7 @@ Similarly, $\hat{p}_2 n_2$ represents the number of successes in sample 2.
 
 The Z score is a ratio of how the two sample proportions differs as compared to the expected variability of the two $\hat{p}$ values.
 
-$$ 
-Z = \frac{\hat{p}_1 - \hat{p}_2}{\sqrt{\hat{p}_{pool}(1-\hat{p}_{pool}) \bigg(\frac{1}{n_1} + \frac{1}{n_2} \bigg)}} 
-$$
+$$Z = \frac{\hat{p}_1 - \hat{p}_2}{\sqrt{\hat{p}_{pool}(1-\hat{p}_{pool}) \bigg(\frac{1}{n_1} + \frac{1}{n_2} \bigg)}}$$
 
 When the null hypothesis is true and the conditions are met, Z has a standard normal distribution.
 See the box below for calculation of the pooled proportion of successes.
@@ -538,7 +502,7 @@ No intervention was made during the following 25 years of the study, and we'll c
 Results from the study are summarized in Figure \@ref(tab:mammogramStudySummaryTable).
 
 ::: {.data data-latex=""}
-These data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`mammogram`](http://openintrostat.github.io/openintro/reference/mammogram.html).
+These data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package: [`mammogram`](http://openintrostat.github.io/openintro/reference/mammogram.html).
 :::
 
 If mammograms are much more effective than non-mammogram breast cancer exams, then we would expect to see additional deaths from breast cancer in the control group.
@@ -549,14 +513,14 @@ mammogram %>%
   mutate(breast_cancer_death = fct_rev(breast_cancer_death)) %>%
   count(treatment, breast_cancer_death) %>%
   pivot_wider(names_from = breast_cancer_death, values_from = n) %>%
-  kbl(
+  kbl(booktabs = TRUE, 
     caption = "Summary results for breast cancer study.",
     col.names = c("Treatment", "Yes", "No"),
     format.args = list(big.mark = ",")
   ) %>%
-  add_header_above( c("", "Death from breast cancer?" = 2)) %>%
+  add_header_above(c("", "Death from breast cancer?" = 2)) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 ::: {.guidedpractice data-latex=""}
@@ -577,14 +541,18 @@ The research question describing mammograms is set up to address specific hypoth
 In order to fully take advantage of the hypothesis testing structure, we asses the randomness under the condition that the null hypothesis is true (as we always do for hypothesis testing).
 Using the data from Table \@ref(tab:mammogramStudySummaryTable), we will check the conditions for using a normal distribution to analyze the results of the study using a hypothesis test.
 
-\begin{align*}
+$$
+\begin{aligned}
 \hat{p}_{\textit{pool}}
     &= \frac
-        {\text{# of patients who died from breast cancer in the entire study}}
-        {\text{# of patients in the entire study}} \\
+        {\text{number of patients who died from breast cancer in the entire study}}
+        {\text{number of patients in the entire study}} \\
     &= \frac{500 + 505}{500 + \text{44,425} + 505 + \text{44,405}} \\
     &= 0.0112
-\end{align*} This proportion is an estimate of the breast cancer death rate across the entire study, and it's our best estimate of the proportions $p_{MGM}$ and $p_{C}$ *if the null hypothesis is true that* $p_{MGM} = p_{C}.$ We will also use this pooled proportion when computing the standard error.
+\end{aligned} 
+$$
+
+This proportion is an estimate of the breast cancer death rate across the entire study, and it's our best estimate of the proportions $p_{MGM}$ and $p_{C}$ *if the null hypothesis is true that* $p_{MGM} = p_{C}.$ We will also use this pooled proportion when computing the standard error.
 
 ```{r include=FALSE}
 terms_chp_18 <- c(terms_chp_18, "pooled proportion")
@@ -600,7 +568,7 @@ We also must check the success-failure condition for each group.
 Under the null hypothesis, the proportions $p_{MGM}$ and $p_{C}$ are equal, so we check the success-failure condition with our best estimate of these values under $H_0,$ the pooled proportion from the two samples, $\hat{p}_{\textit{pool}} = 0.0112:$
 
 $$
-\begin{align*}
+\begin{aligned}
 \hat{p}_{\textit{pool}} \times n_{MGM}
       &= 0.0112 \times \text{44,925} = 503\\
  (1 - \hat{p}_{\textit{pool}}) \times n_{MGM}
@@ -609,7 +577,7 @@ $$
       &= 0.0112 \times \text{44,910} = 503\\
   (1 - \hat{p}_{\textit{pool}}) \times n_{C}
       &= 0.9888 \times \text{44,910} = \text{44,407}
-\end{align*}
+\end{aligned}
 $$
 
 The success-failure condition is satisfied since all values are at least 10.
@@ -629,12 +597,12 @@ Compute the point estimate of the difference in breast cancer death rates in the
 The point estimate of the difference in breast cancer death rates is
 
 $$
-\begin{align*}
+\begin{aligned}
 \hat{p}_{MGM} - \hat{p}_{C}
     &= \frac{500}{500 + 44,425} - \frac{505}{505 + 44,405} \\
     &= 0.01113 - 0.01125 \\
     &= -0.00012
-\end{align*} 
+\end{aligned} 
 $$
 
 The breast cancer death rate in the mammogram group was 0.012% less than in the control group.
@@ -650,7 +618,7 @@ Using the point estimate $\hat{p}_{MGM} - \hat{p}_{C} = -0.00012$ and standard e
 
 Just like in past tests, we first compute a test statistic and draw a picture:
 
-$$ Z = \frac{\text{point estimate} - \text{null value}}{SE} = \frac{-0.00012 - 0}{0.00070} = -0.17 $$
+$$Z = \frac{\text{point estimate} - \text{null value}}{SE} = \frac{-0.00012 - 0}{0.00070} = -0.17$$
 
 The lower tail area is 0.4325, which we double to get the p-value: 0.8650.
 Because this p-value is larger than 0.05, we do not reject the null hypothesis.
@@ -678,6 +646,8 @@ Here are a few considerations to keep in mind when reviewing the mammogram study
 These considerations highlight the complexity around medical care and treatment recommendations.
 Experts and medical boards who study medical treatments use considerations like those above to provide their best recommendation based on the current evidence.
 
+\clearpage
+
 ## Chapter review {#chp18-review}
 
 ### Summary
@@ -698,6 +668,8 @@ However you should be able to easily spot them as **bolded text**.
 ```{r}
 make_terms_table(terms_chp_18)
 ```
+
+\clearpage
 
 ## Exercises {#chp18-exercises}
 

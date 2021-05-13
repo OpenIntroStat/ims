@@ -1,5 +1,9 @@
 # Inference for logistic regression {#inf-model-logistic}
 
+```{r, include = FALSE}
+source("_common.R")
+```
+
 ::: {.chapterintro data-latex=""}
 Combining ideas from Chapter \@ref(model-logistic) on Logistic regression, Chapter \@ref(foundations-mathematical) on Inference with mathematical models, and Chapters \@ref(inf-model-slr) & \@ref(inf-model-mlr) which apply inferential techniques to the linear model, we complete the book by considering inferential methods applied to a logistic regression model.
 We use cross validation as a method for independent assessment of the logistic regression model.
@@ -17,11 +21,11 @@ Without reading every incoming message, it might be nice to have an automated wa
 Which of the variables describing each email are important for predicting the status of the email?
 
 ::: {.data data-latex=""}
-The data from this study can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`email`](http://openintrostat.github.io/openintro/reference/email.html).
+The data from this study can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package: [`email`](http://openintrostat.github.io/openintro/reference/email.html).
 :::
 
 ```{r resume-variables}
-resume_variables <- tribble(
+email_variables <- tribble(
   ~variable, ~description,
   "spam", "Indicator for whether the email was spam.",
   "to_multiple", "Indicator for whether the email was addressed to more than one recipient.",
@@ -39,10 +43,13 @@ resume_variables <- tribble(
   "number", "Factor variable saying whether there was no number, a small number (under 1 million), or a big number."
 )
 
-resume_variables %>%
-  mutate(variable = cell_spec(variable, monospace = TRUE)) %>%
-  kbl(escape = FALSE, caption = "Descriptions for the `spam` variable along with 13 other variables in the `email` data set. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.") %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), latex_options = "striped")
+email_variables %>%
+  kbl(booktabs = TRUE, caption = caption_helper("Variables and their descriptions for the `email` dataset. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise."), 
+      col.names = c("Variable", "Description")) %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
+  column_spec(1, monospace = TRUE) %>%
+  column_spec(2, width = "30em")
 ```
 
 ## Multiple logistic regression output from software {#inf-log-reg-soft}
@@ -51,27 +58,30 @@ As you learned in Chapter \@ref(model-mlr), optimization can be used to find the
 The unknown population model can be written as:
 
 $$
-\begin{align*}
-\log_e\bigg(\frac{p}{1-p}\bigg) &= \beta_0 + \beta_1 \times \texttt{to_multiple} + \beta_2 \times \texttt{cc} \\
-&+ \beta_3 \times \texttt{dollar} + \beta_4 \times \texttt{urgent_subj}
-\end{align*}
+\begin{aligned}
+\log_e\bigg(\frac{p}{1-p}\bigg) &= \beta_0 + \beta_1 \times \texttt{to\_multiple} + \beta_2 \times \texttt{cc} \\
+&+ \beta_3 \times \texttt{dollar} + \beta_4 \times \texttt{urgent\_subj}
+\end{aligned}
 $$
 
 The estimated equation for the regression model may be written as a model with four predictor variables (where $\hat{p}$ is the estimated probability of being a SPAM email message):
 
 $$
-\begin{align*}
-\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) &= -2.05 + -1.91 \times \texttt{to_multiple} + 0.02 \times \texttt{cc} \\
-&- 0.07 \times \texttt{dollar} + 2.66 \times \texttt{urgent_subj}
-\end{align*}
+\begin{aligned}
+\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) &= -2.05 + -1.91 \times \texttt{to\_multiple} + 0.02 \times \texttt{cc} \\
+&- 0.07 \times \texttt{dollar} + 2.66 \times \texttt{urgent\_subj}
+\end{aligned}
 $$
 
 ```{r emaillogmodel}
-glm(spam ~ to_multiple + cc + dollar + urgent_subj, data = email, family = "binomial") %>% tidy() %>%
+glm(spam ~ to_multiple + cc + dollar + urgent_subj, data = email, family = "binomial") %>% 
+  tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 5))) %>%
-  kbl(caption = "Summary of a logistic model for predicting whether an email is SPAM based on the variables to_multiple, cc, dollar, and urgent_subj. Each of the variables has its own coefficient estimate as well as p-value significance.", digits = 2) %>%
+  kbl(booktabs = TRUE, 
+      caption = caption_helper("Summary of a logistic model for predicting whether an email is SPAM based on the variables `to_multiple`, `cc`, `dollar`, and `urgent_subj`. Each of the variables has its own coefficient estimate as well as p-value significance."), 
+      digits = 2) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 Not only does Table \@ref(tab:emaillogmodel) provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
@@ -120,16 +130,16 @@ The logistic regression model can be written as (where $\hat{p}$ is the estimate
 terms_chp_27 <- c(terms_chp_27, "cross validation")
 ```
 
-$$
-\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -2.12 + -1.81\times \texttt{to_multiple}
-$$
+$$\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -2.12 + -1.81 \times \texttt{to\_multiple}$$
 
 ```{r emaillogmodel1}
 glm(spam ~ to_multiple, data = email, family = "binomial") %>% tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 5))) %>%
-  kbl(caption = "Summary of a logistic model for predicting whether an email is SPAM based on only the predictor variable to_multiple. Each of the variables has its own coefficient estimate as well as p-value significance.", digits = 2) %>%
+  kbl(booktabs = TRUE, 
+      caption = caption_helper("Summary of a logistic model for predicting whether an email is SPAM based on only the predictor variable `to_multiple`. Each of the variables has its own coefficient estimate as well as p-value significance."), 
+      digits = 2) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 For each cross validated model, the coefficients change slightly, and the model is used to make independent predictions on the holdout sample.
@@ -175,10 +185,17 @@ logCV1 <- data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfold
 ```{r email-spam}
 logCV1 %>%
   group_by(fold) %>%
-  summarize(count = n(), accuracy = sum(obs==predspam) / n(), notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0), spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1)) %>%
-  kbl(caption = "One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted. The logistic regression model was fit independently of the removed emails. Only `to_multiple` is used to predict whether the email is spam. Because we used a cutoff designed to identify SPAM emails, the accuracy of the non-SPAM email predictions is very low.", digits = 2) %>%
+  summarize(
+    count = n(),
+    accuracy = sum(obs==predspam) / n(),
+    notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0),
+    spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1)
+    ) %>%
+  kbl(booktabs = TRUE, 
+      caption = caption_helper("One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted. The logistic regression model was fit independently of the removed emails. Only `to_multiple` is used to predict whether the email is spam. Because we used a cutoff designed to identify SPAM emails, the accuracy of the non-SPAM email predictions is very low."), 
+      digits = 2) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 Because the SPAM dataset has a ratio of 90% non-SPAM and 10% SPAM emails, a model which randomly guessed all non-SPAM would have an overall accuracy of 90%!
@@ -192,20 +209,22 @@ The larger model uses `to_multiple`, `attach`, `winner`, `format`, `re_subj`, `e
 The logistic regression model can be written as (where $\hat{p}$ is the estimated probability of being a SPAM email message):
 
 $$
-\begin{align*}
-\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) = -0.34 &- 2.56 \times \texttt{to_multiple} + 0.20 \times \texttt{attach} \\
+\begin{aligned}
+\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) = -0.34 &- 2.56 \times \texttt{to\_multiple} + 0.20 \times \texttt{attach} \\
 &+ 1.73 \times \texttt{winner}_{yes} - 1.28 \times \texttt{format} \\
-&- 2.86 \times \texttt{re_subj} + 0 \times \texttt{exclaim_mess} \\
+&- 2.86 \times \texttt{re\_subj} + 0 \times \texttt{exclaim\_mess} \\
 &- 1.07 \times \texttt{number}_{small} - 0.42 \times \texttt{number}_{big}
-\end{align*}
+\end{aligned}
 $$
 
 ```{r emaillogmodel2}
 glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email, family = "binomial") %>% tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 5))) %>%
-  kbl(caption = "Summary of a logistic model for predicting whether an email is SPAM based on only the predictor variable to_multiple. Each of the variables has its own coefficient estimate as well as p-value significance.", digits = 2) %>%
+  kbl(booktabs = TRUE, 
+      caption = caption_helper("Summary of a logistic model for predicting whether an email is SPAM based on only the predictor variable `to_multiple`. Each of the variables has its own coefficient estimate as well as p-value significance."), 
+      digits = 2) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 ```{r emailCV2, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset with the seven specified predictor variables. Predictions are made on the remaining 1/4 of the observations. Note that the predictions are independent of the estimated model coefficients. The predictions are now much better for both the SPAM and the non-SPAM emails (than they were with a single predictor variable).", out.width="100%"}
@@ -246,15 +265,24 @@ logCV2 <- data.frame(
 ```{r email-spam2}
 logCV2 %>%
   group_by(fold) %>%
-  summarize(count = n(), accuracy = sum(obs==predspam) / n(), notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0), spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1)) %>%
-  kbl(caption = "One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted. The logistic regression model was fit independently of the removed emails. Now, the variables `to_multiple`, `attach`, `winner`, `format`, `re_subj`, `exclaim_mess`, and `number` are used to predict whether the email is spam.", digits = 2) %>%
+  summarize(
+    count = n(),
+    accuracy = sum(obs==predspam) / n(),
+    notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0),
+    spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1)
+    ) %>%
+  kbl(booktabs = TRUE, 
+      caption = caption_helper("One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted. The logistic regression model was fit independently of the removed emails. Now, the variables `to_multiple`, `attach`, `winner`, `format`, `re_subj`, `exclaim_mess`, and `number` are used to predict whether the email is spam."), 
+      digits = 2) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 Somewhat expected, the larger model (see Table \@ref(tab:email-spam2)) was able to capture more nuance in the emails which lead to better predictions.
 However, it is not true that adding variables will always lead to better predictions, as correlated or noise variables may dampen the signal from those variables which truly predict the SPAM status.
 We encourage you to learn more about multiple variable models and cross validation in your future exploration of statistical topics.
+
+\clearpage
 
 ## Chapter review {#chp27-review}
 
@@ -285,6 +313,8 @@ However you should be able to easily spot them as **bolded text**.
 ```{r}
 make_terms_table(terms_chp_27)
 ```
+
+\clearpage
 
 ## Exercises {#chp27-exercises}
 

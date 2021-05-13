@@ -1,5 +1,9 @@
 # Effective communication of exploratory results {#explore-effective}
 
+```{r, include = FALSE}
+source("_common.R")
+```
+
 ::: {.chapterintro data-latex=""}
 Graphs can powerfully communicate ideas directly and quickly.
 We all know, after all, that "a picture is worth 1000 words." Unfortunately, however, there are times when an image conveys a message which is inaccurate or misleading.
@@ -39,7 +43,7 @@ expenses <- tribble(
   uncount(weights = value)
 ```
 
-```{r pie-to-bar, out.width="30%", fig.show = 'hold', fig.ncol = 2, fig.cap = "A pie chart (with added irrelevant features) as compared to a simple bar plot."}
+```{r pie-to-bar, out.width="50%", fig.show = "hold", fig.ncol = 2, fig.cap = "A pie chart (with added irrelevant features) as compared to a simple bar plot."}
 knitr::include_graphics("images/pie-3d.jpg")
 ggplot(expenses, aes(x = fct_infreq(category))) +
   geom_bar() +
@@ -61,7 +65,7 @@ Notice that in Figure \@ref(fig:red-bar) the coloring is done in such a way to d
 The default coloring is distracting and makes the reader question, for example, is there something similar about the red and purple bars?
 Also note that not everyone sees color the same way, often it's useful to add color and one more feature (e.g., pattern) so that you can refer to the features you're drawing attention to in multiple ways.
 
-```{r red-bar, fig.width = 5, fig.asp=0.8, fig.cap = "The default coloring in the first bar plot does nothing for the udnerstanding of the data.  In the second plot, the color draws attention directly to the bar on Buildings and Administration."}
+```{r red-bar, fig.cap = "The default coloring in the first bar plot does nothing for the udnerstanding of the data. In the second plot, the color draws attention directly to the bar on Buildings and Administration."}
 p_bad <- ggplot(expenses, aes(y = fct_infreq(category), fill = category)) +
   geom_bar(show.legend = FALSE) +
   scale_color_openintro("five") +
@@ -93,7 +97,7 @@ knitr::include_graphics("images/time-series-story.png")
 
 ### Order matters
 
-Most software programs have built in methods for some of the plot details.\
+Most software programs have built in methods for some of the plot details.
 For example, the default option for the software program used in this text, R, is to order the bars in a bar plot alphabetically.
 As seen in Figure \@ref(fig:brexit-bars), the alphabetical ordering isn't particularly meaningful for describing the data.
 Sometimes it makes sense to order the bars from tallest to shortest (or vice versa).
@@ -110,10 +114,10 @@ In September 2019, YouGov survey asked 1,639 Great Britain adults the following 
 
 > How well or badly do you think the government are doing at handling Britain's exit from the European Union?
 >
-> -   Very well\
-> -   Fairly well\
-> -   Fairly badly\
-> -   Very badly\
+> -   Very well
+> -   Fairly well
+> -   Fairly badly
+> -   Very badly
 > -   Don't know
 
 ```{r}
@@ -132,7 +136,7 @@ brexit <- tibble(
 )
 ```
 
-```{r brexit-bars, out.width="30%", fig.show = 'hold', fig.ncol = 3, fig.cap = "Bar plot three different ways.  The first graph is the default (with bars alphabetically ordered); the middle graph sorts the bars in descending order; the last graph orders the bars in the same order the original question was asked."}
+```{r brexit-bars, fig.cap = "Bar plot three different ways. The first graph is the default (with bars alphabetically ordered); the middle graph sorts the bars in descending order; the last graph orders the bars in the same order the original question was asked.", fig.asp = 0.35, fig.width = 10, out.width = "100%"}
 p_bad <- ggplot(data = brexit, aes(x = opinion)) +
   geom_bar() + 
   labs(x = "Opinion", y = "Count")
@@ -146,44 +150,19 @@ p_ordered <- ggplot(data = brexit,
   geom_bar() + 
     labs(x = "Opinion", y = "Count")
 
-p_bad  
-p_desc
-p_ordered
-```
-
-```{r eval = FALSE, include = FALSE, echo = FALSE}
-#There may also be inherent ordering to levels of your categorical variables.
-#If so, the visualization should respect that.
-brexit <- brexit %>%
-  mutate(
-    region = fct_relevel(
-      region,
-      "london", "rest_of_south", "midlands_wales", "north", "scot"
-    ),
-    region = fct_recode(
-      region,
-      London = "london", 
-      `Rest of South` = "rest_of_south", 
-      `Midlands / Wales` = "midlands_wales", 
-      North = "north", 
-      Scotland = "scot"
-    )
-  )
-
-ggplot(data = brexit, aes(x = region)) +
-  geom_bar()
+p_bad + p_desc + p_ordered
 ```
 
 ### Make the labels as easy to read as possible
 
 The Brexit survey results were additionally broken down by region in Great Britain.
 The segmented bar plot allows for comparison of Brexit opinion across the five regions.
-In Figure \@ref(fig:Brex-region) the bars are vertical in the left graphic and horizontal in the right graphic.
+In Figure \@ref(fig:brexit-region) the bars are vertical in the left graphic and horizontal in the right graphic.
 While the quantitative information in the two graphics is identical, rotating the graph and creating horizontal bars provides the long categories with more space to be written.
 The easier the categories are to see, the more the reader will learn from the visualization.
 Remember, the goal is to convey as much information as possible in a succinct and clear manner.
 
-```{r Brex-region,  out.width="45%", fig.show = 'hold', fig.ncol = 2, fig.cap = "Segmented bar plots vertically and horizontally.  The horizontal orientation makes the region labels easier to read."}
+```{r brexit-region, fig.cap = "Segmented bar plots vertically and horizontally. The horizontal orientation makes the region labels easier to read."}
 brexit <- brexit %>%
   mutate(
     region = fct_relevel(
@@ -210,8 +189,7 @@ p_good <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
   labs(x = "Region", y = NULL) +
   scale_fill_openintro("five")
 
-p_bad
-p_good
+p_bad / p_good
 ```
 
 ```{r include=FALSE}
@@ -236,7 +214,7 @@ terms_chp_6 <- c(terms_chp_6, "faceting graphics")
 The bottom figure in Figure \@ref(fig:seg-three-ways) also provides full titles and a succinct URL with the data source.
 Other deliberate decisions to consider include using informative labels and avoiding redundancy.
 
-```{r seg-three-ways,fig.cap = "Three different representations of the two variables including survey opinion and region.  Use the graphic that best conveys the data narrative at hand."}
+```{r seg-three-ways, fig.cap = "Three different representations of the two variables including survey opinion and region. Use the graphic that best conveys the data narrative at hand.", fig.width = 10, out.width = "100%"}
 p_bad <- ggplot(data = brexit, aes(y = region,  fill = Opinion)) +
   geom_bar(position = "fill") +
   labs(x = "Percent", y = NULL)
@@ -267,11 +245,11 @@ One last consideration for building graphs is to consider color choices.
 Default or rainbow colors are not always the choice which will best distinguish the level of your variables.
 Much research has been done to find color combinations which are distinct and also which are clear for differently sighted individuals.
 The Viridis scale[^explore-effective-2] works well with ordinal data.
-Figure \@ref(fig:Brexit-viridis) shows the same plot with two different colorings; the left is the default rainbow colors, the right are the colors from the viridis scale.
+Figure \@ref(fig:brexit-viridis) shows the same plot with two different colorings; the left is the default rainbow colors, the right are the colors from the viridis scale.
 
 [^explore-effective-2]: originally developed as colormap in the Matplotlib library of Python <https://bids.github.io/colormap>
 
-```{r Brexit-viridis, out.width="45%", fig.show = 'hold', fig.ncol = 2, fig.cap = "Identical bar plots with two different coloring options.  The left uses default rainbow colors; the right uses viridis colors."}
+```{r brexit-viridis, fig.cap = "Identical bar plots with two different coloring options. The left uses default rainbow colors; the right uses viridis colors.", fig.width = 8, out.width = "100%"}
 p <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
   geom_bar(position = "fill") +
   labs(
@@ -287,9 +265,11 @@ p_bad <- p +
 p_good <- p +
   scale_fill_viridis_d()
 
-p_bad 
-p_good
+p_bad / 
+  p_good
 ```
+
+\clearpage
 
 ## Chapter review {#chp6-review}
 
@@ -310,6 +290,8 @@ However you should be able to easily spot them as **bolded text**.
 ```{r}
 make_terms_table(terms_chp_6)
 ```
+
+\clearpage
 
 ## Exercises {#chp6-exercises}
 

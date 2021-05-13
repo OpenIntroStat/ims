@@ -1,5 +1,9 @@
 # (PART) Foundations of inference {.unnumbered}
 
+```{r, include = FALSE}
+source("_common.R")
+```
+
 # Hypothesis testing with randomization {#foundations-randomization}
 
 ::: {.chapterintro data-latex=""}
@@ -20,7 +24,7 @@ Sometimes the dataset at hand represents the entire research question.
 But more often than not, the data have been collected to answer a research question about a larger group of which the data are a (hopefully) representative subset.
 
 You may agree that there is almost always variability in data -- one dataset will not be identical to a second dataset even if they are both collected from the same population using the same methods.
-However, quantifying the variability in the data is neither obvious nor easy to do, i.e. answering the question "**how** different is one dataset from another?" is not trivial.
+However, quantifying the variability in the data is neither obvious nor easy to do, i.e. answering the question "*how* different is one dataset from another?" is not trivial.
 
 ::: {.workedexample data-latex=""}
 Suppose your professor splits the students in your class into two groups: students who sit on the left side of the classroom and students who sit on the right side of the classroom.
@@ -68,7 +72,7 @@ The research question we hope to answer is, "Are females discriminated against i
     "Influence of sex role stereotypes on personnel decisions." Journal of Applied Psychology 59(1):9-14.
 
 ::: {.data data-latex=""}
-The data from this study can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`gender_discrimination`](http://openintrostat.github.io/openintro/reference/gender_discrimination.html).
+The data from this study can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package: [`gender_discrimination`](http://openintrostat.github.io/openintro/reference/gender_discrimination.html).
 :::
 
 ### Observed data
@@ -120,9 +124,9 @@ gender_discrimination %>%
   count(decision, gender) %>% 
   pivot_wider(names_from = decision, values_from = n) %>%
   adorn_totals(where = c("col", "row")) %>% 
-  kbl(caption = "Summary results for the gender discrimination study.") %>%
+  kbl(booktabs = TRUE, caption = "Summary results for the gender discrimination study.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
   add_header_above(c(" " = 1, "decision" = 2, " " = 1)) 
 ```
 
@@ -130,7 +134,7 @@ The data are visualized in Figure \@ref(fig:gender-rand-obs) as a set of cards.
 Note that each card denotes a personnel file (an observation from our dataset) and the colors indicate the decision: red for promoted and white for not promoted.
 Additionally, the observations are broken up into the male and female groups.
 
-```{r gender-rand-obs, out.width = "50%", fig.cap = "The gender descriminiation study can be thought of as 48 red and white cards."}
+```{r gender-rand-obs, out.width = "40%", fig.cap = "The gender descriminiation study can be thought of as 48 red and white cards."}
 knitr::include_graphics("images/gender-rand-01-obs.png")
 ```
 
@@ -242,9 +246,9 @@ gender_discrimination_rand_1 %>%
   count(decision, gender) %>% 
   pivot_wider(names_from = decision, values_from = n) %>%
   adorn_totals(where = c("col", "row")) %>% 
-  kbl(caption = "Simulation results, where the difference in promotion rates between male and female is purely due to random chance.") %>%
+  kbl(booktabs = TRUE, caption = "Simulation results, where the difference in promotion rates between male and female is purely due to random chance.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
   add_header_above(c(" " = 1, "decision" = 2, " " = 1))
 ```
 
@@ -278,7 +282,7 @@ And another: 0.208.
 And so on until we repeat the simulation enough times that we have a good idea of the shape of the *distribution of differences from chance alone*.
 Figure \@ref(fig:gender-rand-dot-plot) shows a plot of the differences found from 100 simulations, where each dot represents a simulated difference between the proportions of male and female files recommended for promotion.
 
-```{r gender-rand-dot-plot, fig.cap = "A stacked dot plot of differences from 100 simulations produced under the null hypothesis, $H_0,$ where the simulated gender and decision are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study, and are shown as solid red dots.", out.width = "100%"}
+```{r gender-rand-dot-plot, fig.cap="(ref:gender-rand-dot-plot-cap)", out.width = "100%"}
 set.seed(35)
 gender_discrimination %>%
   specify(decision ~ gender, success = "promoted") %>%
@@ -302,6 +306,8 @@ gender_discrimination %>%
     y = NULL
   )
 ```
+
+(ref:gender-rand-dot-plot-cap) A stacked dot plot of differences from 100 simulations produced under the null hypothesis, $H_0,$ where the simulated gender and decision are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study, and are shown as solid red dots.
 
 Note that the distribution of these simulated differences in proportions is centered around 0.
 Because we simulated differences in a way that made no distinction between men and women, this makes sense: we should expect differences from chance alone to fall around zero with some random fluctuation for each simulation.
@@ -336,8 +342,8 @@ In this case, we reject the null hypothesis in favor of the alternative.
     We should be cautious not to misinterpret such anecdotal evidence.
 
 Statistical inference is the practice of making decisions and conclusions from data in the context of uncertainty.
-Errors do occur, just like rare events, and the data set at hand might lead us to the wrong conclusion.
-While a given data set may not always lead us to a correct conclusion, statistical inference gives us tools to control and evaluate how often these errors occur.
+Errors do occur, just like rare events, and the dataset at hand might lead us to the wrong conclusion.
+While a given dataset may not always lead us to a correct conclusion, statistical inference gives us tools to control and evaluate how often these errors occur.
 Before getting into the nuances of hypothesis testing, let's work through another case study.
 
 ## Opportunity cost case study {#caseStudyOpportunityCost}
@@ -352,23 +358,14 @@ We can summarize the two different perspectives using the null and alternative h
 -   $H_0:$ **Null hypothesis**. Reminding students that they can save money for later purchases will not have any impact on students' spending decisions.
 -   $H_A:$ **Alternative hypothesis**. Reminding students that they can save money for later purchases will reduce the chance they will continue with a purchase.
 
-In this section, we'll explore an experiment conducted by researchers that investigates this very question for students at a university in the southwestern United States.[^foundations-randomization-8]
-
-[^foundations-randomization-8]: Frederick S, Novemsky N, Wang J, Dhar R, Nowlis S.
-    2009.
-    Opportunity Cost Neglect.
-    Journal of Consumer Research 36: 553-561.
+In this section, we'll explore an experiment conducted by researchers that investigates this very question for students at a university in the southwestern United States.
+[@Frederick:2009]
 
 ### Observed data
 
 One-hundred and fifty students were recruited for the study, and each was given the following statement:
 
-> Imagine that you have been saving some extra money on the side to make some purchases, and on your most recent visit to the video store you come across a special sale on a new video.
-> This video is one with your favorite actor or actress, and your favorite type of movie (such as a comedy, drama, thriller, etc.).
-> This particular video that you are considering is one you have been thinking about buying for a long time.
-> It is available for a special sale price of \$14.99.
-> What would you do in this situation?
-> Please circle one of the options below.
+> *Imagine that you have been saving some extra money on the side to make some purchases, and on your most recent visit to the video store you come across a special sale on a new video. This video is one with your favorite actor or actress, and your favorite type of movie (such as a comedy, drama, thriller, etc.). This particular video that you are considering is one you have been thinking about buying for a long time. It is available for a special sale price of \$14.99. What would you do in this situation? Please circle one of the options below.*
 
 Half of the 150 students were randomized into a control group and were given the following two options:
 
@@ -386,7 +383,7 @@ Would the extra statement reminding students of an obvious fact impact the purch
 Table \@ref(tab:opportunity-cost-obs) summarizes the study results.
 
 ::: {.data data-latex=""}
-The data from this study can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`opportunity_cost`](http://openintrostat.github.io/openintro/reference/opportunity_cost.html).
+The data from this study can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package: [`opportunity_cost`](http://openintrostat.github.io/openintro/reference/opportunity_cost.html).
 :::
 
 ```{r opportunity-cost-obs}
@@ -394,16 +391,16 @@ opportunity_cost %>%
   count(group, decision) %>% 
   pivot_wider(names_from = decision, values_from = n) %>%
   adorn_totals(where = c("col", "row")) %>% 
-  kbl(caption = "Summary results of the opportunity cost study.") %>%
+  kbl(booktabs = TRUE, caption = "Summary results of the opportunity cost study.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
   add_header_above(c(" " = 1, "decision" = 2, " " = 1)) 
 ```
 
 It might be a little easier to review the results using a visualisation.
 Figure \@ref(fig:opportunity-cost-obs-bar) shows that a higher proportion of students in the treatment group chose not to buy the video compared to those in the control group.
 
-```{r opportunity-cost-obs-bar, fig.cap = "Segmented bar plot of results of the opportunity cost study.", out.width = "100%", fig.asp = 0.5}
+```{r opportunity-cost-obs-bar, fig.cap = "Segmented bar plot of results of the opportunity cost study.", out.width = "100%", fig.asp = 0.3}
 ggplot(opportunity_cost, aes(y = fct_rev(group), fill = fct_rev(decision))) +
   geom_bar(position = "fill") +
   scale_fill_openintro("two") +
@@ -424,16 +421,16 @@ opportunity_cost %>%
   pivot_wider(names_from = decision, values_from = n) %>%
   adorn_percentages(denominator = "row") %>%
   adorn_totals(where = "col") %>%
-  kbl(caption = "The opportunity cost data are summarized using row proportions. Row proportions are particularly useful here since we can view the proportion of *buy* and *not buy* decisions in each group.") %>%
+  kbl(booktabs = TRUE, caption = "The opportunity cost data are summarized using row proportions. Row proportions are particularly useful here since we can view the proportion of *buy* and *not buy* decisions in each group.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
   add_header_above(c(" " = 1, "decision" = 2, " " = 1)) 
 ```
 
-We will define a **success**\index{success} in this study as a student who chooses not to buy the video.[^foundations-randomization-9]
+We will define a **success**\index{success} in this study as a student who chooses not to buy the video.[^foundations-randomization-8]
 Then, the value of interest is the change in video purchase rates that results by reminding students that not spending money now means they can spend the money later.
 
-[^foundations-randomization-9]: Success is often defined in a study as the outcome of interest, and a "success" may or may not actually be a positive outcome.
+[^foundations-randomization-8]: Success is often defined in a study as the outcome of interest, and a "success" may or may not actually be a positive outcome.
     For example, researchers working on a study on COVID prevalence might define a "success" in the statistical sense as a patient who is COVID+.
     A more complete discussion of the term **success** will be given in Chapter \@ref(inference-one-prop).
 
@@ -502,9 +499,9 @@ opportunity_cost_rand_1 %>%
   count(group, decision) %>% 
   pivot_wider(names_from = decision, values_from = n) %>%
   adorn_totals(where = c("col", "row")) %>% 
-  kbl(caption = "Summary of student choices against their simulated groups. The group assignment had no connection to the student decisions, so any difference between the two groups is due to chance.") %>%
+  kbl(booktabs = TRUE, caption = "Summary of student choices against their simulated groups. The group assignment had no connection to the student decisions, so any difference between the two groups is due to chance.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
   add_header_above(c(" " = 1, "decision" = 2, " " = 1)) 
 ```
 
@@ -534,7 +531,7 @@ We'll do this 1,000 times.
 
 The results are summarized in a dot plot in Figure \@ref(fig:opportunity-cost-rand-dot-plot), where each point represents a simulation.
 
-```{r opportunity-cost-rand-dot-plot, fig.cap = "A stacked dot plot of 1,000 simulated (null) differences produced under the null hypothesis, $H_0.$ Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study.", out.width = "100%"}
+```{r opportunity-cost-rand-dot-plot, fig.cap="(ref:opportunity-cost-rand-dot-plot-cap)"}
 ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
   geom_dotplot(binwidth = 0.01, 
                fill = IMSCOL["red", "full"], 
@@ -553,9 +550,11 @@ ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
   )
 ```
 
+(ref:opportunity-cost-rand-dot-plot-cap) A stacked dot plot of 1,000 simulated (null) differences produced under the null hypothesis, $H_0.$ Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study.
+
 Since there are so many points, it is more convenient to summarize the results in a histogram such as the one in Figure \@ref(fig:opportunity-cost-rand-hist), where the height of each histogram bar represents the number of simulations resulting in an outcome of that magnitude.
 
-```{r opportunity-cost-rand-hist, fig.cap = "A histogram of 1,000 chance differences produced under the null hypothesis, $H_0.$ Histograms like this one are a convenient representation of data or results when there are a large number of simulations.", out.width = "100%"}
+```{r opportunity-cost-rand-hist, fig.cap = "A histogram of 1,000 chance differences produced under the null hypothesis. Histograms like this one are a convenient representation of data or results when there are a large number of simulations."}
 ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
   geom_histogram(binwidth = 0.05, fill = IMSCOL["red", "full"], color = IMSCOL["blue", "full"]) +
   gghighlight(stat >= 0.20, 
@@ -705,6 +704,8 @@ Sometimes it's also a good idea to deviate from the standard.
 We'll discuss when to choose a threshold different than 0.05 in Section \@ref(decerr).
 :::
 
+\clearpage
+
 ## Chapter review {#chp12-review}
 
 ### Summary
@@ -735,10 +736,11 @@ Table \@ref(tab:chp12-summary) is another look at the randomization test summary
 inference_method_summary_table %>%
   filter(question != "What are the technical conditions?") %>%
   select(question, randomization) %>%
-  kbl(caption = "Summary of randomization as an inferential statistical method.", 
-        col.names = c("", "Randomization")) %>%
+  kbl(booktabs = TRUE, caption = "Summary of randomization as an inferential statistical method.", 
+      col.names = c("Question", "Answer")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
+  column_spec(1, width = "15em")
 ```
 
 ### Terms
@@ -751,6 +753,8 @@ However you should be able to easily spot them as **bolded text**.
 ```{r}
 make_terms_table(terms_chp_12)
 ```
+
+\clearpage
 
 ## Exercises {#chp12-exercises}
 

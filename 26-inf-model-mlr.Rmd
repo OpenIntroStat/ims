@@ -1,5 +1,9 @@
 # Inference for linear regression with multiple predictors {#inf-model-mlr}
 
+```{r, include = FALSE}
+source("_common.R")
+```
+
 ::: {.chapterintro data-latex=""}
 In Chapter \@ref(model-mlr), the least squares regression method was used to estimate linear models which predicted a particular response variable given more than one explanatory variable.
 Here, we discuss whether each of the variables individually is a significant predictor or whether the model might be just as strong without that variable.
@@ -20,7 +24,7 @@ terms_chp_26 <- c("inference on multiple linear regression")
 Recall the `loans` data from Chapter \@ref(model-mlr).
 
 ::: {.data data-latex=""}
-The data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`loans_full_schema`](http://openintrostat.github.io/openintro/reference/loans_full_schema.html).
+The data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package: [`loans_full_schema`](http://openintrostat.github.io/openintro/reference/loans_full_schema.html).
 Based on the data in this dataset we have created two new variables: `credit_util` which is calculated as the total credit utilized divided by the total credit limit and `bankruptcy` which turns the number of bankruptcies to an indicator variable (0 for no bankruptcies and 1 for at least 1 bankruptcies).
 We will refer to this modified dataset as `loans`.
 :::
@@ -30,11 +34,11 @@ As you learned in Chapter \@ref(model-mlr), least squares can be used to find th
 The unknown population model can be written as:
 
 $$
-\begin{align*}
-E[\texttt{interest_rate}] = \beta_0 &+ \beta_1\times \texttt{debt_to_income} \\
+\begin{aligned}
+E[\texttt{interest\_rate}] = \beta_0 &+ \beta_1\times \texttt{debt\_to\_income} \\
 &+ \beta_2 \times \texttt{term}\\
-&+ \beta_3 \times \texttt{credit_checks}\\
-\end{align*}
+&+ \beta_3 \times \texttt{credit\_checks}\\
+\end{aligned}
 $$
 
 ```{r loansmodel}
@@ -51,19 +55,20 @@ loans <- loans_full_schema %>%
 lm(interest_rate ~ debt_to_income + term + credit_checks, data = loans) %>%
   tidy() %>%
   mutate(p.value = "<0.0001") %>%
-  kbl(caption = "Summary of a linear model for predicting interest rate based on the variables debt_to_income, term, and credit_checks. Each of the variables has its own coefficient estimate as well as p-value significance.") %>%
+  kbl(booktabs = TRUE, 
+      caption = caption_helper("Summary of a linear model for predicting interest rate based on `debt_to_income`, `term`, and `credit_checks`. Each of the variables has its own coefficient estimate as well as p-value significance.")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 The estimated equation for the regression model may be written as a model with three predictor variables:
 
 $$
-\begin{align*}
-\widehat{\texttt{interest_rate}} = 4.31 &+ 0.041 \times \texttt{debt_to_income} \\
+\begin{aligned}
+\widehat{\texttt{interest\_rate}} = 4.31 &+ 0.041 \times \texttt{debt\_to\_income} \\
 &+ 0.16 \times \texttt{term} \\
-&+ 0.25 \times \texttt{credit_checks}
-\end{align*}
+&+ 0.25 \times \texttt{credit\_checks}
+\end{aligned}
 $$
 
 Not only does Table \@ref(tab:loansmodel) provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
@@ -116,15 +121,17 @@ Figure \@ref(fig:money) illustrates a sample of U.S. coins, their total worth (`
 
 [^inf-model-mlr-2]: In all honesty, this particular dataset is fabricated, and the original idea for the problem comes from Jeff Witmer at Oberlin College.
 
-```{r money, fig.cap = "A sample of coins with 16 total coins, 10 low coins, and a net worth of $1.90.", fig.width = 10}
+```{r money, fig.cap = "(ref:money-cap)", fig.width = 10}
 include_graphics("images/money.png")
 ```
+
+(ref:money-cap) A sample of coins with 16 total coins, 10 low coins, and a net worth of \$1.90.
 
 The collected data is given in Figure \@ref(fig:coinfig) and shows that the total `amount` of money is more highly correlated with the total `number of coins` than it is with the `number of low coins`.
 We also note that the total `number of coins` and the `number of low coins` are positively correlated.
 
-```{r coinfig, fig.cap = "Plot describing the amount of money (US$) as a fucntion of the number of coins and the number of low coins.  As you might expect, the amount of money is more highly postively correlated with the total number of coins than with the number of low coins.", fig.show = 'hold', out.width='47%', fig.ncol = 2}
-# note, i just made up this data
+```{r coinfig, fig.cap = "Plot describing the amount of money (USD) as a fucntion of the number of coins and the number of low coins.  As you might expect, the amount of money is more highly postively correlated with the total number of coins than with the number of low coins."}
+# Data are simulated
 amount <- c(1.37, 1.01, 1.5, 0.56, 0.61, 3.06, 5.42, 1.75, 5.4, 0.56, 0.34, 2.33, 
             3.34, 1.3, 1.2, 1.7, 0.86, 0.61, 2.96, 5.52, 8.95, 5.2, 1.56, 0.74, 1.83, 3.74)
 num_coins <- c(9,10,3,5,10,37,28,9,11,4,6,17,15,7,9,1,5,9,36,30,47,13,5,7,18,16)
@@ -134,44 +141,45 @@ money <- data.frame(`number of coins` = num_coins,
                     `number of low coins` = num_low_coins,
                     `total amount` = amount)
 
-ggplot(money, aes(y=total.amount, x = number.of.coins)) + 
+p1 <- ggplot(money, aes(y = total.amount, x = number.of.coins)) + 
   geom_point() +
-  xlab("Number of coins") +
-  ylab("Total amount ($)")
-ggplot(money, aes(y=total.amount, x = number.of.low.coins)) + 
+  labs(x = "Number of coins", y = "Total amount ($)")
+
+p2 <- ggplot(money, aes(y = total.amount, x = number.of.low.coins)) + 
   geom_point() +
-  xlab("Number of low coins") +
-  ylab("Total amount ($)")
+  labs(x = "Number of low coins", y = "Total amount ($)")
+
+p1 + p2
 ```
 
 Using the total `number of coins` as the predictor variable, Table \@ref(tab:coinhigh) provides the least squares estimate of the coefficient is 0.13.
 For every additional coin in the dish, we would predict that the student had US\$0.13 more.
 The $b_1 = 0.13$ coefficient is highly significant, suggesting we would not have seen data like this if `number of coins` and `amount` of money were not linearly related.
 
-$$ \widehat{\texttt{amount}} = 0.55 + 0.13 \times \texttt{number of coins} $$
+$$\widehat{\texttt{amount}} = 0.55 + 0.13 \times \texttt{number of coins}$$
 
 ```{r coinhigh}
 lm(amount ~ number.of.coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(caption = "Linear model output predicting the total amount of money based on the total number of coins.", digits = 2) %>%
+  kbl(booktabs = TRUE, caption = "Linear model output predicting the total amount of money based on the total number of coins.", digits = 2) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 Using the `number of low coins` as the predictor variable, Table \@ref(tab:coinlow) provides the least squares estimate of the coefficient is 0.02.
 For every additional low coin in the dish, we would predict that the student had US\$0.02 more.
 The $b_1 = 0.02$ coefficient is not at all significant, suggesting we could easily have seen data like ours even if the `number of low coins` and `amount` of money are not at all linearly related.
 
-$$ \widehat{\texttt{amount}} = 2.28 + 0.02 \times \texttt{number of low coins} $$
+$$\widehat{\texttt{amount}} = 2.28 + 0.02 \times \texttt{number of low coins}$$
 
 ```{r coinlow}
 lm(amount ~ number.of.low.coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(caption = "Linear model output predicting the total amount of money based on the number of low coins.", digits = 2) %>%
+  kbl(booktabs = TRUE, caption = "Linear model output predicting the total amount of money based on the number of low coins.", digits = 2) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 ::: {.workedexample data-latex=""}
@@ -180,8 +188,10 @@ What is the difference in amount?
 
 ------------------------------------------------------------------------
 
-```{r lowsame, fig.cap = "Two samples of coins with the same number of low coins (3), but a different number of total coins (4 vs 5) and a different total amount ($0.41 vs $0.66).", fig.width = 10}
-include_graphics("images/lowsame.png")
+Two samples of coins with the same number of low coins (3), but a different number of total coins (4 vs 5) and a different total amount (\$0.41 vs \$0.66).
+
+```{r lowsame}
+knitr::include_graphics("images/lowsame.png")
 ```
 :::
 
@@ -191,8 +201,10 @@ What is the difference in amount?
 
 ------------------------------------------------------------------------
 
-```{r totalsame, fig.cap = "Two samples of coins with the same total number of coins (4), but a different number of low coins (3 vs 4) and a different total amount ($0.41 vs $0.17).", fig.width = 10}
-include_graphics("images/totalsame.png")
+Two samples of coins with the same total number of coins (4), but a different number of low coins (3 vs 4) and a different total amount (\$0.41 vs \$0.17).
+
+```{r totalsame}
+knitr::include_graphics("images/totalsame.png")
 ```
 :::
 
@@ -207,15 +219,15 @@ Considering the coefficients across Tables \@ref(tab:coinhigh), \@ref(tab:coinlo
 Note also, however, that the significance on the `number of low coins` coefficient changed from Table \@ref(tab:coinlow) to Table \@ref(tab:coinhighlow).
 It makes sense that the variable describing the `number of low coins` provides more information about the `amount` of money when it is part of a model which also includes the total `number of coins` than it does when it is used as a single variable in a simple linear regression model.
 
-$$ \widehat{\texttt{amount}} = 0.80 + 0.21 \times \texttt{number of coins} - 0.16 \times \texttt{number of low coins} $$
+$$\widehat{\texttt{amount}} = 0.80 + 0.21 \times \texttt{number of coins} - 0.16 \times \texttt{number of low coins}$$
 
 ```{r coinhighlow}
 lm(amount ~ number.of.coins + number.of.low.coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(caption = "Linear model output predicting the total amount of money based on both the total number of coins and the number of low coins.", digits = 2) %>%
+  kbl(booktabs = TRUE, caption = "Linear model output predicting the total amount of money based on both the total number of coins and the number of low coins.", digits = 2) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 When working with multiple regression models, understanding the significance and sign of the coefficient is not always as straightforward as it was with the coin example.
@@ -269,7 +281,7 @@ terms_chp_26 <- c(terms_chp_26, "cross validation", "prediction error")
 ```
 
 ::: {.data data-latex=""}
-The data can be found in the [palmerpenguings](https://github.com/allisonhorst/palmerpenguins) package: [`penguins`](https://allisonhorst.github.io/palmerpenguins/articles/intro.html).
+The data can be found in the [**palmerpenguings**](https://github.com/allisonhorst/palmerpenguins) R package: [`penguins`](https://allisonhorst.github.io/palmerpenguins/articles/intro.html).
 The observations of three different penguin species include measurements on body size and sex.
 The data were collected by [Dr. Kristen Gorman](https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php) and the [Palmer Station, Antarctica LTER](https://pal.lternet.edu/) as part of the [Long Term Ecological Research Network](https://lternet.edu/).
 :::
@@ -284,7 +296,7 @@ The second model will predict `body_mass_g` by using `bill_length_mm`, `bill_dep
 
 The predicted error (also previously called the **residual**) is the difference between the observed value and the predicted value (from the regression model).
 
-$$\mbox{prediction error}_i = e_i = y_i - \hat{y}_i$$
+$$\text{prediction error}_i = e_i = y_i - \hat{y}_i$$
 :::
 
 The presentation below (see the comparison of Figures \@ref(fig:peng-mass1) and \@ref(fig:peng-mass2)) shows that the model with more variables predicts `body_mass_g` with much smaller errors (predicted minus actual body mass) than the model which uses only `bill_length_g`.
@@ -306,47 +318,51 @@ However, in this section, we will go beyond the use of p-values to consider inde
 **The smaller model:**
 
 $$
-\begin{align*}
-E[\texttt{body_mass_g}] &= \ \beta_0 + \beta_1 \times \texttt{bill_length_mm}\\
-\widehat{\texttt{body_mass_g}} &= \ 362.31 + 87.42 \times \texttt{bill_length_mm}\\
-\end{align*}
+\begin{aligned}
+E[\texttt{body\_mass\_g}] &= \ \beta_0 + \beta_1 \times \texttt{bill\_length\_mm}\\
+\widehat{\texttt{body\_mass\_g}} &= \ 362.31 + 87.42 \times \texttt{bill\_length\_mm}\\
+\end{aligned}
 $$
 
 ```{r peng-lm-bill, echo = FALSE}
 lm(body_mass_g ~ bill_length_mm, data = penguins) %>% 
   tidy() %>%
     mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 3))) %>%
-   kbl(caption = "The smalller model: least squares estimates of the regression model predicting `body_mass_g` from `bill_length_mm`.", digits = 2) %>%
+   kbl(booktabs = TRUE, 
+       caption = caption_helper("The smalller model: least squares estimates of the regression model predicting `body_mass_g` from `bill_length_mm`."), 
+       digits = 2) %>%
  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) 
+                latex_options = c("striped", "hold_position"), full_width = FALSE) 
 ```
 
 **The larger model:**
 
 $$
-\begin{align*}
-E[\texttt{body_mass_g}] = \beta_0 &+ \beta_1 \times \texttt{bill_length_mm} \\
-&+ \beta_2 \times \texttt{bill_depth_mm} \\
-&+ \beta_3 \times \texttt{flipper_length_mm} \\
+\begin{aligned}
+E[\texttt{body\_mass\_g}] = \beta_0 &+ \beta_1 \times \texttt{bill\_length\_mm} \\
+&+ \beta_2 \times \texttt{bill\_depth\_mm} \\
+&+ \beta_3 \times \texttt{flipper\_length\_mm} \\
 &+ \beta_4 \times \texttt{sex}_{male} \\
 &+ \beta_5 \times \texttt{species}_{Chinstrap} \\
 &+ \beta_6 \times \texttt{species}_{Gentoo}\\
-\widehat{\texttt{body_mass_g}} = -1460.99 &+ 18.20 \times \texttt{bill_length_mm} \\
-&+ 67.22 \times \texttt{bill_depth_mm} \\
-&+ 15.95 \times \texttt{flipper_length_mm} \\
+\widehat{\texttt{body\_mass\_g}} = -1460.99 &+ 18.20 \times \texttt{bill\_length\_mm} \\
+&+ 67.22 \times \texttt{bill\_depth\_mm} \\
+&+ 15.95 \times \texttt{flipper\_length\_mm} \\
 &+ 389.89 \times \texttt{sex}_{male} \\
 &- 251.48 \times \texttt{species}_{Chinstrap} \\
 &+ 1014.63 \times \texttt{species}_{Gentoo}\\
-\end{align*}
+\end{aligned}
 $$
 
 ```{r peng-lm-all, echo = FALSE}
 lm(body_mass_g ~ bill_length_mm + bill_depth_mm  + flipper_length_mm + sex + species, data = penguins) %>% 
   tidy()%>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 3))) %>%
-   kbl(caption = "The larger model: least squares estimates of the regression model predicting `body_mass_g` from `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species`.", digits = 2) %>%
+   kbl(booktabs = TRUE, 
+       caption = caption_helper("The larger model: least squares estimates of the regression model predicting `body_mass_g` from `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species`."), 
+       digits = 2) %>%
  kable_styling(bootstrap_options = c("striped", "condensed"),
-               latex_options = "striped", full_width = FALSE)
+               latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 In order to compare the smaller and larger models in terms of their **ability to predict penguin mass**, we need to build models that can provide independent predictions based on the penguins in the holdout samples created by cross validation.
@@ -364,7 +380,7 @@ include_graphics("images/massCV1.png")
 By repeating the process for each holdout quarter sample, the residuals from the model can be plotted against the predicted values.
 We see that the predictions are scattered which shows a good model fit but that the prediction errors vary $\pm$ 1000g of the true body mass.
 
-```{r peng-mass1, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted.  The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only.  The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value).", warning=FALSE, out.width="100%", fig.width=8}
+```{r peng-mass1, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted. The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only.  The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value)."}
 set.seed(47)
 data(penguins)
 penguins <- penguins %>%
@@ -437,7 +453,7 @@ Note that the residuals are mostly within $\pm$ 500g, providing much more precis
 include_graphics("images/massCV2.png")
 ```
 
-```{r peng-mass2, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted.  The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only.  The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value).", warning=FALSE, out.width="100%"}
+```{r peng-mass2, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted. The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only.  The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value)."}
 data.frame(
   predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1, ]) %>%
     predict(newdata = penguins[penguinfolds$Fold1, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]),
@@ -512,6 +528,8 @@ While p-values have a role to play in understanding model coefficients, througho
 Cross validation will be used again in Section \@ref(inf-model-logistic) with logistic regression.
 We encourage you to consider both standard inferential methods (such as p-values) and computational approaches (such as cross validation) as you build and use multivariable models of all varieties.
 
+\clearpage
+
 ## Chapter review {#chp26-review}
 
 ### Summary
@@ -531,6 +549,8 @@ However you should be able to easily spot them as **bolded text**.
 ```{r}
 make_terms_table(terms_chp_26)
 ```
+
+\clearpage
 
 ## Exercises {#chp26-exercises}
 

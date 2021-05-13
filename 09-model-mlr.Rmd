@@ -1,5 +1,9 @@
 # Linear regression with multiple predictors {#model-mlr}
 
+```{r, include = FALSE}
+source("_common.R")
+```
+
 ::: {.chapterintro data-latex=""}
 Building on the ideas of one predictor variable in a linear regression model (from Chapter \@ref(model-slr)), a multiple linear regression model is now fit to two or more predictor variables.
 By considering how different explanatory variables interact, we can uncover complicated relationships between the predictor variables and the response variable.
@@ -10,21 +14,21 @@ Model building is an extensive topic, and we scratch the surface here by definin
 Multiple regression extends single predictor variable regression to the case that still has one response but many predictors (denoted $x_1$, $x_2$, $x_3$, ...).
 The method is motivated by scenarios where many variables may be simultaneously connected to an output.
 
-We will consider data about loans from the peer-to-peer lender, Lending Club, which is a data set we first encountered in Chapters \@ref(data-hello).
+We will consider data about loans from the peer-to-peer lender, Lending Club, which is a dataset we first encountered in Chapters \@ref(data-hello).
 The loan data includes terms of the loan as well as information about the borrower.
 The outcome variable we would like to better understand is the interest rate assigned to the loan.
 For instance, all other characteristics held constant, does it matter how much debt someone already has?
 Does it matter if their income has been verified?
 Multiple regression will help us answer these and other questions.
 
-The data set includes results from 10,000 loans, and we'll be looking at a subset of the available variables, some of which will be new from those we saw in earlier chapters.
-The first six observations in the data set are shown in Table \@ref(tab:loans-data-matrix), and descriptions for each variable are shown in Table \@ref(tab:loans-variables).
+The dataset includes results from 10,000 loans, and we'll be looking at a subset of the available variables, some of which will be new from those we saw in earlier chapters.
+The first six observations in the dataset are shown in Table \@ref(tab:loans-data-matrix), and descriptions for each variable are shown in Table \@ref(tab:loans-variables).
 Notice that the past bankruptcy variable (`bankruptcy`) is an indicator variable, where it takes the value 1 if the borrower had a past bankruptcy in their record and 0 if not.
 Using an indicator variable in place of a category name allows for these variables to be directly used in regression.
 Two of the other variables are categorical (`verified_income` and `issue_month`), each of which can take one of a few different non-numerical values; we'll discuss how these are handled in the model in Section \@ref(ind-and-cat-predictors).
 
 ::: {.data data-latex=""}
-The data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [`loans_full_schema`](http://openintrostat.github.io/openintro/reference/loans_full_schema.html).
+The data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package: [`loans_full_schema`](http://openintrostat.github.io/openintro/reference/loans_full_schema.html).
 Based on the data in this dataset we have created two new variables: `credit_util` which is calculated as the total credit utilized divided by the total credit limit and `bankruptcy` which turns the number of bankruptcies to an indicator variable (0 for no bankruptcies and 1 for at least 1 bankruptcies).
 We will refer to this modified dataset as `loans`.
 :::
@@ -41,9 +45,10 @@ loans <- loans_full_schema %>%
 
 loans %>%
   slice_head(n = 6) %>%
-  kbl(caption = "First six rows from the `loans_full_schema` data set.") %>%
+  kbl(booktabs = TRUE, caption = caption_helper("First six rows of the `loans` dataset.")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "scale_down"), 
+                full_width = FALSE)
 ```
 
 ```{r loans-variables}
@@ -60,17 +65,19 @@ loans_var_def <- tribble(
 )
 
 loans_var_def %>%
-  mutate(variable = cell_spec(variable, monospace = TRUE)) %>%
-  kbl(escape = FALSE, caption = "Variables and their descriptions for the `loans` data set.") %>%
+  kbl(booktabs = TRUE, caption = caption_helper("Variables and their descriptions for the `loans` dataset."), 
+      col.names = c("Variable", "Description")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
+  column_spec(1, monospace = TRUE) %>%
+  column_spec(2, width = "30em")
 ```
 
 ## Indicator and categorical predictors {#ind-and-cat-predictors}
 
 Let's start by fitting a linear regression model for interest rate with a single predictor indicating whether or not a person has a bankruptcy in their record:
 
-$$\widehat{\texttt{interest_rate}} = 12.33 + 0.74 \times \texttt{bankruptcy}$$
+$$\widehat{\texttt{interest\_rate}} = 12.33 + 0.74 \times \texttt{bankruptcy}$$
 
 Results of this model are shown in Table \@ref(tab:int-rate-bankruptcy).
 
@@ -78,9 +85,10 @@ Results of this model are shown in Table \@ref(tab:int-rate-bankruptcy).
 m_bankruptcy <- lm(interest_rate ~ bankruptcy, data = loans)
 tidy(m_bankruptcy) %>%
   mutate(p.value = "<0.0001") %>%
-  kbl(caption = "Summary of a linear model for predicting interest rate based on whether the borrower has a bankruptcy in their record. Degrees of freedom for this model is 9998.", digits = 4) %>%
+  kbl(booktabs = TRUE, 
+      caption = caption_helper("Summary of a linear model for predicting `interest_rate` based on whether the borrower has a bankruptcy in their record. Degrees of freedom for this model is 9998."), digits = 4) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 ::: {.workedexample data-latex=""}
@@ -109,9 +117,10 @@ terms_chp_9 <- c("reference level")
 m_verified_income <- lm(interest_rate ~ verified_income, data = loans)
 tidy(m_verified_income) %>%
   mutate(p.value = "<0.0001") %>%
-  kbl(caption = "Summary of a linear model for predicting interest rate based on whether the borrower’s income source and amount has been verified. This predictor has three levels, which results in 2 rows in the regression output.") %>%
+  kbl(booktabs = TRUE, 
+      caption = caption_helper("Summary of a linear model for predicting `interest_rate` based on whether the borrower’s income source and amount has been verified. This predictor has three levels, which results in 2 rows in the regression output.")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 ::: {.workedexample data-latex=""}
@@ -122,15 +131,15 @@ How would we write an equation for this regression model?
 The equation for the regression model may be written as a model with two predictors:
 
 $$
-\begin{align}
-\widehat{\texttt{interest_rate}} = 11.10 &+ 1.42 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
-&+ 3.25 \times \texttt{verified_income}_{\texttt{Verified}}
-\end{align}
+\begin{aligned}
+\widehat{\texttt{interest\_rate}} = 11.10 &+ 1.42 \times \texttt{verified\_income}_{\texttt{Source Verified}} \\
+&+ 3.25 \times \texttt{verified\_income}_{\texttt{Verified}}
+\end{aligned}
 $$
 
 We use the notation $\texttt{variable}_{\texttt{level}}$ to represent indicator variables for when the categorical variable takes a particular value.
-For example, $\texttt{verified_income}_{\texttt{Source Verified}}$ would take a value of 1 if was for a loan, and it would take a value of 0 otherwise.
-Likewise, $\texttt{verified_income}_{\texttt{Verified}}$ would take a value of 1 if took a value of `verified` and 0 if it took any other value.
+For example, $\texttt{verified\_income}_{\texttt{Source Verified}}$ would take a value of 1 if was for a loan, and it would take a value of 0 otherwise.
+Likewise, $\texttt{verified\_income}_{\texttt{Verified}}$ would take a value of 1 if took a value of `verified` and 0 if it took any other value.
 :::
 
 The notation $\texttt{variable}_{\texttt{level}}$ may feel a bit confusing.
@@ -143,7 +152,7 @@ Using the model for predicting interest rate from income verification type, comp
 
 When `verified_income` takes a value of `Not Verified`, then both indicator functions in the equation for the linear model are set to 0:
 
-$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times 0 + 3.25 \times 0 = 11.10$$
+$$\widehat{\texttt{interest\_rate}} = 11.10 + 1.42 \times 0 + 3.25 \times 0 = 11.10$$
 
 The average interest rate for these borrowers is 11.1%.
 Because the level does not have its own coefficient and it is the reference value, the indicators for the other levels for this variable all drop out.
@@ -156,7 +165,7 @@ Using the model for predicting interest rate from income verification type, comp
 
 When `verified_income` takes a value of `Source Verified`, then the corresponding variable takes a value of 1 while the other is 0:
 
-$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 12.52$$
+$$\widehat{\texttt{interest\_rate}} = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 12.52$$
 
 The average interest rate for these borrowers is 12.52%.
 :::
@@ -165,7 +174,7 @@ The average interest rate for these borrowers is 12.52%.
 Compute the average interest rate for borrowers whose income source and amount are both verified.[^model-mlr-1]
 :::
 
-[^model-mlr-1]: When `verified_income` takes a value of `Verified`, then the corresponding variable takes a value of 1 while the other is 0: $$11.10 + 1.42 \times 0 + 3.25 \times 1 = 14.35$$ The average interest rate for these borrowers is 14.35%.
+[^model-mlr-1]: When `verified_income` takes a value of `Verified`, then the corresponding variable takes a value of 1 while the other is 0: $11.10 + 1.42 \times 0 + 3.25 \times 1 = 14.35.$ The average interest rate for these borrowers is 14.35%.
 
 ::: {.important data-latex=""}
 **Predictors with several categories.**
@@ -185,7 +194,7 @@ The higher interest rate for borrowers who have verified their income source or 
 Intuitively, we'd think that a loan would look *less* risky if the borrower's income has been verified.
 However, note that the situation may be more complex, and there may be confounding variables that we didn't account for.
 For example, perhaps lender require borrowers with poor credit to verify their income.
-That is, verifying income in our data set might be a signal of some concerns about the borrower rather than a reassurance that the borrower will pay back the loan.
+That is, verifying income in our dataset might be a signal of some concerns about the borrower rather than a reassurance that the borrower will pay back the loan.
 For this reason, the borrower could be deemed higher risk, resulting in a higher interest rate.
 (What other confounding variables might explain this counter-intuitive relationship suggested by the model?)
 
@@ -207,19 +216,19 @@ While we remain cautious about making any causal interpretations using multiple 
 terms_chp_9 <- c(terms_chp_9, "multiple regression")
 ```
 
-We want to construct a model that accounts for not only for any past bankruptcy or whether the borrower had their income source or amount verified, but simultaneously accounts for all the variables in the `loans` data set: `verified_income`, `debt_to_income`, `credit_util`, `bankruptcy`, `term`, `issue_month`, and `credit_checks`.
+We want to construct a model that accounts for not only for any past bankruptcy or whether the borrower had their income source or amount verified, but simultaneously accounts for all the variables in the `loans` dataset: `verified_income`, `debt_to_income`, `credit_util`, `bankruptcy`, `term`, `issue_month`, and `credit_checks`.
 
-$$\begin{align*}
-\widehat{\texttt{interest_rate}} = b_0 &+ b_1 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
-&+ b_2 \times \texttt{verified_income}_{\texttt{Verified}} \\
-&+ b_3 \times \texttt{debt_to_income} \\
-&+ b_4 \times \texttt{credit_util} \\
+$$\begin{aligned}
+\widehat{\texttt{interest\_rate}} = b_0 &+ b_1 \times \texttt{verified\_income}_{\texttt{Source Verified}} \\
+&+ b_2 \times \texttt{verified\_income}_{\texttt{Verified}} \\
+&+ b_3 \times \texttt{debt\_to\_income} \\
+&+ b_4 \times \texttt{credit\_util} \\
 &+ b_5 \times \texttt{bankruptcy} \\
 &+ b_6 \times \texttt{term} \\
-&+ b_7 \times \texttt{issue_month}_{\texttt{Jan-2018}} \\
-&+ b_8 \times \texttt{issue_month}_{\texttt{Mar-2018}} \\
-&+ b_9 \times \texttt{credit_checks}
-\end{align*}$$
+&+ b_7 \times \texttt{issue\_month}_{\texttt{Jan-2018}} \\
+&+ b_8 \times \texttt{issue\_month}_{\texttt{Mar-2018}} \\
+&+ b_9 \times \texttt{credit\_checks}
+\end{aligned}$$
 
 This equation represents a holistic approach for modeling all of the variables simultaneously.
 Notice that there are two coefficients for `verified_income` and also two coefficients for `issue_month`, since both are 3-level categorical variables.
@@ -243,9 +252,9 @@ tidy(m_full) %>%
     p.value = as.character(round(p.value, 4)), 
     p.value = if_else(p.value == "0", "<0.0001", p.value)
     ) %>%
-  kbl(caption = "Output for the regression model, where interest rate is the outcome and the variables listed are the predictors. Degrees of freedom for this model is 9990.") %>%
+  kbl(booktabs = TRUE, caption = "Output for the regression model, where interest rate is the outcome and the variables listed are the predictors. Degrees of freedom for this model is 9990.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 ::: {.important data-latex=""}
@@ -269,17 +278,17 @@ How many predictors are there in this model?
 The fitted model for the interest rate is given by:
 
 $$
-\begin{align}
-\widehat{\texttt{interest_rate}} = 1.925 &+ 0.975 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
-&+ 2.537 \times \texttt{verified_income}_{\texttt{Verified}} \\
-&+ 0.021 \times \texttt{debt_to_income} \\
-&+ 4.896 \times \texttt{credit_util} \\
+\begin{aligned}
+\widehat{\texttt{interest\_rate}} = 1.925 &+ 0.975 \times \texttt{verified\_income}_{\texttt{Source Verified}} \\
+&+ 2.537 \times \texttt{verified\_income}_{\texttt{Verified}} \\
+&+ 0.021 \times \texttt{debt\_to\_income} \\
+&+ 4.896 \times \texttt{credit\_util} \\
 &+ 0.386 \times \texttt{bankruptcy} \\
 &+ 0.154 \times \texttt{term} \\
-&+ 0.028 \times \texttt{issue_month}_{\texttt{Jan-2018}} \\
-&- 0.040 \times \texttt{issue_month}_{\texttt{Mar-2018}} \\
-&+ 0.228 \times \texttt{credit_checks}
-\end{align}
+&+ 0.028 \times \texttt{issue\_month}_{\texttt{Jan-2018}} \\
+&- 0.040 \times \texttt{issue\_month}_{\texttt{Mar-2018}} \\
+&+ 0.228 \times \texttt{credit\_checks}
+\end{aligned}
 $$
 
 If we count up the number of predictor coefficients, we get the *effective* number of predictors in the model: $k = 9$.
@@ -296,8 +305,8 @@ Compute the residual of the first observation in Table \@ref(tab:loans-data-matr
 :::
 
 [^model-mlr-4]: To compute the residual, we first need the predicted value, which we compute by plugging values into the equation from earlier.
-    For example, $\texttt{verified_income}_{\texttt{Source Verified}}$ takes a value of 0, $\texttt{verified_income}_{\texttt{Verified}}$ takes a value of 1 (since the borrower's income source and amount were verified), was 18.01, and so on.
-    This leads to a prediction of $\widehat{\texttt{interest_rate}}_1 = 18.09$.
+    For example, $\texttt{verified\_income}_{\texttt{Source Verified}}$ takes a value of 0, $\texttt{verified\_income}_{\texttt{Verified}}$ takes a value of 1 (since the borrower's income source and amount were verified), was 18.01, and so on.
+    This leads to a prediction of $\widehat{\texttt{interest\_rate}}_1 = 18.09$.
     The observed interest rate was 14.07%, which leads to a residual of $e_1 = 14.07 - 18.09 = -4.02$.
 
 ::: {.workedexample data-latex=""}
@@ -358,13 +367,13 @@ To get a better estimate, we use the adjusted $R^2$.
 The **adjusted R-squared** is computed as
 
 $$
-\begin{align*}
+\begin{aligned}
   R_{adj}^{2}
     &= 1 - \frac{s_{\text{residuals}}^2 / (n-k-1)}
         {s_{\text{outcome}}^2 / (n-1)} \\
     &= 1 - \frac{s_{\text{residuals}}^2}{s_{\text{outcome}}^2}
         \times \frac{n-1}{n-k-1}
-\end{align*}
+\end{aligned}
 $$
 
 where $n$ is the number of cases used to fit the model and $k$ is the number of predictor variables in the model.
@@ -380,7 +389,7 @@ The reasoning behind the adjusted $R^2$ lies in the associated with each varianc
 If we were to make predictions for *new data* using our current model, we would find that the unadjusted $R^2$ would tend to be slightly overly optimistic, while the adjusted $R^2$ formula helps correct this bias.
 
 ::: {.guidedpractice data-latex=""}
-There were $n=10000$ auctions in the data set and $k=9$ predictor variables in the model.
+There were $n=10000$ auctions in the dataset and $k=9$ predictor variables in the model.
 Use $n$, $k$, and the variances from the earlier Guided Practice to calculate $R_{adj}^2$ for the interest rate model.[^model-mlr-7]
 :::
 
@@ -458,9 +467,9 @@ tidy(m_full) %>%
     ) %>%
   add_row(term = glue("Adjusted $R^2$ = {m_full_r_sq_adj}")) %>%
   add_row(term = glue("df = {m_full_df_residual}")) %>%
-  kbl(caption = "The fit for the full regression model, including the adjusted $R^2$.") %>%
+  kbl(booktabs = TRUE, caption = "The fit for the full regression model, including the adjusted $R^2$.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
   pack_rows("", 11, 12) %>%
   add_indent(11:12) %>%
   row_spec(11:12, italic = TRUE)
@@ -481,9 +490,9 @@ tidy(m_full_minus_issue_month) %>%
     ) %>%
   add_row(term = glue("Adjusted $R^2$ = {m_full_minus_issue_month_r_sq_adj}")) %>%
   add_row(term = glue("df = {m_full_minus_issue_month_df_residual}")) %>%
-  kbl(caption = "The fit for the regression model after dropping the `issue_month` variable.") %>%
+  kbl(booktabs = TRUE, caption = "The fit for the regression model after dropping issue month.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
   pack_rows("", 9, 10) %>%
   add_indent(9:10) %>%
   row_spec(9:10, italic = TRUE)
@@ -536,15 +545,15 @@ None of these models lead to an improvement in adjusted \$R\^2\$, so we do not e
 That is, after backward elimination, we are left with the model that keeps all predictors except issue_month, which we can summarize using the coefficients from Table \@ref(tab:loans-full-except-issue-month).
 
 $$
-\begin{align}  
-\widehat{\texttt{interest_rate}} = 1.921 &+ 0.974 \times \texttt{verified_income}_\texttt{Source only} \\
-&+ 2.535 \times \texttt{verified_income}_\texttt{Verified} \\
-&+ 0.021 \times \texttt{debt_to_income} \\
-&+ 4.896 \times \texttt{credit_util} \\
+\begin{aligned}
+\widehat{\texttt{interest\_rate}} = 1.921 &+ 0.974 \times \texttt{verified\_income}_\texttt{Source only} \\
+&+ 2.535 \times \texttt{verified\_income}_\texttt{Verified} \\
+&+ 0.021 \times \texttt{debt\_to\_income} \\
+&+ 4.896 \times \texttt{credit\_util} \\
 &+ 0.387 \times \texttt{bankruptcy} \\
 &+ 0.154 \times \texttt{term} \\
-&+ 0.228 \times \texttt{credit_check}
-\end{align}
+&+ 0.228 \times \texttt{credit\_check}
+\end{aligned}
 $$
 :::
 
@@ -613,6 +622,8 @@ Stepwise selection can also be carried out with decision criteria other than adj
 
 Additionally, one can choose to include or exclude variables from a model based on expert opinion or due to research focus.
 
+\clearpage
+
 ## Chapter review {#chp9-review}
 
 ### Summary
@@ -635,9 +646,11 @@ However you should be able to easily spot them as **bolded text**.
 make_terms_table(terms_chp_9)
 ```
 
+\clearpage
+
 ## Exercises {#chp9-exercises}
 
 ::: {.exercises}
-```{r exercises-09, child = "exercises/09-ex-model-mlr.Rmd"}
+```{r exercises-09, child = "exercises/09-ex-model-mlr.Rmd", eval = FALSE}
 ```
 :::

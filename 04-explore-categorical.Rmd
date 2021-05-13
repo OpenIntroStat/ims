@@ -1,20 +1,25 @@
 # (PART) Exploratory data analysis {.unnumbered}
 
+```{r, include = FALSE}
+source("_common.R")
+```
+
 # Exploring categorical data {#explore-categorical}
 
 ::: {.chapterintro data-latex=""}
 This chapter focuses on exploring **categorical** data using summary statistics and visualizations.
 The summaries and graphs presented in this chapter are created using statistical software; however, since this might be your first exposure to the concepts, we take our time in this chapter to detail how to create them.
+Where possible, we present multivariate plots; plots that visualize the relationship between multiple variables.
 Mastery of the content presented in this chapter will be crucial for understanding the methods and techniques introduced in rest of the book.
 :::
 
 In this chapter we will work with data on loans from Lending Club that you've previously seen in Chapter \@ref(data-hello).
-The `loan50` data set from Chapter \@ref(data-hello) represents a sample from a larger loan data set called `loans`.
-This larger data set contains information on 10,000 loans made through Lending Club.
+The `loan50` dataset from Chapter \@ref(data-hello) represents a sample from a larger loan dataset called `loans`.
+This larger dataset contains information on 10,000 loans made through Lending Club.
 We will examine the relationship between `homeownership`, which for the `loans` data can take a value of `rent`, `mortgage` (owns but has a mortgage), or `own`, and `app_type`, which indicates whether the loan application was made with a partner or whether it was an individual application.
 
 ::: {.data data-latex=""}
-The data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [loans](http://openintrostat.github.io/openintro/reference/loans_full_schema.html).
+The data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package: [loans](http://openintrostat.github.io/openintro/reference/loans_full_schema.html).
 :::
 
 ## Contingency tables and bar plots
@@ -39,7 +44,7 @@ loans_individual_rent <- loans_full_schema %>%
 Table \@ref(tab:loan-home-app-type-totals) summarizes two variables: `application_type` and `homeownership`.
 A table that summarizes data for two categorical variables in this way is called a **contingency table**.
 Each value in the table represents the number of times a particular combination of variable outcomes occurred.
-For example, the value `r loans_individual_rent` corresponds to the number of loans in the data set where the borrower rents their home and the application type was by an individual.
+For example, the value `r loans_individual_rent` corresponds to the number of loans in the dataset where the borrower rents their home and the application type was by an individual.
 Row and column totals are also included.
 The **row totals** provide the total counts across each row and the **column totals** down each column.
 We can also create a table that shows only the overall percentages or proportions for each combination of categories, or we can create a table for a single variable, such as the one shown in Table \@ref(tab:loan-homeownership-totals) for the `homeownership` variable.
@@ -54,9 +59,9 @@ loans_full_schema %>%
   pivot_wider(names_from = homeownership, values_from = n) %>% 
   select(application_type, mortgage, own, rent) %>%
   adorn_totals(where = c("row", "col")) %>%
-  kbl(caption = "A contingency table for application type and homeownership.") %>%
+  kbl(booktabs = TRUE, caption = "A contingency table for application type and homeownership.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
   add_header_above(c(" " = 1, "homeownership" = 3, " " = 1))
 ```
 
@@ -65,9 +70,9 @@ loans_full_schema %>%
   mutate(homeownership = tolower(homeownership)) %>%
   count(homeownership, name = "Count") %>%
   adorn_totals(where = "row") %>%
-  kbl(caption = "A table summarizing the frequencies for each value of the homeownership variable: mortgage, own, and rent.") %>%
+  kbl(booktabs = TRUE, caption = "A table summarizing the frequencies for each value of the homeownership variable: mortgage, own, and rent.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 A bar plot is a common way to display a single categorical variable.
@@ -215,9 +220,9 @@ loans_full_schema %>%
   select(-n) %>%
   pivot_wider(names_from = homeownership, values_from = proportion) %>% 
   adorn_totals(where = "col") %>% 
-  kbl(caption = "A contingency table with row proportions for the application type and homeownership variables.") %>%
+  kbl(booktabs = TRUE, caption = "A contingency table with row proportions for the application type and homeownership variables.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
   add_header_above(c(" " = 1, "homeownership" = 3, " " = 1))
 ```
 
@@ -234,9 +239,9 @@ loans_full_schema %>%
   select(-n) %>%
   pivot_wider(names_from = homeownership, values_from = proportion) %>% 
   adorn_totals(where = "row") %>% 
-  kbl(caption = "A contingency table with column proportions for the application type and homeownership variables.") %>%
+  kbl(booktabs = TRUE, caption = "A contingency table with column proportions for the application type and homeownership variables.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
   add_header_above(c(" " = 1, "homeownership" = 3))
 ```
 
@@ -244,29 +249,27 @@ We could also have checked for an association between `application_type` and `ho
 When comparing these row proportions, we would look down columns to see if the fraction of loans where the borrower rents, has a mortgage, or owns varied across the to application types.
 
 ::: {.guidedpractice data-latex=""}
-(a) What does 0.451 represent in Table \@ref(tab:loan-home-app-type-row-proportions)?
-
-(b) What does 0.802 represent in Table \@ref(tab:loan-home-app-type-column-proportions)?[^explore-categorical-1]
+What does 0.451 represent in Table \@ref(tab:loan-home-app-type-row-proportions)?
+What does 0.802 represent in Table \@ref(tab:loan-home-app-type-column-proportions)?[^explore-categorical-1]
 :::
 
-[^explore-categorical-1]: (a) 0.451 represents the proportion of individual applicants who have a mortgage.
-    (b) 0.802 represents the fraction of applicants with mortgages who applied as individuals.
+[^explore-categorical-1]: 0.451 represents the proportion of individual applicants who have a mortgage.
+    0.802 represents the fraction of applicants with mortgages who applied as individuals.
 
 ::: {.guidedpractice data-latex=""}
-(a) What does 0.122 represent in Table \@ref(tab:loan-home-app-type-row-proportions)?
-
-(b) What does 0.135 represent in Table \@ref(tab:loan-home-app-type-column-proportions)?[^explore-categorical-2]
+What does 0.122 represent in Table \@ref(tab:loan-home-app-type-row-proportions)?
+What does 0.135 represent in Table \@ref(tab:loan-home-app-type-column-proportions)?[^explore-categorical-2]
 :::
 
-[^explore-categorical-2]: (a) 0.122 represents the fraction of joint borrowers who own their home.
-    (b) 0.135 represents the home-owning borrowers who had a joint application for the loan.
+[^explore-categorical-2]: 0.122 represents the fraction of joint borrowers who own their home.
+    0.135 represents the home-owning borrowers who had a joint application for the loan.
 
 ::: {.workedexample data-latex=""}
 Data scientists use statistics to build email spam filters.
 By noting specific characteristics of an email, a data scientist may be able to classify some emails as spam or not spam with high accuracy.
 One such characteristic is whether the email contains no numbers, small numbers, or big numbers.
 Another characteristic is the email format, which indicates whether or not an email has any HTML content, such as bolded text.
-We'll focus on email format and spam status using the data set; these variables are summarized in a contingency table in Table \@ref(tab:email-count-table).
+We'll focus on email format and spam status using the dataset; these variables are summarized in a contingency table in Table \@ref(tab:email-count-table).
 Which would be more helpful to someone hoping to classify email as spam or regular email for this table: row or column proportions?
 
 ------------------------------------------------------------------------
@@ -283,7 +286,7 @@ However, sometimes it simply isn't clear which, if either, is more useful.
 :::
 
 ::: {.data data-latex=""}
-The data can be found in the [openintro](http://openintrostat.github.io/openintro) package: [email](http://openintrostat.github.io/openintro/reference/email.html).
+The data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package: [email](http://openintrostat.github.io/openintro/reference/email.html).
 :::
 
 ```{r email-count-table}
@@ -295,7 +298,7 @@ email %>%
   count(spam, format) %>%
   pivot_wider(names_from = format, values_from = n) %>% 
   adorn_totals(where = c("row", "col")) %>%
-  kbl(caption = "A contingency table for spam and format") 
+  kbl(booktabs = TRUE, caption = "A contingency table for spam and format") 
 ```
 
 ::: {.workedexample data-latex=""}
@@ -365,6 +368,8 @@ p_bar <- loans_full_schema %>%
 
 p_pie + p_bar
 ```
+
+\clearpage
 
 ## Waffle charts
 
@@ -443,11 +448,17 @@ county %>%
   rename(
     State = state,
     County = name,
-    `Change in population, %` = pop_change,
+    `Population change (%)` = pop_change,
     `Gain / No gain` = pop_change_2levels,
     `Median household income` = median_hh_income
   ) %>%
-  kbl(caption = "The median household income from a random sample of 5 counties with population gain between 2010 to 2017 and another random sample of 5 counties with no population gain.")
+  kbl(booktabs = TRUE, caption = "The median household income from a random sample of 5 counties with population gain between 2010 to 2017 and another random sample of 5 counties with no population gain.",
+      align = "llccc") %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(3, width = "8em") %>%
+  column_spec(4, width = "4em") %>%
+  column_spec(5, width = "8em")
 ```
 
 Color can be used to split histograms for numerical variables by levels of a categorical variable.
@@ -459,7 +470,7 @@ An example is shown in Plot B of Figure \@ref(fig:countyIncomeSplitByPopGain), w
 terms_chp_4 <- c(terms_chp_4, "side-by-side box plot")
 ```
 
-```{r countyIncomeSplitByPopGain, fig.cap="Histograms (Plot A) and side by-side box plots (Plot B) for `med_hh_income`, where counties are split by whether there was a population gain or not.", fig.width = 8}
+```{r countyIncomeSplitByPopGain, fig.cap = "Histograms (Plot A) and side by-side box plots (Plot B) for median household income, where counties are split by whether there was a population gain or not."}
 p_hist <- county %>%
   filter(!is.na(pop_change)) %>%
   ggplot(aes(x = median_hh_income, fill = pop_change_2levels)) +
@@ -492,7 +503,7 @@ How many *prominent* modes are there for each group?[^explore-categorical-3]
     The variability is also slightly larger for the population gain group.
     This is evident in the IQR, which is about 50% bigger in the *gain* group.
     Both distributions show slight to moderate right skew and are unimodal.
-    The box plots indicate there are many observations far above the median in each group, though we should anticipate that many observations will fall beyond the whiskers when examining any data set that contain more than a few hundred data points.
+    The box plots indicate there are many observations far above the median in each group, though we should anticipate that many observations will fall beyond the whiskers when examining any dataset that contain more than a few hundred data points.
 
 ::: {.guidedpractice data-latex=""}
 What components of each plot in Figure \@ref(fig:countyIncomeSplitByPopGain) do you find most useful?[^explore-categorical-4]
@@ -508,7 +519,7 @@ Figure \@ref(fig:countyIncomeSplitByPopGainRidge) displays a ridge plot for the 
 terms_chp_4 <- c(terms_chp_4, "ridge plot")
 ```
 
-```{r countyIncomeSplitByPopGainRidge, fig.cap="Ridge plot for for `med_hh_income`, where counties are split by whether there was a population gain or not."}
+```{r countyIncomeSplitByPopGainRidge, fig.cap="Ridge plot for median household income, where counties are split by whether there was a population gain or not."}
 county %>%
   filter(!is.na(pop_change)) %>%
   ggplot(aes(x = median_hh_income, y = pop_change_2levels, 
@@ -579,7 +590,7 @@ p_1 + p_2 +
 ```
 
 We can continue building up on this visualization to add one more variable, `median_edu`, which is the median education level in the county.
-In Figure \@ref(fig:countyIncomeRidgeMulti), we represent median education level using color, where red (solid line) represents counties where the median education level is Bachelor's, orange (dotted line) is some college degree, and yellow (dashed line) is high school diploma.
+In Figure \@ref(fig:countyIncomeRidgeMulti), we represent median education level using color, where pink (solid line) represents counties where the median education level is Bachelor's, yellow (dashed line) is some college degree, and red (dotted line) is high school diploma.
 
 ```{r countyIncomeRidgeMulti, fig.cap="Distribution of median income in counties using a ridge plot, faceted by whether the county had a population gain or not as well as whether the county is in a metropolitan area and colored by the median education level in the county."}
 county %>%
@@ -606,6 +617,8 @@ Based on Figure \@ref(fig:countyIncomeRidgeMulti), what can you say about how me
 
 [^explore-categorical-6]: The ridge plot give us a better sense of the shape, and especially modality, of the data.
 
+\clearpage
+
 ## Chapter review {#chp4-review}
 
 ### Summary
@@ -625,6 +638,8 @@ However you should be able to easily spot them as **bolded text**.
 ```{r}
 make_terms_table(terms_chp_4)
 ```
+
+\clearpage
 
 ## Exercises {#chp4-exercises}
 

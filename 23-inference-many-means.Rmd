@@ -1,5 +1,9 @@
 # Inference for comparing many means {#inference-many-means}
 
+```{r, include = FALSE}
+source("_common.R")
+```
+
 ::: {.chapterintro data-latex=""}
 In Chapter \@ref(inference-two-means) analysis was done to compare the average population value across two different groups.
 An important aspect of the analysis was to look at the difference in sample means as an estimate for the difference in population means.
@@ -84,7 +88,7 @@ toy_anova %>%
 ## Case study: Batting
 
 We would like to discern whether there are real differences between the batting performance of baseball players according to their position: outfielder (OF), infielder (IF), and catcher (C).
-We will use a data set called `mlb_players_18`, which includes batting records of 429 Major League Baseball (MLB) players from the 2018 season who had at least 100 at bats.
+We will use a dataset called `mlb_players_18`, which includes batting records of 429 Major League Baseball (MLB) players from the 2018 season who had at least 100 at bats.
 Six of the 429 cases represented in `mlb_players_18` are shown in Figure \@ref(tab:mlbBat18DataFrame), and descriptions for each variable are provided in Figure \@ref(tab:mlbBat18Variables).
 The measure we will use for the player batting performance (the outcome variable) is on-base percentage (`OBP`).
 The on-base percentage roughly represents the fraction of the time a player successfully gets on base or hits a home run.
@@ -109,13 +113,14 @@ mlb_players_18 <- mlb_players_18 %>%
 mlb_players_18 %>%
   arrange(name) %>% 
   select(name, team, position, AB, H, HR, RBI, AVG, OBP) %>%
-  head(6) %>%
-  kbl(caption = "Six cases and some of the variables from the `mlb_players_18` data frame.") %>%
-  kable_styling()
+  slice_head(n = 6) %>%
+  kbl(booktabs = TRUE, caption = caption_helper("Six cases and some of the variables from the `mlb_players_18` data frame."), align = "lllrrrrrr") %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position"), full_width = TRUE)
 ```
 
 ```{r mlbBat18Variables}
-temptbl <- tribble(
+mlb_players_18_vars <- tribble(
   ~variable,   ~col1,
   "name" ,     "Player name",
   "team" ,     "The abbreviated name of the player's team",
@@ -128,10 +133,13 @@ temptbl <- tribble(
   "OBP" ,      "On-base percentage, which is roughly equal to the fraction of times a player gets on base or hits a home run"
 )
 
-temptbl %>%
-  kbl(caption = "Variables and their descriptions for the mlb_players_18 data set.", col.names = c( "variable", "description")) %>%
+mlb_players_18_vars %>%
+  kbl(booktabs = TRUE, caption = caption_helper("Variables and their descriptions for the `mlb_players_18` dataset."), 
+      col.names = c("Variable", "Description")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE) 
+                latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
+  column_spec(1, monospace = TRUE) %>%
+  column_spec(2, width = "40em")
 ```
 
 ::: {.guidedpractice data-latex=""}
@@ -164,12 +172,14 @@ mlb_players_18 %>%
     mean = round(mean(OBP), 3),
     sd   = round(sd(OBP), 3)
     ) %>%
-  kbl(
+  kbl(booktabs = TRUE, 
     caption = "Summary statistics of on-base percentage, split by player position.",
-    col.names = c("Position", "$n$", "$\\bar{x}$", "$s$")
+    col.names = c("Position", "n", "Mean", "SD"),
+    align = "lccc"
   ) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(1:4, width = "6em")
 ```
 
 ```{r mlbANOVABoxPlot, fig.cap="Side-by-side box plot of the on-base percentage for 429 players across three groups. There is one prominent outlier visible in the infield group, but with 154 observations in the infield group, this outlier is not extreme enough to have an impact on the calculations, so it is not a concern for moving forward with the analysis."}
@@ -220,15 +230,15 @@ In the next section we will learn how to use the $F$ statistic to test whether o
 
 The method of analysis of variance in this context focuses on answering one question: is the variability in the sample means so large that it seems unlikely to be from chance alone?
 This question is different from earlier testing procedures since we will *simultaneously* consider many groups, and evaluate whether their sample means differ more than we would expect from natural variation.
-We call this variability the **mean square between groups (**$MSG)$, and it has an associated degrees of freedom, $df_{G} = k - 1$ when there are $k$ groups.
+We call this variability the **mean square between groups (MSG)**, and it has an associated degrees of freedom, $df_{G} = k - 1$ when there are $k$ groups.
 The $MSG$ can be thought of as a scaled variance formula for means.
 If the null hypothesis is true, any variation in the sample means is due to chance and shouldn't be too large.
 Details of $MSG$ calculations are provided in the footnote.[^inference-many-means-3]
 However, we typically use software for these computations.
-\index{degrees of freedom (df)!ANOVA}
+\index{degrees of freedom}
 
 [^inference-many-means-3]: Let $\bar{x}$ represent the mean of outcomes across all groups.
-    Then the mean square between groups is computed as $$MSG = \frac{1}{df_{G}}SSG = \frac{1}{k-1}\sum_{i=1}^{k} n_{i} \left(\bar{x}_{i} - \bar{x}\right)^2$$ where $SSG$ is called the **sum of squares between groups** and $n_{i}$ is the sample size of group $i.$
+    Then the mean square between groups is computed as $MSG = \frac{1}{df_{G}}SSG = \frac{1}{k-1}\sum_{i=1}^{k} n_{i} \left(\bar{x}_{i} - \bar{x}\right)^2$ where $SSG$ is called the **sum of squares between groups** and $n_{i}$ is the sample size of group $i.$
 
 ```{r include=FALSE}
 terms_chp_23 <- c(terms_chp_23, "mean square between groups (MSG)", "degrees of freedom", "sum of squares between groups (SSG)", "mean square error (MSE)", "sum of squares total (SST)", "sum of squared error (SSE)")
@@ -241,8 +251,8 @@ Details of the computations of the $MSE$ and a link to an extra online section f
 
 [^inference-many-means-4]: See [additional details on ANOVA calculations](https://www.openintro.org/download.php?file=stat_extra_anova_calculations) for interested readers.
     Let $\bar{x}$ represent the mean of outcomes across all groups.
-    Then the **sum of squares total (**$SST)$ is computed as $$SST = \sum_{i=1}^{n} \left(x_{i} - \bar{x}\right)^2$$ where the sum is over all observations in the data set.
-    Then we compute the **sum of squared errors** $(SSE)$ in one of two equivalent ways: $$SSE &= SST - SSG = (n_1-1)s_1^2 + (n_2-1)s_2^2 + \cdots + (n_k-1)s_k^2$$ where $s_i^2$ is the sample variance (square of the standard deviation) of the residuals in group $i.$ Then the $MSE$ is the standardized form of $SSE:$ $MSE = \frac{1}{df_{E}}SSE.$
+    Then the **sum of squares total (**$SST)$ is computed as $$SST = \sum_{i=1}^{n} \left(x_{i} - \bar{x}\right)^2$$ where the sum is over all observations in the dataset.
+    Then we compute the **sum of squared errors** $(SSE)$ in one of two equivalent ways: $SSE = SST - SSG = (n_1-1)s_1^2 + (n_2-1)s_2^2 + \cdots + (n_k-1)s_k^2$ where $s_i^2$ is the sample variance (square of the standard deviation) of the residuals in group $i.$ Then the $MSE$ is the standardized form of $SSE: MSE = \frac{1}{df_{E}}SSE.$
 
 When the null hypothesis is true, any differences among the sample means are only due to chance, and the $MSG$ and $MSE$ should be about equal.
 As a test statistic for ANOVA, we examine the fraction of $MSG$ and $MSE:$
@@ -289,12 +299,14 @@ classdata %>%
     min  = min(m1),
     max  = max(m1)
     ) %>%
-  kbl(
+  kbl(booktabs = TRUE, 
     caption = "Summary statistics of scores for each exam version.",
-    col.names = c("Exam", "$n$", "$\\bar{x}$", "$s$", "minimum", "maximum")
+    col.names = c("Exam", "n", "Mean", "SD", "Min", "Max"),
+    align = "lccccc"
   ) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(1:6, width = "5em")
 ```
 
 ```{r boxplotThreeVersionsOfExams, fig.cap = "Exam scores for students given one of three different exams."}
@@ -461,10 +473,10 @@ Many of these values should look familiar; in particular, the $F$-test statistic
 mod <- lm(OBP ~ position, data = mlb_players_18)
 
 anova(mod) %>%
-  kbl(digits = 4, 
+  kbl(booktabs = TRUE, digits = 4, 
         caption = "ANOVA summary for testing whether the average on-base percentage differs across player positions.") %>% 
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = "striped", full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 ### Conditions for an ANOVA analysis
@@ -510,6 +522,8 @@ The normality condition is very important when the sample sizes for each group a
 The constant variance condition is especially important when the sample sizes differ between groups.
 :::
 
+\clearpage
+
 ## Chapter review {#chp23-review}
 
 ### Summary
@@ -530,6 +544,8 @@ However you should be able to easily spot them as **bolded text**.
 ```{r}
 make_terms_table(terms_chp_23)
 ```
+
+\clearpage
 
 ## Exercises {#chp23-exercises}
 
