@@ -70,6 +70,10 @@ There are two key conditions for fitting a logistic regression model:
 2.  Each predictor $x_i$ is linearly related to logit$(p_i)$ if all other predictors are held constant.
 :::
 
+```{r include=FALSE}
+terms_chp_27 <- c(terms_chp_27, "technical conditions")
+```
+
 The first logistic regression model condition --- independence of the outcomes --- is reasonable for the experiment since characteristics of resumes were randomly assigned to the resumes that were sent out.
 
 The second condition of the logistic regression model is not easily checked without a fairly sizable amount of data.
@@ -77,6 +81,25 @@ Luckily, we have 4870 resume submissions in the dataset!
 Let's first visualize these data by plotting the true classification of the resumes against the model's fitted probabilities, as shown in Figure \@ref(fig:resume-predict).
 
 ```{r resume-predict, fig.cap = "The predicted probability that each of the 4870 resumes results in a callback. Points have been jittered so that those with nearly identical values aren’t plotted exactly on top of one another.", fig.asp = 0.4}
+resume <- resume %>%
+  rename(sex = gender) %>%
+  mutate(
+    sex = if_else(sex == "m", "man", "woman"),
+    sex = fct_relevel(sex, "woman", "man"),
+    received_callback = as.factor(received_callback),
+    college_degree = as.factor(college_degree),
+    honors = as.factor(honors),
+    military = as.factor(military),
+    has_email_address = as.factor(has_email_address),
+    race = if_else(race == "black", "Black", "White")
+    ) %>%
+  select(received_callback, job_city, college_degree, years_experience,
+         honors, military, has_email_address, race, sex)
+
+resume_fit <- logistic_reg() %>%
+  set_engine("glm") %>%
+  fit(received_callback ~ job_city + years_experience + honors + military + has_email_address + race + sex, data = resume, family = "binomial")
+
 resume_pred <- predict(resume_fit, new_data = resume, type = "prob") %>%
   bind_cols(resume %>% select(received_callback))
 
@@ -101,6 +124,7 @@ We can use the confidence intervals to roughly gauge whether anything might be a
 Such a plot is shown in Figure \@ref(fig:logisticModelBucketDiag).
 
 ```{r logisticModelBucketDiag, fig.cap = "The dashed line is within the confidence bound of the 95% confidence intervals of each of the buckets, suggesting the logistic fit is reasonable."}
+data(resume)
 a <- resume
 d <- data.frame(
     callback = a$received_callback,
