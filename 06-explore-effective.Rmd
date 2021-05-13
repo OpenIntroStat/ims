@@ -22,9 +22,9 @@ Colors can be distracting when they are only used to brighten up the plot.
 
 Consider a manufacturing company who has summarized their costs into five different categories.
 In the two graphics provided in Figure \@ref(fig:pie-to-bar), notice that the magnitudes in the pie chart are difficult for the eye to compare.
-That is, can your eye tell how much smaller "Cutting tools" are from "Machinery" when looking at the slices of pie?
+That is, can your eye tell how different "Buildings and administration" is from "Workplace materials" when looking at the slices of pie?
 Additionally, the colors in the pie chart do not mean anything and are therefore distracting.
-Last, the three-dimensional aspect of the image does not improve the reader's ability to understand the data presented.
+Lastly, the three-dimensional aspect of the image does not improve the reader's ability to understand the data presented.
 
 As an alternative, a bar plot has been provided.
 Notice how much easier it is to identify the magnitude of the differences across categories while not being distracted by other aspects of the image.
@@ -148,19 +148,19 @@ brexit <- tibble(
 )
 ```
 
-```{r brexit-bars, fig.cap = "Bar plot three different ways. Plot A: Alphabetic ordering of levels, Plot: Bars ordered in descending order of frequency, Plot C: Bars ordered in the same order as they were presented in the survey question.", fig.width = 11, out.width = "100%"}
-p_bad <- ggplot(data = brexit, aes(x = opinion)) +
+```{r brexit-bars, fig.cap = "Bar plot three different ways. Plot A: Alphabetic ordering of levels, Plot B: Bars ordered in descending order of frequency, Plot C: Bars ordered in the same order as they were presented in the survey question.", fig.width = 8, out.width = "100%"}
+p_bad <- ggplot(data = brexit, aes(y = fct_rev(opinion))) +
   geom_bar() + 
-  labs(x = "Opinion", y = "Count")
+  labs(y = "Opinion", x = "Count")
 
-p_desc <- ggplot(data = brexit, aes(x = fct_infreq(opinion))) +
+p_desc <- ggplot(data = brexit, aes(y = fct_rev(fct_infreq(opinion)))) +
   geom_bar() + 
-  labs(x = "Opinion", y = "Count")
+  labs(y = "Opinion", x = "Count")
 
 p_ordered <- ggplot(data = brexit, 
-                    aes(x = fct_relevel(opinion, c("Very well", "Fairly well", "Fairly badly", "Very badly", "Don't know")))) +
+                    aes(y = fct_rev(fct_relevel(opinion, c("Very well", "Fairly well", "Fairly badly", "Very badly", "Don't know"))))) +
   geom_bar() + 
-    labs(x = "Opinion", y = "Count")
+    labs(y = "Opinion", x = "Count")
 
 p_bad + p_desc + p_ordered + plot_spacer() +
   plot_annotation(tag_levels = "A")
@@ -170,12 +170,11 @@ p_bad + p_desc + p_ordered + plot_spacer() +
 
 The Brexit survey results were additionally broken down by region in Great Britain.
 The stacked bar plot allows for comparison of Brexit opinion across the five regions.
-In Figure \@ref(fig:brexit-region) the bars are vertical in the left graphic and horizontal in the right graphic.
-While the quantitative information in the two graphics is identical, rotating the graph and creating horizontal bars provides more space for the **axis labels**.
-The easier the categories are to read, the easier a time the reader will have understanding the visualization.
+In Figure \@ref(fig:brexit-region) the bars are vertical in Plot A and horizontal in Plot B. While the quantitative information in the two graphics is identical, flipping the graph and creating horizontal bars provides more space for the **axis labels**.
+The easier the categories are to read, the more the reader will learn from the visualization.
 Remember, the goal is to convey as much information as possible in a succinct and clear manner.
 
-```{r brexit-region, fig.cap = "Stacked bar plots vertically and horizontally. The horizontal orientation makes the region labels easier to read.", fig.width = 10, out.width = "100%"}
+```{r brexit-region, fig.cap = "Stacked bar plots vertically and horizontally. The horizontal orientation makes the region labels easier to read.", fig.width = 8, out.width = "100%"}
 brexit <- brexit %>%
   mutate(
     region = fct_relevel(
@@ -195,14 +194,18 @@ brexit <- brexit %>%
 
 p_bad <- ggplot(data = brexit, aes(x = region, fill = Opinion)) +
   geom_bar() +
-  scale_fill_openintro("five")
+  scale_fill_openintro("five") +
+  labs(x = "Region", y = "Count")
 
 p_good <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
   geom_bar() +
   labs(x = "Count", y = NULL) +
   scale_fill_openintro("five")
 
-p_bad / p_good
+p_bad / p_good + 
+  plot_annotation(tag_levels = "A") +
+  plot_layout(guides = "collect") &
+  theme(legend.position='bottom')
 ```
 
 ```{r include=FALSE}
