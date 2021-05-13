@@ -61,7 +61,7 @@ options(dplyr.print_min = 6, dplyr.print_max = 6)
 # ggplot2 theme and colors -----------------------------------------------------
 
 if (knitr::is_html_output()) {
-  ggplot2::theme_set(ggplot2::theme_minimal(base_size = 14))
+  ggplot2::theme_set(ggplot2::theme_minimal(base_size = 13))
 } else if (knitr::is_latex_output()) {
   ggplot2::theme_set(ggplot2::theme_minimal(base_size = 11))
 }

@@ -25,7 +25,7 @@ The data can be found in the [**openintro**](http://openintrostat.github.io/open
 ## Contingency tables and bar plots
 
 ```{r}
-loans_full_schema <- loans_full_schema %>%
+loans <- loans_full_schema %>%
   mutate(application_type = as.character(application_type)) %>%
   filter(application_type != "") %>%
   mutate(
@@ -34,7 +34,7 @@ loans_full_schema <- loans_full_schema %>%
     application_type = fct_relevel(application_type, "joint", "individual")
     ) 
 
-loans_individual_rent <- loans_full_schema %>%
+loans_individual_rent <- loans %>%
   filter(
     application_type == "individual",
     homeownership    == "rent") %>%
@@ -54,25 +54,26 @@ terms_chp_4 <- c("contingency table", "row totals", "column totals")
 ```
 
 ```{r loan-home-app-type-totals}
-loans_full_schema %>%
+loans %>%
   count(application_type, homeownership) %>%
   pivot_wider(names_from = homeownership, values_from = n) %>% 
-  select(application_type, mortgage, own, rent) %>%
+  select(application_type, rent, mortgage, own) %>%
   adorn_totals(where = c("row", "col")) %>%
   kbl(booktabs = TRUE, caption = "A contingency table for application type and homeownership.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  add_header_above(c(" " = 1, "homeownership" = 3, " " = 1))
+  add_header_above(c(" " = 1, "homeownership" = 3, " " = 1)) %>%
+  column_spec(1:5, width = "8em")
 ```
 
 ```{r loan-homeownership-totals}
-loans_full_schema %>%
-  mutate(homeownership = tolower(homeownership)) %>%
+loans %>%
   count(homeownership, name = "Count") %>%
   adorn_totals(where = "row") %>%
   kbl(booktabs = TRUE, caption = "A table summarizing the frequencies for each value of the homeownership variable: mortgage, own, and rent.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(1:2, width = "10em")
 ```
 
 A bar plot is a common way to display a single categorical variable.
@@ -80,11 +81,11 @@ The left panel of Figure \@ref(fig:loan-homeownership-bar-plot) shows a **bar pl
 In the right panel, the counts are converted into proportions, showing the proportion of observations that are in each level.
 
 ```{r loan-homeownership-bar-plot, fig.cap = "Two bar plots: the left panel shows the counts and the right panel shows the proportions of values of the homeownership variable.", fig.asp=0.5, fig.width=8}
-p_count <- ggplot(loans_full_schema, aes(x = homeownership)) +
+p_count <- ggplot(loans, aes(x = homeownership)) +
   geom_bar(fill = IMSCOL["green", "full"]) + 
   labs(x = "Homeownership", y = "Count")
 
-p_proportion <- loans_full_schema %>%
+p_proportion <- loans %>%
   count(homeownership) %>%
   mutate(proportion = n / sum(n)) %>%
   ggplot(aes(x = homeownership, y = proportion)) +
@@ -107,7 +108,7 @@ It is difficult to say, based on this plot alone, how different application type
 Plot B is a **dodged bar plot**.
 This plot most clearly displays that within each level of homeownership, individual applications are more common than joint applications.
 Finally, plot C is a **standardized bar plot** (also known as **filled bar plot**).
-This plot most clearly displays that joint applications are most common among applications who live in mortgaged homes, compared to renters and owners.
+This plot most clearly displays that joint applications are most common among loans for applicants who live in mortgaged homes, compared to renters and owners.
 This type of visualization is helpful in understanding the fraction of individual or joint loan applications for borrowers in each level of `homeownership`.
 Additionally, since the proportions of joint and individual loans vary across the groups, we can conclude that the two variables are associated for this sample.
 
@@ -115,18 +116,18 @@ Additionally, since the proportions of joint and individual loans vary across th
 terms_chp_4 <- c(terms_chp_4, "stacked bar plot", "dodged bar plot", "filled bar plot", "standardized bar plot")
 ```
 
-```{r loan-homeownership-app-type-bar-plot, fig.cap = "Three bar plots (stacked, dodged, and standardized) displaying homeownership and application type variables.", fig.asp=1, fig.width=8}
-p_stacked <- ggplot(loans_full_schema, aes(x = homeownership, fill = application_type)) +
+```{r loan-homeownership-app-type-bar-plot, fig.cap = "Three bar plots (stacked, dodged, and standardized) displaying homeownership and application type variables.", fig.asp = 0.8, fig.width = 8}
+p_stacked <- ggplot(loans, aes(x = homeownership, fill = application_type)) +
   geom_bar() +
   scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["yellow", "full"])) +
   labs(x = "Homeownership", y = "Count", fill = "Application type")
 
-p_dodged <- ggplot(loans_full_schema, aes(x = homeownership, fill = application_type)) +
+p_dodged <- ggplot(loans, aes(x = homeownership, fill = application_type)) +
   geom_bar(position = "dodge") +
   scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["yellow", "full"])) +
   labs(x = "Homeownership", y = "Count", fill = "Application type")
 
-p_standardized <- ggplot(loans_full_schema, aes(x = homeownership, fill = application_type)) +
+p_standardized <- ggplot(loans, aes(x = homeownership, fill = application_type)) +
   geom_bar(position = "fill") +
   scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["yellow", "full"])) +
   labs(x = "Homeownership", y = "Proportion", fill = "Application type")
@@ -145,7 +146,7 @@ When is the stacked, dodged, or standardized bar plot the most useful?
 The stacked bar plot is most useful when it's reasonable to assign one variable as the explanatory variable (here `homeownership`) and the other variable as the response (here `application_type`), since we are effectively grouping by one variable first and then breaking it down by the others.
 
 Dodged bar plots are more agnostic in their display about which variable, if any, represents the explanatory and which the response variable.
-It is also easy to discern the number of cases in of the six different group combinations.
+It is also easy to discern the number of cases in each of the six different group combinations.
 However, one downside is that it tends to require more horizontal space; the narrowness of Plot B compared to the other two in Figure \@ref(fig:loan-homeownership-app-type-bar-plot) makes the plot feel a bit cramped.
 Additionally, when two groups are of very different sizes, as we see in the group `own` relative to either of the other two groups, it is difficult to discern if there is an association between the variables.
 
@@ -172,15 +173,15 @@ For example, the second column represents loans where the borrower has a mortgag
 As another example, the bottom segment of the third column represents loans where the borrower owns their home and applied jointly, while the upper segment of this column represents borrowers who are homeowners and filed individually.
 We can again use this plot to see that the `homeownership` and `application_type` variables are associated, since some columns are divided in different vertical locations than others, which was the same technique used for checking an association in the standardized stacked bar plot.
 
-```{r loan-homeownership-type-mosaic-plot, fig.cap = "The mosaic plots: one for homeownership alone and the other displaying the relationship between homeownership and application type.", fig.asp = 0.5, out.width = "100%"}
-p_mosaic_1 <- ggplot(loans_full_schema) +
+```{r loan-homeownership-type-mosaic-plot, fig.cap = "The mosaic plots: one for homeownership alone and the other displaying the relationship between homeownership and application type.", fig.asp = 0.5, out.width = "100%", fig.width = 8}
+p_mosaic_1 <- ggplot(loans) +
   geom_mosaic(aes(x = product(homeownership)), fill = IMSCOL["green", "full"]) +
   labs(x = "Homeownership", y = "") +
   theme(axis.title.y = element_blank(),
         axis.text.y  = element_blank(),
         axis.ticks.y = element_blank())
 
-p_mosaic_2 <- ggplot(loans_full_schema) +
+p_mosaic_2 <- ggplot(loans) +
   geom_mosaic(aes(x = product(homeownership), fill = application_type)) +
   scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["yellow", "full"])) +
   labs(x = "Homeownership", y = "Application type") +
@@ -195,7 +196,7 @@ However, we could have instead first split by the application type, as in Figure
 Like with the bar plots, it's common to use the explanatory variable to represent the first split in a mosaic plot, and then for the response to break up each level of the explanatory variable, if these labels are reasonable to attach to the variables under consideration.
 
 ```{r loan-app-type-mosaic-plot, fig.cap = "Mosaic plot where loans are grouped by homeownership after they have been divided into individual and joint application types."}
-ggplot(loans_full_schema) +
+ggplot(loans) +
   geom_mosaic(aes(x = product(application_type), fill = homeownership)) +
   scale_fill_openintro("hot") +
   labs(x = "Application type", y = "Homeownership") +
@@ -213,7 +214,7 @@ So what does 0.411 represent?
 It corresponds to the proportion of individual applicants who rent.
 
 ```{r loan-home-app-type-row-proportions}
-loans_full_schema %>%
+loans %>%
   count(application_type, homeownership) %>% 
   group_by(application_type) %>%
   mutate(proportion = n / sum(n)) %>% 
@@ -223,16 +224,17 @@ loans_full_schema %>%
   kbl(booktabs = TRUE, caption = "A contingency table with row proportions for the application type and homeownership variables.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  add_header_above(c(" " = 1, "homeownership" = 3, " " = 1))
+  add_header_above(c(" " = 1, "homeownership" = 3, " " = 1)) %>%
+  column_spec(1:5, width = "8em")
 ```
 
-A contingency table of the column proportions is computed in a similar way, where each is computed as the count divided by the corresponding column total.
+A contingency table of the **column proportions** is computed in a similar way, where each is computed as the count divided by the corresponding column total.
 Table \@ref(tab:loan-home-app-type-column-proportions) shows such a table, and here the value 0.906 indicates that 90.6% of renters applied as individuals for the loan.
 This rate is higher compared to loans from people with mortgages (80.2%) or who own their home (86.5%).
 Because these rates vary between the three levels of `homeownership` (`rent`, `mortgage`, `own`), this provides evidence that `app_type` and `homeownership` variables may be associated.
 
 ```{r loan-home-app-type-column-proportions}
-loans_full_schema %>%
+loans %>%
   count(application_type, homeownership) %>% 
   group_by(homeownership) %>%
   mutate(proportion = n / sum(n)) %>% 
@@ -242,11 +244,18 @@ loans_full_schema %>%
   kbl(booktabs = TRUE, caption = "A contingency table with column proportions for the application type and homeownership variables.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  add_header_above(c(" " = 1, "homeownership" = 3))
+  add_header_above(c(" " = 1, "homeownership" = 3)) %>%
+  column_spec(1:4, width = "8em")
+```
+
+Row and column proportions can also be thought of as **conditional proportions** as they tell us about the proportion of observations in a given level of a categorical variable conditional on the level of another categorical variable.
+
+```{r include=FALSE}
+terms_chp_4 <- c(terms_chp_4, "row proportions", "column proportions", "conditional proportions")
 ```
 
 We could also have checked for an association between `application_type` and `homeownership` in Table \@ref(tab:loan-home-app-type-row-proportions) using row proportions.
-When comparing these row proportions, we would look down columns to see if the fraction of loans where the borrower rents, has a mortgage, or owns varied across the to application types.
+When comparing these row proportions, we would look down columns to see if the fraction of loans where the borrower rents, has a mortgage, or owns varied across the application types.
 
 ::: {.guidedpractice data-latex=""}
 What does 0.451 represent in Table \@ref(tab:loan-home-app-type-row-proportions)?
@@ -308,7 +317,7 @@ Are there any obvious scenarios where one might be more useful than the other?
 ------------------------------------------------------------------------
 
 None that we think are obvious!
-What is distinct about and vs the email example is that the two loan variables don't have a clear explanatory-response variable relationship that we might hypothesize.
+What is distinct about the email example is that the two loan variables don't have a clear explanatory-response variable relationship that we might hypothesize.
 Usually it is most useful to "condition" on the explanatory variable.
 For instance, in the email example, the email format was seen as a possible explanatory variable of whether the message was spam, so we would find it more interesting to compute the relative frequencies (proportions) for each email format.
 :::
@@ -320,8 +329,8 @@ Pie charts can be useful for giving a high-level overview to show how a set of c
 However, it is also difficult to decipher certain details in a pie chart.
 For example, it's not immediately obvious that there are more loans where the borrower has a mortgage than rent when looking at the pie chart, while this detail is very obvious in the bar plot.
 
-```{r loan-homeownership-pie-chart, fig.cap = "A pie chart and bar plot of homeownership.", out.width = "100%"}
-p_pie <- loans_full_schema %>% 
+```{r loan-homeownership-pie-chart, fig.cap = "A pie chart and bar plot of homeownership.", out.width = "100%", fig.width = 8}
+p_pie <- loans %>% 
   mutate(homeownership = fct_infreq(homeownership)) %>%
   count(homeownership) %>%
   mutate(text_y = cumsum(n) - n/2) %>%
@@ -333,7 +342,7 @@ p_pie <- loans_full_schema %>%
   theme_void() +
   labs(title = "Homeownership")
 
-p_bar <- loans_full_schema %>%
+p_bar <- loans %>%
   mutate(homeownership = fct_infreq(homeownership)) %>%
   ggplot(aes(x = homeownership, fill = homeownership)) +
   geom_bar(show.legend = FALSE) +
@@ -348,8 +357,8 @@ However they can be quite difficult to read when they are used to visualize a ca
 For example, the pie chart and the bar plot in Figure \@ref(fig:loan-grade-pie-chart) both represent the distribution of loan grades (A through G).
 In this case, it is far easier to compare the counts of each loan grade using the bar plot than the pie chart.
 
-```{r loan-grade-pie-chart, fig.cap = "A pie chart and bar plot of loan grades.", out.width = "100%"}
-p_pie <- loans_full_schema %>% 
+```{r loan-grade-pie-chart, fig.cap = "A pie chart and bar plot of loan grades.", out.width = "100%", fig.width = 8}
+p_pie <- loans %>% 
   count(grade) %>% 
   mutate(text_y = cumsum(n) - n/2) %>% 
   ggplot(aes(x = "", fill = grade, y = n)) + 
@@ -360,7 +369,7 @@ p_pie <- loans_full_schema %>%
   theme_void() +
   labs(title = "Loan grade")
 
-p_bar <- loans_full_schema %>%
+p_bar <- loans %>%
   ggplot(aes(x = grade, fill = grade)) +
   geom_bar(show.legend = FALSE) +
   scale_fill_openintro("cool") +
@@ -373,14 +382,14 @@ p_pie + p_bar
 
 ## Waffle charts
 
-Another useful technique or visualizing categorical data is a **waffle chart**.
+Another useful technique of visualizing categorical data is a **waffle chart**.
 Waffle charts can be used to communicate the proportion of the data that falls into each level of a categorical variable.
 Just like with pie charts, they work best when the number of levels represented is low.
 However, unlike pie charts, they can make it easier to compare proportions that represent non-simple fractions.
 Figure \@ref(fig:loan-waffle) displays two examples of waffle charts: one for the distribution of homeownership and the other for the distribution of loan status.
 
 ```{r loan-waffle, fig.cap = "Plot A: Waffle chart of homeownership, with levels rent, morgage, and own. Plot B: Waffle chart of loan status, with levels current, fully paid, in grade period, and late.", out.width = "100%", fig.asp = 1}
-p_waffle_homeownership <- loans_full_schema %>%
+p_waffle_homeownership <- loans %>%
   count(homeownership) %>%
   ggplot(aes(fill = homeownership, values = n)) +
   geom_waffle(colour = "white", flip = TRUE, make_proportional = TRUE) +
@@ -389,7 +398,7 @@ p_waffle_homeownership <- loans_full_schema %>%
   coord_equal() +
   theme_enhance_waffle()
 
-p_waffle_loan_status <- loans_full_schema %>%
+p_waffle_loan_status <- loans %>%
   count(loan_status) %>%
   ggplot(aes(fill = loan_status, values = n)) +
   geom_waffle(colour = "white", flip = TRUE, make_proportional = TRUE)  +
@@ -470,7 +479,7 @@ An example is shown in Plot B of Figure \@ref(fig:countyIncomeSplitByPopGain), w
 terms_chp_4 <- c(terms_chp_4, "side-by-side box plot")
 ```
 
-```{r countyIncomeSplitByPopGain, fig.cap = "Histograms (Plot A) and side by-side box plots (Plot B) for median household income, where counties are split by whether there was a population gain or not."}
+```{r countyIncomeSplitByPopGain, fig.cap = "Histograms (Plot A) and side by-side box plots (Plot B) for median household income, where counties are split by whether there was a population gain or not.", fig.width = 8, fig.asp = 0.7}
 p_hist <- county %>%
   filter(!is.na(pop_change)) %>%
   ggplot(aes(x = median_hh_income, fill = pop_change_2levels)) +
@@ -553,7 +562,7 @@ In Plot B in Figure \@ref(fig:countyIncomeSplitByPopGainFacetHist) we have now s
 terms_chp_4 <- c(terms_chp_4, "faceted plot")
 ```
 
-```{r countyIncomeSplitByPopGainFacetHist, fig.cap="Distribution of median income in counties using faceted histograms: Plot A facets by whether there was a population gain or not and Plot B facets by both population gain and whether the county is in a metropolitan area.", , fig.width = 8}
+```{r countyIncomeSplitByPopGainFacetHist, fig.cap = "Distribution of median income in counties using faceted histograms: Plot A facets by whether there was a population gain or not and Plot B facets by both population gain and whether the county is in a metropolitan area.", fig.width = 8, out.width = "100%"}
 p_1 <- county %>%
   filter(!is.na(pop_change) & !is.na(metro)) %>%
   # for better labeling on plot
@@ -592,7 +601,7 @@ p_1 + p_2 +
 We can continue building up on this visualization to add one more variable, `median_edu`, which is the median education level in the county.
 In Figure \@ref(fig:countyIncomeRidgeMulti), we represent median education level using color, where pink (solid line) represents counties where the median education level is Bachelor's, yellow (dashed line) is some college degree, and red (dotted line) is high school diploma.
 
-```{r countyIncomeRidgeMulti, fig.cap="Distribution of median income in counties using a ridge plot, faceted by whether the county had a population gain or not as well as whether the county is in a metropolitan area and colored by the median education level in the county."}
+```{r countyIncomeRidgeMulti, fig.cap="Distribution of median income in counties using a ridge plot, faceted by whether the county had a population gain or not as well as whether the county is in a metropolitan area and colored by the median education level in the county.", out.width = "100%"}
 county %>%
   filter(!is.na(pop_change) & !is.na(metro) & !is.na(median_edu) & median_edu != "below_hs") %>%
   # for better labeling on plot
@@ -626,7 +635,7 @@ Based on Figure \@ref(fig:countyIncomeRidgeMulti), what can you say about how me
 Fluently working with categorical variables is an important skill for data analysts.
 In this chapter we've introduced different visualizations and numerical summaries applied to categorical variables.
 The graphical visualizations are even more descriptive when two variables are presented simultaneously.
-We presented bar plots, mosaic plots, pie charts, and estimations conditional proportions.
+We presented bar plots, mosaic plots, pie charts, and estimations of conditional proportions.
 
 ### Terms
 
