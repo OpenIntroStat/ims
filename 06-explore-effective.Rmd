@@ -28,13 +28,13 @@ Last, the three-dimensional aspect of the image does not improve the reader's ab
 
 As an alternative, a bar plot has been provided.
 Notice how much easier it is to identify the magnitude of the differences across categories while not being distracted by other aspects of the image.
-Typically, a bar plot will be easier for the reader to digest than a pie chart.
+Typically, a bar plot will be easier for the reader to digest than a pie chart, especially if the categorical data being plotted has more than just a few levels.
 
 ```{r}
 expenses <- tribble(
   ~category,                     ~value,
   "Cutting tools"                , 0.03,
-  "Buildings and administration" , 0.22,
+  "Buildings & administration"   , 0.22,
   "Labor"                        , 0.31,
   "Machinery"                    , 0.27,
   "Workplace materials"          , 0.17
@@ -43,53 +43,65 @@ expenses <- tribble(
   uncount(weights = value)
 ```
 
-```{r pie-to-bar, out.width="50%", fig.show = "hold", fig.ncol = 2, fig.cap = "A pie chart (with added irrelevant features) as compared to a simple bar plot."}
+```{r pie-to-bar, out.width = "50%", fig.show = "hold", fig.ncol = 2, fig.cap = "A pie chart (with added irrelevant features) as compared to a simple bar plot.", fig.width = 3}
 knitr::include_graphics("images/pie-3d.jpg")
 ggplot(expenses, aes(x = fct_infreq(category))) +
   geom_bar() +
   theme_minimal() +
   coord_flip() +
-  labs(x = "", y = "")
-```
-
-```{r include=FALSE}
-terms_chp_6 <- c("bar plot", "pie chart")
+  labs(x = NULL, y = NULL)
 ```
 
 ### Use color to draw attention
 
-Another important principle, mentioned above, is to avoid adding color just to add color, instead use it to draw attention.
+There are many reasons why you might choose to add **color** to your plots.
+An important principle to keep in mind is to use color to draw attention.
 Of course, you should still think about how visually pleasing your visualization is, and if you're adding color for making it visually pleasing without drawing attention to a particular feature, that might be fine.
-But you should be critical of default coloring and explicitly decide whether to include color and how.
-Notice that in Figure \@ref(fig:red-bar) the coloring is done in such a way to draw the reader's attention to one particular piece of information.
-The default coloring is distracting and makes the reader question, for example, is there something similar about the red and purple bars?
+However you should be critical of default coloring and explicitly decide whether to include color and how.
+Notice that in Plot B in Figure \@ref(fig:red-bar) the coloring is done in such a way to draw the reader's attention to one particular piece of information.
+The default coloring in Plot A can be distracting and makes the reader question, for example, is there something similar about the red and purple bars?
 Also note that not everyone sees color the same way, often it's useful to add color and one more feature (e.g., pattern) so that you can refer to the features you're drawing attention to in multiple ways.
 
-```{r red-bar, fig.cap = "The default coloring in the first bar plot does nothing for the udnerstanding of the data. In the second plot, the color draws attention directly to the bar on Buildings and Administration."}
+```{r red-bar, fig.cap = "The default coloring in the first bar plot does nothing for the udnerstanding of the data. In the second plot, the color draws attention directly to the bar on Buildings and Administration.", fig.asp = 1}
 p_bad <- ggplot(expenses, aes(y = fct_infreq(category), fill = category)) +
   geom_bar(show.legend = FALSE) +
-  scale_color_openintro("five") +
+  scale_fill_openintro("five") +
   labs(x = NULL, y = NULL)
 
-p_good <- ggplot(expenses, aes(y = fct_infreq(category), fill = category)) +
+p_good <- expenses %>%
+  mutate(highlight = if_else(category == "Buildings & administration", "yes", "no")) %>%
+  ggplot(aes(y = fct_infreq(category), fill = highlight)) +
   geom_bar(show.legend = FALSE) +
-  scale_fill_manual(values = c(IMSCOL["red", "full"], rep(IMSCOL["lgray", "full"], 4))) +
+  scale_fill_manual(values = c(IMSCOL["lgray", "full"], IMSCOL["red", "full"])) +
   labs(x = NULL, y = NULL)
 
+p_better <- expenses %>%
+  mutate(highlight = if_else(category == "Buildings & administration", "yes", "no")) %>%
+  ggplot(aes(y = fct_infreq(category), fill = highlight, color = highlight, linetype = highlight, size = highlight)) +
+  geom_bar(show.legend = FALSE) +
+  scale_fill_manual(values = c(IMSCOL["lgray", "full"], IMSCOL["red", "full"])) +
+  labs(x = NULL, y = NULL) +
+  scale_color_manual(values = c(IMSCOL["lgray", "full"], "white")) +
+  scale_size_manual(values = c(0, 0.8))
 
-p_bad / p_good
+p_bad / p_good / p_better +
+  plot_annotation(tag_levels = "A")
 ```
 
 ```{r include=FALSE}
-terms_chp_6 <- c(terms_chp_6, "color in graphs")
+terms_chp_6 <- c("color in plots")
 ```
 
 ### Tell a story
 
-For many graphs, an important aspect is the inclusion of information which is not provided in the data table.
+For many graphs, an important aspect is the inclusion of information which is not provided in the dataset that is being plotted.
 The external information serves to contextualize the data and helps communicate the narrative of the research.
-In Figure \@ref(fig:duke-hires), the graph on the right includes information about the start of Duke's fiscal year which contextualizes the information provided by the data.
-Sometimes the additional information may be a diagonal line given by $y=x$, points above the line quickly show the reader which values have a $y$ coordinate larger than the $x$ coordinate; points below the line show the opposite.
+In Figure \@ref(fig:duke-hires), the graph on the right is **annotated** with information about the start of the university's fiscal year which contextualizes the information provided by the data.
+Sometimes the additional information may be a diagonal line given by $y = x$, points above the line quickly show the reader which values have a $y$ coordinate larger than the $x$ coordinate; points below the line show the opposite.
+
+```{r include=FALSE}
+terms_chp_6 <- c("annotation")
+```
 
 ```{r duke-hires, fig.cap = "Credit: Angela Zoss and Eric Monson, Duke Data Visualization Services", out.width = "100%"}
 knitr::include_graphics("images/time-series-story.png")
@@ -100,12 +112,12 @@ knitr::include_graphics("images/time-series-story.png")
 Most software programs have built in methods for some of the plot details.
 For example, the default option for the software program used in this text, R, is to order the bars in a bar plot alphabetically.
 As seen in Figure \@ref(fig:brexit-bars), the alphabetical ordering isn't particularly meaningful for describing the data.
-Sometimes it makes sense to order the bars from tallest to shortest (or vice versa).
+Sometimes it makes sense to **order** the bars from tallest to shortest (or vice versa).
 But in this case, the best ordering is probably the one in which the questions were asked.
 An ordering which doesn't make sense in the context of the problem (e.g., alphabetically here), can mislead the reader who might take a quick glance at the axes and not read the bar labels carefully.
 
 ```{r include=FALSE}
-terms_chp_6 <- c(terms_chp_6, "order in graphics")
+terms_chp_6 <- c("ordering")
 ```
 
 In September 2019, YouGov survey asked 1,639 Great Britain adults the following question[^explore-effective-1]:
@@ -136,7 +148,7 @@ brexit <- tibble(
 )
 ```
 
-```{r brexit-bars, fig.cap = "Bar plot three different ways. The first graph is the default (with bars alphabetically ordered); the middle graph sorts the bars in descending order; the last graph orders the bars in the same order the original question was asked.", fig.asp = 0.35, fig.width = 10, out.width = "100%"}
+```{r brexit-bars, fig.cap = "Bar plot three different ways. Plot A: Alphabetic ordering of levels, Plot: Bars ordered in descending order of frequency, Plot C: Bars ordered in the same order as they were presented in the survey question.", fig.width = 11, out.width = "100%"}
 p_bad <- ggplot(data = brexit, aes(x = opinion)) +
   geom_bar() + 
   labs(x = "Opinion", y = "Count")
@@ -150,7 +162,8 @@ p_ordered <- ggplot(data = brexit,
   geom_bar() + 
     labs(x = "Opinion", y = "Count")
 
-p_bad + p_desc + p_ordered
+p_bad + p_desc + p_ordered + plot_spacer() +
+  plot_annotation(tag_levels = "A")
 ```
 
 ### Make the labels as easy to read as possible
@@ -158,11 +171,11 @@ p_bad + p_desc + p_ordered
 The Brexit survey results were additionally broken down by region in Great Britain.
 The segmented bar plot allows for comparison of Brexit opinion across the five regions.
 In Figure \@ref(fig:brexit-region) the bars are vertical in the left graphic and horizontal in the right graphic.
-While the quantitative information in the two graphics is identical, rotating the graph and creating horizontal bars provides the long categories with more space to be written.
-The easier the categories are to see, the more the reader will learn from the visualization.
+While the quantitative information in the two graphics is identical, rotating the graph and creating horizontal bars provides more space for the **axis labels**.
+The easier the categories are to read, the easier a time the reader will have understanding the visualization.
 Remember, the goal is to convey as much information as possible in a succinct and clear manner.
 
-```{r brexit-region, fig.cap = "Segmented bar plots vertically and horizontally. The horizontal orientation makes the region labels easier to read."}
+```{r brexit-region, fig.cap = "Segmented bar plots vertically and horizontally. The horizontal orientation makes the region labels easier to read.", fig.width = 10, out.width = "100%"}
 brexit <- brexit %>%
   mutate(
     region = fct_relevel(
@@ -186,42 +199,45 @@ p_bad <- ggplot(data = brexit, aes(x = region, fill = Opinion)) +
 
 p_good <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
   geom_bar() +
-  labs(x = "Region", y = NULL) +
+  labs(x = "Count", y = NULL) +
   scale_fill_openintro("five")
 
 p_bad / p_good
 ```
 
 ```{r include=FALSE}
-terms_chp_6 <- c(terms_chp_6, "labels on graphics")
+terms_chp_6 <- c(terms_chp_6, "axis labels")
 ```
 
 ### Pick a purpose
 
-Every graphical decision should be made with a purpose.
+Every graphical decision should be made with a **purpose**.
 As previously mentioned, sticking with default options is not always best for conveying the narrative of your data story.
 Segmented bar plots tell one part of a story.
 Depending on your research question, they may not tell the part of the story most important to the research.
 Figure \@ref(fig:seg-three-ways) provides three different ways of representing the same information.
-If the most important comparison across regions is proportion, you might prefer the left image.
-If the most important comparison across regions also considers the total number of individuals in the region, you might prefer the right image.
-If a separate bar plot for each region makes the point you'd like, use the bottom image which has been **faceted** by region.
+If the most important comparison across regions is proportion, you might prefer Plot A. If the most important comparison across regions also considers the total number of individuals in the region, you might prefer Plot B. If a separate bar plot for each region makes the point you'd like, use Plot C, which has been **faceted** by region.
 
 ```{r include=FALSE}
 terms_chp_6 <- c(terms_chp_6, "faceting graphics")
 ```
 
-The bottom figure in Figure \@ref(fig:seg-three-ways) also provides full titles and a succinct URL with the data source.
+Plot C in Figure \@ref(fig:seg-three-ways) also provides full titles and a succinct URL with the data source.
 Other deliberate decisions to consider include using informative labels and avoiding redundancy.
 
-```{r seg-three-ways, fig.cap = "Three different representations of the two variables including survey opinion and region. Use the graphic that best conveys the data narrative at hand.", fig.width = 10, out.width = "100%"}
-p_bad <- ggplot(data = brexit, aes(y = region,  fill = Opinion)) +
+```{r seg-three-ways, fig.cap = "Three different representations of the two variables including survey opinion and region. Use the graphic that best conveys the data narrative at hand.", fig.width = 10, out.width = "100%", fig.asp = 1}
+p_bad1 <- ggplot(data = brexit, aes(y = region,  fill = Opinion)) +
   geom_bar(position = "fill") +
-  labs(x = "Percent", y = NULL)
+  labs(x = "Percent", y = NULL) +
+  scale_fill_openintro("five") +
+  scale_x_continuous(labels = label_percent()) +
+  theme(legend.position = "top")
 
 p_bad2 <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
   geom_bar() + 
-  labs(x = "Count", y = NULL)
+  labs(x = "Count", y = NULL) +
+  scale_fill_openintro("five") +
+  theme(legend.position = "top")
 
 p_good <- ggplot(data = brexit, aes(y = Opinion)) +
   geom_bar() +
@@ -234,7 +250,14 @@ p_good <- ggplot(data = brexit, aes(y = Opinion)) +
     x = NULL, y = NULL
   )
 
-(p_bad + p_bad2) / p_good
+guide_area() / (p_bad1 + p_bad2) / p_good +
+  plot_layout(heights = unit(c(1, 4, 6), c("cm"))) +
+  plot_layout(guides = "collect") +
+  plot_annotation(tag_levels = "A")
+```
+
+```{r include=FALSE}
+terms_chp_6 <- c(terms_chp_6, "purpose", "facets")
 ```
 
 ### Select meaningful colors
@@ -244,12 +267,10 @@ p_good <- ggplot(data = brexit, aes(y = Opinion)) +
 One last consideration for building graphs is to consider color choices.
 Default or rainbow colors are not always the choice which will best distinguish the level of your variables.
 Much research has been done to find color combinations which are distinct and also which are clear for differently sighted individuals.
-The Viridis scale[^explore-effective-2] works well with ordinal data.
-Figure \@ref(fig:brexit-viridis) shows the same plot with two different colorings; the left is the default rainbow colors, the right are the colors from the viridis scale.
+The cividis scale works well with ordinal data.
+[@Nunez:2018] Figure \@ref(fig:brexit-viridis) shows the same plot with two different colorings.
 
-[^explore-effective-2]: originally developed as colormap in the Matplotlib library of Python <https://bids.github.io/colormap>
-
-```{r brexit-viridis, fig.cap = "Identical bar plots with two different coloring options. The left uses default rainbow colors; the right uses viridis colors.", fig.width = 8, out.width = "100%"}
+```{r brexit-viridis, fig.cap = "Identical bar plots with two different coloring options. Plot A uses a default color scale, Plot B uses colors from the cividis scale.", fig.width = 9, out.width = "100%", fig.asp = 0.8}
 p <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
   geom_bar(position = "fill") +
   labs(
@@ -263,10 +284,11 @@ p_bad <- p +
   scale_fill_openintro("five")
 
 p_good <- p +
-  scale_fill_viridis_d()
+  scale_fill_viridis_d(option = "E")
 
 p_bad / 
-  p_good
+  p_good +
+  plot_annotation(tag_levels = "A")
 ```
 
 \clearpage
