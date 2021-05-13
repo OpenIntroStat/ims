@@ -20,7 +20,7 @@ In this section, we define the form of a linear model, explore criteria for what
 ### Fitting a line to data
 
 Figure \@ref(fig:perfLinearModel) shows two variables whose relationship can be modeled perfectly with a straight line.
-The equation for the line is $y = 5 + 64.96 x.$ Consider what a perfect linear relationship means: we know the exact value of $y$ just by knowing the value of $x.$ A perfect linear relationship unrealistic in almost any natural process.
+The equation for the line is $y = 5 + 64.96 x.$ Consider what a perfect linear relationship means: we know the exact value of $y$ just by knowing the value of $x.$ A perfect linear relationship is unrealistic in almost any natural process.
 For example, if we took family income ($x$), this value would provide some useful information about how much financial support a college may offer a prospective student ($y$).
 However, the prediction would be far from perfect, since other factors play a role in financial support beyond a family's finances.
 
@@ -167,7 +167,7 @@ Male possums (represented by blue triangles) seem to be larger in terms of total
 Plot B in Figure \@ref(fig:scattHeadLTotalL-sex-age) shows the same relationship, taking into consideration their age.
 It's harder to tell if age changes the relationship between total length and head length for these possums.
 
-```{r scattHeadLTotalL-sex-age, fig.cap = "Relationship between total length and head lentgh of brushtail possums, taking into consideration their sex (Plot A) or age (Plot B).", fig.asp=1.236}
+```{r scattHeadLTotalL-sex-age, fig.cap = "Relationship between total length and head length of brushtail possums, taking into consideration their sex (Plot A) or age (Plot B).", fig.asp=1.236}
 p_sex <- ggplot(possum, aes(x = total_l, y = head_l, shape = sex, color = sex)) +
   geom_point(alpha = 0.8, size = 2) +
   scale_color_manual(values = c(IMSCOL["red","full"], IMSCOL["blue","full"])) +
@@ -409,7 +409,7 @@ It would be useful if we could quantify the strength of these linear relationshi
 **Correlation** which always takes values between -1 and 1, describes the strength of the linear relationship between two variables.
 We denote the correlation by $r.$
 
-The correlation value has no units and will not affected by a linear change in the units (e.g., going from inches to centimeters).
+The correlation value has no units and will not be affected by a linear change in the units (e.g., going from inches to centimeters).
 :::
 
 ```{r include=FALSE}
@@ -431,7 +431,7 @@ If there is no apparent linear relationship between the variables, then the cor
 library(ggpubr) # Adding here instead of _common.R to avoid collision with ggimage
 
 simulated_scatter %>%
-  filter(group %in% 9:16) %>%
+  filter(group %in% c(9:12, 14:17)) %>%
   ggplot(aes(x = x, y = y)) + 
   geom_point(size = 2, alpha = 0.8) +
   theme_void() +
@@ -592,9 +592,7 @@ $$A \rightarrow D \rightarrow B \rightarrow C \rightarrow E \rightarrow F$$
 -   Plot F - wheat vs. barley: `r round(cor(crops_country$prop_wheat, crops_country$prop_barley, use = "pairwise.complete.obs"), digits = 2)`
 :::
 
-One important aspect of the correlation can be seen in the formula, however.
-The value of the correlation is *unitless*.
-That is, unlike a measurement of the slope of a line (see the next section) which provides an increase in the y-coordinate for a one unit increase in the x-coordinates (in units of the x and y variable), there are no units associated with the correlation.
+One important aspect of the correlation is that it's *unitless* That is, unlike a measurement of the slope of a line (see the next section) which provides an increase in the y-coordinate for a one unit increase in the x-coordinates (in units of the x and y variable), there are no units associated with the correlation.
 Figure \@ref(fig:bdims-units) shows the relationship between weights and heights of 507 physically active individuals.
 In Plot A, weight is measured in kilograms (kg) and height in centimeters (cm).
 In Plot B, weight has been converted to pounds (lbs) and height to inches (in).
@@ -665,7 +663,7 @@ $$|e_1| + |e_2| + \dots + |e_n|$$
 which we could accomplish with a computer program.
 The resulting dashed line shown in Figure \@ref(fig:elmhurstScatterW2Lines) demonstrates this fit can be quite reasonable.
 
-```{r elmhurstScatterW2Lines, fig.cap = "Gift aid and family income for a random sample of 50 freshman students from Elmhurst College. The dashed line reporesents the line that minimizes the sum of the absolute value of residuals, the solid line represents the line that minimizes the sum of squared residuals, i.e. the least squares line."}
+```{r elmhurstScatterW2Lines, fig.cap = "Gift aid and family income for a random sample of 50 freshman students from Elmhurst College. The dashed line represents the line that minimizes the sum of the absolute value of residuals, the solid line represents the line that minimizes the sum of squared residuals, i.e. the least squares line."}
 ggplot(elmhurst, aes(x = family_income, y = gift_aid)) +
   geom_point(alpha = 0.8) +
   geom_smooth(method = "lm", se = FALSE) +
@@ -1045,29 +1043,33 @@ m_total_pr_cond_tidy  <- tidy(m_total_pr_cond)
 
 m_total_pr_cond_int   <- m_total_pr_cond_tidy %>% 
   filter(term == "(Intercept)") %>% 
-  pull(estimate)
+  pull(estimate) %>% 
+  round(2)
 m_total_pr_cond_slope <- m_total_pr_cond_tidy %>% 
   filter(term == "condnew") %>% 
-  pull(estimate)
+  pull(estimate) %>%
+  round(2)
 
 m_total_pr_cond_tidy %>%
-  kbl(booktabs = TRUE, caption = "Least squares ression summary for the final auction price against the condition of the game.") %>%
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+  kbl(booktabs = TRUE, caption = "Least squares regression summary for the final auction price against the condition of the game.", digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) 
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(1:5, width = "6em")
 ```
 
 Using values from Table \@ref(tab:marioKartNewUsedRegrSummary), the model equation can be summarized as
 
-$$\widehat{\texttt{price}} = `r m_total_pr_cond_int` + 10.90 \times \texttt{condnew}$$
+$$\widehat{\texttt{price}} = `r m_total_pr_cond_int` + `r m_total_pr_cond_slope` \times \texttt{condnew}$$
 
 ::: {.workedexample data-latex=""}
 Interpret the two parameters estimated in the model for the price of Mario Kart in eBay auctions.
-The intercept is the estimated price when `condnew` has a value 0, i.e., when the game is in used condition.
-That is, the average selling price of a used version of the game is \$42.87.
 
 ------------------------------------------------------------------------
 
-The slope indicates that, on average, new games sell for about \$10.90 more than used games.
+The intercept is the estimated price when `condnew` has a value 0, i.e., when the game is in used condition.
+That is, the average selling price of a used version of the game is \$42.9.
+The slope indicates that, on average, new games sell for about \$10.9 more than used games.
 :::
 
 ::: {.important data-latex=""}
@@ -1320,7 +1322,7 @@ terms_chp_8 <- c(terms_chp_8, "high leverage", "influential point", "outlier", "
 **Types of outliers.**
 
 A point that (or a group of points) that stands out from the rest of the data is called an outlier.
-Outliers that are that fall horizontally away from the center of the cloud of points are called leverage points.
+Outliers that fall horizontally away from the center of the cloud of points are called leverage points.
 Outliers that influence on the slope of the line are called influential points.
 :::
 
