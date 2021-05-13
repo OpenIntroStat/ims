@@ -52,6 +52,161 @@ email_variables %>%
   column_spec(2, width = "30em")
 ```
 
+## Model diagnostics
+
+Before looking at the hypothesis tests associated with the coefficients (turns out they are very similar to those in linear regression!), it is valuable to understand the technical conditions that underlie the inference applied to the logistic regression model.
+Generally, as you've seen in the logistic regression modeling examples, it is imperative that the response variable in binary.
+Additionally, the key technical condition for logistic regression has to do with the relationship between the predictor variables ($x_i$s) and the probability the outcome will be a success.
+It turns out, the relationship is a specific functional form called a logit function, where logit$(p) = \log_e(\frac{p}{1-p})$.
+The function may feel complicated, and memorizing the formula of the logit is not necessary for understanding logistic regression.
+What you do need to remember is that the probability of the outcome being a success is a function of a linear combination of the explanatory variables.
+
+::: {.important data-latex=""}
+**Logistic regression conditions.**
+
+There are two key conditions for fitting a logistic regression model:
+
+1.  Each outcome $Y_i$ is independent of the other outcomes.
+2.  Each predictor $x_i$ is linearly related to logit$(p_i)$ if all other predictors are held constant.
+:::
+
+The first logistic regression model condition --- independence of the outcomes --- is reasonable for the experiment since characteristics of resumes were randomly assigned to the resumes that were sent out.
+
+The second condition of the logistic regression model is not easily checked without a fairly sizable amount of data.
+Luckily, we have 4870 resume submissions in the dataset!
+Let's first visualize these data by plotting the true classification of the resumes against the model's fitted probabilities, as shown in Figure \@ref(fig:resume-predict).
+
+```{r resume-predict, fig.cap = "The predicted probability that each of the 4870 resumes results in a callback. Points have been jittered so that those with nearly identical values aren’t plotted exactly on top of one another.", fig.asp = 0.4}
+resume_pred <- predict(resume_fit, new_data = resume, type = "prob") %>%
+  bind_cols(resume %>% select(received_callback))
+
+ggplot(resume_pred, aes(x = .pred_1, y = received_callback)) +
+  geom_jitter(alpha = 0.15) +
+  coord_cartesian(xlim = c(0, 1)) +
+  labs(y = "Recevied callback",
+       x = "Predicticted probability that resume results in a callback")
+```
+
+We'd like to assess the quality of the model.
+For example, we might ask: if we look at resumes that we modeled as having a 10% chance of getting a callback, do we find about 10% of them actually receive a callback?
+We can check this for groups of the data by constructing a plot as follows:
+
+1.  Bucket the data into groups based on their predicted probabilities.
+2.  Compute the average predicted probability for each group.
+3.  Compute the observed probability for each group, along with a 95% confidence interval for the true probability of success for those individuals.
+4.  Plot the observed probabilities (with 95% confidence intervals) against the average predicted probabilities for each group.
+
+If the model does a good job describing the data, the plotted points should fall close to the line $y = x$, since the predicted probabilities should be similar to the observed probabilities.
+We can use the confidence intervals to roughly gauge whether anything might be amiss.
+Such a plot is shown in Figure \@ref(fig:logisticModelBucketDiag).
+
+```{r logisticModelBucketDiag, fig.cap = "The dashed line is within the confidence bound of the 95% confidence intervals of each of the buckets, suggesting the logistic fit is reasonable."}
+a <- resume
+d <- data.frame(
+    callback = a$received_callback,
+    job_city = a$job_city,
+    college_degree = a$college_degree,
+    years_experience = a$years_experience,
+    honors = a$honors,
+    military = a$military,
+    email_address = a$has_email_address,
+    race = a$race,
+    gender = ifelse(a$gender == "m", "male", "female"))
+
+
+m <- glm(callback ~
+    job_city + college_degree + years_experience +
+    honors + military + email_address +
+    race + gender,
+    data = d, family = binomial)
+m <- glm(callback ~ job_city + years_experience + honors + race,
+    data = d, family = binomial)
+summary(m)
+p  <- predict(m, type = "response")
+
+set.seed(1)
+noise <- rnorm(nrow(d), sd = 0.08)
+
+ns1 <- 4
+plot(p, d$callback + noise / 5,
+     type = "n",
+     xlim = 0:1,
+     ylim = c(-0.07, 1.07),
+     axes = FALSE,
+     xlab = "Predicted Probability",
+     ylab = "")
+par(las = 0)
+mtext("Truth", 2, 5.5)
+par(las = 1)
+rect(0, 0, 1, 1,
+     border = COL[6],
+     col = "#00000000",
+     lwd = 1.5)
+lines(0:1, 0:1,
+      lty = 2,
+      col = COL[6],
+      lwd = 1.5)
+points(p, d$callback + noise / 5,
+       col = fadeColor(COL[1], "18"),
+       pch = 20)
+axis(1)
+at <- seq(0, 1, length.out = 6)
+labels <- c("0 (No Callback)",
+            "0.2  ",
+            "0.4  ",
+            "0.6  ",
+            "0.8  ",
+            "1 (Callback)")
+axis(2, at, labels)
+eps <- 1e-4
+bucket_breaks <- quantile(p, seq(0, 1, 0.01))
+bucket_breaks[1] <- bucket_breaks[1] - eps
+n_buckets <- length(bucket_breaks) - 1
+bucket_breaks[n_buckets] <- bucket_breaks[n_buckets] + 1e3 * eps
+bucket_breaks. <- bucket_breaks
+k <- 1
+for (i in 1:n_buckets) {
+  if (abs(bucket_breaks.[i] - bucket_breaks[k]) >= 0.01) {
+    k <- k + 1
+    bucket_breaks[k] <- bucket_breaks.[i]
+  }
+}
+bucket_breaks <- bucket_breaks[1:k]
+
+n_buckets <- length(bucket_breaks)
+xp <- rep(NA, n_buckets)
+yp <- rep(NA, n_buckets)
+yp_lower <- rep(NA, n_buckets)
+yp_upper <- rep(NA, n_buckets)
+zs <- qnorm(0.975)
+for (i in 1:n_buckets) {
+  these <- bucket_breaks[i] < p & p <= bucket_breaks[i + 1]
+  xp[i] <- mean(p[these])
+  y <- d$callback[these]
+  yp[i] <- mean(y)
+  yp_lower[i] <- yp[i] - zs * sqrt(yp[i] * (1 - yp[i]) / length(y))
+  yp_upper[i] <- yp[i] + zs * sqrt(yp[i] * (1 - yp[i]) / length(y))
+}
+points(xp, yp, pch = 19, cex = 0.7)
+segments(xp, yp_lower, xp, yp_upper)
+arrows(0.3, 0.17,
+       0.24, 0.22,
+       length = 0.07)
+text(0.3, 0.15,
+    paste("Observations are bucketed,",
+        "then we compute the observed probability in each bucket (y)",
+        "against the average predicted probability (x)",
+        "for each of the buckets with 95% confidence intervals.",
+        sep = "\n"),
+    cex = 0.85, pos = 4)
+```
+
+A plot like Figure \@ref(fig:logisticModelBucketDiag) helps to better understand the deviations.
+Additional diagnostics may be created that are similar to those featured in Section \@ref(tech-cond-linmod).
+For instance, we could compute residuals as the observed outcome minus the expected outcome ($e_i = Y_i - \hat{p}_i$), and then we could create plots of these residuals against each predictor.
+
+\index{data!resume|)} \index{regression!logistic|)} \index{regression|)}
+
 ## Multiple logistic regression output from software {#inf-log-reg-soft}
 
 As you learned in Chapter \@ref(model-mlr), optimization can be used to find the coefficient estimates for the logistic model.
