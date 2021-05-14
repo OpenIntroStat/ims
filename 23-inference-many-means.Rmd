@@ -114,7 +114,7 @@ mlb_players_18 %>%
   arrange(name) %>% 
   select(name, team, position, AB, H, HR, RBI, AVG, OBP) %>%
   slice_head(n = 6) %>%
-  kbl(booktabs = TRUE, caption = caption_helper("Six cases and some of the variables from the `mlb_players_18` data frame."), align = "lllrrrrrr") %>%
+  kbl(linesep = "", booktabs = TRUE, caption = caption_helper("Six cases and some of the variables from the `mlb_players_18` data frame."), align = "lllrrrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = TRUE)
 ```
@@ -134,7 +134,7 @@ mlb_players_18_vars <- tribble(
 )
 
 mlb_players_18_vars %>%
-  kbl(booktabs = TRUE, caption = caption_helper("Variables and their descriptions for the `mlb_players_18` dataset."), 
+  kbl(linesep = "", booktabs = TRUE, caption = caption_helper("Variables and their descriptions for the `mlb_players_18` dataset."), 
       col.names = c("Variable", "Description")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
@@ -172,7 +172,7 @@ mlb_players_18 %>%
     mean = round(mean(OBP), 3),
     sd   = round(sd(OBP), 3)
     ) %>%
-  kbl(booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE, 
     caption = "Summary statistics of on-base percentage, split by player position.",
     col.names = c("Position", "n", "Mean", "SD"),
     align = "lccc"
@@ -299,7 +299,7 @@ classdata %>%
     min  = min(m1),
     max  = max(m1)
     ) %>%
-  kbl(booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE, 
     caption = "Summary statistics of scores for each exam version.",
     col.names = c("Exam", "n", "Mean", "SD", "Min", "Max"),
     align = "lccccc"
@@ -473,10 +473,15 @@ Many of these values should look familiar; in particular, the $F$-test statistic
 mod <- lm(OBP ~ position, data = mlb_players_18)
 
 anova(mod) %>%
-  kbl(booktabs = TRUE, digits = 4, 
-        caption = "ANOVA summary for testing whether the average on-base percentage differs across player positions.") %>% 
+  tidy() %>%
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+  kbl(linesep = "", booktabs = TRUE,
+      caption = "ANOVA summary for testing whether the average on-base percentage differs across player positions.",
+      digits = 4, align = "lrrrrr") %>% 
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(1, width = "10em") %>%
+  column_spec(2:6, width = "5em")
 ```
 
 ### Conditions for an ANOVA analysis
