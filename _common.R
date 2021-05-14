@@ -97,7 +97,7 @@ make_terms_table <- function(x, n_cols = 3){
   desired_length <- n_rows * n_cols
   x_updated <- c(x, rep("", (desired_length - length(x))))
   matrix(x_updated, nrow = n_rows) %>%
-    kbl(booktabs = TRUE, linesep = "") %>%
+    kbl(booktabs = TRUE, linesep = "\\addlinespace") %>%
     kable_styling(bootstrap_options = c("striped", "condensed"), 
                   latex_options = "striped",
                   full_width = TRUE)
