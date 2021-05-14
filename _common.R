@@ -124,7 +124,7 @@ inference_method_summary_table <- tribble(
     "Randomized experiment or random sampling",
   "What is it best for?", 
     "Hypothesis Testing (can be used for confidence intervals, but not covered in this text).", 
-    "Confidence Intervals (bootstrap hypothesis testing for one proportion covered in Chapter 16).", 
+    "Confidence Intervals (can be used for bootstrap hypothesis testing for one proportion as well).", 
     "Quick analyses through, for example, calculating a Z score.",
   "What physical object represents the simulation process?", 
     "Shuffling cards", 
