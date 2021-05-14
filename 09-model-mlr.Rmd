@@ -45,7 +45,7 @@ loans <- loans_full_schema %>%
 
 loans %>%
   slice_head(n = 6) %>%
-  kbl(booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE, 
       caption = caption_helper("First six rows of the `loans` dataset."),
       align = "rlrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
@@ -67,7 +67,7 @@ loans_var_def <- tribble(
 )
 
 loans_var_def %>%
-  kbl(booktabs = TRUE, caption = caption_helper("Variables and their descriptions for the `loans` dataset."), 
+  kbl(linesep = "", booktabs = TRUE, caption = caption_helper("Variables and their descriptions for the `loans` dataset."), 
       col.names = c("Variable", "Description")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
@@ -79,7 +79,7 @@ loans_var_def %>%
 
 Let's start by fitting a linear regression model for interest rate with a single predictor indicating whether or not a person has a bankruptcy in their record:
 
-$$\widehat{\texttt{interest\_rate}} = 12.34 + 0.74 \times \texttt{bankruptcy}$$
+$$\widehat{\texttt{interest_rate}} = 12.34 + 0.74 \times \texttt{bankruptcy}$$
 
 Results of this model are shown in Table \@ref(tab:int-rate-bankruptcy).
 
@@ -89,12 +89,13 @@ m_bankruptcy <- lm(interest_rate ~ bankruptcy, data = loans)
 m_bankruptcy %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE, 
       caption = caption_helper("Summary of a linear model for predicting `interest_rate` based on whether the borrower has a bankruptcy in their record. Degrees of freedom for this model is 9998."), 
       digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  column_spec(1:5, width= "6em")
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "17em", monospace = TRUE) %>%
+  column_spec(2:5, width = "5em")
 ```
 
 ::: {.workedexample data-latex=""}
@@ -124,13 +125,13 @@ m_verified_income <- lm(interest_rate ~ verified_income, data = loans)
 m_verified_income %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE, 
       caption = caption_helper("Summary of a linear model for predicting `interest_rate` based on whether the borrower’s income source and amount has been verified. This predictor has three levels, which results in 2 rows in the regression output."),
       digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  column_spec(1, width = "20em") %>%
-  column_spec(2:5, width = "6em")
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "17em", monospace = TRUE) %>%
+  column_spec(2:5, width = "5em")
 ```
 
 ::: {.workedexample data-latex=""}
@@ -142,15 +143,15 @@ The equation for the regression model may be written as a model with two predict
 
 $$
 \begin{aligned}
-\widehat{\texttt{interest\_rate}} &= 11.10 \\
-&+ 1.42 \times \texttt{verified\_income}_{\texttt{Source Verified}} \\
-&+ 3.25 \times \texttt{verified\_income}_{\texttt{Verified}}
+\widehat{\texttt{interest_rate}} &= 11.10 \\
+&+ 1.42 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
+&+ 3.25 \times \texttt{verified_income}_{\texttt{Verified}}
 \end{aligned}
 $$
 
 We use the notation $\texttt{variable}_{\texttt{level}}$ to represent indicator variables for when the categorical variable takes a particular value.
-For example, $\texttt{verified\_income}_{\texttt{Source Verified}}$ would take a value of 1 if it was for a borrower that was source verified, and it would take a value of 0 otherwise.
-Likewise, $\texttt{verified\_income}_{\texttt{Verified}}$ would take a value of 1 if it was for a borrower that was verified, and 0 if it took any other value.
+For example, $\texttt{verified_income}_{\texttt{Source Verified}}$ would take a value of 1 if it was for a borrower that was source verified, and it would take a value of 0 otherwise.
+Likewise, $\texttt{verified_income}_{\texttt{Verified}}$ would take a value of 1 if it was for a borrower that was verified, and 0 if it took any other value.
 :::
 
 The notation $\texttt{variable}_{\texttt{level}}$ may feel a bit confusing.
@@ -163,7 +164,7 @@ Using the model for predicting interest rate from income verification type, comp
 
 When `verified_income` takes a value of `Not Verified`, then both indicator functions in the equation for the linear model are set to 0:
 
-$$\widehat{\texttt{interest\_rate}} = 11.10 + 1.42 \times 0 + 3.25 \times 0 = 11.10$$
+$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times 0 + 3.25 \times 0 = 11.10$$
 
 The average interest rate for these borrowers is 11.1%.
 Because the level does not have its own coefficient and it is the reference value, the indicators for the other levels for this variable all drop out.
@@ -176,7 +177,7 @@ Using the model for predicting interest rate from income verification type, comp
 
 When `verified_income` takes a value of `Source Verified`, then the corresponding variable takes a value of 1 while the other is 0:
 
-$$\widehat{\texttt{interest\_rate}} = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 12.52$$
+$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 12.52$$
 
 The average interest rate for these borrowers is 12.52%.
 :::
@@ -230,16 +231,16 @@ terms_chp_9 <- c(terms_chp_9, "multiple regression")
 We want to construct a model that accounts not only for any past bankruptcy or whether the borrower had their income source or amount verified, but simultaneously accounts for all the variables in the `loans` dataset: `verified_income`, `debt_to_income`, `credit_util`, `bankruptcy`, `term`, `issue_month`, and `credit_checks`.
 
 $$\begin{aligned}
-\widehat{\texttt{interest\_rate}} &= b_0 \\
-&+ b_1 \times \texttt{verified\_income}_{\texttt{Source Verified}} \\
-&+ b_2 \times \texttt{verified\_income}_{\texttt{Verified}} \\
-&+ b_3 \times \texttt{debt\_to\_income} \\
-&+ b_4 \times \texttt{credit\_util} \\
+\widehat{\texttt{interest_rate}} &= b_0 \\
+&+ b_1 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
+&+ b_2 \times \texttt{verified_income}_{\texttt{Verified}} \\
+&+ b_3 \times \texttt{debt_to_income} \\
+&+ b_4 \times \texttt{credit_util} \\
 &+ b_5 \times \texttt{bankruptcy} \\
 &+ b_6 \times \texttt{term} \\
-&+ b_7 \times \texttt{issue\_month}_{\texttt{Jan-2018}} \\
-&+ b_8 \times \texttt{issue\_month}_{\texttt{Mar-2018}} \\
-&+ b_9 \times \texttt{credit\_checks}
+&+ b_7 \times \texttt{issue_month}_{\texttt{Jan-2018}} \\
+&+ b_8 \times \texttt{issue_month}_{\texttt{Mar-2018}} \\
+&+ b_9 \times \texttt{credit_checks}
 \end{aligned}$$
 
 This equation represents a holistic approach for modeling all of the variables simultaneously.
@@ -263,13 +264,13 @@ m_full <- lm(interest_rate ~ ., data = loans)
 m_full %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
-  kbl(booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE, 
       caption = "Output for the regression model, where interest rate is the outcome and the variables listed are the predictors. Degrees of freedom for this model is 9990.", 
       digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  column_spec(1, width = "20em") %>%
-  column_spec(2:5, width = "6em")
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "17em", monospace = TRUE) %>%
+  column_spec(2:5, width = "5em")
 ```
 
 ::: {.important data-latex=""}
@@ -294,16 +295,16 @@ The fitted model for the interest rate is given by:
 
 $$
 \begin{aligned}
-\widehat{\texttt{interest\_rate}} &= 1.89 \\
-&+ 1.00 \times \texttt{verified\_income}_{\texttt{Source Verified}} \\
-&+ 2.56 \times \texttt{verified\_income}_{\texttt{Verified}} \\
-&+ 0.02 \times \texttt{debt\_to\_income} \\
-&+ 4.90 \times \texttt{credit\_util} \\
+\widehat{\texttt{interest_rate}} &= 1.89 \\
+&+ 1.00 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
+&+ 2.56 \times \texttt{verified_income}_{\texttt{Verified}} \\
+&+ 0.02 \times \texttt{debt_to_income} \\
+&+ 4.90 \times \texttt{credit_util} \\
 &+ 0.39 \times \texttt{bankruptcy} \\
 &+ 0.15 \times \texttt{term} \\
-&+ 0.23 \times \texttt{credit\_checks} \\
-&+ 0.05 \times \texttt{issue\_month}_{\texttt{Jan-2018}} \\
-&- 0.04 \times \texttt{issue\_month}_{\texttt{Mar-2018}}
+&+ 0.23 \times \texttt{credit_checks} \\
+&+ 0.05 \times \texttt{issue_month}_{\texttt{Jan-2018}} \\
+&- 0.04 \times \texttt{issue_month}_{\texttt{Mar-2018}}
 \end{aligned}
 $$
 
@@ -324,8 +325,8 @@ Compute the residual of the first observation in Table \@ref(tab:loans-data-matr
 :::
 
 [^model-mlr-5]: To compute the residual, we first need the predicted value, which we compute by plugging values into the equation from earlier.
-    For example, $\texttt{verified\_income}_{\texttt{Source Verified}}$ takes a value of 0, $\texttt{verified\_income}_{\texttt{Verified}}$ takes a value of 1 (since the borrower's income source and amount were verified), was 18.01, and so on.
-    This leads to a prediction of $\widehat{\texttt{interest\_rate}}_1 = 18.09$.
+    For example, $\texttt{verified_income}_{\texttt{Source Verified}}$ takes a value of 0, $\texttt{verified_income}_{\texttt{Verified}}$ takes a value of 1 (since the borrower's income source and amount were verified), was 18.01, and so on.
+    This leads to a prediction of $\widehat{\texttt{interest_rate}}_1 = 18.09$.
     The observed interest rate was 14.07%, which leads to a residual of $e_1 = 14.07 - 18.09 = -4.02$.
 
 ::: {.workedexample data-latex=""}
@@ -481,18 +482,21 @@ m_full_r_sq_adj <- glance(m_full)$adj.r.squared %>% round(4)
 options(digits = 3) # to get back to default set in _common.R
 m_full_df_residual <- glance(m_full)$df.residual
 
-m_full %>%
+m_full_w_rsq <- m_full %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
-  add_row(term = glue("Adjusted $R^2$ = {m_full_r_sq_adj}")) %>%
-  add_row(term = glue("df = {m_full_df_residual}")) %>%
-  kbl(booktabs = TRUE, caption = "The fit for the full regression model, including the adjusted $R^2$.", digits = 2, align = "lrrrr") %>%
+  add_row(term = glue("Adjusted R-squared = {m_full_r_sq_adj}")) %>%
+  add_row(term = glue("df = {m_full_df_residual}"))
+
+m_full_w_rsq %>%
+  kbl(linesep = "", booktabs = TRUE, caption = "The fit for the full regression model, including the adjusted $R^2$.", digits = 2, align = "lrrrr")  %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "17em") %>%
+  column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_w_rsq)) < 11, TRUE, FALSE)) %>%
+  column_spec(2:5, width = "5em") %>%
   pack_rows("", 11, 12) %>%
   add_indent(11:12) %>%
-  column_spec(1, width = "15em") %>%
-  column_spec(2:5, width = "6em") %>%
   row_spec(11:12, italic = TRUE)
 ```
 
@@ -504,21 +508,24 @@ m_full_minus_issue_month_r_sq_adj <- glance(m_full_minus_issue_month)$adj.r.squa
 options(digits = 3) # to get back to default set in _common.R
 m_full_minus_issue_month_df_residual <- glance(m_full_minus_issue_month)$df.residual
 
-m_full_minus_issue_month %>%
+m_full_minus_issue_month_w_rsq <- m_full_minus_issue_month %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
-  add_row(term = glue("Adjusted $R^2$ = {m_full_minus_issue_month_r_sq_adj}")) %>%
-  add_row(term = glue("df = {m_full_minus_issue_month_df_residual}")) %>%
-  kbl(booktabs = TRUE, 
+  add_row(term = glue("Adjusted R-squared = {m_full_minus_issue_month_r_sq_adj}")) %>%
+  add_row(term = glue("df = {m_full_minus_issue_month_df_residual}"))
+
+m_full_minus_issue_month_w_rsq %>%
+  kbl(linesep = "", booktabs = TRUE, 
       caption = "The fit for the regression model after dropping issue month, including the adjusted $R^2$.",
-      digits = 2, align = "lrrrr") %>%
+      digits = 2, align = "lrrrr")  %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "17em") %>%
+  column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_minus_issue_month_w_rsq)) < 9, TRUE, FALSE)) %>%
+  column_spec(2:5, width = "5em") %>%
   pack_rows("", 9, 10) %>%
   add_indent(9:10) %>%
-  row_spec(9:10, italic = TRUE) %>%
-  column_spec(1, width = "15em") %>%
-  column_spec(2:5, width = "6em")
+  row_spec(9:10, italic = TRUE)
 ```
 
 ::: {.workedexample data-latex=""}
@@ -569,14 +576,14 @@ That is, after backward elimination, we are left with the model that keeps all p
 
 $$
 \begin{aligned}
-\widehat{\texttt{interest\_rate}} &= 1.90 \\
-&+ 1.00 \times \texttt{verified\_income}_\texttt{Source only} \\
-&+ 2.56 \times \texttt{verified\_income}_\texttt{Verified} \\
-&+ 0.02 \times \texttt{debt\_to\_income} \\
-&+ 4.90 \times \texttt{credit\_util} \\
+\widehat{\texttt{interest_rate}} &= 1.90 \\
+&+ 1.00 \times \texttt{verified_income}_\texttt{Source only} \\
+&+ 2.56 \times \texttt{verified_income}_\texttt{Verified} \\
+&+ 0.02 \times \texttt{debt_to_income} \\
+&+ 4.90 \times \texttt{credit_util} \\
 &+ 0.39 \times \texttt{bankruptcy} \\
 &+ 0.15 \times \texttt{term} \\
-&+ 0.23 \times \texttt{credit\_check}
+&+ 0.23 \times \texttt{credit_check}
 \end{aligned}
 $$
 :::
