@@ -52,7 +52,6 @@ options(knitr.kable.NA = "")
 # kableExtra options -----------------------------------------------------------
 
 options(kableExtra.html.bsTable = TRUE)
-#options(knitr.table.format = if (knitr::is_latex_output()) "latex" else "html")
 
 # dplyr options ----------------------------------------------------------------
 
