@@ -133,22 +133,19 @@ include_graphics("images/money.png")
 The collected data is given in Figure \@ref(fig:coinfig) and shows that the total `amount` of money is more highly correlated with the total `number of coins` than it is with the `number of low coins`.
 We also note that the total `number of coins` and the `number of low coins` are positively correlated.
 
-```{r coinfig, fig.cap = "Plot describing the amount of money (USD) as a fucntion of the number of coins and the number of low coins.  As you might expect, the amount of money is more highly postively correlated with the total number of coins than with the number of low coins."}
+```{r coinfig, fig.cap = "Plot describing the amount of money (USD) as a fucntion of the number of coins and the number of low coins. As you might expect, the amount of money is more highly postively correlated with the total number of coins than with the number of low coins."}
 # Data are simulated
-amount <- c(1.37, 1.01, 1.5, 0.56, 0.61, 3.06, 5.42, 1.75, 5.4, 0.56, 0.34, 2.33, 
-            3.34, 1.3, 1.2, 1.7, 0.86, 0.61, 2.96, 5.52, 8.95, 5.2, 1.56, 0.74, 1.83, 3.74)
-num_coins <- c(9,10,3,5,10,37,28,9,11,4,6,17,15,7,9,1,5,9,36,30,47,13,5,7,18,16)
-num_low_coins <- c(4,8,0,4,9,34,9,3,2,2,5,12,11,4,8,0,4,9,34,9,3,2,2,5,12,11)
+money <- tibble(
+  number_of_coins = c(9,10,3,5,10,37,28,9,11,4,6,17,15,7,9,1,5,9,36,30,47,13,5,7,18,16),
+  number_of_low_coins = c(4,8,0,4,9,34,9,3,2,2,5,12,11,4,8,0,4,9,34,9,3,2,2,5,12,11),
+  total_amount = c(1.37, 1.01, 1.5, 0.56, 0.61, 3.06, 5.42, 1.75, 5.4, 0.56, 0.34, 2.33, 3.34, 1.3, 1.2, 1.7, 0.86, 0.61, 2.96, 5.52, 8.95, 5.2, 1.56, 0.74, 1.83, 3.74)
+)
 
-money <- data.frame(`number of coins` = num_coins, 
-                    `number of low coins` = num_low_coins,
-                    `total amount` = amount)
-
-p1 <- ggplot(money, aes(y = total.amount, x = number.of.coins)) + 
+p1 <- ggplot(money, aes(y = total_amount, x = number_of_coins)) + 
   geom_point() +
   labs(x = "Number of coins", y = "Total amount ($)")
 
-p2 <- ggplot(money, aes(y = total.amount, x = number.of.low.coins)) + 
+p2 <- ggplot(money, aes(y = total_amount, x = number_of_low_coins)) + 
   geom_point() +
   labs(x = "Number of low coins", y = "Total amount ($)")
 
@@ -162,7 +159,7 @@ The $b_1 = 0.13$ coefficient is highly significant, suggesting we would not have
 $$\widehat{\texttt{amount}} = 0.55 + 0.13 \times \texttt{number of coins}$$
 
 ```{r coinhigh}
-lm(amount ~ number.of.coins, data = money) %>%
+lm(amount ~ number_of_coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
   kbl(linesep = "", booktabs = TRUE, 
@@ -181,7 +178,7 @@ The $b_1 = 0.02$ coefficient is not at all significant, suggesting we could easi
 $$\widehat{\texttt{amount}} = 2.28 + 0.02 \times \texttt{number of low coins}$$
 
 ```{r coinlow}
-lm(amount ~ number.of.low.coins, data = money) %>%
+lm(amount ~ number_of_low_coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
   kbl(linesep = "", booktabs = TRUE, 
@@ -233,7 +230,7 @@ It makes sense that the variable describing the `number of low coins` provides m
 $$\widehat{\texttt{amount}} = 0.80 + 0.21 \times \texttt{number of coins} - 0.16 \times \texttt{number of low coins}$$
 
 ```{r coinhighlow}
-lm(amount ~ number.of.coins + number.of.low.coins, data = money) %>%
+lm(amount ~ number_of_coins + number_of_low_coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
   kbl(linesep = "", booktabs = TRUE, 
@@ -287,7 +284,7 @@ By removing some observations, we provide ourselves with an independent evaluati
 Cross validation can be used in many different ways (as an independent assessment), and here we will just scratch the surface with respect to one way the technique can be used to compare models.
 See Figure \@ref(fig:cv) for a visual representation of the cross validation process.
 
-```{r cv, fig.cap = "The dataset is broken into k folds (here k=4).  One at a time, a model is built using k-1 of the folds, and predictions are calculated on the single held out sample which will be completely independent of the model estimation.", fig.width = 10}
+```{r cv, fig.cap = "The dataset is broken into k folds (here k = 4).  One at a time, a model is built using k-1 of the folds, and predictions are calculated on the single held out sample which will be completely independent of the model estimation.", fig.width = 10}
 include_graphics("images/CV.png")
 ```
 
@@ -392,14 +389,14 @@ Here we use a 4-fold cross validation (meaning that one quarter of the data is r
 
 Figure \@ref(fig:massCV1) displays how a model is fit to 3/4 of the data (note the slight differences in coefficients as compared to Table \@ref(tab:peng-lm-bill)), and then predictions are made on the holdout sample.
 
-```{r massCV1, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset with only a single predictor variable. Predictions are made on the remaining 1/4 of the observations.  The y-axis in the scatterplot represents the residual: true observed value minus the predicted value.  Note that the predictions are independent of the estimated model coefficients.", out.width="100%"}
+```{r massCV1, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset with only a single predictor variable. Predictions are made on the remaining 1/4 of the observations.  The y-axis in the scatterplot represents the residual: true observed value minus the predicted value. Note that the predictions are independent of the estimated model coefficients.", out.width = "100%"}
 include_graphics("images/massCV1.png")
 ```
 
 By repeating the process for each holdout quarter sample, the residuals from the model can be plotted against the predicted values.
 We see that the predictions are scattered which shows a good model fit but that the prediction errors vary $\pm$ 1000g of the true body mass.
 
-```{r peng-mass1, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted. The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only.  The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value)."}
+```{r peng-mass1, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted. The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only. The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value)."}
 set.seed(47)
 data(penguins)
 penguins <- penguins %>%
@@ -468,11 +465,11 @@ Note that the coefficients estimated for the first cross validation model (in Fi
 Figure \@ref(fig:massCV2) displays the cross validation process for the multivariable model with a full set of residual plots given in Figure \@ref(fig:peng-mass2).
 Note that the residuals are mostly within $\pm$ 500g, providing much more precise predictions for the independent body mass values of the individual penguins.
 
-```{r massCV2, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset with the five specified predictor variables. Predictions are made on the remaining 1/4 of the observations.  The y-axis in the scatterplot represents the residual: true observed value minus the predicted value.  Note that the predictions are independent of the estimated model coefficients.", out.width="100%"}
+```{r massCV2, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset with the five specified predictor variables. Predictions are made on the remaining 1/4 of the observations.  The y-axis in the scatterplot represents the residual: true observed value minus the predicted value. Note that the predictions are independent of the estimated model coefficients.", out.width="100%"}
 include_graphics("images/massCV2.png")
 ```
 
-```{r peng-mass2, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted. The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only.  The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value)."}
+```{r peng-mass2, fig.cap = "One quarter at a time, the data were removed from the model building, and the body mass of the removed penguins was predicted. The least squares regression model was fit independently of the removed penguins.  The predictions of body mass are based on bill length only. The x-axis represents the predicted value, the y-axis represents the error (difference between predicted value and actual value)."}
 data.frame(
   predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1, ]) %>%
     predict(newdata = penguins[penguinfolds$Fold1, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]),
