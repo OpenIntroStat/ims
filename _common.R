@@ -38,10 +38,11 @@ knitr::opts_chunk$set(
   #cache = TRUE,
   echo = FALSE, # hide code unless otherwise noted in chunk options
   out.width = "90%",
-  fig.align = 'center',
+  fig.align = "center",
   fig.width = 6,
   fig.asp = 0.618,  # 1 / phi
-  fig.show = "hold"
+  fig.show = "hold",
+  dpi = 300
 )
 
 # knit options -----------------------------------------------------------------
@@ -51,7 +52,6 @@ options(knitr.kable.NA = "")
 # kableExtra options -----------------------------------------------------------
 
 options(kableExtra.html.bsTable = TRUE)
-#options(knitr.table.format = if (knitr::is_latex_output()) "latex" else "html")
 
 # dplyr options ----------------------------------------------------------------
 
@@ -59,9 +59,13 @@ options(dplyr.print_min = 6, dplyr.print_max = 6)
 
 # ggplot2 theme and colors -----------------------------------------------------
 
-ggplot2::theme_set(ggplot2::theme_minimal(base_size = 14))
+if (knitr::is_html_output()) {
+  ggplot2::theme_set(ggplot2::theme_minimal(base_size = 13))
+} else if (knitr::is_latex_output()) {
+  ggplot2::theme_set(ggplot2::theme_minimal(base_size = 11))
+}
 
-ggplot2::update_geom_defaults("point", list(color = openintro::IMSCOL["blue","full"], 
+ggplot2::update_geom_defaults("point", list(color = openintro::IMSCOL["blue","full"],
                                             fill = openintro::IMSCOL["blue","full"]))
 ggplot2::update_geom_defaults("bar", list(fill = openintro::IMSCOL["blue","full"], 
                                           color = "#FFFFFF"))
@@ -74,7 +78,17 @@ ggplot2::update_geom_defaults("smooth", list(color = openintro::IMSCOL["gray", "
 ggplot2::update_geom_defaults("dotplot", list(color = openintro::IMSCOL["blue","full"], 
                                               fill = openintro::IMSCOL["blue","full"]))
 
-# function to print terms ------------------------------------------------------
+# function: caption helper -----------------------------------------------------
+
+caption_helper <- function(txt) {
+  if (knitr::is_latex_output())
+    stringr::str_replace_all(txt, "([^`]*)`(.*?)`", "\\1\\\\texttt{\\2}") %>%
+    stringr::str_replace_all("_", "\\\\_")
+  else
+    txt
+}
+
+# function: make terms table ---------------------------------------------------
 
 make_terms_table <- function(x, n_cols = 3){
   x <- sort(x) %>% unique()
@@ -82,7 +96,7 @@ make_terms_table <- function(x, n_cols = 3){
   desired_length <- n_rows * n_cols
   x_updated <- c(x, rep("", (desired_length - length(x))))
   matrix(x_updated, nrow = n_rows) %>%
-    kbl(booktabs = TRUE) %>%
+    kbl(booktabs = TRUE, linesep = "\\addlinespace") %>%
     kable_styling(bootstrap_options = c("striped", "condensed"), 
                   latex_options = "striped",
                   full_width = TRUE)
@@ -109,7 +123,7 @@ inference_method_summary_table <- tribble(
     "Randomized experiment or random sampling",
   "What is it best for?", 
     "Hypothesis Testing (can be used for confidence intervals, but not covered in this text).", 
-    "Confidence Intervals (bootstrap hypothesis testing for one proportion covered in Chapter 16).", 
+    "Confidence Intervals (can be used for bootstrap hypothesis testing for one proportion as well).", 
     "Quick analyses through, for example, calculating a Z score.",
   "What physical object represents the simulation process?", 
     "Shuffling cards", 
