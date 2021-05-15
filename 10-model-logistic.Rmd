@@ -21,7 +21,7 @@ terms_chp_10 <- c("logistic regression", "generalized linear model")
 
 We will consider experiment data from a study that sought to understand the effect of race and sex on job application callback rates [@bertrand2003].
 To evaluate which factors were important, job postings were identified in Boston and Chicago for the study, and researchers created many fake resumes to send off to these jobs to see which would elicit a callback.[^model-logistic-1]
-The researchers enumerated important characteristics, such as years of experience and education details, and they used these characteristics to randomly generate the resumes.
+The researchers enumerated important characteristics, such as years of experience and education details, and they used these characteristics to randomly generate fake resumes.
 Finally, they randomly assigned a name to each resume, where the name would imply the applicant's sex and race.
 
 [^model-logistic-1]: We did omit discussion of some structure in the data for the analysis presented: the experiment design included blocking, where typically four resumes were sent to each job: one for each inferred race/sex combination (as inferred based on the first name).
@@ -124,7 +124,7 @@ resume_variables %>%
 
 All of the attributes listed on each resume were randomly assigned.
 This means that no attributes that might be favorable or detrimental to employment would favor one demographic over another on these resumes.
-Importantly, due to the experimental nature of this study, we can infer causation between these variables and the callback rate, if the variable is statistically significant.
+Importantly, due to the experimental nature of this study, we can infer causation between these variables and the callback rate, if substantial differences are found.
 Our analysis will allow us to compare the practical importance of each of the variables relative to each other.
 
 ## Modelling the probability of an event {#modelingTheProbabilityOfAnEvent}
@@ -223,12 +223,29 @@ In our resume example, there are 8 predictor variables, so $k = 8$.
 While the precise choice of a logit function isn't intuitive, it is based on theory that underpins generalized linear models, which is beyond the scope of this book.
 Fortunately, once we fit a model using software, it will start to feel like we're back in the multiple regression context, even if the interpretation of the coefficients is more complex.
 
+To convert from values on the logistic regression scale to the probability scale, we need to back transform and then solve for $p_i$:
+
+$$
+\begin{aligned}
+\log_{e}\left( \frac{p_i}{1-p_i} \right) &= b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i} \\
+\frac{p_i}{1-p_i} &= e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}} \\
+p_i &= \left( 1 - p_i \right) e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}} \\
+p_i &= e^{b_0 + b_1 x_{1,i}  + \cdots + b_k x_{k,i}} - p_i \times e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}} \\
+p_i + p_i \text{ } e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}} &= e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}} \\
+p_i(1 + e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}}) &= e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}} \\
+p_i &= \frac{e^{b_0 + b_1 x_{1,i}  + \cdots + b_k x_{k,i}}}{1 + e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}}}
+\end{aligned}
+$$
+
+As with most applied data problems, we substitute the point estimates for the parameters (the $b_i$) so that we can make use of this formula.
+
+
 ::: {.workedexample data-latex=""}
 We start by fitting a model with a single predictor: `honors`.
 This variable indicates whether the applicant had any type of honors listed on their resume, such as employee of the month.
-The following logistic regression model was fit using statistical software:
+A logistic regression model was fit using statistical software and the following model was found:
 
-$$\log_e \left( \frac{p_i}{1-p_i} \right) = -2.4998 + 0.8668 \times {\texttt{honors}}$$
+$$\log_e \left( \frac{\widehat{p}_i}{1-\widehat{p}_i} \right) = -2.4998 + 0.8668 \times {\texttt{honors}}$$
 
 a.  If a resume is randomly selected from the study and it does not have any honors listed, what is the probability it resulted in a callback?
 
@@ -236,32 +253,16 @@ b.  What would the probability be if the resume did list some honors?
 
 ------------------------------------------------------------------------
 
-(a) If a randomly chosen resume from those sent out is considered, and it does not list honors, then `honors` takes the value 0 and the right side of the model equation equals -2.4998.
+(a) If a randomly chosen resume from those sent out is considered, and it does not list honors, then `honors` takes the value of 0 and the right side of the model equation equals -2.4998.
     Solving for $p_i$: $\frac{e^{-2.4998}}{1 + e^{-2.4998}} = 0.076$.
     Just as we labeled a fitted value of $y_i$ with a "hat" in single-variable and multiple regression, we do the same for this probability: $\hat{p}_i = 0.076{}$.
 
-(b) If the resume had listed some honors, then the right side of the model equation is $-2.4998{} + 0.8668 \times 1 = -1.6330$, which corresponds to a probability $\hat{p}_i = 0.163$.
+(b) If the resume had listed some honors, then the right side of the model equation is $-2.4998 + 0.8668 \times 1 = -1.6330$, which corresponds to a probability $\hat{p}_i =  0.163$.
     Notice that we could examine -2.4998 and -1.6330 in Figure \@ref(fig:logit-transformation) to estimate the probability before formally calculating the value.
 :::
 
-To convert from values on the logistic regression scale (e.g. -2.4998 and -1.6330), use the following formula, which is the result of solving for $p_i$ in the regression model:
-
-$$
-p_i = \frac{e^{b_0 + b_1 x_{1,i}+\cdots+b_k x_{k,i}}}{1 + e^{b_0 + b_1 x_{1,i}+\cdots+b_k x_{k,i}}}
-$$
-
-As with most applied data problems, we substitute the point estimates for the parameters (the $b_i$) so that we can make use of this formula.
-The probabilities can be calculated as follows.
-
-$$
-\frac{e^{-2.4998}}{1 + e^{-2.4998}}= 0.076
-$$
-
-$$
-\frac{e^{-2.4998 + 0.8668}}{1 + e^{-2.4998 + 0.8668}} = 0.163
-$$
-
 While knowing whether a resume listed honors provides some signal when predicting whether or not the employer would call, we would like to account for many different variables at once to understand how each of the different resume characteristics affected the chance of a callback.
+
 
 ## Logistic model with many variables
 
@@ -286,7 +287,9 @@ resume_full_fit %>%
 ```
 
 Just like multiple regression, we could trim some variables from the model.
-Here we'll use a statistic called **Akaike information criterion (AIC)**\index{AIC}, which is an analogue to how we used adjusted R-squared in multiple regression, and we look for models with a lower AIC through a backward elimination strategy.
+Here we'll use a statistic called **Akaike information criterion (AIC)**\index{AIC}, which is an analogue to how we used adjusted R-squared in multiple regression.
+When using AIC for model selection, models with a lower AIC value are considered to be "better."
+We will look for models with a lower AIC using a backward elimination strategy.
 After using this criteria, the variable `college_degree` is eliminated, giving the smaller model summarized in Table \@ref(tab:resume-fit), which is what we'll rely on for the remainder of this section.
 
 ```{r include=FALSE}
@@ -330,22 +333,31 @@ Use the model summarized in Table \@ref(tab:resume-fit) to estimate the probabil
 
 ------------------------------------------------------------------------
 
-We can start by writing out the equation using the coefficients from the model, then we can add in the corresponding values of each variable for this individual:
+We can start by writing out the equation using the coefficients from the model: 
 
 $$
 \begin{aligned}
 &log_e \left(\frac{p}{1 - p}\right) \\
-&\quad= - 2.7162 - 0.4364 \times \texttt{job_city}_{\texttt{Chicago}}        + 0.0206 \times \texttt{years_experience} \\
-&\quad\qquad + 0.7634 \times \texttt{honors} - 0.3443 \times \texttt{military} + 0.2221 \times \texttt{email} \\
-&\quad\qquad + 0.4429 \times \texttt{race}_{\texttt{White}} - 0.1959 \times \texttt{sex}_{\texttt{man}} \\
+&= - 2.7162 - 0.4364 \times \texttt{job_city}_{\texttt{Chicago}} \\
+& \quad \quad + 0.0206 \times \texttt{years_experience} \\
+& \quad \quad + 0.7634 \times \texttt{honors} - 0.3443 \times \texttt{military} + 0.2221 \times \texttt{email} \\
+& \quad \quad + 0.4429 \times \texttt{race}_{\texttt{White}} - 0.1959 \times \texttt{sex}_{\texttt{man}} 
+\end{aligned}
+$$
+
+Now we can add in the corresponding values of each variable for this individual:
+
+$$
+\begin{aligned}
+&log_e \left(\frac{\widehat{p}}{1 - \widehat{p}}\right) \\
 &\quad= - 2.7162 - 0.4364 \times 1 + 0.0206 \times 14 \\
-&\quad\qquad + 0.7634 \times 0 - 0.3443 \times 0 + 0.2221 \times 1 \\
-&\quad\qquad + 0.4429 \times 1 - 0.1959 \times 1 \\
+&\quad \quad + 0.7634 \times 0 - 0.3443 \times 0 + 0.2221 \times 1 \\
+&\quad \quad + 0.4429 \times 1 - 0.1959 \times 1 \\
 &\quad= - 2.3955  
 \end{aligned}
 $$
 
-We can now back-solve for $p$: the chance such an individual will receive a callback is about 8.35%.
+We can now back-solve for $\widehat{p}$: the chance such an individual will receive a callback is about $\frac{e^{-2.3955}}{1 + e^{-2.3955}} = 8.35\%$.
 :::
 
 ::: {.workedexample data-latex=""}
@@ -395,7 +407,7 @@ Of these 400 men, about 40 (10%) hold a bias against women.
 Of the 500 colleagues providing feedback on the promotion packet for these women, 8% of the colleagues hold a bias against the women.
 :::
 
-[^model-logistic-2]: A more thoughtful example would include non-binary individuals.
+[^model-logistic-2]: A more thoughtful example would include more inclusive gender identities. 
 
 This example highlights something profound: even in a hypothetical setting where each demographic has the same degree of prejudice against the other demographic, the smaller group experiences the negative effects more frequently.
 Additionally, if we would complete a handful of examples like the one above with different numbers, we'd learn that the greater the imbalance in the population groups, the more the smaller group is disproportionately impacted.[^model-logistic-3]
@@ -419,7 +431,7 @@ Whether it is with a formal statistical model or by using critical thinking skil
 Logistic and linear regression models have many similarities.
 The strongest of which is the linear combination of the explanatory variables which is used to form predictions related to the response variable.
 However, with logistic regression, the response variable is binary and therefore a prediction is given on the probability of a successful event.
-Logistic model fit and variable selection are done with AIC instead of adjusted $R^2$.
+Logistic model fit and variable selection can be carried out in similar ways as multiple linear regression. 
 
 ### Terms
 
