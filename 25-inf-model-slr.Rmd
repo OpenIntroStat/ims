@@ -38,7 +38,7 @@ The change from sample to sample leads to an understanding of how the single obs
 Consider the following hypothetical population of all of the sandwich stores of a particular chain seen in Figure \@ref(fig:sandpop).
 In this made-up world, the CEO actually has all the relevant data, which is why they can plot it here.
 The CEO is omniscient and can write down the population model which describes the true population relationship between the advertising dollars and revenue.
-There appears to be linear relationship between advertising dollars and revenue (both in\$000).
+There appears to be a linear relationship between advertising dollars and revenue (both in \$1,000).
 
 ```{r sandpop, fig.cap = "Revenue as a linear model of advertising dollars for a population of sandwich stores, in thousands of dollars."}
 set.seed(4747)
@@ -71,7 +71,7 @@ Unfortunately, in our scenario, the CEO is not willing to part with the full set
 The CEO is willing to give each potential franchise buyer a random sample of data from 20 stores.
 
 As with any numerical characteristic which describes a subset of the population, the estimated slope of a sample will vary from sample to sample.
-Consider the linear model which describes revenue (in \$000) based on advertising dollars (in \$0000).
+Consider the linear model which describes revenue (in \$1,000) based on advertising dollars (in \$1,000).
 
 The least squares regression model uses the data to find a sample linear fit: $$\hat{y} = b_0 + b_1 x.$$
 
@@ -212,7 +212,7 @@ First (in Section \@ref(randslope)), the distribution of $b_1$ when $\beta_1 = 0
 Next (in Section \@ref(bootbeta1)), we can bootstrap the data by taking random samples of size n from the original dataset.
 And last (in Section \@ref(mathslope)), we use mathematical tools to describe the variability using the $t$-distribution that was first encountered in Section \@ref(one-mean-math).
 
-## Randomization test for $H_0: \beta_1 = 0$ {#randslope}
+## Randomization test for the slope {#randslope}
 
 Consider data on 100 randomly selected births gathered originally from the US Department of Health and Human Services.[^inf-model-slr-1]
 Some of the variables are plotted in Figure \@ref(fig:babyweight).
@@ -262,10 +262,10 @@ Here the population refers to a larger population of births in the US.
 -   $H_0: \beta_1= 0$, there is no linear relationship between `weight` and `weeks`.
 -   $H_A: \beta_1 \ne 0$, there is some linear relationship between `weight` and `weeks`.
 
-Recall that for the randomization test, we permute one variables to eliminate any existing relationship between the variables.
+Recall that for the randomization test, we permute one variable to eliminate any existing relationship between the variables.
 That is, we set the null hypothesis to be true, and we measure the natural variability in the data due to sampling but **not** due to variables being correlated.
 Figure \@ref(fig:permweightScatter) shows the observed data and a scatterplot of one permutation of the `weight` variable.
-The careful observer can see that each of the observed the values for `weight` (and for `weeks`) exist in both the original data plot as well as the permuted `weight` plot, but the `weight` and `weeks` gestation are no longer matched for a given birth.
+The careful observer can see that each of the observed values for `weight` (and for `weeks`) exist in both the original data plot as well as the permuted `weight` plot, but the `weight` and `weeks` gestation are no longer matched for a given birth.
 That is, each `weight` value is randomly assigned to a new `weeks` gestation.
 
 ```{r permweightScatter, fig.cap = "(ref:permweightScatter-cap)", fig.asp = 0.5}
@@ -291,7 +291,7 @@ p1 + p2
 
 (ref:permweightScatter-cap) Original (left) and permuted (right) data. The permutation removes the linear relationship between `weight` and `weeks`. Repeated permutations allow for quantifying the variability in the slope under the condition that there is no linear relationship (i.e., that the null hypothesis is true).
 
-By repeatedly permuting the response variable any pattern in the linear model that is observed is due only to random chance (and not an underlying relationship).
+By repeatedly permuting the response variable, any pattern in the linear model that is observed is due only to random chance (and not an underlying relationship).
 The randomization test compares the slopes calculated from the permuted response variable with the observed slope.
 If the observed slope is inconsistent with the slopes from permuting, we can conclude that there is some underlying relationship (and that the slope is not merely due to random chance).
 
@@ -304,9 +304,14 @@ The columns in Table \@ref(tab:ls-births) are further described in Section \@ref
 ```{r ls-births}
 lm(weight ~ weeks, data = births14_100) %>%
   tidy() %>%
-  kbl(booktabs = TRUE, caption = "The least squares estimates of the intercept and slope are given in the estimate column. The observed slope is 0.335.") %>%
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+  kbl(linesep = "", booktabs = TRUE, 
+      caption = "The least squares estimates of the intercept and slope are given in the estimate column. The observed slope is 0.335.",
+      digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"))
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "10em", monospace = TRUE) %>%
+  column_spec(2:5, width = "5em")
 ```
 
 ### Variability of the statistic
@@ -370,7 +375,7 @@ That is, if indeed there were no linear relationship between `weight` and `weeks
 We reject the null hypothesis.
 Therefore, we believe that the slope observed on the original data is not just due to natural variability and indeed, there is a linear relationship between `weight` of baby and `weeks` gestation for births in the US.
 
-## Bootstrap confidence interval for $\beta_1$ {#bootbeta1}
+## Bootstrap confidence interval for the slope {#bootbeta1}
 
 As we have seen in previous chapters, we can use bootstrapping to estimate the sampling distribution of the statistic of interest (here, the slope) without the null assumption of no relationship (which was the condition in the randomization test).
 Because interest is now in creating a CI, there is no null hypothesis, so there won't be any reason to permute either of the variables.
@@ -492,7 +497,7 @@ ggplot(births_many_lm_BS, aes(x = estimate)) +
 
 (ref:mageBSslopes-cap) The original births data on `weight` and `mage` is bootstrapped 1,000 times. The histogram provides a sense for the variability of the slope of the linear model slope from sample to sample.
 
-## Mathematical model for testing $\beta_1$ {#mathslope}
+## Mathematical model for testing the slope {#mathslope}
 
 When certain technical conditions apply, it is convenient to use mathematical approximations to test and estimate the slope parameter.
 The approximations will build on the t-distribution which were described in Chapter \@ref(inference-one-mean).
@@ -605,9 +610,14 @@ d <- midterms_house
 th <- !d$year %in% c(1935, 1939)
 lm(house_change ~ unemp, d[th, ]) %>%
   tidy() %>%
-  kbl(booktabs = TRUE, caption = "Output from statistical software for the regression line modeling the midterm election losses for the President's party as a response to unemployment.") %>%
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+  kbl(linesep = "", booktabs = TRUE, 
+      caption = "Output from statistical software for the regression line modeling the midterm election losses for the President's party as a response to unemployment.",
+      digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"))
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "10em", monospace = TRUE) %>%
+  column_spec(2:5, width = "5em")
 ```
 
 ::: {.workedexample data-latex=""}
@@ -634,18 +644,18 @@ $$
 This corresponds to the third column of Table \@ref(tab:midtermUnempRegTable) .
 
 ::: {.workedexample data-latex=""}
-Use Table \@ref(tab:midtermUnempRegTable) to determine the p-value for th hypothesis test
+Use Table \@ref(tab:midtermUnempRegTable) to determine the p-value for the hypothesis test
 
 ------------------------------------------------------------------------
 
-The last column of the table gives the p-value for th two-sided hypothesis test for the coefficient of the unemployment rate 0.2961 That is, the data do not provide convincing evidence that a higher unemployment rate has any correspondence with smaller or larger losses for the President's party in the House of Representatives in midterm elections.
+The last column of the table gives the p-value for the two-sided hypothesis test for the coefficient of the unemployment rate 0.2961 That is, the data do not provide convincing evidence that a higher unemployment rate has any correspondence with smaller or larger losses for the President's party in the House of Representatives in midterm elections.
 :::
 
 ### Observed statistic vs. null statistics
 
 As the final step in a mathematical hypothesis test for the slope, we use the information provided to make a conclusion about whether or not the data could have come from a population where the true slope was zero (i.e., $\beta_1 = 0$).
 Before evaluating the formal hypothesis claim, sometimes it is important to check your intuition.
-Based on everything we've seen in the examples above describing the variability of a line from sample to sample, as yourself if the linear relationship given by the data could have come from a population in which the slope was truly zero.
+Based on everything we've seen in the examples above describing the variability of a line from sample to sample, ask yourself if the linear relationship given by the data could have come from a population in which the slope was truly zero.
 
 ::: {.workedexample data-latex=""}
 Examine Figure \@ref(fig:elmhurstScatterWLSROnly-CLTsection), which relates the Elmhurst College aid and student family income.
@@ -666,9 +676,14 @@ d$gift_aid <- d$gift_aid * 1000
 d$family_income <- d$family_income * 1000
 lm(gift_aid ~ family_income, d) %>%
   tidy() %>%
-  kbl(booktabs = TRUE, caption = "Summary of least squares fit for the Elmhurst College data, where we are predicting the gift aid by the university based on the family income of students.") %>%
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+  kbl(linesep = "", booktabs = TRUE, 
+      caption = "Summary of least squares fit for the Elmhurst College data, where we are predicting the gift aid by the university based on the family income of students.",
+      digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"))
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "17em", monospace = TRUE) %>%
+  column_spec(2:5, width = "5em")
 ```
 
 ::: {.guidedpractice data-latex=""}
@@ -692,7 +707,7 @@ However, be aware that software will not generally check whether the method is a
 See Section \@ref(tech-cond-linmod).
 :::
 
-## Mathematical model, interval for $\beta_1$
+## Mathematical model, interval for the slope
 
 ### Observed data
 
@@ -1003,20 +1018,14 @@ If you are working with linear models or curious to learn more, we recommend tha
 
 ### Summary
 
-Throughout the text, we have presented a modern view to introduction to statistics.
-Early we presented graphical techniques which communicated relationships across multiple variables.
+Recall that early in the text we presented graphical techniques which communicated relationships across multiple variables.
 We also used modeling to formalize the relationships.
 Many chapters were dedicated to inferential methods which allowed claims about the population to be made based on samples of data.
 Not only did we present the mathematical model for each of the inferential techniques, but when appropriate, we also presented bootstrapping and permutation methods.
-In Chapter \@ref{inference-reg} we brought many of the ideas together by considering inferential claims on models which include many variables.
+
+Here in Chapter \@ref(inf-model-slr) we brought all of those ideas together by considering inferential claims on linear models through randomization tests, bootstrapping, and mathematical modeling.
 We continue to emphasize the importance of experimental design in making conclusions about research claims.
 In particular, recall that variability can come from different sources (e.g., random sampling vs. random allocation, see Figure \@ref(fig:randsampValloc)).
-
-As you might guess, this text has only scratched the surface of the world of statistical analyses that can be applied to different datasets.
-In particular, to do justice to the topic, the linear models and generalized linear models we have introduced can each be covered with their own course or book.
-Hierarchical models, alternative methods for fitting parameters (e.g., Ridge Regression or LASSO), and advanced computational methods applied to models (e.g., permuting the response variable? one explanatory variable? all the explanatory variables?) are all beyond the scope of this book.
-However, your successful understanding of the ideas we have covered has set you up perfectly to move on to a higher level of statistical modeling and inference.
-Enjoy!
 
 ### Terms
 
