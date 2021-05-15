@@ -124,7 +124,7 @@ Our discussion will focus on interpreting coefficients (and their signs) in rela
 Consider an example where we'd like to predict how much money is in a coin dish based only on the number of coins in the dish.
 We ask 26 students to tell us about their individual coin dishes, collecting data on the total dollar amount, the total number of coins, and the total number of low coins.[^inf-model-mlr-2]
 The number of low coins is the number of coins minus the number of quarters (a quarter is the largest commonly used US coin, at US\$0.25).
-Figure \@ref(fig:money) illustrates a sample of U.S. coins, their total worth (`amount`), the total `number of coins`, and the `number of low coins`.
+Figure \@ref(fig:money) illustrates a sample of U.S. coins, their total worth (`total_amount`), the total `number of coins`, and the `number of low coins`.
 
 [^inf-model-mlr-2]: In all honesty, this particular dataset is fabricated, and the original idea for the problem comes from Jeff Witmer at Oberlin College.
 
@@ -134,10 +134,10 @@ include_graphics("images/money.png")
 
 (ref:money-cap) A sample of coins with 16 total coins, 10 low coins, and a net worth of \$1.90.
 
-The collected data is given in Figure \@ref(fig:coinfig) and shows that the total `amount` of money is more highly correlated with the total `number of coins` than it is with the `number of low coins`.
+The collected data is given in Figure \@ref(fig:coinfig) and shows that the `total_amount` of money is more highly correlated with the total `number of coins` than it is with the `number of low coins`.
 We also note that the total `number of coins` and the `number of low coins` are positively correlated.
 
-```{r coinfig, fig.cap = "Plot describing the amount of money (USD) as a fucntion of the number of coins and the number of low coins. As you might expect, the amount of money is more highly postively correlated with the total number of coins than with the number of low coins."}
+```{r coinfig, fig.cap = "Plot describing the total amount of money (USD) as a function of the number of coins and the number of low coins. As you might expect, the total amount of money is more highly postively correlated with the total number of coins than with the number of low coins."}
 # Data are simulated
 money <- tibble(
   number_of_coins = c(9, 10, 3, 5, 10, 37, 28, 9, 11, 4, 6, 17, 15, 7, 9, 1, 5, 9, 36, 30, 47, 13, 5, 7, 18, 16),
@@ -147,23 +147,23 @@ money <- tibble(
 
 p1 <- ggplot(money, aes(y = total_amount, x = number_of_coins)) +
   geom_point() +
-  labs(x = "Number of coins", y = "Total amount ($)")
+  labs(x = "Number of coins", y = "Total amount (USD)")
 
 p2 <- ggplot(money, aes(y = total_amount, x = number_of_low_coins)) +
   geom_point() +
-  labs(x = "Number of low coins", y = "Total amount ($)")
+  labs(x = "Number of low coins", y = "Total amount (USD)")
 
 p1 + p2
 ```
 
 Using the total `number of coins` as the predictor variable, Table \@ref(tab:coinhigh) provides the least squares estimate of the coefficient is 0.13.
 For every additional coin in the dish, we would predict that the student had US\$0.13 more.
-The $b_1 = 0.13$ coefficient is highly significant, suggesting we would not have seen data like this if `number of coins` and `amount` of money were not linearly related.
+The $b_1 = 0.13$ coefficient is highly significant, suggesting we would not have seen data like this if `number of coins` and `total_amount` of money were not linearly related.
 
-$$\widehat{\texttt{amount}} = 0.55 + 0.13 \times \texttt{number of coins}$$
+$$\widehat{\texttt{total_amount}} = 0.55 + 0.13 \times \texttt{number_of_coins}$$
 
 ```{r coinhigh}
-lm(amount ~ number_of_coins, data = money) %>%
+lm(total_amount ~ number_of_coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
   kbl(
@@ -181,12 +181,12 @@ lm(amount ~ number_of_coins, data = money) %>%
 
 Using the `number of low coins` as the predictor variable, Table \@ref(tab:coinlow) provides the least squares estimate of the coefficient is 0.02.
 For every additional low coin in the dish, we would predict that the student had US\$0.02 more.
-The $b_1 = 0.02$ coefficient is not at all significant, suggesting we could easily have seen data like ours even if the `number of low coins` and `amount` of money are not at all linearly related.
+The $b_1 = 0.02$ coefficient is not at all significant, suggesting we could easily have seen data like ours even if the `number of low coins` and `total_amount` of money are not at all linearly related.
 
-$$\widehat{\texttt{amount}} = 2.28 + 0.02 \times \texttt{number of low coins}$$
+$$\widehat{\texttt{total_amount}} = 2.28 + 0.02 \times \texttt{number_of_low_coins}$$
 
 ```{r coinlow}
-lm(amount ~ number_of_low_coins, data = money) %>%
+lm(total_amount ~ number_of_low_coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
   kbl(
@@ -204,11 +204,11 @@ lm(amount ~ number_of_low_coins, data = money) %>%
 
 ::: {.workedexample data-latex=""}
 Come up with an example of two observations that have the same number of low coins but the number of total coins differs by one.
-What is the difference in amount?
+What is the difference in total amount?
 
 ------------------------------------------------------------------------
 
-Two samples of coins with the same number of low coins (3), but a different number of total coins (4 vs 5) and a different total amount (\$0.41 vs \$0.66).
+Two samples of coins with the same number of low coins (3), but a different number of total coins (4 vs 5) and a different total total amount (\$0.41 vs \$0.66).
 
 ```{r lowsame}
 knitr::include_graphics("images/lowsame.png")
@@ -217,11 +217,11 @@ knitr::include_graphics("images/lowsame.png")
 
 ::: {.workedexample data-latex=""}
 Come up with an example of two observations that have the same total number of coins but a different number of low coins.
-What is the difference in amount?
+What is the difference in total amount?
 
 ------------------------------------------------------------------------
 
-Two samples of coins with the same total number of coins (4), but a different number of low coins (3 vs 4) and a different total amount (\$0.41 vs \$0.17).
+Two samples of coins with the same total number of coins (4), but a different number of low coins (3 vs 4) and a different total total amount (\$0.41 vs \$0.17).
 
 ```{r totalsame}
 knitr::include_graphics("images/totalsame.png")
@@ -237,12 +237,12 @@ Now, with two variables in the model, the interpretation is more nuanced.
 
 Considering the coefficients across Tables \@ref(tab:coinhigh), \@ref(tab:coinlow), and \@ref(tab:coinhighlow) within the context and knowledge we have of US coins allows us to understand the correlation between variables and why the signs of the coefficients would change depending on the model.
 Note also, however, that the significance on the `number of low coins` coefficient changed from Table \@ref(tab:coinlow) to Table \@ref(tab:coinhighlow).
-It makes sense that the variable describing the `number of low coins` provides more information about the `amount` of money when it is part of a model which also includes the total `number of coins` than it does when it is used as a single variable in a simple linear regression model.
+It makes sense that the variable describing the `number of low coins` provides more information about the `total_amount` of money when it is part of a model which also includes the total `number of coins` than it does when it is used as a single variable in a simple linear regression model.
 
-$$\widehat{\texttt{amount}} = 0.80 + 0.21 \times \texttt{number of coins} - 0.16 \times \texttt{number of low coins}$$
+$$\widehat{\texttt{total_amount}} = 0.80 + 0.21 \times \texttt{number_of_coins} - 0.16 \times \texttt{number of low coins}$$
 
 ```{r coinhighlow}
-lm(amount ~ number_of_coins + number_of_low_coins, data = money) %>%
+lm(total_amount ~ number_of_coins + number_of_low_coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
   kbl(
