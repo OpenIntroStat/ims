@@ -66,9 +66,9 @@ Using a few different case studies, let's look more carefully at this idea of a 
 terms_chp_12 <- c(terms_chp_12, "randomization test")
 ```
 
-## Gender discrimination case study {#caseStudyGenderDiscrimination}
+## Sex discrimination case study {#caseStudyGenderDiscrimination}
 
-We consider a study investigating gender discrimination in the 1970s, which is set in the context of personnel decisions within a bank.[^foundations-randomization-2]
+We consider a study investigating sex discrimination in the 1970s, which is set in the context of personnel decisions within a bank.[^foundations-randomization-2]
 The research question we hope to answer is, "Are individuals who identify as female discriminated against in promotion decisions made by their managers who identify as male?"
 
 [^foundations-randomization-2]: Rosen B and Jerdee T.
@@ -96,7 +96,7 @@ How does the type of study impact what can be inferred from the results?[^founda
 :::
 
 [^foundations-randomization-4]: The study is an experiment, as subjects were randomly assigned a "male" file or a "female" file (remember, all the files were actually identical in content).
-    Since this is an experiment, the results can be used to evaluate a causal relationship between gender of a candidate and the promotion decision.
+    Since this is an experiment, the results can be used to evaluate a causal relationship between the sex of a candidate and the promotion decision.
 
 ```{r gender-discrimination-obs-p}
 gender_discrimination_props <- gender_discrimination %>% 
@@ -151,7 +151,7 @@ When looking at the rates of promotion in this study, why might we be tempted to
 
 The large difference in promotion rates (`r perc_female` for female personnel versus `r perc_male` for male personnel) suggest there might be discrimination against women in promotion decisions.
 However, we cannot yet be sure if the observed difference represents discrimination or is just due to random chance when there is no discrimination occurring.
-Since we wouldn't expect the sample proportions to be *exactly* equal, even if the truth was that the promotion decisions were independent of gender, we can't rule out random chance as a possible explanation when simply comparing the sample proportions.
+Since we wouldn't expect the sample proportions to be *exactly* equal, even if the truth was that the promotion decisions were independent of sex, we can't rule out random chance as a possible explanation when simply comparing the sample proportions.
 :::
 
 The previous example is a reminder that the observed outcomes in the sample may not perfectly reflect the true relationships between variables in the underlying population.
@@ -218,13 +218,13 @@ We can actually perform this **randomization**, which simulates what would have 
 terms_chp_12 <- c(terms_chp_12, "permutation test")
 ```
 
-In the **simulation**\index{simulation}, we thoroughly shuffle 48 personnel files, 35 labelled `promoted` and 13 labelled `not promoted`, and we deal files into two stacks.
-Note that by keeping 35 promoted and 13 not promoted, we are assuming that 35 of the bank managers would have promoted the individual whose content is contained in the file **independent** of gender.
+In the **simulation**\index{simulation}, we thoroughly shuffle the 48 personnel files, 35 labelled `promoted` and 13 labelled `not promoted`, together and we deal files into two new stacks.
+Note that by keeping 35 promoted and 13 not promoted, we are assuming that 35 of the bank managers would have promoted the individual whose content is contained in the file **independent** of the sex indicated on their file.
 We will deal 24 files into the first stack, which will represent the 24 "female" files.
 The second stack will also have 24 files, and it will represent the 24 "male" files.
-Figure \@ref(fig:gender-rand-shuffle-1) highlights both the shuffle and the reallocation to the sham gender groups.
+Figure \@ref(fig:gender-rand-shuffle-1) highlights both the shuffle and the reallocation to the sham sex groups.
 
-```{r gender-rand-shuffle-1, out.width = "80%", fig.cap = "The gender descriminiation data is shuffled and reallocated to the gender groups."}
+```{r gender-rand-shuffle-1, out.width = "80%", fig.cap = "The sex descriminiation data is shuffled and reallocated to new groups of male and female files."}
 knitr::include_graphics("images/gender-rand-02-shuffle-1.png")
 ```
 
@@ -239,17 +239,17 @@ Table \@ref(tab:gender-discrimination-rand-1) show the results of one such simul
 
 ```{r gender-discrimination-rand-1}
 gender_discrimination_rand_1 <- tibble(
-  gender   = c(rep("male", 24), rep("female", 24)),
+  sex   = c(rep("male", 24), rep("female", 24)),
   decision = c(rep("promoted", 18), rep("not promoted", 6),
                rep("promoted", 17), rep("not promoted", 7))
 ) %>%
   mutate(
-    gender   = fct_relevel(gender, "male", "female"),
+    sex   = fct_relevel(sex, "male", "female"),
     decision = fct_relevel(decision, "promoted", "not promoted")
   )
   
 gender_discrimination_rand_1 %>% 
-  count(decision, gender) %>% 
+  count(decision, sex) %>% 
   pivot_wider(names_from = decision, values_from = n) %>%
   adorn_totals(where = c("col", "row")) %>% 
   kbl(linesep = "", booktabs = TRUE, caption = "Simulation results, where the difference in promotion rates between male and female is purely due to random chance.") %>%
@@ -264,7 +264,7 @@ What is the difference in promotion rates between the two simulated groups in Ta
 How does this compare to the observed difference 29.2% from the actual study?[^foundations-randomization-6]
 :::
 
-[^foundations-randomization-6]: $18/24 - 17/24=0.042$ or about 4.2% in favor of the men.
+[^foundations-randomization-6]: $18/24 - 17/24=0.042$ or about 4.2% in favor of the male personnel.
     This difference due to chance is much smaller than the difference observed in the actual groups.
 
 Figure \@ref(fig:gender-rand-shuffle-1-sort) shows that the difference in promotion rates is much larger in the original data than it is in the simulated groups (0.292 \>\>\> 0.042).
@@ -286,7 +286,7 @@ We computed one possible difference under the null hypothesis in Guided Practice
 While in this first simulation, we physically dealt out files, it is much more efficient to perform this simulation using a computer.
 Repeating the simulation on a computer, we get another difference due to chance: -0.042.
 And another: 0.208.
-And so on until we repeat the simulation enough times that we have a good idea of the shape of the *distribution of differences from chance alone*.
+And so on until we repeat the simulation enough times that we have a good idea of the shape of the *distribution of differences* under the null hypothesis.
 Figure \@ref(fig:gender-rand-dot-plot) shows a plot of the differences found from 100 simulations, where each dot represents a simulated difference between the proportions of male and female files recommended for promotion.
 
 ```{r gender-rand-dot-plot, fig.cap="(ref:gender-rand-dot-plot-cap)", out.width = "100%"}
@@ -314,10 +314,11 @@ gender_discrimination %>%
   )
 ```
 
-(ref:gender-rand-dot-plot-cap) A stacked dot plot of differences from 100 simulations produced under the null hypothesis, $H_0,$ where the simulated gender and decision are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study, and are shown as solid red dots.
+(ref:gender-rand-dot-plot-cap) A stacked dot plot of differences from 100 simulations produced under the null hypothesis, $H_0,$ where the simulated sex and decision are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study, and are shown as solid red dots.
 
 Note that the distribution of these simulated differences in proportions is centered around 0.
-Because we simulated differences in a way that made no distinction between men and women, this makes sense: we should expect differences from chance alone to fall around zero with some random fluctuation for each simulation.
+Under the null hypothesis our simulations made no distinction between male and female personnel files.
+Thus, a center of 0 makes sense: we should expect differences from chance alone to fall around zero with some random fluctuation for each simulation.
 
 ::: {.workedexample data-latex=""}
 How often would you observe a difference of at least `r perc_diff` (`r p_diff`) according to Figure \@ref(fig:gender-rand-dot-plot)?
@@ -325,18 +326,18 @@ Often, sometimes, rarely, or never?
 
 ------------------------------------------------------------------------
 
-It appears that a difference of at least `r perc_diff` due to chance alone would only happen about 2% of the time according to Figure \@ref(fig:gender-rand-dot-plot).
+It appears that a difference of at least `r perc_diff` under the null hypothesis would only happen about 2% of the time according to Figure \@ref(fig:gender-rand-dot-plot).
 Such a low probability indicates that observing such a large difference from chance alone is rare.
 :::
 
-The difference of 29.2% is a rare event if there really is no impact from listing gender in the candidates' files, which provides us with two possible interpretations of the study results:
+The difference of 29.2% is a rare event if there really is no impact from listing sex in the candidates' files, which provides us with two possible interpretations of the study results:
 
--   If $H_0,$ the **Null hypothesis** is true: Gender has no effect on promotion decision, and we observed a difference that is so large that it would only happen rarely.
+-   If $H_0,$ the **Null hypothesis** is true: Sex has no effect on promotion decision, and we observed a difference that is so large that it would only happen rarely.
 
--   If $H_A,$ the **Alternative hypothesis** is true: Gender has an effect on promotion decision, and what we observed was actually due to equally qualified women being discriminated against in promotion decisions, which explains the large difference of 29.2%.
+-   If $H_A,$ the **Alternative hypothesis** is true: Sex has an effect on promotion decision, and what we observed was actually due to equally qualified female candidates being discriminated against in promotion decisions, which explains the large difference of 29.2%.
 
 When we conduct formal studies, we reject a null position (the idea that the data are a result of chance only) if the data strongly conflict with that null position.[^foundations-randomization-7]
-In our analysis, we determined that there was only a $\approx$ 2% probability of obtaining a sample where $\geq$ 29.2% more males than females get promoted by chance alone, so we conclude that the data provide strong evidence of gender discrimination against women by the supervisors.
+In our analysis, we determined that there was only a $\approx$ 2% probability of obtaining a sample where $\geq$ 29.2% more male candidates than female candidates get promoted under the null hypothesis, so we conclude that the data provide strong evidence of sex discrimination against female candidates by the male supervisors.
 In this case, we reject the null hypothesis in favor of the alternative.
 
 [^foundations-randomization-7]: This reasoning does not generally extend to anecdotal observations.
