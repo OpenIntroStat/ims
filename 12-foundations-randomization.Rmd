@@ -100,16 +100,17 @@ How does the type of study impact what can be inferred from the results?[^founda
 
 ```{r gender-discrimination-obs-p}
 gender_discrimination_props <- gender_discrimination %>% 
-  count(gender, decision) %>%
-  group_by(gender) %>%
+  rename(sex = gender) %>% 
+  count(sex, decision) %>%
+  group_by(sex) %>%
   mutate(p = n / sum(n))
 
 p_male <- gender_discrimination_props %>%
-  filter(gender == "male", decision == "promoted") %>%
+  filter(sex == "male", decision == "promoted") %>%
   pull(p)
 
 p_female <- gender_discrimination_props %>%
-  filter(gender == "female", decision == "promoted") %>%
+  filter(sex == "female", decision == "promoted") %>%
   pull(p)
 
 p_diff <- p_male - p_female
@@ -125,7 +126,7 @@ In this study, a smaller proportion of female identifying applications were prom
 
 ```{r gender-discrimination-obs}
 gender_discrimination %>% 
-  count(decision, gender) %>% 
+  count(decision, sex) %>% 
   pivot_wider(names_from = decision, values_from = n) %>%
   adorn_totals(where = c("col", "row")) %>% 
   kbl(linesep = "", booktabs = TRUE, caption = "Summary results for the sex discrimination study.") %>%
@@ -292,7 +293,7 @@ Figure \@ref(fig:gender-rand-dot-plot) shows a plot of the differences found fro
 ```{r gender-rand-dot-plot, fig.cap="(ref:gender-rand-dot-plot-cap)", out.width = "100%"}
 set.seed(35)
 gender_discrimination %>%
-  specify(decision ~ gender, success = "promoted") %>%
+  specify(decision ~ sex, success = "promoted") %>%
   hypothesize(null = "independence") %>%
   generate(reps = 100, type = "permute") %>%
   calculate(stat = "diff in props", order = c("male", "female")) %>%
