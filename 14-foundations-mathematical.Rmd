@@ -50,7 +50,7 @@ medical_consultant_sim_dist <- tibble(stat = rbinom(10000, 62, 0.1)/62)
 tappers_listeners_sim_dist <- tibble(stat = rbinom(10000, 120, 0.5)/120)
 ```
 
-```{r FourCaseStudies, fig.cap = "The null distribution for each of the four case studies presented previously. Note that the center of each distribution is given by the value of the parameter set in the null hypothesis.", fig.asp = 0.8}
+```{r FourCaseStudies, fig.cap = "The null distribution for each of the four case studies presented previously. Note that the center of each distribution is given by the value of the parameter set in the null hypothesis.", fig.asp = 0.7}
 
 # opportunity cost -------------------------------------------------------------
 
@@ -116,13 +116,9 @@ Describe the shape of the distributions and note anything that you find interest
     The case study for the medical consultant is the only distribution with any evident skew (the distribution is skewed right).
 
 The case study for the medical consultant is the only distribution with any evident skew.
-
 As we observed in Chapter \@ref(data-hello), it's common for distributions to be skewed or contain outliers.
-
 However, the null distributions we've so far encountered have all looked somewhat similar and, for the most part, symmetric.
-
 They all resemble a bell-shaped curve.
-
 The bell-shaped curve similarity is not a coincidence, but rather, is guaranteed by mathematical theory.
 
 ::: {.important data-latex=""}
@@ -141,7 +137,7 @@ Imagine laying a normal curve over each of the four null distributions in Figure
 
 While the mean (center) and standard deviation (width or spread) may change for each plot, the general shape remains roughly intact.
 
-```{r simpleNormal, fig.cap = "A normal curve.", fig.asp = 0.4}
+```{r simpleNormal, fig.cap = "A normal curve.", fig.asp = 0.5, out.width="60%"}
 normTail(axes = FALSE)
 ```
 
@@ -213,7 +209,7 @@ Here again we can apply the normal distribution, this time in the context of num
 We'll explore this example and construct such a hypothesis test in Chapter \@ref(inference-paired-means).
 :::
 
-```{r diffInTextbookPricesF18-CLTsection, fig.cap = "Histogram of the difference in price for each book sampled. These data are strongly skewed.", fig.width = 10, message = FALSE}
+```{r diffInTextbookPricesF18-CLTsection, fig.cap = "Histogram of the difference in price for each book sampled. These data are strongly skewed."}
 ggplot(ucla_textbooks_f18, aes(x = diff)) +
   geom_histogram(binwidth = 10) +
   labs(
@@ -290,7 +286,7 @@ Figure \@ref(fig:twoSampleNormals) shows the normal distribution with mean $0$ a
 A normal distributions with mean $19$ and standard deviation $4$ is shown on the bottom.
 Figure \@ref(fig:twoSampleNormalsStacked) shows the same two normal distributions on the same axis.
 
-```{r twoSampleNormals, fig.cap = "Both curves represent the normal distribution, however, they differ in their center and spread. The normal distribution with mean 0 and standard deviation 1 (blue solid line, on the left) is called the **standard normal distribution**. The other distribution (green dashed line, on the right) has mean 19 and standard deviation 4.", fig.asp = 0.4, out.width = "100%"}
+```{r twoSampleNormals, fig.cap = "Both curves represent the normal distribution, however, they differ in their center and spread. The normal distribution with mean 0 and standard deviation 1 (blue solid line, on the left) is called the **standard normal distribution**. The other distribution (green dashed line, on the right) has mean 19 and standard deviation 4.", fig.asp = 0.3, out.width = "100%"}
 normals <- tibble(
   x = c(rnorm(100000, mean = 0, sd = 1), rnorm(100000, mean = 19, sd = 4)),
   group = c(rep(1, 100000), rep(2, 100000))
@@ -365,9 +361,9 @@ Who performed better?[^foundations-mathematical-4]
 :::
 
 [^foundations-mathematical-4]: We use the standard deviation as a guide.
-    Nel is 1 standard deviation above average on the SAT: $1500 + 300=1800.$ Sian is 0.6 standard deviations above the mean on the ACT: $21+0.6\times 5=24.$ In Figure \@ref(fig:satActNormals), we can see that Nel tends to do better with respect to everyone else than Sian did, so their score was better.
+    Nel is 1 standard deviation above average on the SAT: $1500 + 300 = 1800.$ Sian is 0.6 standard deviations above the mean on the ACT: $21+0.6 \times 5 = 24.$ In Figure \@ref(fig:satActNormals), we can see that Nel did better compared to other test takers than Sian did, so their score was better.
 
-```{r satActNormals, fig.cap = "Nel's and Sian's scores shown with the distributions of SAT and ACT scores.", fig.asp = 0.5}
+```{r satActNormals, fig.cap = "Nel's and Sian's scores shown with the distributions of SAT and ACT scores."}
 sat_mean <- 1500
 sat_sd   <- 300
 act_mean <- 21
@@ -378,7 +374,7 @@ tests <- tibble(
   test  = c(rep("SAT", 100000), rep("ACT", 100000))
 )
 
-ggplot(tests %>% filter(test == "SAT"), aes(x = score)) +
+p_sat <- ggplot(tests %>% filter(test == "SAT"), aes(x = score)) +
   geom_function(fun = dnorm, args = list(mean = sat_mean, sd = sat_sd), color = IMSCOL["black", "full"]) +
   labs(y = NULL, x = NULL) +
   theme(
@@ -394,7 +390,7 @@ ggplot(tests %>% filter(test == "SAT"), aes(x = score)) +
   annotate("text", x = 1800, y = 0.0011, label = "Nel", color = IMSCOL["blue", "full"]) +
   coord_cartesian(xlim = sat_mean + c(-1,1)*4*sat_sd)
 
-ggplot(tests %>% filter(test == "ACT"), aes(x = score)) +
+p_act <- ggplot(tests %>% filter(test == "ACT"), aes(x = score)) +
   geom_function(fun = dnorm, args = list(mean = act_mean, sd = act_sd), 
                 color = IMSCOL["black", "full"]) +
   labs(y = NULL, x = NULL) +
@@ -410,6 +406,9 @@ ggplot(tests %>% filter(test == "ACT"), aes(x = score)) +
   annotate("segment", x = act_mean - 4*act_sd, xend = act_mean + 4*act_sd, y = 0, yend = 0, color = IMSCOL["black", "full"]) +
   annotate("text", x = 24, y = 0.08, label = "Sian", color = IMSCOL["green", "full"]) +
   coord_cartesian(xlim = act_mean + c(-1,1)*4*act_sd)
+
+p_sat /
+  p_act
 ```
 
 The solution to the previous example relies on a standardization technique called a Z score, a method most commonly employed for nearly normal observations (but that may be used with any distribution).
@@ -491,7 +490,7 @@ In other words, Nel is in the $84^{th}$ percentile of SAT takers.
 terms_chp_14 <- c(terms_chp_14, "percentile")
 ```
 
-```{r satBelow1800, fig.cap = "The normal model for SAT scores, shading the area of those individuals who scored below Nel.", fig.asp = 0.5}
+```{r satBelow1800, fig.cap = "The normal model for SAT scores, shading the area of those individuals who scored below Nel.", fig.asp = 0.5, out.width="60%"}
 normTail(m = 1500, s = 300, L = 1800, col = IMSCOL["blue", "full"])
 ```
 
@@ -509,7 +508,7 @@ For instance, the percentile of $Z=0.43$ is 0.6664, or the $66.64^{th}$ percenti
 The `pnorm()` function is available in default R and will provide the percentile associated with any cutoff on a normal curve.
 The `normTail()` function is available in the [**openintro**](http://openintrostat.github.io/openintro/) R package and will draw the associated normal distribution curve.
 
-```{r echo = TRUE, fig.asp = 0.5}
+```{r echo = TRUE, fig.asp = 0.5, out.width="60%"}
 pnorm(0.43, mean = 0, sd = 1)
 normTail(m = 0, s = 1, L = 0.43)
 ```
@@ -520,7 +519,7 @@ The quantile represents the cutoff value.
 (To remember the function `qnorm()` as providing a cutoff, notice that both `qnorm()` and "cutoff" start with the sound "kuh".
 To remember the `pnorm()` function as providing a probability from a given cutoff, notice that both `pnorm()` and probability start with the sound "puh".) We determine the Z score for the $80^{th}$ percentile using `qnorm()`: 0.84.
 
-```{r echo = TRUE, fig.asp = 0.5}
+```{r echo = TRUE, fig.asp = 0.5, out.width="60%"}
 qnorm(0.80, mean = 0, sd = 1)
 openintro::normTail(m = 0, s = 1, L = 0.842)
 ```
@@ -531,6 +530,8 @@ Determine the proportion of SAT test takers who scored better than Nel on the SA
 
 [^foundations-mathematical-8]: If 84% had lower scores than Nel, the number of people who had better scores must be 16%.
     (Generally ties are ignored when the normal model, or any other continuous distribution, is used.)
+
+\clearpage
 
 ### Normal probability examples
 
@@ -557,46 +558,48 @@ However, the percentile describes those who had a Z score *lower* than 0.43.
 To find the area *above* $Z=0.43,$ we compute one minus the area of the lower tail, as seen below.
 
 The probability Shannon scores at least 1630 on the SAT is 0.3336.
+This calculation is visualized in Figure \@ref(fig:subtractingArea).
 :::
 
-```{r satAbove1630, fig.asp = 0.5}
+```{r subtractingArea, fig.cap = "Visual calculation of the probability that Shannon scores at least 1630 on the SAT."}
+par_og <- par(no.readonly = TRUE) # save original par
+par(mar = c(0, 0, 0, 0), mfrow = c(2, 1))
+
 normTail(m = 1500, s = 300, U = 1630, col = IMSCOL["blue", "full"])
-```
 
-```{r subtractingArea, fig.asp = 0.3}
-par(las=1, mar=c(0,0,0,0), mgp=c(3,-0.2,0), mfrow=c(1,1))
-X <- seq(-3.2,3.2,0.01)
+X <- seq(-3.2, 3.2, 0.01)
 Y <- dnorm(X)
-plot(X, Y, type='l', axes=F, xlim=c(-3.4,16+3.4), ylim=c(0, 0.652))
-lines(X, rep(0,length(X)))
+plot(X, Y, type = "l", axes = F, xlim = c(-3.4, 16 + 3.4), ylim = c(0, 0.652))
+lines(X, rep(0, length(X)))
 these <- which(X <= 8)
-polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=IMSCOL["blue", "full"])
+polygon(c(X[these[1]], X[these], X[rev(these)[1]]), c(0, Y[these], 0), col = IMSCOL["blue", "full"])
 lines(X, Y)
-#abline(h=0)
-lines(c(0,0), dnorm(0)*c(0.01,0.99), col=COL[6], lty=3)
-lines(c(3,8-3), c(0.2,0.2), lwd=3)
-text(0, 0.58, format(c(1, 0.0001), scientific=FALSE)[1], cex=2)
-lines(X+8, Y, type='l', xlim=c(-3.4,3.4))
-lines(X+8, rep(0,length(X)))
+# abline(h=0)
+lines(c(0, 0), dnorm(0) * c(0.01, 0.99), col = COL[6], lty = 3)
+lines(c(3, 8 - 3), c(0.2, 0.2), lwd = 3)
+text(0, 0.45, format(c(1, 0.0001), scientific = FALSE, digits = 4)[1], cex = 1)
+lines(X + 8, Y, type = "l", xlim = c(-3.4, 3.4))
+lines(X + 8, rep(0, length(X)))
 these <- which(X <= 0.43)
-polygon(c(X[these[1]], X[these],X[rev(these)[1]])+8, c(0,Y[these],0), col=IMSCOL["blue", "full"])
-lines(X+8, Y)
-lines(c(0,0), dnorm(0)*c(0.01,0.99), col=COL[6], lty=3)
-lines(8+c(3,8-3), c(0.23,0.23), lwd=3)
-lines(8+c(3,8-3), c(0.17,0.17), lwd=3)
-lines(c(3.72, 4.28), rep(0.58, 2), lwd=2)
-text(8, 0.58, format(0.6664, scientific=FALSE)[1], cex=2)
-lines(X+8+8, Y, type='l', xlim=c(-3.4,3.4))
-lines(X+8+8, rep(0,length(X)))
+polygon(c(X[these[1]], X[these], X[rev(these)[1]]) + 8, c(0, Y[these], 0), col = IMSCOL["blue", "full"])
+lines(X + 8, Y)
+lines(c(0, 0), dnorm(0) * c(0.01, 0.99), col = COL[6], lty = 3)
+lines(8 + c(3, 8 - 3), c(0.23, 0.23), lwd = 3)
+lines(8 + c(3, 8 - 3), c(0.17, 0.17), lwd = 3)
+lines(c(3.72, 4.28), rep(0.45, 2), lwd = 2)
+text(8, 0.45, format(0.6664, scientific = FALSE, digits = 4)[1], cex = 1)
+lines(X + 8 + 8, Y, type = "l", xlim = c(-3.4, 3.4))
+lines(X + 8 + 8, rep(0, length(X)))
 these <- which(X > 0.43)
-polygon(c(X[these[1]], X[these],X[rev(these)[1]])+8+8, c(0,Y[these],0), col=IMSCOL["blue", "full"])
-lines(X+8+8, Y)
-lines(c(0,0), dnorm(0)*c(0.01,0.99), col=COL[6], lty=3)
-text(12, 0.58, '=', cex=2)
-text(16, 0.58, format(0.3336, scientific=FALSE)[1], cex=2)
+polygon(c(X[these[1]], X[these], X[rev(these)[1]]) + 8 + 8, c(0, Y[these], 0), col = IMSCOL["blue", "full"])
+lines(X + 8 + 8, Y)
+lines(c(0, 0), dnorm(0) * c(0.01, 0.99), col = COL[6], lty = 3)
+text(12, 0.45, "=", cex = 1.5)
+text(16, 0.45, format(0.3336, scientific = FALSE, digits = 4)[1], cex = 1)
+par(par_og) # restore original par
 ```
 
-::: {.tip}
+::: {.tip data-latex=""}
 **Always draw a picture first, and find the Z score second.**
 
 For any normal probability situation, *always always always* draw and label the normal curve and shade the area of interest first.
@@ -623,7 +626,7 @@ First, a picture is needed.
 Edward's percentile is the proportion of people who do not get as high as a 1400.
 These are the scores to the left of 1400.
 
-```{r fig.asp = 0.5}
+```{r fig.asp = 0.5, out.width="60%"}
 normTail(m = 1500, s = 300, L = 1400, col = IMSCOL["blue", "full"])
 ```
 
@@ -643,12 +646,12 @@ Also draw a new picture.
 
 If Edward did better than 37% of SAT takers, then about 63% must have done better than him.
 
-```{r fig.asp = 0.5}
+```{r fig.asp = 0.5, out.width="60%"}
 normTail(m = 1500, s = 300, U = 1400, col = IMSCOL["blue", "full"])
 ```
 :::
 
-::: {.tip}
+::: {.tip data-latex=""}
 **Areas to the right.**
 
 Most statistical software, as well as normal probability tables in most books, give the area to the left.
@@ -680,10 +683,12 @@ Also draw one picture for each part.
 Numerical answers, calculated using statistical software (e.g., `pnorm()` in R): (a) `r round(pnorm(67, mean = 70, sd = 3.3), 4) * 100`th percentile.
 (b) `r round(pnorm(76, mean = 70, sd = 3.3), 4) * 100`th percentile.
 
-```{r fig.asp = 0.5}
+```{r fig.asp=0.5, out.width="60%"}
 normTail(70, 3.3, L = 67, col = IMSCOL["blue", "full"])
 text(62, 0.07, "Kamron", cex = 1.5)
+```
 
+```{r fig.asp=0.5, out.width="60%"}
 normTail(70, 3.3, L = 76, col = IMSCOL["blue", "full"])
 text(62, 0.07, "Adrian", cex = 1.5)
 ```
@@ -700,9 +705,9 @@ How tall is he?
 
 As always, first draw the picture.
 
-```{r, fig.asp = 0.5}
+```{r, fig.asp = 0.5, out.width="60%"}
 normTail(70, 3.3, L = qnorm(0.4, 70, 3.3), col = IMSCOL["blue", "full"])
-text(67, 0.03, "40%\n(0.40)", cex = 1.5, col = IMSCOL["black", "full"])
+text(67, 0.03, "40%\n(0.40)", cex = 1, col = IMSCOL["black", "full"])
 ```
 
 In this case, the lower tail probability is known (0.40), which can be shaded on the diagram.
@@ -711,8 +716,6 @@ As a first step in this direction, we determine the Z score associated with the 
 
 Because the percentile is below 50%, we know $Z$ will be negative.
 Statistical software provides the $Z$ value to be $-0.25.$
-
-Here, we show the format for calculating the value of $Z$ using the R statistical software.
 
 ```{r echo = TRUE}
 qnorm(0.4, mean = 0, sd = 1)
@@ -733,10 +736,10 @@ What is the adult male height at the $82^{nd}$ percentile?
 
 Again, we draw the figure first.
 
-```{r height82Perc, fig.asp = 0.5}
+```{r height82Perc, fig.asp = 0.5, out.width="60%"}
 normTail(70, 3.3, L = qnorm(0.82, 70, 3.3), col = IMSCOL["blue", "full"])
-text(70, 0.04, "82%\n(0.82)", cex = 1.5, col = IMSCOL["black", "full"])
-text(74.3, 0.02, "18%\n(0.18)", cex = 1.25, col = IMSCOL["black", "full"])
+text(70, 0.04, "82%\n(0.82)", cex = 1, col = IMSCOL["black", "full"])
+text(74.3, 0.02, "18%\n(0.18)", cex = 1, col = IMSCOL["black", "full"])
 ```
 
 And calculate the Z value associated with the $82^{nd}$ percentile:
@@ -779,7 +782,7 @@ These heights correspond to 69 inches and 74 inches.
 First, draw the figure.
 The area of interest is no longer an upper or lower tail.
 
-```{r fig.asp = 0.5}
+```{r fig.asp = 0.5, out.width="60%"}
 normTail(70, 3.3, M = c(69, 74), col = IMSCOL["blue", "full"])
 ```
 
@@ -957,9 +960,9 @@ We can calculate the standard error of this distribution by borrowing a formula 
 Recall that the point estimate of the difference was 0.20, as shown in Figure \@ref(fig:OpportunityCostDiffs-w-normal).
 Next, we'll use the normal distribution approach to compute the p-value.
 
-```{r OpportunityCostDiffs-w-normal, fig.cap = "Null distribution of differences with an overlaid normal curve for the opportunity cost study. 10,000 simulations were run for this figure.", out.width = "100%", fig.width = 8}
+```{r OpportunityCostDiffs-w-normal, fig.cap = "Null distribution of differences with an overlaid normal curve for the opportunity cost study. 10,000 simulations were run for this figure.", fig.width=7}
 ggplot(opportunity_cost_sim_dist, aes(x = stat)) +
-  geom_histogram(aes(y = ..density..), binwidth = 0.013) +
+  geom_histogram(aes(y = ..density..), binwidth = 0.05) +
   geom_function(fun = dnorm, args = list(mean = 0, sd = sd(opportunity_cost_sim_dist$stat)), color = IMSCOL["black", "full"], size = 1) +
   scale_x_continuous(breaks = seq(-0.3, 0.3, 0.1), labels = label_number(accuracy = 0.1)) +
   theme(
@@ -969,7 +972,7 @@ ggplot(opportunity_cost_sim_dist, aes(x = stat)) +
     panel.grid.minor.x = element_blank()
   ) +
   labs(
-    x = expression('When H'[0]*' is true, simulated difference in proportions of students who do not buy the video'),
+    x = expression("When H"[0]*" is true, simulated difference in proportions of students who don't buy the video"),
     y = "Proportion of simulated scenarios"
   ) +
   annotate("segment", x = 0.2, y = 0, xend = 0.2, yend = 2, linetype = "dashed") +
@@ -981,7 +984,7 @@ ggplot(opportunity_cost_sim_dist, aes(x = stat)) +
 As we learned in Section \@ref(normalDist), it is helpful to draw and shade a picture of the normal distribution so we know precisely what we want to calculate.
 Here we want to find the area of the tail beyond 0.2, representing the p-value.
 
-```{r OpportunityCostDiffs_normal_only, fig.asp = 0.5}
+```{r OpportunityCostDiffs_normal_only, fig.asp = 0.5, out.width="60%"}
 normTail(m = 0, s = 0.078, U = 0.2, col = IMSCOL["blue", "full"])
 ```
 
@@ -1044,7 +1047,7 @@ ggplot(medical_consultant_sim_dist, aes(x = stat)) +
 As always, we'll draw a picture before finding the normal probabilities.
 Below is a normal distribution centered at 0.10 with a standard error of 0.038.
 
-```{r MedConsNullSim-normal-only, fig.asp = 0.5}
+```{r MedConsNullSim-normal-only, fig.asp = 0.5, out.width="60%"}
 normTail(m = 0.1, s = 0.038, L = 0.048, col = IMSCOL["blue", "full"])
 ```
 
@@ -1112,7 +1115,7 @@ Compute the area between -1.96 and 1.96 for a normal distribution with mean 0 an
 
 ::: {.workedexample data-latex=""}
 The point estimate from the opportunity cost study was that 20% fewer students would buy a video if they were reminded that money not spent now could be spent later on something else.
-The point estimate from this study can reasonably be modeled with a normal distribution, and a proper standard error for this point estimate is $SE = 0.078.$ Construct a 95% confidence interval.[^foundations-mathematical-19]
+The point estimate from this study can reasonably be modeled with a normal distribution, and a proper standard error for this point estimate is $SE = 0.078.$ Construct a 95% confidence interval.
 
 ------------------------------------------------------------------------
 
@@ -1122,11 +1125,11 @@ $$\text{point estimate} \pm 1.96 \times SE = 0.20 \pm 1.96 \times 0.078 = (0.047
 
 We are 95% confident that the video purchase rate resulting from the treatment is between 4.7% and 35.3% lower than in the control group.
 Since this confidence interval does not contain 0, it is consistent with our earlier result where we rejected the notion of "no difference" using a hypothesis test.
-:::
 
-[^foundations-mathematical-19]: We've used $SE = 0.078$ from the last section.
-    However, it would more generally be appropriate to recompute the $SE$ slightly differently for this confidence interval using the technique introduced in Section \@ref(math-2prop).
-    Don't worry about this detail for now since the two resulting standard errors are, in this case, almost identical.
+Note that we've used SE = 0.078 from the last section.
+However, it would more generally be appropriate to recompute the SE slightly differently for this confidence interval using sample proportions.
+Don't worry about this detail for now since the two resulting standard errors are, in this case, almost identical.
+:::
 
 ### Observed data
 
@@ -1170,7 +1173,7 @@ The interval which does not capture $p=0.3$ is not due to bad science.
 Instead, it is due to natural variability, and we should *expect* some of our intervals to miss the parameter of interest.
 Indeed, over a lifetime of creating 95% intervals, you should expect 5% of your reported intervals to miss the parameter of interest (unfortunately, you will not ever know which of your reported intervals captured the parameter and which missed the parameter).
 
-```{r 95PercentConfidenceInterval, fig.cap = "Twenty-five samples of size $n=300$ were collected from a population with $p = 0.30.$ For each sample, a confidence interval was created to try to capture the true proportion $p.$ However, 1 of these 25 intervals did not capture $p = 0.30.$"}
+```{r 95PercentConfidenceInterval, fig.cap = "Twenty-five samples of size $n=300$ were collected from a population with $p = 0.30.$ For each sample, a confidence interval was created to try to capture the true proportion $p.$ However, 1 of these 25 intervals did not capture $p = 0.30.$", fig.asp=0.5}
 set.seed(4747)
 num.sim <- 25
 n <- 300
@@ -1187,7 +1190,7 @@ plot(xR, yR,
 abline(v = p, lty = 2, col = IMSCOL["gray", "full"])
 axis(1,
   at = p + c(-0.05, 0, 0.05),
-  c("0.25", "p = 0.30", "0.35"), cex.axis = 1.15
+  c("0.25", "p = 0.30", "0.35"), cex.axis = 1
 )
 for (i in 1:num.sim) {
   ci <- p.hat[i] + 2 * c(-1, 1) * SE[i]
@@ -1203,10 +1206,10 @@ for (i in 1:num.sim) {
 ```
 
 ::: {.guidedpractice data-latex=""}
-In Figure \@ref(fig:95PercentConfidenceInterval), one interval does not contain the true proportion, $p = 0.3.$ Does this imply that there was a problem with the datasets that were selected?[^foundations-mathematical-20]
+In Figure \@ref(fig:95PercentConfidenceInterval), one interval does not contain the true proportion, $p = 0.3.$ Does this imply that there was a problem with the datasets that were selected?[^foundations-mathematical-19]
 :::
 
-[^foundations-mathematical-20]: No.
+[^foundations-mathematical-19]: No.
     Just as some observations occur more than 1.96 standard deviations from the mean, some point estimates will be more than 1.96 standard errors from the parameter.
     A confidence interval only provides a plausible range of values for a parameter.
     While we might say other values are implausible based on the data, this does not mean they are impossible.
@@ -1258,6 +1261,8 @@ inference_method_summary_table %>%
                 latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
   column_spec(1, width = "15em")
 ```
+
+\clearpage
 
 ### Terms
 
