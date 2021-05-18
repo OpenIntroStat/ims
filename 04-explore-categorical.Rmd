@@ -65,7 +65,7 @@ loans %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
   add_header_above(c(" " = 1, "homeownership" = 3, " " = 1)) %>%
-  column_spec(1:5, width = "8em")
+  column_spec(1:5, width = "6em")
 ```
 
 ```{r loan-homeownership-totals}
@@ -227,7 +227,7 @@ loans %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
   add_header_above(c(" " = 1, "homeownership" = 3, " " = 1)) %>%
-  column_spec(1:5, width = "8em")
+  column_spec(1:5, width = "6em")
 ```
 
 A contingency table of the **column proportions** is computed in a similar way, where each is computed as the count divided by the corresponding column total.
@@ -309,7 +309,9 @@ email %>%
   count(spam, format) %>%
   pivot_wider(names_from = format, values_from = n) %>% 
   adorn_totals(where = c("row", "col")) %>%
-  kbl(linesep = "", booktabs = TRUE, caption = "A contingency table for spam and format") 
+  kbl(linesep = "", booktabs = TRUE, caption = "A contingency table for spam and format") %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position"), full_width = FALSE) 
 ```
 
 ::: {.workedexample data-latex=""}
@@ -390,26 +392,29 @@ Just like with pie charts, they work best when the number of levels represented 
 However, unlike pie charts, they can make it easier to compare proportions that represent non-simple fractions.
 Figure \@ref(fig:loan-waffle) displays two examples of waffle charts: one for the distribution of homeownership and the other for the distribution of loan status.
 
-```{r loan-waffle, fig.cap = "Plot A: Waffle chart of homeownership, with levels rent, morgage, and own. Plot B: Waffle chart of loan status, with levels current, fully paid, in grade period, and late.", out.width = "100%", fig.asp = 1}
+```{r loan-waffle, fig.cap = "Plot A: Waffle chart of homeownership, with levels rent, morgage, and own. Plot B: Waffle chart of loan status, with levels current, fully paid, in grade period, and late.", out.width = "100%", fig.asp = 0.5}
 p_waffle_homeownership <- loans %>%
   count(homeownership) %>%
   ggplot(aes(fill = homeownership, values = n)) +
   geom_waffle(colour = "white", flip = TRUE, make_proportional = TRUE) +
-  labs(fill = "Homeownership") +
+  labs(fill = NULL, title = "Homeownership") +
   scale_fill_openintro("hot") +
   coord_equal() +
-  theme_enhance_waffle()
+  theme_enhance_waffle() +
+  theme(legend.position = "bottom")
 
 p_waffle_loan_status <- loans %>%
   count(loan_status) %>%
   ggplot(aes(fill = loan_status, values = n)) +
   geom_waffle(colour = "white", flip = TRUE, make_proportional = TRUE)  +
-  labs(fill = "Loan status") +
+  labs(fill = NULL, title = "Loan status") +
   scale_fill_openintro("four") +
   coord_equal() +
-  theme_enhance_waffle()
+  theme_enhance_waffle() +
+  theme(legend.position = "bottom") +
+  guides(fill=guide_legend(nrow = 2))
 
-p_waffle_homeownership /
+p_waffle_homeownership +
   p_waffle_loan_status +
   plot_annotation(tag_levels = "A")
 ```
