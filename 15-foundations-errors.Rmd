@@ -152,6 +152,10 @@ Each patient was randomly assigned to either receive a blood thinner (treatment 
 The outcome variable of interest was whether the patient survived for at least 24 hours.
 [@Bottiger:2001]
 
+::: {.data data-latex=""}
+The [`cpr`](http://openintrostat.github.io/openintro/reference/cpr.html) data from this study can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
+:::
+
 ::: {.workedexample data-latex=""}
 Form hypotheses for this study in plain and statistical language.
 Let $p_C$ represent the true survival rate of people who do not receive a blood thinner (corresponding to the control group) and $p_T$ represent the survival rate for people receiving a blood thinner (corresponding to the treatment group).
@@ -212,43 +216,39 @@ However, we wonder if this difference could be easily explainable by chance.
 
 As we did in past studies, we will simulate what type of differences we might see from chance alone under the null hypothesis.
 By randomly assigning each of the patient's files to a "simulated treatment" or "simulated control" allocation, we get a new grouping.
-If we repeat this simulation 10,000 times, we can build a **null distribution**\index{null distribution} of the differences shown in Figure \@ref(fig:CPR-study-right-tail).
+If we repeat this simulation 1,000 times, we can build a **null distribution**\index{null distribution} of the differences shown in Figure \@ref(fig:CPR-study-right-tail).
 
 ```{r include=FALSE}
 terms_chp_15 <- c(terms_chp_15, "null distribution")
 ```
 
 ```{r CPR-study-right-tail, fig.cap="Null distribution of the point estimate for the difference in proportions, $\\hat{p}_T - \\hat{p}_C.$ The shaded right tail shows observations that are at least as large as the observed difference, 0.13."}
+set.seed(47)
+cpr_rand_dist <- cpr %>%
+  specify(response = outcome, explanatory = group, success = "survived") %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "diff in props", order = c("treatment", "control")) %>%
+  # simplify by rounding
+  mutate(stat = round(stat, 3))
 
-tr <- rep(1:2, c(50, 40))
-su <- c(rep(c("s", "d"), c(11, 39)), rep(c("s", "d"), c(14, 26)))
+cpr_rand_dist %>%
+  ggplot(aes(x = stat)) +
+  geom_histogram(binwidth = 0.05) +
+  labs(y = NULL, x = "Difference in survival rates (treatment - control)") +
+  theme(axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) +
+  gghighlight(stat >= 0.13)
 
-N <- 10^5
-d <- rep(NA, N)
-for(i in 1:N){
-	trf  <- sample(tr)
-	p1   <- sum(su[trf == 1] == "s") / 50
-	p2   <- sum(su[trf == 2] == "s") / 40
-	d[i] <- p2 - p1
-}
-#sum((d) > 0.1299) / N
-
-udiffs    <- sort(unique(d))
-bin.width <- diff(udiffs)[1]
-breaks    <- c(udiffs - bin.width / 4, udiffs + bin.width / 4)
-
-hist(d, breaks = breaks, col=COL[7,3], main="", xlab="Differences under the null hypothesis", ylab="", axes=FALSE)
-axis(1)
-axis(2, at=(0:3)*N/20, labels=c(0, NA, NA, 3)/20)
-hist(d[d > 0.1299], breaks = breaks, col=COL[1], add=TRUE)
-abline(h=0)
-lines(rep(0.13, 2), c(0, 3)*N/25, lty=3, lwd=1.7)
-text(0.13, 3*N/25, "0.13", pos=3, cex=0.7)
-
+cpr_tail <- cpr_rand_dist %>%
+  filter(stat >= 0.13) %>%
+  summarise(n()/1000) %>%
+  pull()
 ```
 
-The right tail area is 0.131.
-(Note: it is only a coincidence that we also have $\hat{p}_T - \hat{p}_C=0.13.)$ However, contrary to how we calculated the p-value in previous studies, the p-value of this test is not 0.131!
+The right tail area is `r cpr_tail`.
+(Note: it is only a coincidence that we also have $\hat{p}_T - \hat{p}_C=0.13.)$ However, contrary to how we calculated the p-value in previous studies, the p-value of this test is not actually the tail area we calculated, i.e. it's not `r cpr_tail`!
 
 The p-value is defined as the chance we observe a result at least as favorable to the alternative hypothesis as the result (i.e., the difference) we observe.
 In this case, any differences less than or equal to -0.13 would also provide equally strong evidence favoring the alternative hypothesis as a difference of +0.13 did.
@@ -257,16 +257,14 @@ In Figure \@ref(fig:CPR-study-p-value) we've also shaded these differences in th
 These two shaded tails provide a visual representation of the p-value for a two-sided test.
 
 ```{r CPR-study-p-value, fig.cap="Null distribution of the point estimate for the difference in proportions, $\\hat{p}_T - \\hat{p}_C.$ All values that are at least as extreme as +0.13 but in either direction away from 0 are shaded."}
-
-hist(d, breaks = breaks, col=COL[7,3], main="", xlab="Differences under the null hypothesis", ylab="", axes=FALSE)
-axis(1)
-axis(2, at=(0:3)*N/20, labels=c(0, NA, NA, 3)/20)
-hist(d[d > 0.1299], breaks = breaks, col=COL[1], add=TRUE)
-abline(h=0)
-hist(d[d < -0.1299], breaks = breaks, col=COL[1], add=TRUE)
-abline(h=0)
-lines(rep(0.13, 2), c(0, 3)*N/25, lty=3, lwd=1.7)
-text(0.13, 3*N/25, "0.13", pos=3, cex=0.7)
+cpr_rand_dist %>%
+  ggplot(aes(x = stat)) +
+  geom_histogram(binwidth = 0.05) +
+  labs(y = NULL, x = "Difference in survival rates (treatment - control)") +
+  theme(axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) +
+  gghighlight(stat >= 0.13 | stat <= -0.13)
 ```
 
 For a two-sided test, take the single tail (in this case, 0.131) and double it to get the p-value: 0.262.
@@ -330,24 +328,12 @@ By examining these two scenarios, we can determine that we will make a Type 1 Er
 This is twice the error rate we prescribed with our significance level: $\alpha=0.05$ (!).
 :::
 
-```{r type1ErrorDoublingExampleFigure, fig.cap="The shaded regions represent areas where we would reject $H_0$ under the bad practices considered in when $\\alpha = 0.05.$", warning=FALSE, fig.width=10}
-par(las=1, mar=c(2,0,0.5,0), mgp=c(3,0.9,0))
-X <- seq(-4,4,0.01)
-Y <- dnorm(X)
-plot(X, Y, type='l', axes=F, xlim=c(-3.4,3.4))
-axis(1, at=c(-5, 0, 5), label=expression(0, 0, 0), cex.axis=1.2)
-these <- which(X >= 1.65)
-polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
-these <- which(X <= -1.65)
-polygon(c(X[these[1]], X[these],X[rev(these)[1]]), c(0,Y[these],0), col=COL[1])
-
-arrows(-2,0.17, -1.9, 0.08, length=0.07, col=COL[1], lwd=1.5)
-text(-1.92, 0.21, '5%', cex=1.2, col=COL[1])
-arrows(2,0.17, 1.9, 0.08, length=0.07, col=COL[1], lwd=1.5)
-text(2.08, 0.21, '5%', cex=1.2, col=COL[1])
-
-lines(X, Y, lwd=1.5)
-abline(h=0)
+```{r type1ErrorDoublingExampleFigure, fig.cap="The shaded regions represent areas where we would reject $H_0$ under the bad practices considered in when $\\alpha = 0.05.$", fig.asp = 0.5, out.width = "50%"}
+normTail(U = 1.65, L = -1.65, col = IMSCOL["blue", "full"])
+arrows(-2, 0.17, -1.9, 0.08, length = 0.07, lwd = 1.5)
+text(-1.92, 0.21, "5%", cex = 1.2)
+arrows(2, 0.17, 1.9, 0.08, length = 0.07, lwd = 1.5)
+text(2.08, 0.21, "5%", cex = 1.2)
 ```
 
 ::: {.caution}
