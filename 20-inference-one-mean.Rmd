@@ -41,14 +41,12 @@ In order to go through the example more clearly, let's say that you are only abl
 Figure \@ref(fig:5cars) shows a (small) random sample of observations from Awesome Auto.
 The actual cars as well as their selling price is shown.
 
-```{r 5cars, fig.cap = "A sample of five cars from Awesome Auto.", warning = FALSE,  out.width="75%"}
+```{r 5cars, fig.cap = "A sample of five cars from Awesome Auto.", out.width = "75%"}
 include_graphics("images/5cars.png")
 ```
 
 ```{r}
 aa_cars <- data.frame(price = c(18300, 20100, 9600, 10700, 27000))
-
-#aa_cars %>% summarize(mean(price), sd(price), n())
 ```
 
 The sample average car price of \$`r formatC(mean(aa_cars$price), format = "f", digits = 2)` is a first guess at the price of the average car price at Awesome Auto.
@@ -66,7 +64,7 @@ Instead of taking repeated samples from the actual population, we use bootstrapp
 As mentioned previously, to get a sense of the cars at Awesome Auto, you take a sample of 5 cars from the Awesome Auto branch near you as a way to gauge the price of the cars being sold.
 Figure \@ref(fig:bootpop1mean) shows how the unknown original population can be estimated by using the sample to approximate the distribution of car prices from the population of cars at Awesome Auto.
 
-```{r bootpop1mean, fig.cap = "As seen previously, the idea behind bootstrapping is to consider the sample at hand as an estimate of the population.  Sampling from the sample (of 5 cars) is identical to sampling from an infinite population which is made up of only the cars in the original sample.", warning = FALSE,  out.width="75%"}
+```{r bootpop1mean, fig.cap = "As seen previously, the idea behind bootstrapping is to consider the sample at hand as an estimate of the population.  Sampling from the sample (of 5 cars) is identical to sampling from an infinite population which is made up of only the cars in the original sample."}
 include_graphics("images/bootpop1mean.png")
 ```
 
@@ -75,14 +73,14 @@ In Figure \@ref(fig:boot2) the repeated bootstrap samples are seen to be differe
 Recall that the bootstrap samples were taken from the same (estimated) population, and so the differences in bootstrap samples are due entirely to natural variability in the sampling procedure.
 For the situation at hand where the sample mean is the statistic of interest, the variability from sample to sample can be seen in Figure \@ref(fig:bootsamps1mean).
 
-```{r bootsamps1mean, fig.cap = "To estimate the natural variability in the sample mean, different bootstrap samples are taken from the original sample.  Notice that each bootstrap resample is different from each other as well as from the original sample", warning = FALSE,  out.width="75%"}
+```{r bootsamps1mean, fig.cap = "To estimate the natural variability in the sample mean, different bootstrap samples are taken from the original sample.  Notice that each bootstrap resample is different from each other as well as from the original sample"}
 include_graphics("images/bootsamps1mean.png")
 ```
 
 By summarizing each of the bootstrap samples (here, using the sample mean), we see, directly, the variability of the sample mean, $\bar{x},$ from sample to sample.
 The distribution of $\hat{x}_{bs}$ for the Awesome Auto cars is shown in Figure \@ref(fig:bootmeans1mean).
 
-```{r bootmeans1mean, fig.cap = "Because each of the bootstrap resamples respresents a different set of cars, the mean of the each bootstrap resample will be a different value.  Each of the bootstrapped means is calculated, and a histogram of the values describes the inherent natural variability of the sample mean which is due to the sampling process.", warning = FALSE,  out.width="75%"}
+```{r bootmeans1mean, fig.cap = "Because each of the bootstrap resamples respresents a different set of cars, the mean of the each bootstrap resample will be a different value.  Each of the bootstrapped means is calculated, and a histogram of the values describes the inherent natural variability of the sample mean which is due to the sampling process.", out.width="100%"}
 include_graphics("images/bootmeans1mean.png")
 ```
 
@@ -102,52 +100,50 @@ A 95% confidence interval is given by \$11,778 to \$22,500.
 The conclusion is that we are 95% confident that the true average car price at Awesome Auto lies somewhere between \$11,778 to \$22,500.
 :::
 
-```{r carsbsmean, fig.cap="The original Awesome Auto data is bootstrapped 1,000 times. The histogram provides a sense for the variability of the average car price from sample to sample.", warning=FALSE, fig.width=15}
-
+```{r carsbsmean, fig.cap = "The original Awesome Auto data is bootstrapped 1,000 times. The histogram provides a sense for the variability of the average car price from sample to sample.", out.width = "100%"}
 set.seed(47)
 bscars <- aa_cars %>%
   rep_sample_n(size = 5, reps = 1000, replace = TRUE) 
 
 bscars_mean <- bscars %>%
   group_by(replicate) %>% 
-  summarize(car_bsmean = mean(price)) %>%
-  pull()
+  summarize(stat = mean(price))
 
-bsq1 <- quantile(bscars_mean, probs = c(0.005, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.995))
+probs <- c(0.005, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.995)
 
-bsmeans_up <- bscars_mean[bscars_mean >= bsq1[7]]
-bsmeans_low <- bscars_mean[bscars_mean <= bsq1[2]]
+stat_quantiles <- bscars_mean %>%
+  pull(stat) %>%
+  quantile(probs) %>%
+  as.numeric() %>%
+  round()
 
-umeans <- sort(unique(bscars_mean))
-bin.width <- (umeans[length(umeans)] - umeans[1])/15
-#breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
-breaks <- seq(umeans[1] - 1, umeans[length(umeans)] + bin.width, by = bin.width)
-  
-
-histPlot(bscars_mean, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
-     xlab = "", ylab="")
-axis(1)
-lines(c(bsq1[6], bsq1[6]), c(0, 85), lty = 3, lwd = 3)
-lines(c(bsq1[3], bsq1[3]), c(0, 85), lty = 3, lwd = 3)
-lines(c(bsq1[7], bsq1[7]), c(0, 65), lty = 3, lwd = 3)
-lines(c(bsq1[2], bsq1[2]), c(0, 65), lty = 3, lwd = 3)
-lines(c(bsq1[8], bsq1[8]), c(0, 45), lty = 3, lwd = 3)
-lines(c(bsq1[1], bsq1[1]), c(0, 45), lty = 3, lwd = 3)
-text(bsq1[6], 100, "95 percentile", pos = 3)
-text(bsq1[3], 100, "5 percentile", pos = 3)
-text(bsq1[7], 80, "97.5 percentile", pos = 3)
-text(bsq1[2], 80, "2.5 percentile", pos = 3)
-text(bsq1[8], 60, "99.5 percentile", pos = 3)
-text(bsq1[1], 60, "0.5 percentile", pos = 3)
-text(bsq1[6], 90, round(bsq1[6],1), pos = 3)
-text(bsq1[3], 90, round(bsq1[3],1), pos = 3)
-text(bsq1[7], 70, round(bsq1[7],1), pos = 3)
-text(bsq1[2], 70, round(bsq1[2],1), pos = 3)
-text(bsq1[8], 50, round(bsq1[8],1), pos = 3)
-text(bsq1[1], 50, round(bsq1[1],1), pos = 3)
-par(las = 0)
-mtext("Bootstrapped values of the mean of the car price from Awesome Auto.", 1, 2.5)
-
+ggplot(bscars_mean, aes(x = stat)) +
+  geom_histogram(binwidth = 1500) +
+  annotate(
+    "segment",
+    x = stat_quantiles, xend = stat_quantiles,
+    y = rep(0, 8), yend = c(50, 75, 100, 150, 150, 100, 75, 50),
+    linetype = "dashed"
+  ) +
+  annotate(
+    "text",
+    x = stat_quantiles,
+    y = c(50, 75, 100, 150, 150, 100, 75, 50) + 15,
+    label = paste0(probs*100, "th percentile"),
+    hjust = c(rep(1, 4), rep(0, 4)), size = 3
+  ) +
+  annotate(
+    "text",
+    x = stat_quantiles,
+    y = c(50, 75, 100, 150, 150, 100, 75, 50) + 5,
+    label = format(stat_quantiles, big.mark = ","),
+    hjust = c(rep(1, 4), rep(0, 4)), size = 3
+  ) +
+  coord_cartesian(xlim = c(8000, 27000)) +
+  labs(
+    x = "Means of bootstrapped samples\nof car prices from Awesome Auto",
+    y = "Count"
+  )
 ```
 
 ### Bootstrap SE confidence interval
@@ -159,7 +155,7 @@ $$\mbox{point estimate} \pm 2 \cdot SE_{BS}$$ The number 2 is an approximation c
 As will be seen in Section \@ref(one-mean-math), a new distribution (the $t$-distribution) will be applied to most mathematical inference on numerical variables.
 However, because bootstrapping is not grounded in the same theory as the mathematical approach given in this text, we stick with the standard normal quantiles (in R use the function `qnorm()` to find normal percentiles other than 95%) for different confidence percentages.[^inference-one-mean-1]
 
-[^inference-one-mean-1]: There is a large literature on understanding and improving bootstrap intervals, see Hesterberg 2015 ["What Teachers Should Know About the Bootstrap"](https://www.tandfonline.com/doi/full/10.1080/00031305.2015.1089789) and Hayden 2019 ["Questionable Claims for Simple Versions of the Bootstrap"](https://www.tandfonline.com/doi/full/10.1080/10691898.2019.1669507) for more information.
+[^inference-one-mean-1]: There is a large literature on understanding and improving bootstrap intervals, see @Hesterbeg:2015 titled ["What Teachers Should Know About the Bootstrap"](https://www.tandfonline.com/doi/full/10.1080/00031305.2015.1089789) and @Hayden:2019 titled ["Questionable Claims for Simple Versions of the Bootstrap"](https://www.tandfonline.com/doi/full/10.1080/10691898.2019.1669507) for more information.
 
 ::: {.workedexample data-latex=""}
 Explain how the standard error (SE) of the bootstrapped means is calculated and what it is measuring.
@@ -234,51 +230,50 @@ Using Figure \@ref(fig:carsbssd), find *and interpret* a 90% confidence interval
 :::
 
 [^inference-one-mean-3]: By looking at the percentile values in Figure \@ref(fig:carsbssd), the middle 90% of the bootstrap standard deviations are given by the 5 percentile (\$3,602.5) and 95 percentile (\$8,737.2).
-    That is, we are 90% confident that the true standard deviation of car prices is between \$3,602.5 and \$8,737.2.\
+    That is, we are 90% confident that the true standard deviation of car prices is between \$3,602.5 and \$8,737.2.
     Note, the problem was set up as 90% to indicate that there was not a need for a high level of confidence (such a 95% or 99%).
     A lower degree of confidence increases potential for error, but it also produces a more narrow interval.
 
-```{r carsbssd, fig.cap="The original Awesome Auto data is bootstrapped 1,000 times. The histogram provides a sense for the variability of the standard deviation of the car prices from sample to sample.", warning=FALSE, fig.width=15}
+```{r carsbssd, fig.cap = "The original Awesome Auto data is bootstrapped 1,000 times. The histogram provides a sense for the variability of the standard deviation of the car prices from sample to sample.", out.width = "100%"}
 bscars_sd <- bscars %>%
   group_by(replicate) %>% 
-  summarize(car_bssd = sd(price)) %>%
-  pull()
+  summarize(stat = sd(price))
 
-bsq1 <- quantile(bscars_sd, probs = c(0.005, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.995))
+probs <- c(0.005, 0.025, 0.05, 0.1, 0.9, 0.95, 0.975, 0.995)
 
-bsmeans_up <- bscars_sd[bscars_sd >= bsq1[7]]
-bsmeans_low <- bscars_sd[bscars_sd <= bsq1[2]]
+stat_quantiles <- bscars_sd %>%
+  pull(stat) %>%
+  quantile(probs) %>%
+  as.numeric() %>%
+  round()
 
-umeans <- sort(unique(bscars_sd))
-bin.width <- (umeans[length(umeans)] - umeans[1])/15
-#breaks <- c(uprops - bin.width / 4, uprops + bin.width / 4)
-breaks <- seq(umeans[1] - 1, umeans[length(umeans)] + bin.width, by = bin.width)
-  
-
-histPlot(bscars_sd, breaks = breaks, axes = FALSE, col = rgb(1,1,1),
-     xlab = "", ylab="")
-axis(1)
-lines(c(bsq1[6], bsq1[6]), c(0, 125), lty = 3, lwd = 3)
-lines(c(bsq1[3], bsq1[3]), c(0, 125), lty = 3, lwd = 3)
-lines(c(bsq1[7], bsq1[7]), c(0, 55), lty = 3, lwd = 3)
-lines(c(bsq1[2], bsq1[2]), c(0, 65), lty = 3, lwd = 3)
-lines(c(bsq1[8], bsq1[8]), c(0, 55), lty = 3, lwd = 3)
-lines(c(bsq1[1], bsq1[1]), c(0, 55), lty = 3, lwd = 3)
-text(bsq1[6], 140, "95 percentile", pos = 3)
-text(bsq1[3], 140, "5 percentile", pos = 3)
-text(bsq1[7], 90, "97.5 percentile", pos = 3)
-text(bsq1[2], 90, "2.5 percentile", pos = 3)
-text(bsq1[8], 70, "99.5 percentile", pos = 3)
-text(bsq1[1], 70, "0.5 percentile", pos = 3)
-text(bsq1[6], 130, round(bsq1[6],1), pos = 3)
-text(bsq1[3], 130, round(bsq1[3],1), pos = 3)
-text(bsq1[7], 80, round(bsq1[7],1), pos = 3)
-text(bsq1[2], 80, round(bsq1[2],1), pos = 3)
-text(bsq1[8], 60, round(bsq1[8],1), pos = 3)
-text(bsq1[1], 60, round(bsq1[1],1), pos = 3)
-par(las = 0)
-mtext("Bootstrapped values of the standard deviation of the car prices.", 1, 2.5)
-
+ggplot(bscars_sd, aes(x = stat)) +
+  geom_histogram(binwidth = 500) +
+  annotate(
+    "segment",
+    x = stat_quantiles, xend = stat_quantiles,
+    y = rep(0, 8), yend = c(50, 75, 100, 150, 150, 100, 75, 50),
+    linetype = "dashed"
+  ) +
+  annotate(
+    "text",
+    x = stat_quantiles,
+    y = c(50, 75, 100, 150, 150, 100, 75, 50) + 15,
+    label = paste0(probs*100, "th percentile"),
+    hjust = c(rep(1, 4), rep(0, 4)), size = 3
+  ) +
+  annotate(
+    "text",
+    x = stat_quantiles,
+    y = c(50, 75, 100, 150, 150, 100, 75, 50) + 5,
+    label = format(stat_quantiles, big.mark = ","),
+    hjust = c(rep(1, 4), rep(0, 4)), size = 3
+  ) +
+  coord_cartesian(clip = "off", xlim = c(-1200, 11500)) +
+  labs(
+    x = "Standard deviations of bootstrapped samples\nof car prices from Awesome Auto",
+    y = "Count"
+  )
 ```
 
 ### Bootstrapping is not a solution to small sample sizes!
@@ -370,7 +365,7 @@ It's often helpful to also visualize the data using a box plot to assess skewnes
 The box plots provided underneath each histogram confirms our conclusions that the first sample does not have any outliers and the second sample does, with one outlier being particularly more extreme than the others.
 :::
 
-```{r outliersandsscondition, fig.cap = "Histograms of two samples from different populations.", warning = FALSE}
+```{r outliersandsscondition, fig.cap = "Histograms of samples from two different populations."}
 set.seed(3456)
 df1 <- tibble(x = rnorm(15, 3, 2))
 df2 <- tibble(x = c(exp(rnorm(49, 0, 0.7)), 22))
@@ -419,9 +414,7 @@ When we know the data come from such an extremely skewed distribution, it takes 
 In practice, we cannot directly calculate the standard error for $\bar{x}$ since we do not know the population standard deviation, $\sigma.$ We encountered a similar issue when computing the standard error for a sample proportion, which relied on the population proportion, $p.$ Our solution in the proportion context was to use the sample value in place of the population value when computing the standard error.
 We'll employ a similar strategy for computing the standard error of $\bar{x},$ using the sample standard deviation $s$ in place of $\sigma:$
 
-$$
-SE = \frac{\sigma}{\sqrt{n}} \approx \frac{s}{\sqrt{n}}
-$$
+$$SE = \frac{\sigma}{\sqrt{n}} \approx \frac{s}{\sqrt{n}}$$
 
 This strategy tends to work well when we have a lot of data and can estimate $\sigma$ using $s$ accurately.
 However, the estimate is less precise with smaller samples, and this leads to problems when using the normal distribution to model $\bar{x}.$
@@ -432,7 +425,7 @@ However, its tails are thicker than the normal distribution's, meaning observati
 
 The extra thick tails of the $t$-distribution are exactly the correction needed to resolve the problem (due to extra variability of the T score) of using $s$ in place of $\sigma$ in the $SE$ calculation.
 
-```{r tDistCompareToNormalDist, fig.cap="Comparison of a $t$-distribution and a normal distribution."}
+```{r tDistCompareToNormalDist, fig.cap = "Comparison of a $t$-distribution and a normal distribution.", fig.asp = 0.5, out.width = "60%"}
 df <- tibble(
   x = rep(seq(-5, 5, 0.01), 2),
   distribution = c(rep("Normal distribution", 1001), rep("t-distribution", 1001))
@@ -466,12 +459,13 @@ In general, we'll use a $t$-distribution with $df = n - 1$ to model the sample m
 terms_chp_20 <- c(terms_chp_20, "degrees of freedom")
 ```
 
-```{r tDistConvergeToNormalDist, fig.cap="The larger the degrees of freedom, the more closely the $t$-distribution resembles the standard normal distribution.", warning=FALSE, fig.width=10}
+```{r tDistConvergeToNormalDist, fig.cap="The larger the degrees of freedom, the more closely the $t$-distribution resembles the standard normal distribution."}
 
 plot(c(-5, 5),
-     c(0, dnorm(0)),
-     type = 'n', ylab = "", xlab = "",
-     axes = FALSE)
+  c(0, dnorm(0)),
+  type = "n", ylab = "", xlab = "",
+  axes = FALSE
+)
 at <- seq(-10, 10, 2)
 axis(1, at)
 axis(1, at - 1, rep("", length(at)), tcl = -0.1)
@@ -479,7 +473,7 @@ abline(h = 0)
 
 COL. <- fadeColor(IMSCOL["blue", "full"], c("FF", "89", "68", "4C", "33"))
 COLt <- fadeColor(IMSCOL["blue", "full"], c("FF", "AA", "85", "60", "45"))
-DF   <- c('normal', 8, 4, 2, 1)
+DF <- c("normal", 8, 4, 2, 1)
 
 X <- seq(-10, 10, 0.02)
 Y <- dnorm(X)
@@ -491,12 +485,15 @@ for (i in 2:5) {
 }
 
 legend(2.5, 0.4,
-       legend = c(DF[1],
-       paste('t, df = ', DF[2:5], sep = '')),
-       col = COL.,
-       text.col = COLt,
-       lty = rep(1, 5),
-       lwd = 1.5)
+  legend = c(
+    DF[1],
+    paste("t, df = ", DF[2:5], sep = "")
+  ),
+  col = COL.,
+  text.col = COLt,
+  lty = rep(1, 5),
+  lwd = 1.5
+)
 ```
 
 ::: {.important data-latex=""}
@@ -532,8 +529,7 @@ Using statistical software, we can obtain a precise value: 0.0250.
 pt(-2.10, df = 18)
 ```
 
-```{r tDistDF18LeftTail2Point10, fig.cap="The $t$-distribution with 18 degrees of freedom. The area below -2.10 has been shaded."}
-
+```{r tDistDF18LeftTail2Point10, fig.cap = "The $t$-distribution with 18 degrees of freedom. The area below -2.10 has been shaded.", fig.asp = 0.5, out.width = "60%"}
 normTail(L = -2.10,
          df = 10,
          xlim = c(-4, 4),
@@ -553,21 +549,16 @@ With a normal distribution, this would correspond to about 0.05, so we should ex
 Using statistical software: 0.0573.
 :::
 
-```{r tDistDF20RightTail1Point65, fig.cap="Top: The $t$-distribution with 20 degrees of freedom, with the area above 1.65 shaded. Bottom: The $t$-distribution with 2 degrees of freedom, with the area further than 3 units from 0 shaded."}
-
+```{r tDistDF20RightTail1Point65, fig.cap = "Top: The $t$-distribution with 20 degrees of freedom, with the area above 1.65 shaded. Bottom: The $t$-distribution with 2 degrees of freedom, with the area further than 3 units from 0 shaded.", out.width="50%"}
 normTail(U = 1.65,
-         df = 12,
-         xlim = c(-4, 4),
-         col = IMSCOL["blue", "full"],
-         axes = FALSE)
-axis(1)
+  df = 12,
+  xlim = c(-4, 4),
+  col = IMSCOL["blue", "full"])
 normTail(L = -3,
-         U = 3,
-         df = 2.3,
-         xlim = c(-4.5, 4.5),
-         col = IMSCOL["blue", "full"],
-         axes = FALSE)
-axis(1)
+  U = 3,
+  df = 2.3,
+  xlim = c(-4.5, 4.5),
+  col = IMSCOL["blue", "full"])
 ```
 
 ::: {.workedexample data-latex=""}
@@ -597,7 +588,7 @@ Use your preferred method for finding tail areas.[^inference-one-mean-5]
 Let's get our first taste of applying the $t$-distribution in the context of an example about the mercury content of dolphin muscle.
 Elevated mercury concentrations are an important problem for both dolphins and other animals, like humans, who occasionally eat them.
 
-```{r rissosDolphin, fig.cap = "A Risso's dolphin. Photo by Mike Baird, www.bairdphotos.com", warning = FALSE,  out.width="75%"}
+```{r rissosDolphin, fig.cap = "A Risso's dolphin. Photo by Mike Baird, www.bairdphotos.com", out.width="75%"}
 include_graphics("images/rissosDolphin.jpg")
 ```
 
@@ -607,16 +598,17 @@ The minimum and maximum observed values can be used to evaluate whether or not t
 
 ```{r summaryStatsOfHgInMuscleOfRissosDolphins}
 dolphin_summary_stats <- tribble(
-  ~col0, ~col1, ~col2, ~col3, ~col4,
+  ~n, ~Mean, ~SD, ~Min, ~Max,
   19,    4.4,   2.3,   1.7,   9.2
 )
 
 dolphin_summary_stats %>%
-  kbl(linesep = "", booktabs = TRUE, caption = "Summary of mercury content in the muscle of 19 Risso's dolphins from the Taiji area. Measurements are in micrograms of mercury per wet gram of muscle $(\\mu$g/wet g).",
-      col.names = c("n", "mean", "sd", "min", "max"), align = "ccccc") %>%
+  kbl(linesep = "", booktabs = TRUE, 
+      caption = "Summary of mercury content in the muscle of 19 Risso's dolphins from the Taiji area. Measurements are in micrograms of mercury per wet gram of muscle $(\\mu$g/wet g).", 
+      align = "ccccc") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  column_spec(1:5, width = "4em")
+  column_spec(1:5, width = "8em")
 ```
 
 ::: {.workedexample data-latex=""}
@@ -783,6 +775,10 @@ We consider this question in the context of the Cherry Blossom Race, which is a 
 
 The average time for all runners who finished the Cherry Blossom Race in 2006 was 93.29 minutes (93 minutes and about 17 seconds).
 We want to determine using data from 100 participants in the 2017 Cherry Blossom Race whether runners in this race are getting faster or slower, versus the other possibility that there has been no change.
+
+::: {.data data-latex=""}
+The [`run17`](http://openintrostat.github.io/cherryblossom/reference/run17.html) data can be found in the [**cherryblossom**](http://openintrostat.github.io/cherryblossom) R package.
+:::
 
 ::: {.guidedpractice data-latex=""}
 What are appropriate hypotheses for this context?[^inference-one-mean-9]
