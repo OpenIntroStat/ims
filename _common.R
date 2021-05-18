@@ -52,7 +52,6 @@ options(knitr.kable.NA = "")
 # kableExtra options -----------------------------------------------------------
 
 options(kableExtra.html.bsTable = TRUE)
-#options(knitr.table.format = if (knitr::is_latex_output()) "latex" else "html")
 
 # dplyr options ----------------------------------------------------------------
 
@@ -97,7 +96,7 @@ make_terms_table <- function(x, n_cols = 3){
   desired_length <- n_rows * n_cols
   x_updated <- c(x, rep("", (desired_length - length(x))))
   matrix(x_updated, nrow = n_rows) %>%
-    kbl(booktabs = TRUE) %>%
+    kbl(booktabs = TRUE, linesep = "\\addlinespace") %>%
     kable_styling(bootstrap_options = c("striped", "condensed"), 
                   latex_options = "striped",
                   full_width = TRUE)
@@ -124,7 +123,7 @@ inference_method_summary_table <- tribble(
     "Randomized experiment or random sampling",
   "What is it best for?", 
     "Hypothesis Testing (can be used for confidence intervals, but not covered in this text).", 
-    "Confidence Intervals (bootstrap hypothesis testing for one proportion covered in Chapter 16).", 
+    "Confidence Intervals (can be used for bootstrap hypothesis testing for one proportion as well).", 
     "Quick analyses through, for example, calculating a Z score.",
   "What physical object represents the simulation process?", 
     "Shuffling cards", 

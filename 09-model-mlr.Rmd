@@ -45,7 +45,7 @@ loans <- loans_full_schema %>%
 
 loans %>%
   slice_head(n = 6) %>%
-  kbl(booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE, 
       caption = caption_helper("First six rows of the `loans` dataset."),
       align = "rlrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
@@ -67,7 +67,8 @@ loans_var_def <- tribble(
 )
 
 loans_var_def %>%
-  kbl(booktabs = TRUE, caption = caption_helper("Variables and their descriptions for the `loans` dataset."), 
+  kbl(linesep = "", booktabs = TRUE, 
+      caption = caption_helper("Variables and their descriptions for the `loans` dataset."), 
       col.names = c("Variable", "Description")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
@@ -79,7 +80,7 @@ loans_var_def %>%
 
 Let's start by fitting a linear regression model for interest rate with a single predictor indicating whether or not a person has a bankruptcy in their record:
 
-$$\widehat{\texttt{interest\_rate}} = 12.34 + 0.74 \times \texttt{bankruptcy}$$
+$$\widehat{\texttt{interest_rate}} = 12.34 + 0.74 \times \texttt{bankruptcy}$$
 
 Results of this model are shown in Table \@ref(tab:int-rate-bankruptcy).
 
@@ -89,12 +90,13 @@ m_bankruptcy <- lm(interest_rate ~ bankruptcy, data = loans)
 m_bankruptcy %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE, 
       caption = caption_helper("Summary of a linear model for predicting `interest_rate` based on whether the borrower has a bankruptcy in their record. Degrees of freedom for this model is 9998."), 
       digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  column_spec(1:5, width= "6em")
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "17em", monospace = TRUE) %>%
+  column_spec(2:5, width = "5em")
 ```
 
 ::: {.workedexample data-latex=""}
@@ -124,13 +126,13 @@ m_verified_income <- lm(interest_rate ~ verified_income, data = loans)
 m_verified_income %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE, 
       caption = caption_helper("Summary of a linear model for predicting `interest_rate` based on whether the borrower’s income source and amount has been verified. This predictor has three levels, which results in 2 rows in the regression output."),
       digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  column_spec(1, width = "20em") %>%
-  column_spec(2:5, width = "6em")
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "17em", monospace = TRUE) %>%
+  column_spec(2:5, width = "5em")
 ```
 
 ::: {.workedexample data-latex=""}
@@ -142,15 +144,15 @@ The equation for the regression model may be written as a model with two predict
 
 $$
 \begin{aligned}
-\widehat{\texttt{interest\_rate}} &= 11.10 \\
-&+ 1.42 \times \texttt{verified\_income}_{\texttt{Source Verified}} \\
-&+ 3.25 \times \texttt{verified\_income}_{\texttt{Verified}}
+\widehat{\texttt{interest_rate}} &= 11.10 \\
+&+ 1.42 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
+&+ 3.25 \times \texttt{verified_income}_{\texttt{Verified}}
 \end{aligned}
 $$
 
 We use the notation $\texttt{variable}_{\texttt{level}}$ to represent indicator variables for when the categorical variable takes a particular value.
-For example, $\texttt{verified\_income}_{\texttt{Source Verified}}$ would take a value of 1 if it was for a borrower that was source verified, and it would take a value of 0 otherwise.
-Likewise, $\texttt{verified\_income}_{\texttt{Verified}}$ would take a value of 1 if it was for a borrower that was verified, and 0 if it took any other value.
+For example, $\texttt{verified_income}_{\texttt{Source Verified}}$ would take a value of 1 if it was for a borrower that was source verified, and it would take a value of 0 otherwise.
+Likewise, $\texttt{verified_income}_{\texttt{Verified}}$ would take a value of 1 if it was for a borrower that was verified, and 0 if it took any other value.
 :::
 
 The notation $\texttt{variable}_{\texttt{level}}$ may feel a bit confusing.
@@ -163,7 +165,7 @@ Using the model for predicting interest rate from income verification type, comp
 
 When `verified_income` takes a value of `Not Verified`, then both indicator functions in the equation for the linear model are set to 0:
 
-$$\widehat{\texttt{interest\_rate}} = 11.10 + 1.42 \times 0 + 3.25 \times 0 = 11.10$$
+$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times 0 + 3.25 \times 0 = 11.10$$
 
 The average interest rate for these borrowers is 11.1%.
 Because the level does not have its own coefficient and it is the reference value, the indicators for the other levels for this variable all drop out.
@@ -176,7 +178,7 @@ Using the model for predicting interest rate from income verification type, comp
 
 When `verified_income` takes a value of `Source Verified`, then the corresponding variable takes a value of 1 while the other is 0:
 
-$$\widehat{\texttt{interest\_rate}} = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 12.52$$
+$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 12.52$$
 
 The average interest rate for these borrowers is 12.52%.
 :::
@@ -195,7 +197,7 @@ For the last level that does not receive a coefficient, this is the reference le
 :::
 
 ::: {.guidedpractice data-latex=""}
-Interpret the coefficients in the model.[^model-mlr-2]
+Interpret the coefficients from the model above.[^model-mlr-2]
 :::
 
 [^model-mlr-2]: Each of the coefficients gives the incremental interest rate for the corresponding level relative to the `Not Verified` level, which is the reference level.
@@ -230,16 +232,16 @@ terms_chp_9 <- c(terms_chp_9, "multiple regression")
 We want to construct a model that accounts not only for any past bankruptcy or whether the borrower had their income source or amount verified, but simultaneously accounts for all the variables in the `loans` dataset: `verified_income`, `debt_to_income`, `credit_util`, `bankruptcy`, `term`, `issue_month`, and `credit_checks`.
 
 $$\begin{aligned}
-\widehat{\texttt{interest\_rate}} &= b_0 \\
-&+ b_1 \times \texttt{verified\_income}_{\texttt{Source Verified}} \\
-&+ b_2 \times \texttt{verified\_income}_{\texttt{Verified}} \\
-&+ b_3 \times \texttt{debt\_to\_income} \\
-&+ b_4 \times \texttt{credit\_util} \\
+\widehat{\texttt{interest_rate}} &= b_0 \\
+&+ b_1 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
+&+ b_2 \times \texttt{verified_income}_{\texttt{Verified}} \\
+&+ b_3 \times \texttt{debt_to_income} \\
+&+ b_4 \times \texttt{credit_util} \\
 &+ b_5 \times \texttt{bankruptcy} \\
 &+ b_6 \times \texttt{term} \\
-&+ b_7 \times \texttt{issue\_month}_{\texttt{Jan-2018}} \\
-&+ b_8 \times \texttt{issue\_month}_{\texttt{Mar-2018}} \\
-&+ b_9 \times \texttt{credit\_checks}
+&+ b_9 \times \texttt{credit_checks} \\
+&+ b_7 \times \texttt{issue_month}_{\texttt{Jan-2018}} \\
+&+ b_8 \times \texttt{issue_month}_{\texttt{Mar-2018}}
 \end{aligned}$$
 
 This equation represents a holistic approach for modeling all of the variables simultaneously.
@@ -263,13 +265,13 @@ m_full <- lm(interest_rate ~ ., data = loans)
 m_full %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
-  kbl(booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE, 
       caption = "Output for the regression model, where interest rate is the outcome and the variables listed are the predictors. Degrees of freedom for this model is 9990.", 
       digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  column_spec(1, width = "20em") %>%
-  column_spec(2:5, width = "6em")
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "17em", monospace = TRUE) %>%
+  column_spec(2:5, width = "5em")
 ```
 
 ::: {.important data-latex=""}
@@ -294,16 +296,16 @@ The fitted model for the interest rate is given by:
 
 $$
 \begin{aligned}
-\widehat{\texttt{interest\_rate}} &= 1.89 \\
-&+ 1.00 \times \texttt{verified\_income}_{\texttt{Source Verified}} \\
-&+ 2.56 \times \texttt{verified\_income}_{\texttt{Verified}} \\
-&+ 0.02 \times \texttt{debt\_to\_income} \\
-&+ 4.90 \times \texttt{credit\_util} \\
+\widehat{\texttt{interest_rate}} &= 1.89 \\
+&+ 1.00 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
+&+ 2.56 \times \texttt{verified_income}_{\texttt{Verified}} \\
+&+ 0.02 \times \texttt{debt_to_income} \\
+&+ 4.90 \times \texttt{credit_util} \\
 &+ 0.39 \times \texttt{bankruptcy} \\
 &+ 0.15 \times \texttt{term} \\
-&+ 0.23 \times \texttt{credit\_checks} \\
-&+ 0.05 \times \texttt{issue\_month}_{\texttt{Jan-2018}} \\
-&- 0.04 \times \texttt{issue\_month}_{\texttt{Mar-2018}}
+&+ 0.23 \times \texttt{credit_checks} \\
+&+ 0.05 \times \texttt{issue_month}_{\texttt{Jan-2018}} \\
+&- 0.04 \times \texttt{issue_month}_{\texttt{Mar-2018}}
 \end{aligned}
 $$
 
@@ -324,8 +326,8 @@ Compute the residual of the first observation in Table \@ref(tab:loans-data-matr
 :::
 
 [^model-mlr-5]: To compute the residual, we first need the predicted value, which we compute by plugging values into the equation from earlier.
-    For example, $\texttt{verified\_income}_{\texttt{Source Verified}}$ takes a value of 0, $\texttt{verified\_income}_{\texttt{Verified}}$ takes a value of 1 (since the borrower's income source and amount were verified), was 18.01, and so on.
-    This leads to a prediction of $\widehat{\texttt{interest\_rate}}_1 = 18.09$.
+    For example, $\texttt{verified_income}_{\texttt{Source Verified}}$ takes a value of 0, $\texttt{verified_income}_{\texttt{Verified}}$ takes a value of 1 (since the borrower's income source and amount were verified), was 18.01, and so on.
+    This leads to a prediction of $\widehat{\texttt{interest_rate}}_1 = 18.09$.
     The observed interest rate was 14.07%, which leads to a residual of $e_1 = 14.07 - 18.09 = -4.02$.
 
 ::: {.workedexample data-latex=""}
@@ -335,14 +337,14 @@ Why is there a difference between the coefficient values between the models with
 ------------------------------------------------------------------------
 
 If we examined the data carefully, we would see that some predictors are correlated.
-For instance, when we modeled the relationship of the outcome `interest_rate` and predictor `bankruptcy` using linear regression, we were unable to control for other variables like whether the borrower had her income verified, the borrower's debt-to-income ratio, and other variables.
-That original model was constructed in a vacuum and did not consider the full context.
-When we include all of the variables, underlying and unintentional bias that was missed by these other variables is reduced or eliminated.
+For instance, when we modeled the relationship of the outcome `interest_rate` and predictor `bankruptcy` using linear regression, we were unable to control for other variables like whether the borrower had their income verified, the borrower's debt-to-income ratio, and other variables.
+That original model was constructed in a vacuum and did not consider the full context of everything that is considered when an interest rate is decided.
+When we include all of the variables, underlying and unintentional bias that was missed by not including these other variables is reduced or eliminated.
 Of course, bias can still exist from other confounding variables.
 :::
 
 The previous example describes a common issue in multiple regression: correlation among predictor variables.
-We say the two predictor variables are (pronounced as *co-linear*) when they are correlated, and this **collinearity** complicates model estimation.
+We say the two predictor variables are colinear (pronounced as *co-linear*) when they are correlated, and this **collinearity** complicates model estimation.
 While it is impossible to prevent collinearity from arising in observational data, experiments are usually designed to prevent predictors from being collinear.
 
 ```{r include=FALSE}
@@ -357,7 +359,7 @@ Is there any value gained by making this interpretation?[^model-mlr-6]
 
 [^model-mlr-6]: Many of the variables do take a value 0 for at least one data point, and for those variables, it is reasonable.
     However, one variable never takes a value of zero: `term`, which describes the length of the loan, in months.
-    If `term` is set to zero, then the loan must be paid back immediately; the borrower must give the money back as soon as she receives it, which means it is not a real loan.
+    If `term` is set to zero, then the loan must be paid back immediately; the borrower must give the money back as soon as they receive it, which means it is not a real loan.
     Ultimately, the interpretation of the intercept in this setting is not insightful.
 
 ## Adjusted R-squared
@@ -377,7 +379,7 @@ Calculate $R^2$ for this model.[^model-mlr-7]
 
 This strategy for estimating $R^2$ is acceptable when there is just a single variable.
 However, it becomes less helpful when there are many variables.
-The regular $R^2$ is a biased estimate of the amount of variability explained by the model when applied to a new sample of data.
+The regular $R^2$ is a biased estimate of the amount of variability explained by the model when applied to model with more than one predictor.
 To get a better estimate, we use the adjusted $R^2$.
 
 ::: {.important data-latex=""}
@@ -395,7 +397,7 @@ $$
 \end{aligned}
 $$
 
-where $n$ is the number of cases used to fit the model and $k$ is the number of predictor variables in the model.
+where $n$ is the number of observations used to fit the model and $k$ is the number of predictor variables in the model.
 Remember that a categorical predictor with $p$ levels will contribute $p - 1$ to the number of variables in the model.
 :::
 
@@ -404,7 +406,7 @@ terms_chp_9 <- c(terms_chp_9, "adjusted R-squared")
 ```
 
 Because $k$ is never negative, the adjusted $R^2$ will be smaller -- often times just a little smaller -- than the unadjusted $R^2$.
-The reasoning behind the adjusted $R^2$ lies in the **degrees of freedom** associated with each variance, which is equal to $n - k - 1$ for the multiple regression context.
+The reasoning behind the adjusted $R^2$ lies in the **degrees of freedom** associated with each variance, which is equal to $n - k - 1$ in the multiple regression context.
 If we were to make predictions for *new data* using our current model, we would find that the unadjusted $R^2$ would tend to be slightly overly optimistic, while the adjusted $R^2$ formula helps correct this bias.
 
 ```{r include=FALSE}
@@ -481,18 +483,23 @@ m_full_r_sq_adj <- glance(m_full)$adj.r.squared %>% round(4)
 options(digits = 3) # to get back to default set in _common.R
 m_full_df_residual <- glance(m_full)$df.residual
 
-m_full %>%
+m_full_w_rsq <- m_full %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
-  add_row(term = glue("Adjusted $R^2$ = {m_full_r_sq_adj}")) %>%
-  add_row(term = glue("df = {m_full_df_residual}")) %>%
-  kbl(booktabs = TRUE, caption = "The fit for the full regression model, including the adjusted $R^2$.", digits = 2, align = "lrrrr") %>%
+  add_row(term = glue("Adjusted R-squared = {m_full_r_sq_adj}")) %>%
+  add_row(term = glue("df = {m_full_df_residual}"))
+
+m_full_w_rsq %>%
+  kbl(linesep = "", booktabs = TRUE, 
+      caption = "The fit for the full regression model, including the adjusted $R^2$.", 
+      digits = 2, align = "lrrrr")  %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "17em") %>%
+  column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_w_rsq)) < 11, TRUE, FALSE)) %>%
+  column_spec(2:5, width = "5em") %>%
   pack_rows("", 11, 12) %>%
   add_indent(11:12) %>%
-  column_spec(1, width = "15em") %>%
-  column_spec(2:5, width = "6em") %>%
   row_spec(11:12, italic = TRUE)
 ```
 
@@ -504,21 +511,24 @@ m_full_minus_issue_month_r_sq_adj <- glance(m_full_minus_issue_month)$adj.r.squa
 options(digits = 3) # to get back to default set in _common.R
 m_full_minus_issue_month_df_residual <- glance(m_full_minus_issue_month)$df.residual
 
-m_full_minus_issue_month %>%
+m_full_minus_issue_month_w_rsq <- m_full_minus_issue_month %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
-  add_row(term = glue("Adjusted $R^2$ = {m_full_minus_issue_month_r_sq_adj}")) %>%
-  add_row(term = glue("df = {m_full_minus_issue_month_df_residual}")) %>%
-  kbl(booktabs = TRUE, 
+  add_row(term = glue("Adjusted R-squared = {m_full_minus_issue_month_r_sq_adj}")) %>%
+  add_row(term = glue("df = {m_full_minus_issue_month_df_residual}"))
+
+m_full_minus_issue_month_w_rsq %>%
+  kbl(linesep = "", booktabs = TRUE, 
       caption = "The fit for the regression model after dropping issue month, including the adjusted $R^2$.",
-      digits = 2, align = "lrrrr") %>%
+      digits = 2, align = "lrrrr")  %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "17em") %>%
+  column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_minus_issue_month_w_rsq)) < 9, TRUE, FALSE)) %>%
+  column_spec(2:5, width = "5em") %>%
   pack_rows("", 9, 10) %>%
   add_indent(9:10) %>%
-  row_spec(9:10, italic = TRUE) %>%
-  column_spec(1, width = "15em") %>%
-  column_spec(2:5, width = "6em")
+  row_spec(9:10, italic = TRUE)
 ```
 
 ::: {.workedexample data-latex=""}
@@ -542,41 +552,41 @@ How should we proceed under the backward elimination strategy?
 Our baseline adjusted $R^2$ from the full model is 0.2597, and we need to determine whether dropping a predictor will improve the adjusted $R^2$.
 To check, we fit models that each drop a different predictor, and we record the adjusted $R^2$:
 
--   Excluding `verified_income`: 0.22380
--   Excluding `debt_to_income`: 0.25468
--   Excluding `credit_util`: 0.19063
--   Excluding `bankruptcy`: 0.25787
--   Excluding `term`: 0.14581
--   Excluding `credit_checks`: 0.25854
--   Excluding `issue_month`: 0.24689
+-   Excluding `verified_income`: 0.2238
+-   Excluding `debt_to_income`: 0.2557
+-   Excluding `credit_util`: 0.1916
+-   Excluding `bankruptcy`: 0.2589
+-   Excluding `term`: 0.1468
+-   Excluding `credit_checks`: 0.2484
+-   Excluding `issue_month`: 0.2598
 
-The model without `issue_month` has the highest adjusted $R^2$ of 0.25854, higher than the adjusted $R^2$ for the full model.
+The model without `issue_month` has the highest adjusted $R^2$ of 0.2598, higher than the adjusted $R^2$ for the full model.
 Because eliminating `issue_month` leads to a model with a higher adjusted $R^2$, we drop `issue_month` from the model.
 
 Since we eliminated a predictor from the model in the first step, we see whether we should eliminate any additional predictors.
-Our baseline adjusted $R^2$ is now $R^2_{adj} = 0.25854$.
+Our baseline adjusted $R^2$ is now $R^2_{adj} = 0.2598$.
 We now fit new models, which consider eliminating each of the remaining predictors in addition to `issue_month`:
 
 -   Excluding `issue_month` and `verified_income`: 0.22395
--   Excluding `issue_month` and `debt_to_income`: 0.25479
--   Excluding `issue_month` and `credit_util`: 0.19074
--   Excluding `issue_month` and `bankruptcy`: 0.25798
--   Excluding `issue_month` and `term`: 0.14592
--   Excluding `issue_month` and `credit_checks`: 0.24701
+-   Excluding `issue_month` and `debt_to_income`: 0.25579
+-   Excluding `issue_month` and `credit_util`: 0.19174
+-   Excluding `issue_month` and `bankruptcy`: 0.25898
+-   Excluding `issue_month` and `term`: 0.14692
+-   Excluding `issue_month` and `credit_checks`: 0.24801
 
 None of these models lead to an improvement in adjusted $R^2$, so we do not eliminate any of the remaining predictors.
 That is, after backward elimination, we are left with the model that keeps all predictors except `issue_month`, which we can summarize using the coefficients from Table \@ref(tab:loans-full-except-issue-month).
 
 $$
 \begin{aligned}
-\widehat{\texttt{interest\_rate}} &= 1.90 \\
-&+ 1.00 \times \texttt{verified\_income}_\texttt{Source only} \\
-&+ 2.56 \times \texttt{verified\_income}_\texttt{Verified} \\
-&+ 0.02 \times \texttt{debt\_to\_income} \\
-&+ 4.90 \times \texttt{credit\_util} \\
+\widehat{\texttt{interest_rate}} &= 1.90 \\
+&+ 1.00 \times \texttt{verified_income}_\texttt{Source only} \\
+&+ 2.56 \times \texttt{verified_income}_\texttt{Verified} \\
+&+ 0.02 \times \texttt{debt_to_income} \\
+&+ 4.90 \times \texttt{credit_util} \\
 &+ 0.39 \times \texttt{bankruptcy} \\
 &+ 0.15 \times \texttt{term} \\
-&+ 0.23 \times \texttt{credit\_check}
+&+ 0.23 \times \texttt{credit_check}
 \end{aligned}
 $$
 :::
@@ -602,7 +612,7 @@ In this first step, we compare the adjusted $R^2$ against a baseline model that 
 The no-predictors model always has $R_{adj}^2 = 0$.
 The model with one predictor that has the largest adjusted $R^2$ is the model with the `term` predictor, and because this adjusted $R^2$ is larger than the adjusted $R^2$ from the model with no predictors ($R_{adj}^2 = 0$), we will add this variable to our model.
 
-We repeat the process again, this time considering 2-predictor models where one of the predictors is and with a new baseline of $R^2_{adj} = 0.12855:$
+We repeat the process again, this time considering 2-predictor models where one of the predictors is `term` and with a new baseline of $R^2_{adj} = 0.12855:$
 
 -   Including `term` and `verified_income`: 0.16851
 -   Including `term` and `debt_to_income`: 0.14368
@@ -611,9 +621,11 @@ We repeat the process again, this time considering 2-predictor models where one 
 -   Including `term` and `credit_checks`: 0.12840
 -   Including `term` and `issue_month`: 0.14294
 
-Adding `credit_util` yields a model with a higher adjusted $R^2$ (0.20046) than the baseline (0.12855), so we also add `credit_util` to the model as a predictor.
+Adding `credit_util` yields the highest increase in adjusted $R^2$ and has a higher adjusted $R^2$ (0.20046) than the baseline (0.12855).
+Thus, we will also add `credit_util` to the model as a predictor.
 
-Since we have again added a predictor to the model, we continue and see whether it would be beneficial to add a third predictor:
+Since we have again added a predictor to the model, we have a new baseline adjusted $R^2$ of 0.20046.
+We can continue on and see whether it would be beneficial to add a third predictor:
 
 -   Including `term`, `credit_util, and verified_income`: 0.24183
 -   Including `term`, `credit_util, and debt_to_income`: 0.20810
@@ -621,10 +633,10 @@ Since we have again added a predictor to the model, we continue and see whether 
 -   Including `term`, `credit_util, and credit_checks`: 0.20031
 -   Including `term`, `credit_util, and issue_month`: 0.21629
 
-The model including `verified_income` improved adjusted $R^2$ (0.24183 to 0.20046), so we `verified_income` add to the model as a predictor as well.
+The model including `verified_income` has the larges increase in adjusted $R^2$ (0.24183) from the baseline (0.20046), so we add `verified_income` to the model as a predictor as well.
 
 We continue on in this way, next adding `debt_to_income`, then `credit_checks`, and `bankruptcy`.
-At this point, we come again to the `issue_month` variable: adding this as a predictor leads to $R_{adj}^2 = 0.25843$, while keeping all the other predictors but excluding `issue_month` leads to a higher $R_{adj}^2 = 0.25854$.
+At this point, we come again to the `issue_month` variable: adding this as a predictor leads to $R_{adj}^2 = 0.25843$, while keeping all the other predictors but excluding `issue_month` has a higher $R_{adj}^2 = 0.25854$.
 This means we do not add `issue_month` to the model as a predictor.
 In this example, we have arrived at the same model that we identified from backward elimination.
 :::
@@ -641,10 +653,10 @@ If trying both techniques and this happens, it's common to choose the model with
 
 ### Other model selection strategies
 
-Stepwise selection using adjusted $R^2$ as the decision criteria is one of many widely accepted and commonly used model selection strategies.
+Stepwise selection using adjusted $R^2$ as the decision criteria is one of many commonly used model selection strategies.
 Stepwise selection can also be carried out with decision criteria other than adjusted $R^2$, such as p-values, which you'll learn about in Chapters \@ref(inf-model-slr) onwards, or AIC (Akaike information criterion) or BIC (Bayesian information criterion), which you might learn about in more advanced courses.
 
-Additionally, one can choose to include or exclude variables from a model based on expert opinion or due to research focus.
+Alternatively, one could choose to include or exclude variables from a model based on expert opinion or due to research focus.
 
 \clearpage
 
@@ -654,9 +666,9 @@ Additionally, one can choose to include or exclude variables from a model based 
 
 With real data, there is often a need to describe how multiple variables can be modeled together.
 In this chapter, we have presented one approach using multiple linear regression.
-Each coefficient represents a one unit increase of that predictor variable on the response variable **given** the rest of the predictor variables in the model.
+Each coefficient represents a one unit increase of that predictor variable on the response variable *given* the rest of the predictor variables in the model.
 Working with and interpreting multivariable models can be tricky, especially when the predictor variables show multicollinearity.
-There is often no perfect or "right" final model, but using the adjusted $R^2$ value is one way to identify predictor variables for a final regression model.
+There is often no perfect or "right" final model, but using the adjusted $R^2$ value is one way to identify important predictor variables for a final regression model.
 In later chapters we will generalize multiple linear regression models to a larger population of interest from which the dataset was generated.
 
 ### Terms

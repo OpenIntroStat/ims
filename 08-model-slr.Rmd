@@ -209,7 +209,7 @@ terms_chp_8 <- c(terms_chp_8, "residuals")
 ```
 
 Figure \@ref(fig:scattHeadLTotalLLine-highlighted) is almost a replica of Figure \@ref(fig:scattHeadLTotalLLine), with three points from the data highlighted.
-The observation marked by a red circle has a small, negative residual of about -1; the observation marked by a blue diamond has a large positive residual of about +7; and the observation marked by a pink triangle has a moderate negative residual of about -4.
+The observation marked by a red circle has a small, negative residual of about -1; the observation marked by a gray diamond has a large positive residual of about +7; and the observation marked by a pink triangle has a moderate negative residual of about -4.
 The size of a residual is usually discussed in terms of its absolute value.
 For example, the residual for the observation marked by a pink triangle is larger than that of the observation marked by a red circle because $|-4|$ is larger than $|-1|.$
 
@@ -231,9 +231,9 @@ ggplot(possum, aes(x = total_l, y = head_l)) +
                color = IMSCOL["red", "full"], inherit.aes = FALSE) +
   geom_point(data = possum %>% filter(total_l == 85, head_l == 98.6), 
              shape = "diamond open", stroke = 2, size = 5, 
-             color = IMSCOL["green", "full"]) +
+             color = IMSCOL["gray", "full"]) +
   geom_segment(aes(x = 85, y = preds[2], xend = 85, yend = obs[2]-0.5), 
-               color = IMSCOL["green", "full"], inherit.aes = FALSE) +
+               color = IMSCOL["gray", "full"], inherit.aes = FALSE) +
   geom_point(data = possum %>% filter(total_l == 95.5, head_l == 94), 
              shape = "triangle open", stroke = 2, size = 5, 
              color = IMSCOL["pink", "full"]) +
@@ -282,7 +282,7 @@ What about if it overestimates the observation?[^model-slr-1]
 Compute the residuals for the observation marked by a blue diamond, $(85.0, 98.6),$ and the observation marked by a pink triangle, $(95.5, 94.0),$ in the figure using the linear relationship $\hat{y} = 41 + 0.59x.$[^model-slr-2]
 :::
 
-[^model-slr-2]: Green diamond: $\hat{y} = 41+0.59x = 41+0.59\times 85.0 = 91.15 \rightarrow e = y - \hat{y} = 98.6-91.15=7.45.$ This is close to the earlier estimate of 7.
+[^model-slr-2]: Gray diamond: $\hat{y} = 41+0.59x = 41+0.59\times 85.0 = 91.15 \rightarrow e = y - \hat{y} = 98.6-91.15=7.45.$ This is close to the earlier estimate of 7.
     pink triangle: $\hat{y} = 41+0.59x = 97.3 \rightarrow e = -3.3.$ This is also close to the estimate of -4.
 
 Residuals are helpful in evaluating how well a linear model fits a dataset.
@@ -311,10 +311,10 @@ ggplot(m_head_total_aug, aes(x = .fitted, y = .resid)) +
   geom_point(data = m_head_total_aug %>% 
                filter(total_l == 85, head_l == 98.6), 
              shape = "diamond open", stroke = 2, size = 5, 
-             color = IMSCOL["green", "full"]) +
+             color = IMSCOL["gray", "full"]) +
   geom_segment(aes(x = preds[2], y = obs[2]-preds[2]-0.3, 
                    xend = preds[2], yend = 0), 
-               color = IMSCOL["green", "full"], inherit.aes = FALSE) +
+               color = IMSCOL["gray", "full"], inherit.aes = FALSE) +
   geom_point(data = m_head_total_aug %>% 
                filter(total_l == 95.5, head_l == 94), 
              shape = "triangle open", stroke = 2, size = 5, 
@@ -574,7 +574,7 @@ pob <- ggplot(crops_country) +
   )
 
 peb + sc + mc + cb + pob + wb +
-  plot_layout(ncol = 3) +
+  plot_layout(ncol = 2) +
   plot_annotation(tag_levels = "A")
 ```
 
@@ -714,9 +714,10 @@ The first 5 rows of this dataset are given in Table \@ref(tab:elmhurst-data).
 ```{r elmhurst-data}
 elmhurst %>%
   slice_head(n = 5) %>%
-  kbl(booktabs = TRUE, caption = caption_helper("First five rows of the `elmhurst` dataset.")) %>%
+  kbl(linesep = "", booktabs = TRUE, caption = caption_helper("First five rows of the `elmhurst` dataset.")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(1:3, width = "8em")
 ```
 
 We can see that family income is recorded in a variable called `family_income` and gift aid from university is recorded in a variable called `gift_aid`.
@@ -736,12 +737,13 @@ m_ga_fi_slope <- m_ga_fi %>% filter(term == "family_income") %>% pull(estimate)
 ```{r rOutputForIncomeAidLSRLine}
 m_ga_fi %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE, 
       caption = "Summary of least squares fit for the Elmhurst data.",
       digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  column_spec(1:5, width = "6em")
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "15em", monospace = TRUE) %>%
+  column_spec(2:5, width = "5em")
 ```
 
 The model output tells us that the intercept is approximately `r m_ga_fi_int` and the slope on `family_income` is approximately `r m_ga_fi_slope`.
@@ -762,7 +764,7 @@ We must be cautious in this interpretation: while there is a real association, w
 That is, increasing a particular student's family income may not cause the student's aid to drop.
 (Although it would be reasonable to contact the college and ask if the relationship is causal, i.e., if Elmhurst College's aid decisions are partially based on students' family income.)
 
-The estimated intercept $b_0$ = `r m_ga_fi_int` describes the average aid if a student's family had no income, \$`r round(m_ga_fi_int*1000,0)`.
+The estimated intercept $b_0$ = `r m_ga_fi_int` describes the average aid if a student's family had no income, \$`r format(round(m_ga_fi_int*1000,0), scientific = FALSE, big.mark = ",")`.
 The meaning of the intercept is relevant to this application since the family income for some students at Elmhurst is \$0.
 In other applications, the intercept may have little or no practical value if there are no observations where $x$ is near zero.
 :::
@@ -800,14 +802,15 @@ elmhurst %>%
     ga_s = sd(gift_aid),
     r    = cor(family_income, gift_aid)
   ) %>%
-  kbl(booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE, 
     col.names = c("mean", "sd", "mean", "sd", "r"),
     align = "ccccc",
     caption = "Summary statistics for family income and gift aid."
   ) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  add_header_above(c("Family income, x" = 2, "Gift aid, y" = 2, " " = 1))
+  add_header_above(c("Family income, x" = 2, "Gift aid, y" = 2, " " = 1)) %>%
+  column_spec(1:5, width = "6em")
 ```
 
 Next, we formally find the point estimates $b_0$ and $b_1$ of the parameters $\beta_0$ and $\beta_1.$
@@ -846,7 +849,7 @@ Apply the point-slope equation using $(102, 19.9)$ and the slope $b_1 = -0.0431$
 $$
 \begin{aligned}
 y - y_0  &= b_1 (x - x_0) \\
-y - 19.9 &= -0.0431(x - 102)
+y - 19.9 &= -0.0431 (x - 102)
 \end{aligned}
 $$
 
@@ -990,7 +993,7 @@ Among 50 students in the `elmhurst` dataset, the total variability in gift aid i
 Since we know $SSE$ and $SST,$ we can calculate $R^2$ as $$R^2 = 1 - \frac{SSE}{SST} = 1 - \frac{1098}{1461} = 0.25,$$ the same value we found when we squared the correlation: $R^2 = (-0.499)^2 = 0.25.$
 :::
 
-[^model-slr-10]: $SST$ can be calculated by finding the sample variance of the response variable, $s^2$ and multiplying by $n-1.$
+[^model-slr-10]: $SST$ can be calculated by finding the sample variance of the outcome variable, $s^2$ and multiplying by $n-1.$
 
 ### Categorical predictors with two levels {#categorical-predictor-two-levels}
 
@@ -1057,12 +1060,13 @@ m_total_pr_cond_slope <- m_total_pr_cond_tidy %>%
 
 m_total_pr_cond_tidy %>%
   mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE, 
       caption = "Least squares regression summary for the final auction price against the condition of the game.", 
       digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  column_spec(1:5, width = "6em")
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "15em", monospace = TRUE) %>%
+  column_spec(2:5, width = "5em")
 ```
 
 Using values from Table \@ref(tab:marioKartNewUsedRegrSummary), the model equation can be summarized as
@@ -1082,7 +1086,7 @@ The slope indicates that, on average, new games sell for about \$10.9 more than 
 ::: {.important data-latex=""}
 **Interpreting model estimates for categorical predictors.**
 
-The estimated intercept is the value of the response variable for the first category (i.e., the category corresponding to an indicator value of 0).
+The estimated intercept is the value of the outcome variable for the first category (i.e., the category corresponding to an indicator value of 0).
 The estimated slope is the average change in the outcome variable between the two categories.
 :::
 
@@ -1347,7 +1351,7 @@ For instance, if a financial firm ignored the largest market swings -- the "outl
 Throughout this chapter, the nuances of the linear model have been described.
 You have learned how to create a linear model with explanatory variables that are numerical (e.g., total possum length) and those that are categorical (e.g., whether or not a video game was new).
 The residuals in a linear model are an important metric used to understand how well a model fits; high leverage points, influential points, and other types of outliers can impact the fit of a model.
-Correlation is a measure of the strength and direction of the linear relationship of two variables, without specifying which variable is the explanatory and which is the response.
+Correlation is a measure of the strength and direction of the linear relationship of two variables, without specifying which variable is the explanatory and which is the outcome.
 Future chapters will focus on generalizing the linear model from the sample of data to claims about the population of interest.
 
 ### Terms
