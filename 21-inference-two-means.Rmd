@@ -28,10 +28,15 @@ This section is motivated by questions like "Is there convincing evidence that n
 
 An instructor decided to run two slight variations of the same exam.
 Prior to passing out the exams, she shuffled the exams together to ensure each student received a random version.
-Summary statistics for how students performed on these two exams are shown in Table \@ref(tab:summaryStatsForTwoVersionsOfExams) and plotted in Figure \@ref(fig:boxplotTwoVersionsOfExams).
 Anticipating complaints from students who took Version B, she would like to evaluate whether the difference observed in the groups is so large that it provides convincing evidence that Version B was more difficult (on average) than Version A.
 
+::: {.data data-latex=""}
+The [`classdata`](http://openintrostat.github.io/openintro/reference/classdata.html) data from this study can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
+:::
+
 ### Observed data
+
+Summary statistics for how students performed on these two exams are shown in Table \@ref(tab:summaryStatsForTwoVersionsOfExams) and plotted in Figure \@ref(fig:boxplotTwoVersionsOfExams).
 
 ```{r summaryStatsForTwoVersionsOfExams}
 classdata <- classdata %>% 
@@ -190,9 +195,13 @@ include_graphics("images/bootmeans2means.png")
 Does treatment using embryonic stem cells (ESCs) help improve heart function following a heart attack?
 Table \@ref(tab:statsSheepEscStudy) contains summary statistics for an experiment to test ESCs in sheep that had a heart attack.
 Each of these sheep was randomly assigned to the ESC or control group, and the change in their hearts' pumping capacity was measured in the study.
-Figure \@ref(fig:stem-cell-histograms) provides histograms of the two datasets.
+[@Menard:2005] Figure \@ref(fig:stem-cell-histograms) provides histograms of the two datasets.
 A positive value corresponds to increased pumping capacity, which generally suggests a stronger recovery.
 Our goal will be to identify a 95% confidence interval for the effect of ESCs on the change in heart pumping capacity relative to the control group.
+
+::: {.data data-latex=""}
+The [`stem_cell`](http://openintrostat.github.io/openintro/reference/stem_cell.html) data from this study can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
+:::
 
 ```{r statsSheepEscStudy}
 stem_cell <- stem_cell %>%
@@ -282,25 +291,32 @@ Because the study is a randomized controlled experiment, we can conclude that it
 
 ## Mathematical model for testing the difference in means {#math2samp}
 
+Every year, the US releases to the public a large data set containing information on births recorded in the country.
+This data set has been of interest to medical researchers who are studying the relation between habits and practices of expectant mothers and the birth of their children.
+We will work with a random sample of 1,000 cases from the data set released in 2014.
+
+::: {.data data-latex=""}
+The [`births14`](http://openintrostat.github.io/openintro/reference/births14.html) data from this study can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
+:::
+
 ### Observed data
 
-A dataset called `ncbirths` represents a random sample of 150 cases of mothers and their newborns in North Carolina over a year.
 Four cases from this dataset are represented in Table \@ref(tab:babySmokeDF).
 We are particularly interested in two variables: `weight` and `smoke`.
 The `weight` variable represents the weights of the newborns and the `smoke` variable describes which mothers smoked during pregnancy.
-We would like to know, is there convincing evidence that newborns from mothers who smoke have a different average birth weight than newborns from mothers who don't smoke?
-We will use the North Carolina sample to try to answer this question.
-The smoking group includes 50 cases and the nonsmoking group contains 100 cases.
 
 ```{r babySmokeDF}
-ncbirths %>% 
-  select(-premie, -mature, -lowbirthweight) %>%
+births14 %>% 
+  select(-premie, -mature, -lowbirthweight, -whitemom, -marital) %>%
   head(4) %>%
-  kbl(linesep = "", booktabs = TRUE, caption = caption_helper("Four cases from the `ncbirths` dataset. The missing cells in the first two entries of the first variable, indicates that piece of data is missing."),
+  kbl(linesep = "", booktabs = TRUE, caption = caption_helper("Four cases from the `births14` dataset. The emoty cells indicate missing data."),
       escape = FALSE, align = "cccclcclll") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position")) 
 ```
+
+We would like to know, is there convincing evidence that newborns from mothers who smoke have a different average birth weight than newborns from mothers who don't smoke?
+We will use data from this sample to try to answer this question.
 
 ::: {.workedexample data-latex=""}
 Set up appropriate hypotheses to evaluate whether there is a relationship between a mother smoking and average birth weight.
@@ -313,48 +329,68 @@ The null hypothesis represents the case of no difference between the groups.
 -   $H_A:$ There is some difference in average newborn weights from mothers who did and did not smoke $(\mu_{n} - \mu_{s} \neq 0).$
 :::
 
-### Variability of the statistic
+Table \@ref(tab:births14-summary-stats) displays sample statistics from the data.
+We can see that the average birth weight of babies born to smoker moms is lower than those born to nonsmoker moms.
 
-We check the two conditions necessary to model the difference in sample means using the $t$-distribution.
+```{r births14-summary-stats}
+births14_nona <- births14 %>%
+  filter(
+    !is.na(habit), !is.na(weight)
+  )
 
--   Because the data come from a simple random sample, the observations are independent, both within and between samples.
--   With both datasets over 30 observations, we inspect the data in Figure \@ref(fig:babySmokePlotOfTwoGroupsToExamineSkew) for any particularly extreme outliers and find none.
+births14_sample_stats <- births14_nona %>%
+  group_by(habit) %>%
+  summarise(
+    n = n(),
+    Mean = mean(weight),
+    SD = sd(weight)
+  )
 
-Since both conditions are satisfied, the difference in sample means may be modeled using a $t$-distribution.
+xbar_nonsmoker  <- round(births14_sample_stats %>% filter(habit == "nonsmoker") %>% pull(Mean), 2)
+xbar_smoker     <- round(births14_sample_stats %>% filter(habit == "smoker") %>% pull(Mean), 2)
+xbar_difference <- xbar_nonsmoker - xbar_smoker
+sd_nonsmoker    <- round(births14_sample_stats %>% filter(habit == "nonsmoker") %>% pull(SD), 2)
+sd_smoker       <- round(births14_sample_stats %>% filter(habit == "smoker") %>% pull(SD), 2)
+n_nonsmoker     <- births14_sample_stats %>% filter(habit == "nonsmoker") %>% pull(n)
+n_smoker        <- births14_sample_stats %>% filter(habit == "smoker") %>% pull(n)
+se_difference   <- round(sqrt(sd_nonsmoker^2/n_nonsmoker + sd_smoker^2/n_smoker), 2)
+t_difference    <- round(xbar_difference / se_difference, 2)
+df_difference   <- min(n_nonsmoker-1, n_smoker-1)
 
-```{r babySmokePlotOfTwoGroupsToExamineSkew, fig.cap="The top panel represents birth weights for infants whose mothers smoked during pregnancy. The bottom panel represents the birth weights for infants whose mothers who did not smoke during pregnancy.", warning=FALSE, fig.width=10}
-births %>%
-  mutate(smoke = fct_rev(if_else(smoke == "smoker", "Mothers who smoked", "Mothers who did not smoke"))) %>%
-  ggplot(aes(x = weight)) +
-  geom_histogram(binwidth = 1) +
-  facet_wrap(~smoke, ncol = 1, scales = "free_y") +
-  scale_x_continuous(breaks = seq(0, 10, 2), limits = c(0, 10)) +
-  labs(x = "Newborn weights (lbs)", y = "Count")
-```
-
-::: {.guidedpractice data-latex=""}
-The summary statistics in Table \@ref(tab:SumStatsBirthWeightNewbornsSmoke) may be useful for this Guided Practice.[^inference-two-means-3]
-What is the point estimate of the population difference, $\mu_{n} - \mu_{s}$?
-Compute the standard error of the point estimate
-:::
-
-[^inference-two-means-3]: The difference in sample means is an appropriate point estimate: $\bar{x}_{n} - \bar{x}_{s} = 0.40.$ The standard error of the estimate can be calculated using the standard error formula: $SE = \sqrt{\frac{\sigma_n^2}{n_n} + \frac{\sigma_s^2}{n_s}} \approx \sqrt{\frac{s_n^2}{n_n} + \frac{s_s^2}{n_s}} = \sqrt{\frac{1.60^2}{100} + \frac{1.43^2}{50}} = 0.26.$
-
-```{r SumStatsBirthWeightNewbornsSmoke}
-ncbirths_sample_stats <- tribble(
-  ~group,      ~n,  ~mean, ~sd,
-  "smoker",    50,  6.78,  1.43,
-  "nonsmoker", 100, 7.18,  1.60
-)
-
-ncbirths_sample_stats %>%
-  kbl(linesep = "", booktabs = TRUE, caption = caption_helper("Summary statistics for the `ncbirths` dataset."),
+births14_sample_stats %>%
+  kbl(linesep = "", booktabs = TRUE, caption = caption_helper("Summary statistics for the `births14` dataset."),
       col.names = c("Habit", "n", "Mean", "SD"),
       align = "lccc", digits = 2) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
   column_spec(1:4, width = "7em")
 ```
+
+### Variability of the statistic
+
+We check the two conditions necessary to model the difference in sample means using the $t$-distribution.
+
+-   Because the data come from a simple random sample, the observations are independent, both within and between samples.
+-   With both groups over 30 observations, we inspect the data in Figure \@ref(fig:babySmokePlotOfTwoGroupsToExamineSkew) for any particularly extreme outliers and find none.
+
+Since both conditions are satisfied, the difference in sample means may be modeled using a $t$-distribution.
+
+```{r babySmokePlotOfTwoGroupsToExamineSkew, fig.cap="The top panel represents birth weights for infants whose mothers smoked during pregnancy. The bottom panel represents the birth weights for infants whose mothers who did not smoke during pregnancy."}
+births14_nona %>%
+  mutate(habit = fct_rev(if_else(habit == "smoker", "Mothers who smoked", "Mothers who did not smoke"))) %>%
+  ggplot(aes(x = weight)) +
+  geom_histogram(binwidth = 1) +
+  facet_wrap(~habit, ncol = 1, scales = "free_y") +
+  scale_x_continuous(breaks = seq(0, 10, 2), limits = c(0, 10)) +
+  labs(x = "Newborn weights (lbs)", y = "Count")
+```
+
+::: {.guidedpractice data-latex=""}
+The summary statistics in Table \@ref(tab:tab:births14-summary-stats) may be useful for this Guided Practice.
+What is the point estimate of the population difference, $\mu_{n} - \mu_{s}$?[^inference-two-means-3]
+:::
+
+[^inference-two-means-3]: The point estimate of the population difference ($\bar{x}_{n} - \bar{x}_{s}$) is `r xbar_difference`.
 
 ### Observed statistic vs. null statistics
 
@@ -377,61 +413,38 @@ Conditions:
 terms_chp_21 <- c(terms_chp_21, "T score", "t-test")
 ```
 
+::: {.guidedpractice data-latex=""}
+Compute the standard error of the point estimate for the average difference between the weights of babies born to nonsmoker and smoker mothers.[^inference-two-means-4]
+:::
+
+[^inference-two-means-4]: The standard error of the estimate can be calculated using the standard error formula: $SE = \sqrt{\frac{\sigma_{n}^2}{n_n} + \frac{\sigma_s^2}{n_s}} \approx \sqrt{\frac{s_n^2}{n_n} + \frac{s_s^2}{n_s}} = \sqrt{\frac{1.23^2}{867} + \frac{1.60^2}{114}} = `r se_difference`.$
+
 ::: {.workedexample data-latex=""}
-Complete the hypothesis test started in the previous Example and Guided Practice on `ncbirths` dataset and research question.
-Use a significance level of $\alpha=0.05.$ For reference, $\bar{x}_{n} - \bar{x}_{s} = 0.40,$ $SE = 0.26,$ and the sample sizes were $n_n = 100$ and $n_s = 50.$
+Complete the hypothesis test started in the previous Example and Guided Practice on `births14` dataset and research question.
+Use a significance level of $\alpha=0.05.$ For reference, $\bar{x}_{n} - \bar{x}_{s} = `r xbar_difference`,$ $SE = `r se_difference`,$ and the sample sizes were $n_n = 100$ and $n_s = 50.$
 
 ------------------------------------------------------------------------
 
 We can find the test statistic for this test using the previous information:
 
-$$T = \frac{\ 0.40 - 0\ }{0.26} = 1.54$$
-
-The p-value is represented by the two shaded tails in Figure \@ref(fig:distOfDiffOfSampleMeansForBWOfBabySmokeData)
+$$T = \frac{\ `r xbar_difference` - 0\ }{`r se_difference`} = `r t_difference`$$
 
 We find the single tail area using software.
-We'll use the smaller of $n_n - 1 = 99$ and $n_s - 1 = 49$ as the degrees of freedom: $df = 49.$ The one tail area is 0.065; doubling this value gives the two-tail area and p-value, 0.130.
+We'll use the smaller of $n_n - 1 = `r n_nonsmoker-1`$ and $n_s - 1 = `r n_smoker-1`$ as the degrees of freedom: $df = `r df_difference`.$ The one tail area is roughly 0.00017; doubling this value gives the two-tail area and p-value, 0.00034.
 
-The p-value is larger than the significance value, 0.05, so we do not reject the null hypothesis.
-There is insufficient evidence to say there is a difference in average birth weight of newborns from North Carolina mothers who did smoke during pregnancy and newborns from North Carolina mothers who did not smoke during pregnancy.
+The p-value is much smaller than the significance value, 0.05, so we reject the null hypothesis.
+The data provide is convincing evidence of a difference in the average weights of babies born to mothers who smoked during pregnancy and those who did not.
 :::
 
-```{r distOfDiffOfSampleMeansForBWOfBabySmokeData, fig.cap="The mathematical model for the T statistic when the null hypothesis is true.  As expected, the curve is centered at zero (the null value). The observed statistic is also plotted with the area more extreme than the observed statistic plotted to indicate the p-value."}
-normTail(0, 1,
-  L = -1.54,
-  U = 1.54,
-  df = 20, # Aesthetics
-  col = IMSCOL["blue", "full"],
-  axes = FALSE
-)
-at <- c(-5, 0, 1.54, 5)
-labels <- expression(0, mu[n] - mu[s] * " = 0", "obs. diff", 0)
-axis(1, at, labels, cex.axis = 0.9)
-```
-
-::: {.guidedpractice data-latex=""}
-We've seen much research suggesting smoking is harmful during pregnancy, so how could we fail to reject the null hypothesis in the previous Example?[^inference-two-means-4]
-:::
-
-[^inference-two-means-4]: It is possible that there is a difference but we did not detect it.
-    If there is a difference, we made a Type 2 Error.
-
-::: {.guidedpractice data-latex=""}
-If we made a Type 2 Error and there is a difference, what could we have done differently in data collection to be more likely to detect the difference?[^inference-two-means-5]
-:::
-
-[^inference-two-means-5]: We could have collected more data.
-    If the sample sizes are larger, we tend to have a better shot at finding a difference if one exists.
-    In fact, this is exactly what we would find if we examined a larger dataset!
-
-Public service announcement: while we have used this relatively small dataset as an example, larger datasets show that women who smoke tend to have smaller newborns.
+This result is likely not surprising.
+We all know that smoking is bad for you and you've probably also heard that smoking during pregnancy is not just bad for the mother but also for the baby as well.
 In fact, some in the tobacco industry actually had the audacity to tout that as a *benefit* of smoking:
 
 > *It's true. The babies born from women who smoke are smaller, but they're just as healthy as the babies born from women who do not smoke. And some women would prefer having smaller babies.* - Joseph Cullman, Philip Morris' Chairman of the Board on CBS' *Face the Nation*, Jan 3, 1971
 
-Fact check: the babies from women who smoke are not actually as healthy as the babies from women who do not smoke.[^inference-two-means-6]
+Furthermore, health differences between babies born to mothers who smoke and those who do not are not limited to weight differences.[^inference-two-means-5]
 
-[^inference-two-means-6]: You can watch an episode of John Oliver on [*Last Week Tonight*](youtu.be/6UsHHOCH4q8) to explore the present day offenses of the tobacco industry.
+[^inference-two-means-5]: You can watch an episode of John Oliver on [*Last Week Tonight*](youtu.be/6UsHHOCH4q8) to explore the present day offenses of the tobacco industry.
     Please be aware that there is some adult language.
 
 ## Mathematical model for estimating the difference in means
