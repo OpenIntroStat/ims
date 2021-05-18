@@ -54,14 +54,15 @@ ask <- ask %>%
 ```{r ipod-ask-data-summary}
 ask %>%
   count(question_class, response) %>%
-  pivot_wider(names_from = question_class, values_from = n) %>%
+  pivot_wider(names_from = response, values_from = n) %>%
   adorn_totals(where = c("row", "col")) %>%
   kbl(linesep = "", booktabs = TRUE, 
-    caption = "Summary of the iPod study, where a question was posed to the study participant who acted.",
-    col.names = c("Response", "General", "Positive assumption", "Negative assumption", "Total")
+      caption = "Summary of the iPod study, where a question was posed to the study participant who acted.",
+      col.names = c("Question", "Disclose problem", "Hide problem", "Total")
     ) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(2:4, width = "6em")
 ```
 
 ::: {.data data-latex=""}
@@ -114,45 +115,44 @@ ask_chi_sq_tabs <- bind_rows(ask_chi_sq_obs, ask_chi_sq_exp) %>%
   rename_with(.fn = str_remove, .cols = everything(), "ask\\$")
 
 ask_chi_sq_tabs %>%
-  mutate(question_class_type = paste0(question_class, "-", type)) %>%
-  select(-question_class, -type) %>%
-  pivot_wider(names_from = question_class_type, values_from = n) %>%
+  mutate(response_type = paste0(response, "-", type)) %>%
+  select(-response, -type) %>%
+  pivot_wider(names_from = response_type, values_from = n) %>%
   relocate(
-    response,
-    contains("General"),
-    contains("Positive"),
-    contains("Negative")
+    question_class,
+    contains("Disclose"),
+    contains("Hide")
   ) %>%
   mutate(across(contains("expected"), ~paste0("(", round(.x, 2), ")"))) %>%
   rowwise() %>%
   mutate(Total = sum(c_across(contains("observed")))) %>%
   adorn_totals(where = "row") %>%
   mutate(
-    `General-expected` = ifelse(`General-expected` == "-", NA, `General-expected`),
-    `Positive assumption-expected` = ifelse(`Positive assumption-expected` == "-", NA, `Positive assumption-expected`),
-    `Negative assumption-expected` = ifelse(`Negative assumption-expected` == "-", NA, `Negative assumption-expected`)
+    `Disclose problem-expected` = ifelse(`Disclose problem-expected` == "-", NA, `Disclose problem-expected`),
+    `Hide problem-expected` = ifelse(`Hide problem-expected` == "-", NA, `Hide problem-expected`)
   ) %>%
  kbl(linesep = "", booktabs = TRUE, 
    caption = "The observed counts and the expected counts for the iPod experiment.", 
-   col.names = c("", "", "", "", "", "", "", "")
+   col.names = c("", "", "", "", "", "")
    ) %>%
+  column_spec(1, width = "8em") %>%
   column_spec(3, color = IMSCOL["blue", "full"], italic = TRUE) %>%
   column_spec(5, color = IMSCOL["blue", "full"], italic = TRUE) %>%
-  column_spec(7, color = IMSCOL["blue", "full"], italic = TRUE) %>%
-  add_header_above(c(" ", "General" =2, "Positive assumption" = 2, "Negative assumption" = 2, "Total")) %>%
+  column_spec(6, width = "5em") %>%
+  add_header_above(c(" ", "Disclose problem" =2, "Hide problem" = 2, "Total")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 The examples and exercises above provided some help in computing expected counts.
 In general, expected counts for a two-way table may be computed using the row totals, column totals, and the table total.
-For instance, if there was no difference between the groups, then about 27.85% of each column should be in the first row:
+For instance, if there was no difference between the groups, then about 27.85% of each row should be in the first column:
 
 $$
 \begin{aligned}
-0.2785\times (\text{column 1 total}) &= 20.33 \\
-0.2785\times (\text{column 2 total}) &= 20.33 \\
-0.2785\times (\text{column 3 total}) &= 20.33
+0.2785\times (\text{row 1 total}) &= 20.33 \\
+0.2785\times (\text{row 2 total}) &= 20.33 \\
+0.2785\times (\text{row 3 total}) &= 20.33
 \end{aligned} 
 $$
 
@@ -195,7 +195,7 @@ $$
         {\text{expected count}} \\
 &\text{Row 1, Col 1} &&
     \frac{(2 - 20.33)^2}{20.33} = 16.53 \\
-&\text{Row 1, Col 2} &&
+&\text{Row 2, Col 1} &&
     \frac{(23 - 20.33)^2}{20.33} = 0.35 \\
 & \hspace{9mm}\vdots &&
     \hspace{13mm}\vdots \\
@@ -221,17 +221,22 @@ Table \@ref(tab:ipod-ask-data-summary-rand) shows a possible randomization of th
 
 ```{r ipod-ask-data-summary-rand}
 set.seed(4747)
-ask %>%
-  mutate(question_class = sample(question_class)) %>% # randomize
+
+# randomize
+ask_rand <- ask %>%
+  mutate(question_class = sample(question_class))
+
+ask_rand %>%
   count(question_class, response) %>%
-  pivot_wider(names_from = question_class, values_from = n) %>%
+  pivot_wider(names_from = response, values_from = n) %>%
   adorn_totals(where = c("row", "col")) %>%
   kbl(linesep = "", booktabs = TRUE, 
-    caption = "Randomized allocation of the data to the question posed in the iPod study.",
-    col.names = c("Response", "General", "Positive assumption", "Negative assumption", "Total")
+      caption = "Summary of the iPod study, where a question was posed to the study participant who acted.",
+      col.names = c("Question", "Disclose problem", "Hide problem", "Total")
     ) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(2:4, width = "6em")
 ```
 
 As before, the randomized data is used to find a single value for the test statistic (here a chi-squared statistic).
@@ -244,19 +249,19 @@ $$
     \frac{(\text{observed count } - \text{expected count})^2}
         {\text{expected count}} \\
 &\text{Row 1, Col 1} &&
-    \frac{(15 - 20.33)^2}{20.33} = 1.399 \\
-&\text{Row 1, Col 2} &&
-    \frac{(26 - 20.33)^2}{20.33} = 1.579 \\
+    \frac{(29 - 20.33)^2}{20.33} = 3.7 \\
+&\text{Row 2, Col 1} &&
+    \frac{(15 - 20.33)^2}{20.33} = 1.4 \\
 & \hspace{9mm}\vdots &&
     \hspace{13mm}\vdots \\
-&\text{Row 2, Col 3} &&
-    \frac{(53 - 52.67)^2}{52.67} = 0.002
+&\text{Row 3, Col 2} &&
+    \frac{(56 - 52.67)^2}{52.67} = 0.211
 \end{aligned} 
 $$
 
 Adding the computed value for each cell gives the chi-squared test statistic $X^2:$
 
-$$X^2 = 1.399 + 1.579 + \dots + 0.002 = 4.136$$
+$$X^2 = 3.7 + 1.4 + \dots + 0.211 = 8$$
 
 ```{r include=FALSE}
 terms_chp_19 <- c(terms_chp_19, "chi-squared statistic")
@@ -423,7 +428,8 @@ diabetes2 %>%
     col.names = c("Treatment", "Failure", "Success", "Total")
     ) %>%
  kable_styling(bootstrap_options = c("striped", "condensed"), 
-               latex_options = c("striped", "hold_position"), full_width = FALSE)
+               latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(1:4, width = "5em")
 ```
 
 ::: {.data data-latex=""}
