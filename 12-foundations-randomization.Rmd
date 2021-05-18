@@ -66,10 +66,10 @@ Using a few different case studies, let's look more carefully at this idea of a 
 terms_chp_12 <- c(terms_chp_12, "randomization test")
 ```
 
-## Gender discrimination case study {#caseStudyGenderDiscrimination}
+## Sex discrimination case study {#caseStudyGenderDiscrimination}
 
-We consider a study investigating gender discrimination in the 1970s, which is set in the context of personnel decisions within a bank.[^foundations-randomization-2]
-The research question we hope to answer is, "Are females discriminated against in promotion decisions made by male managers?"
+We consider a study investigating sex discrimination in the 1970s, which is set in the context of personnel decisions within a bank.[^foundations-randomization-2]
+The research question we hope to answer is, "Are individuals who identify as female discriminated against in promotion decisions made by their managers who identify as male?"
 
 [^foundations-randomization-2]: Rosen B and Jerdee T.
     1974.
@@ -81,9 +81,9 @@ The data from this study can be found in the [**openintro**](http://openintrosta
 
 ### Observed data
 
-The participants in this study were 48 male bank supervisors attending a management institute at the University of North Carolina in 1972.[^foundations-randomization-3]
+The participants in this study were 48 bank supervisors who identified as male, attending a management institute at the University of North Carolina in 1972.[^foundations-randomization-3]
 They were asked to assume the role of the personnel director of a bank and were given a personnel file to judge whether the person should be promoted to a branch manager position.
-The files given to the participants were identical, except that half of them indicated the candidate was male and the other half indicated the candidate was female.
+The files given to the participants were identical, except that half of them indicated the candidate identified as male and the other half indicated the candidate identified as female.
 These files were randomly assigned to the subjects.
 
 [^foundations-randomization-3]: Rosen B and Jerdee T.
@@ -96,20 +96,21 @@ How does the type of study impact what can be inferred from the results?[^founda
 :::
 
 [^foundations-randomization-4]: The study is an experiment, as subjects were randomly assigned a "male" file or a "female" file (remember, all the files were actually identical in content).
-    Since this is an experiment, the results can be used to evaluate a causal relationship between gender of a candidate and the promotion decision.
+    Since this is an experiment, the results can be used to evaluate a causal relationship between the sex of a candidate and the promotion decision.
 
 ```{r gender-discrimination-obs-p}
 gender_discrimination_props <- gender_discrimination %>% 
-  count(gender, decision) %>%
-  group_by(gender) %>%
+  rename(sex = gender) %>% 
+  count(sex, decision) %>%
+  group_by(sex) %>%
   mutate(p = n / sum(n))
 
 p_male <- gender_discrimination_props %>%
-  filter(gender == "male", decision == "promoted") %>%
+  filter(sex == "male", decision == "promoted") %>%
   pull(p)
 
 p_female <- gender_discrimination_props %>%
-  filter(gender == "female", decision == "promoted") %>%
+  filter(sex == "female", decision == "promoted") %>%
   pull(p)
 
 p_diff <- p_male - p_female
@@ -119,16 +120,16 @@ perc_female <- label_percent(accuracy = 0.1)(p_female)
 perc_diff   <- label_percent(accuracy = 0.1)(p_diff)
 ```
 
-For each supervisor both the gender associated with the assigned file and the promotion decision were recorded.
-Using the results of the study summarized in Table \@ref(tab:gender-discrimination-obs), we would like to evaluate if females are unfairly discriminated against in promotion decisions.
-In this study, a smaller proportion of females are promoted than males (`r p_female` versus `r p_male`), but it is unclear whether the difference provides *convincing evidence* that females are unfairly discriminated against.
+For each supervisor both the sex associated with the assigned file and the promotion decision were recorded.
+Using the results of the study summarized in Table \@ref(tab:gender-discrimination-obs), we would like to evaluate if individuals who identify as female are unfairly discriminated against in promotion decisions.
+In this study, a smaller proportion of female identifying applications were promoted than males (`r p_female` versus `r p_male`), but it is unclear whether the difference provides *convincing evidence* that individuals who identify as female are unfairly discriminated against.
 
 ```{r gender-discrimination-obs}
 gender_discrimination %>% 
-  count(decision, gender) %>% 
+  count(decision, sex) %>% 
   pivot_wider(names_from = decision, values_from = n) %>%
   adorn_totals(where = c("col", "row")) %>% 
-  kbl(linesep = "", booktabs = TRUE, caption = "Summary results for the gender discrimination study.") %>%
+  kbl(linesep = "", booktabs = TRUE, caption = "Summary results for the sex discrimination study.") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
   add_header_above(c(" " = 1, "decision" = 2, " " = 1)) %>%
@@ -137,26 +138,26 @@ gender_discrimination %>%
 
 The data are visualized in Figure \@ref(fig:gender-rand-obs) as a set of cards.
 Note that each card denotes a personnel file (an observation from our dataset) and the colors indicate the decision: red for promoted and white for not promoted.
-Additionally, the observations are broken up into the male and female groups.
+Additionally, the observations are broken up into groups of male and female identifying groups.
 
-```{r gender-rand-obs, out.width = "40%", fig.cap = "The gender descriminiation study can be thought of as 48 red and white cards."}
+```{r gender-rand-obs, out.width = "40%", fig.cap = "The sex descriminiation study can be thought of as 48 red and white cards."}
 knitr::include_graphics("images/gender-rand-01-obs.png")
 ```
 
 ::: {.workedexample data-latex=""}
 Statisticians are sometimes called upon to evaluate the strength of evidence.
-When looking at the rates of promotion for males and females in this study, why might we be tempted to immediately conclude that females are being discriminated against?
+When looking at the rates of promotion in this study, why might we be tempted to immediately conclude that individuals identifying as female are being discriminated against?
 
 ------------------------------------------------------------------------
 
-The large difference in promotion rates (`r perc_female` for females versus `r perc_male` for males) suggest there might be discrimination against women in promotion decisions.
-However, we cannot yet be sure if the observed difference represents discrimination or is just due to random chance.
-Since we wouldn't expect the sample proportions to be *exactly* equal, even if the truth was that the promotion decisions were independent of gender, we can't rule out random chance as a possible explanation when simply comparing the sample proportions.
+The large difference in promotion rates (`r perc_female` for female personnel versus `r perc_male` for male personnel) suggest there might be discrimination against women in promotion decisions.
+However, we cannot yet be sure if the observed difference represents discrimination or is just due to random chance when there is no discrimination occurring.
+Since we wouldn't expect the sample proportions to be *exactly* equal, even if the truth was that the promotion decisions were independent of sex, we can't rule out random chance as a possible explanation when simply comparing the sample proportions.
 :::
 
 The previous example is a reminder that the observed outcomes in the sample may not perfectly reflect the true relationships between variables in the underlying population.
-Table \@ref(tab:gender-discrimination-obs) shows there were 7 fewer promotions in the female group than in the male group, a difference in promotion rates of `r perc_diff` $\left( \frac{21}{24} - \frac{14}{24} = 0.292 \right).$ This observed difference is what we call a **point estimate**\index{point estimate} of the true difference.
-The point estimate of the difference is large, but the sample size for the study is small, making it unclear if this observed difference represents discrimination or whether it is simply due to chance.
+Table \@ref(tab:gender-discrimination-obs) shows there were 7 fewer promotions for female identifying personnel than for the male personnel, a difference in promotion rates of `r perc_diff` $\left( \frac{21}{24} - \frac{14}{24} = 0.292 \right).$ This observed difference is what we call a **point estimate**\index{point estimate} of the true difference.
+The point estimate of the difference in promotion rate is large, but the sample size for the study is small, making it unclear if this observed difference represents discrimination or whether it is simply due to chance when there is no discrimination occurring.
 Chance can be thought of as the claim due to natural variability; discrimination can be thought of as the claim the researchers set out to demonstrate.
 We label these two competing claims, $H_0$ and $H_A:$
 
@@ -165,12 +166,12 @@ terms_chp_12 <- c(terms_chp_12, "point estimate")
 ```
 
 -   $H_0:$ **Null hypothesis**\index{null hypothesis}.
-    The variables `gender` and `decision` are independent.
-    They have no relationship, and the observed difference between the proportion of males and females who were promoted, `r perc_diff`, was due to random chance.
+    The variables `sex` and `decision` are independent.
+    They have no relationship, and the observed difference between the proportion of males and females who were promoted, `r perc_diff`, was due to the natural variability inherent in the population. 
 
 -   $H_A:$ **Alternative hypothesis**\index{alternative hypothesis}.
-    The variables `gender` and `decision` are *not* independent.
-    The difference in promotion rates of `r perc_diff` was not due to random chance, and equally qualified females are less likely to be promoted than males.
+    The variables `sex` and `decision` are *not* independent.
+    The difference in promotion rates of `r perc_diff` was not due to natural variability, and equally qualified female personnel are less likely to be promoted than male personnel.
 
 ```{r include = FALSE}
 terms_chp_12 <- c(terms_chp_12, "null hypothesis", "alternative hypothesis")
@@ -182,6 +183,7 @@ terms_chp_12 <- c(terms_chp_12, "null hypothesis", "alternative hypothesis")
 These hypotheses are part of what is called a **hypothesis test**\index{hypothesis test}.
 A hypothesis test is a statistical technique used to evaluate competing claims using data.
 Often times, the null hypothesis takes a stance of *no difference* or *no effect*.
+This hypothesis assumes that any differences seen are due to the variability inherent in the population and could have occurred by random chance.
 
 If the null hypothesis and the data notably disagree, then we will reject the null hypothesis in favor of the alternative hypothesis.
 
@@ -193,37 +195,37 @@ We'll discuss these ideas and details many times in this chapter as well as in t
 terms_chp_12 <- c(terms_chp_12, "hypothesis test")
 ```
 
-What would it mean if the null hypothesis, which says the variables `gender` and `decision` are unrelated, was true?
-It would mean each banker would decide whether to promote the candidate without regard to the gender indicated on the file.
-That is, the difference in the promotion percentages would be due to the way the files were randomly allocated to the bankers, and the randomization just happened to give rise to a relatively large difference of `r perc_diff`.
+What would it mean if the null hypothesis, which says the variables `sex` and `decision` are unrelated, was true?
+It would mean each banker would decide whether to promote the candidate without regard to the sex indicated on the personnel file.
+That is, the difference in the promotion percentages would be due to the natural variability in how the files were randomly allocated to different bankers, and this randomization just happened to give rise to a relatively large difference of `r perc_diff`.
 
-Consider the alternative hypothesis: bankers were influenced by which gender was listed on the personnel file.
+Consider the alternative hypothesis: bankers were influenced by which sex was listed on the personnel file.
 If this was true, and especially if this influence was substantial, we would expect to see some difference in the promotion rates of male and female candidates.
-If this gender bias was against females, we would expect a smaller fraction of promotion recommendations for female personnel files relative to the male files.
+If this sex bias was against female candidates, we would expect a smaller fraction of promotion recommendations for female personnel relative to the male personnel.
 
 We will choose between the two competing claims by assessing if the data conflict so much with $H_0$ that the null hypothesis cannot be deemed reasonable.
-If data and the null claim seem to be at odds with one another, and the data seem to support $H_A,$ then we will reject the notion of independence and conclude that the data provide strong evidence of discrimination.
+If data and the null claim seem to be at odds with one another, and the data seem to support $H_A,$ then we will reject the notion of independence and conclude that the data provide evidence of discrimination.
 
 ### Variability of the statistic
 
 Table \@ref(tab:gender-discrimination-obs) shows that 35 bank supervisors recommended promotion and 13 did not.
-Now, suppose the bankers' decisions were independent of gender.
-Then, if we conducted the experiment again with a different random assignment of gender to the files, differences in promotion rates would be based only on random fluctuation.
-We can actually perform this **randomization**, which simulates what would have happened if the bankers' decisions had been independent of `gender` but we had distributed the file genders differently.[^foundations-randomization-5]
+Now, suppose the bankers' decisions were independent of the sex of the candidate.
+Then, if we conducted the experiment again with a different random assignment of sex to the files, differences in promotion rates would be based only on random fluctuation in promotion decisions.
+We can actually perform this **randomization**, which simulates what would have happened if the bankers' decisions had been independent of `sex` but we had distributed the file sexes differently.[^foundations-randomization-5]
 
-[^foundations-randomization-5]: The test procedure we employ in this section is sometimes referred to as a **permutation test**\index{permutation test}.
+[^foundations-randomization-5]: The test procedure we employ in this section is sometimes referred to as a **permutation test**. The difference between the two is how the explanatory variable was assigned. Permutation tests are used for observational studies, where the explanatory variable was not randomly assigned.\index{permutation test}.
 
 ```{r include = FALSE}
 terms_chp_12 <- c(terms_chp_12, "permutation test")
 ```
 
-In the **simulation**\index{simulation}, we thoroughly shuffle 48 personnel files, 35 labelled `promoted` and 13 labelled `not promoted`, and we deal files into two stacks.
-Note that by keeping 35 promoted and 13 not promoted, we are assuming that 35 of the bank managers would have promoted the individual whose content is contained in the file **independent** of gender.
+In the **simulation**\index{simulation}, we thoroughly shuffle the 48 personnel files, 35 labelled `promoted` and 13 labelled `not promoted`, together and we deal files into two new stacks.
+Note that by keeping 35 promoted and 13 not promoted, we are assuming that 35 of the bank managers would have promoted the individual whose content is contained in the file **independent** of the sex indicated on their file.
 We will deal 24 files into the first stack, which will represent the 24 "female" files.
 The second stack will also have 24 files, and it will represent the 24 "male" files.
-Figure \@ref(fig:gender-rand-shuffle-1) highlights both the shuffle and the reallocation to the sham gender groups.
+Figure \@ref(fig:gender-rand-shuffle-1) highlights both the shuffle and the reallocation to the sham sex groups.
 
-```{r gender-rand-shuffle-1, out.width = "80%", fig.cap = "The gender descriminiation data is shuffled and reallocated to the gender groups."}
+```{r gender-rand-shuffle-1, out.width = "80%", fig.cap = "The sex descriminiation data is shuffled and reallocated to new groups of male and female files."}
 knitr::include_graphics("images/gender-rand-02-shuffle-1.png")
 ```
 
@@ -238,17 +240,17 @@ Table \@ref(tab:gender-discrimination-rand-1) show the results of one such simul
 
 ```{r gender-discrimination-rand-1}
 gender_discrimination_rand_1 <- tibble(
-  gender   = c(rep("male", 24), rep("female", 24)),
+  sex   = c(rep("male", 24), rep("female", 24)),
   decision = c(rep("promoted", 18), rep("not promoted", 6),
                rep("promoted", 17), rep("not promoted", 7))
 ) %>%
   mutate(
-    gender   = fct_relevel(gender, "male", "female"),
+    sex   = fct_relevel(sex, "male", "female"),
     decision = fct_relevel(decision, "promoted", "not promoted")
   )
   
 gender_discrimination_rand_1 %>% 
-  count(decision, gender) %>% 
+  count(decision, sex) %>% 
   pivot_wider(names_from = decision, values_from = n) %>%
   adorn_totals(where = c("col", "row")) %>% 
   kbl(linesep = "", booktabs = TRUE, caption = "Simulation results, where the difference in promotion rates between male and female is purely due to random chance.") %>%
@@ -263,7 +265,7 @@ What is the difference in promotion rates between the two simulated groups in Ta
 How does this compare to the observed difference 29.2% from the actual study?[^foundations-randomization-6]
 :::
 
-[^foundations-randomization-6]: $18/24 - 17/24=0.042$ or about 4.2% in favor of the men.
+[^foundations-randomization-6]: $18/24 - 17/24=0.042$ or about 4.2% in favor of the male personnel.
     This difference due to chance is much smaller than the difference observed in the actual groups.
 
 Figure \@ref(fig:gender-rand-shuffle-1-sort) shows that the difference in promotion rates is much larger in the original data than it is in the simulated groups (0.292 \>\>\> 0.042).
@@ -285,13 +287,13 @@ We computed one possible difference under the null hypothesis in Guided Practice
 While in this first simulation, we physically dealt out files, it is much more efficient to perform this simulation using a computer.
 Repeating the simulation on a computer, we get another difference due to chance: -0.042.
 And another: 0.208.
-And so on until we repeat the simulation enough times that we have a good idea of the shape of the *distribution of differences from chance alone*.
+And so on until we repeat the simulation enough times that we have a good idea of the shape of the *distribution of differences* under the null hypothesis.
 Figure \@ref(fig:gender-rand-dot-plot) shows a plot of the differences found from 100 simulations, where each dot represents a simulated difference between the proportions of male and female files recommended for promotion.
 
 ```{r gender-rand-dot-plot, fig.cap="(ref:gender-rand-dot-plot-cap)", out.width = "100%"}
 set.seed(35)
 gender_discrimination %>%
-  specify(decision ~ gender, success = "promoted") %>%
+  specify(decision ~ sex, success = "promoted") %>%
   hypothesize(null = "independence") %>%
   generate(reps = 100, type = "permute") %>%
   calculate(stat = "diff in props", order = c("male", "female")) %>%
@@ -313,10 +315,11 @@ gender_discrimination %>%
   )
 ```
 
-(ref:gender-rand-dot-plot-cap) A stacked dot plot of differences from 100 simulations produced under the null hypothesis, $H_0,$ where the simulated gender and decision are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study, and are shown as solid red dots.
+(ref:gender-rand-dot-plot-cap) A stacked dot plot of differences from 100 simulations produced under the null hypothesis, $H_0,$ where the simulated sex and decision are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study, and are shown as solid red dots.
 
 Note that the distribution of these simulated differences in proportions is centered around 0.
-Because we simulated differences in a way that made no distinction between men and women, this makes sense: we should expect differences from chance alone to fall around zero with some random fluctuation for each simulation.
+Under the null hypothesis our simulations made no distinction between male and female personnel files.
+Thus, a center of 0 makes sense: we should expect differences from chance alone to fall around zero with some random fluctuation for each simulation.
 
 ::: {.workedexample data-latex=""}
 How often would you observe a difference of at least `r perc_diff` (`r p_diff`) according to Figure \@ref(fig:gender-rand-dot-plot)?
@@ -324,18 +327,18 @@ Often, sometimes, rarely, or never?
 
 ------------------------------------------------------------------------
 
-It appears that a difference of at least `r perc_diff` due to chance alone would only happen about 2% of the time according to Figure \@ref(fig:gender-rand-dot-plot).
+It appears that a difference of at least `r perc_diff` under the null hypothesis would only happen about 2% of the time according to Figure \@ref(fig:gender-rand-dot-plot).
 Such a low probability indicates that observing such a large difference from chance alone is rare.
 :::
 
-The difference of 29.2% is a rare event if there really is no impact from listing gender in the candidates' files, which provides us with two possible interpretations of the study results:
+The difference of 29.2% is a rare event if there really is no impact from listing sex in the candidates' files, which provides us with two possible interpretations of the study results:
 
--   If $H_0,$ the **Null hypothesis** is true: Gender has no effect on promotion decision, and we observed a difference that is so large that it would only happen rarely.
+-   If $H_0,$ the **Null hypothesis** is true: Sex has no effect on promotion decision, and we observed a difference that is so large that it would only happen rarely.
 
--   If $H_A,$ the **Alternative hypothesis** is true: Gender has an effect on promotion decision, and what we observed was actually due to equally qualified women being discriminated against in promotion decisions, which explains the large difference of 29.2%.
+-   If $H_A,$ the **Alternative hypothesis** is true: Sex has an effect on promotion decision, and what we observed was actually due to equally qualified female candidates being discriminated against in promotion decisions, which explains the large difference of 29.2%.
 
 When we conduct formal studies, we reject a null position (the idea that the data are a result of chance only) if the data strongly conflict with that null position.[^foundations-randomization-7]
-In our analysis, we determined that there was only a $\approx$ 2% probability of obtaining a sample where $\geq$ 29.2% more males than females get promoted by chance alone, so we conclude that the data provide strong evidence of gender discrimination against women by the supervisors.
+In our analysis, we determined that there was only a $\approx$ 2% probability of obtaining a sample where $\geq$ 29.2% more male candidates than female candidates get promoted under the null hypothesis, so we conclude that the data provide strong evidence of sex discrimination against female candidates by the male supervisors.
 In this case, we reject the null hypothesis in favor of the alternative.
 
 [^foundations-randomization-7]: This reasoning does not generally extend to anecdotal observations.
@@ -408,7 +411,7 @@ opportunity_cost %>%
   column_spec(1:4, width = "7em")
 ```
 
-It might be a little easier to review the results using a visualisation.
+It might be a little easier to review the results using a visualization.
 Figure \@ref(fig:opportunity-cost-obs-bar) shows that a higher proportion of students in the treatment group chose not to buy the video compared to those in the control group.
 
 ```{r opportunity-cost-obs-bar, fig.cap = "Stacked bar plot of results of the opportunity cost study.", out.width = "100%", fig.asp = 0.3}
@@ -443,7 +446,7 @@ We will define a **success**\index{success} in this study as a student who choos
 Then, the value of interest is the change in video purchase rates that results by reminding students that not spending money now means they can spend the money later.
 
 [^foundations-randomization-8]: Success is often defined in a study as the outcome of interest, and a "success" may or may not actually be a positive outcome.
-    For example, researchers working on a study on COVID prevalence might define a "success" in the statistical sense as a patient who is COVID+.
+    For example, researchers working on a study on COVID prevalence might define a "success" in the statistical sense as a patient who has COVID-19.
     A more complete discussion of the term **success** will be given in Chapter \@ref(inference-one-prop).
 
 ```{r include = FALSE}
@@ -455,17 +458,12 @@ We can construct a point estimate for this difference as ($T$ for treatment and 
 $$\hat{p}_{T} - \hat{p}_{C} = \frac{34}{75} - \frac{19}{75} = 0.453 - 0.253 = 0.200$$
 
 The proportion of students who chose not to buy the video was 20 percentage points higher in the treatment group than the control group.
-However, is this result **statistically significant**\index{statistically significant}?
-In other words, is a 20% difference between the two groups so prominent that it is unlikely to have occurred from chance alone?
-
-```{r include = FALSE}
-terms_chp_12 <- c(terms_chp_12, "statistically significant")
-```
+Is this 20% difference between the two groups so prominent that it is unlikely to have occurred from chance alone, if there is no difference between the spending habits of the two groups?
 
 ### Variability of the statistic
 
 The primary goal in this data analysis is to understand what sort of differences we might see if the null hypothesis were true, i.e., the treatment had no effect on students.
-For this, we'll use the same procedure we applied in Section \@ref(caseStudyGenderDiscrimination): randomization.
+Because this is an experiment, we'll use the same procedure we applied in Section \@ref(caseStudyGenderDiscrimination): randomization.
 
 Let's think about the data in the context of the hypotheses.
 If the null hypothesis $(H_0)$ was true and the treatment had no impact on student decisions, then the observed difference between the two groups of 20% could be attributed entirely to random chance.
@@ -480,7 +478,7 @@ While we would in reality do this simulation on a computer, it might be useful t
 We start with 150 index cards and label each card to indicate the distribution of our response variable: `decision`.
 That is, 53 cards will be labeled "not buy video" to represent the 53 students who opted not to buy, and 97 will be labeled "buy video" for the other 97 students.
 Then we shuffle these cards thoroughly and divide them into two stacks of size 75, representing the simulated treatment and control groups.
-Any observed difference between the proportions of "not buy video" cards (what we earlier defined as *success*) can be attributed entirely to chance.
+Because we have shuffled the cards from both groups together, assuming no difference in their purchasing behavior, any observed difference between the proportions of "not buy video" cards (what we earlier defined as *success*) can be attributed entirely to chance.
 
 ::: {.workedexample data-latex=""}
 If we are randomly assigning the cards into the simulated treatment and control groups, how many "not buy video" cards would we expect to end up in each simulated group?
@@ -492,7 +490,7 @@ Since the simulated groups are of equal size, we would expect $53 / 2 = 26.5,$ i
 However, due to random chance, we might also expect to sometimes observe a number a little above or below 26 and 27.
 :::
 
-The results of a single randomization from chance alone is shown in Table \@ref(tab:opportunity-cost-obs-simulated).
+The results of a single randomization is shown in Table \@ref(tab:opportunity-cost-obs-simulated).
 
 ```{r opportunity-cost-obs-simulated}
 opportunity_cost_rand_1 <- tibble(
@@ -542,7 +540,7 @@ And again: `r opportunity_cost_rand_dist$stat[3]`.
 
 We'll do this 1,000 times.
 
-The results are summarized in a dot plot in Figure \@ref(fig:opportunity-cost-rand-dot-plot), where each point represents a simulation.
+The results are summarized in a dot plot in Figure \@ref(fig:opportunity-cost-rand-dot-plot), where each point represents the difference from one simulation.
 
 ```{r opportunity-cost-rand-dot-plot, fig.cap="(ref:opportunity-cost-rand-dot-plot-cap)"}
 ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
@@ -565,7 +563,7 @@ ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
 
 (ref:opportunity-cost-rand-dot-plot-cap) A stacked dot plot of 1,000 simulated (null) differences produced under the null hypothesis, $H_0.$ Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study.
 
-Since there are so many points, it is more convenient to summarize the results in a histogram such as the one in Figure \@ref(fig:opportunity-cost-rand-hist), where the height of each histogram bar represents the number of simulations resulting in an outcome of that magnitude.
+Since there are so many points and it is difficult to discern one point from the other, it is more convenient to summarize the results in a histogram such as the one in Figure \@ref(fig:opportunity-cost-rand-hist), where the height of each histogram bar represents the number of simulations resulting in an outcome of that magnitude.
 
 ```{r opportunity-cost-rand-hist, fig.cap = "A histogram of 1,000 chance differences produced under the null hypothesis. Histograms like this one are a convenient representation of data or results when there are a large number of simulations."}
 ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
@@ -579,7 +577,7 @@ ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
   )
 ```
 
-If there was no treatment effect, then we'd only observe a difference of at least +20% about 0.6% of the time.
+Under the null hypothesis (no treatment effect), we'd observe a difference of at least +20% about 0.6% of the time.
 
 That is really rare!
 
@@ -593,7 +591,7 @@ In the last two sections, we utilized a **hypothesis test**\index{hypothesis tes
 
 In each scenario, we described a **null hypothesis**\index{null hypothesis}, which represented either a skeptical perspective or a perspective of no difference.
 
-We also laid out an **alternative hypothesis**\index{alternative hypothesis}, which represented a new perspective such as the possibility that there has been a change or that there is a treatment effect in an experiment.
+We also laid out an **alternative hypothesis**\index{alternative hypothesis}, which represented a new perspective such as the possibility of a relationship between two variables or a treatment effect in an experiment.
 
 The alternative hypothesis is usually the reason the scientists set out to do the research in the first place.
 
@@ -604,7 +602,7 @@ terms_chp_12 <- c(terms_chp_12, "hypothesis test", "null hypothesis", "alternati
 ::: {.important data-latex=""}
 **Null and alternative hypotheses.**
 
-The **null hypothesis** $(H_0)$ often represents either a skeptical perspective or a claim to be tested.
+The **null hypothesis** $(H_0)$ often represents either a skeptical perspective or a claim of "no difference" to be tested.
 
 The **alternative hypothesis** $(H_A)$ represents an alternative claim under consideration and is often represented by a range of possible values for the value of interest.
 :::
@@ -634,28 +632,28 @@ That is, the skeptical perspective (null hypothesis) is that the person is innoc
 
 Jurors examine the evidence to see whether it convincingly shows a defendant is guilty.
 Notice that if a jury finds a defendant *not guilty*, this does not necessarily mean the jury is confident in the person's innocence.
-They are simply not convinced of the alternative that the person is guilty.
-This is also the case with hypothesis testing: *even if we fail to reject the null hypothesis, we typically do not accept the null hypothesis as truth*.
+They are simply not convinced of the alternative, that the person is guilty.
+This is also the case with hypothesis testing: *even if we fail to reject the null hypothesis, we do not accept the null hypothesis as truth*.
 
-Failing to find strong evidence for the alternative hypothesis is not equivalent to providing evidence that the null hypothesis is true.
+Failing to find evidence in favor of the alternative hypothesis is not equivalent to finding evidence that the null hypothesis is true.
 We will see this idea in greater detail in Section \@ref(decerr).
 
 ### p-value and statistical significance
 
-In Section \@ref(caseStudyGenderDiscrimination) we encountered a study from the 1970's that explored whether there was strong evidence that women were less likely to be promoted than men.
-The research question -- are females discriminated against in promotion decisions?
+In Section \@ref(caseStudyGenderDiscrimination) we encountered a study from the 1970's that explored whether there was strong evidence that female candidates were less likely to be promoted than male candidates.
+The research question -- are female candidates discriminated against in promotion decisions?
 -- was framed in the context of hypotheses:
 
--   $H_0:$ Gender has no effect on promotion decisions.
+-   $H_0:$ Sex has no effect on promotion decisions.
 
--   $H_A:$ Women are discriminated against in promotion decisions.
+-   $H_A:$ Female candidates are discriminated against in promotion decisions.
 
-The null hypothesis $(H_0)$ was a perspective of no difference.
-The data on gender discrimination provided a point estimate of a `r perc_diff` difference in recommended promotion rates between men and women.
-We determined that such a difference from chance alone would be rare: it would only happen about 2 in 100 times.
-When results like these are inconsistent with $H_0,$ we reject $H_0$ in favor of $H_A.$ Here, we concluded there was discrimination against women.
+The null hypothesis $(H_0)$ was a perspective of no difference in promotion.
+The data on sex discrimination provided a point estimate of a `r perc_diff` difference in recommended promotion rates between male and female candidates.
+We determined that such a difference from chance alone, assuming the null hypothesis was true, would be rare: it would only happen about 2 in 100 times.
+When results like these are inconsistent with $H_0,$ we reject $H_0$ in favor of $H_A.$ Here, we concluded there was discrimination against female candidates.
 
-The 2-in-100 chance is what we call a **p-value**, which is a probability quantifying the strength of the evidence against the null hypothesis and in favor of the alternative.
+The 2-in-100 chance is what we call a **p-value**, which is a probability quantifying the strength of the evidence against the null hypothesis, given the observed data.
 
 ::: {.important data-latex=""}
 **p-value.**
@@ -670,7 +668,7 @@ terms_chp_12 <- c(terms_chp_12, "p-value", "test statistic")
 ```
 
 ::: {.workedexample data-latex=""}
-In the gender discrimination study, the difference in discrimination rates was our test statistic.
+In the sex discrimination study, the difference in discrimination rates was our test statistic.
 What was the test statistic in the opportunity cost study covered in Section \@ref(caseStudyOpportunityCost)?
 
 ------------------------------------------------------------------------
@@ -679,22 +677,34 @@ The test statistic in the opportunity cost study was the difference in the propo
 In each of these examples, the **point estimate** of the difference in proportions was used as the test statistic.
 :::
 
-When the p-value is small, i.e., less than a previously set threshold, we say the results are **statistically significant**.
+When the p-value is small, i.e., less than a previously set threshold, we say the results are **statistically significant**\index{statistically significant}.
 This means the data provide such strong evidence against $H_0$ that we reject the null hypothesis in favor of the alternative hypothesis.
-The threshold, called the **significance level**\index{hypothesis testing!significance level}\index{significance level} and often represented by $\alpha$ (the Greek letter *alpha*), is typically set to $\alpha = 0.05,$ but can vary depending on the field or the application.
-Using a significance level of $\alpha = 0.05$ in the discrimination study, we can say that the data provided statistically significant evidence against the null hypothesis.
+The threshold, called the **significance level**\index{hypothesis testing!significance level}\index{significance level} and often represented by $\alpha$ (the Greek letter *alpha*).
+The value of $\alpha$ represents how rare an event needs to be in order for the null hypothesis to be rejected.
+Historically, many fields have set $\alpha = 0.05,$ meaning that the results need to occur less than 5% of the time, if the null hypothesis is to be rejected.
+The value of $\alpha$ can vary depending on the the field or the application.
+
+```{r include = FALSE}
+terms_chp_12 <- c(terms_chp_12, "significance level", "statistically significant")
+```
+
+Although in everyday language "significant" would indicate that a difference is large or meaningful, that is not necessarily the case here.
+The term "statistically significant" only indicates that the p-value from a study fell below the chosen significance level.
+For example, in the sex discrimination study, the p-value was found to be approximately 0.002.
+Using a significance level of $\alpha = 0.05,$ we woudl say that the data provided statistically significant evidence against the null hypothesis.
+However, this conclusion gives us no information regarding the size of the difference in promotion rates!
 
 ::: {.important data-latex=""}
 **Statistical significance.**
 
-We say that the data provide **statistically significant**\index{hypothesis testing!statistically significant} evidence against the null hypothesis if the p-value is less than some reference value, often $\alpha=0.05.$
+We say that the data provide **statistically significant**\index{hypothesis testing!statistically significant} evidence against the null hypothesis if the p-value is less than some predetermined threshold (e.g., 0.01, 0.05, 0.1).
 :::
 
 ::: {.workedexample data-latex=""}
 In the opportunity cost study in Section \@ref(caseStudyOpportunityCost), we analyzed an experiment where study participants had a 20% drop in likelihood of continuing with a video purchase if they were reminded that the money, if not spent on the video, could be used for other purchases in the future.
 We determined that such a large difference would only occur 6-in-1,000 times if the reminder actually had no influence on student decision-making.
 What is the p-value in this study?
-Was the result statistically significant?
+Would you classify the result as "statistically significant"?
 
 ------------------------------------------------------------------------
 
@@ -737,11 +747,11 @@ knitr::include_graphics("images/fullrand.png")
 
 We can summarize the randomization test procedure as follows:
 
--   **Frame the research question in terms of hypotheses.** Hypothesis tests are appropriate for research questions that can be summarized in two competing hypotheses. The null hypothesis $(H_0)$ usually represents a skeptical perspective or a perspective of no difference. The alternative hypothesis $(H_A)$ usually represents a new view or a difference.
--   **Collect data with an observational study or experiment.** If a research question can be formed into two hypotheses, we can collect data to run a hypothesis test. If the research question focuses on associations between variables but does not concern causation, we would run an observational study. If the research question seeks a causal connection between two or more variables, then an experiment should be used.
--   **Model the randomness as if the null hypothesis was true.** In the examples above, the variability has been modeled as if the treatment (e.g., gender, opportunity) allocation was independent of the outcome of the study. The computer generated the null distribution from many different randomizations in order to quantify the null variability.
+-   **Frame the research question in terms of hypotheses.** Hypothesis tests are appropriate for research questions that can be summarized in two competing hypotheses. The null hypothesis $(H_0)$ usually represents a skeptical perspective or a perspective of no relationship between the variables. The alternative hypothesis $(H_A)$ usually represents a new view or the existance of a relationship between the variables.
+-   **Collect data with an observational study or experiment.** If a research question can be formed into two hypotheses, we can collect data to run a hypothesis test. If the research question focuses on associations between variables but does not concern causation, we would use an observational study. If the research question seeks a causal connection between two or more variables, then an experiment should be used.
+-   **Model the randomness that would occur if the null hypothesis was true.** In the examples above, the variability has been modeled as if the treatment (e.g., sexual identity, opportunity) allocation was independent of the outcome of the study. The computer generated the null distribution is the result of many different randomizations and quantifies the variability that would be expected if the null hypothesis was true.
 -   **Analyze the data.** Choose an analysis technique appropriate for the data and identify the p-value. So far, we've only seen one analysis technique: randomization. Throughout the rest of this textbook, we'll encounter several new methods suitable for many other contexts.
--   **Form a conclusion.** Using the p-value from the analysis, determine whether the data provide statistically significant evidence against the null hypothesis. Also, be sure to write the conclusion in plain language so casual readers can understand the results.
+-   **Form a conclusion.** Using the p-value from the analysis, determine whether the data provide evidence against the null hypothesis. Also, be sure to write the conclusion in plain language so casual readers can understand the results.
 
 Table \@ref(tab:chp12-summary) is another look at the randomization test summary.
 
