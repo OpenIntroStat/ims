@@ -1,3 +1,7 @@
+---
+---
+---
+
 # Inference for comparing two proportions {#inference-two-props}
 
 ```{r, include = FALSE}
@@ -18,20 +22,28 @@ terms_chp_18 <- c("point estimate")
 
 ### Observed data
 
-We consider a study on a new malaria vaccine called PfSPZ.
-In this study, volunteer patients were randomized into one of two experiment groups: 14 patients received an experimental vaccine or 6 patients received a placebo vaccine.
-Nineteen weeks later, all 20 patients were exposed to a drug-sensitive malaria virus strain; the motivation of using a drug-sensitive strain of virus here is for ethical considerations, allowing any infections to be treated effectively.
-The results are summarized in Table \@ref(tab:malaria-vaccine-20-exp-summary), where 9 of the 14 treatment patients remained free of signs of infection while all of the 6 patients in the control group patients showed some baseline signs of infection.
+Let's take another look at the cardiopulmonary resuscitation (CPR) study we introduced in Chapter \@ref(two-sided-hypotheses). The experiment consisted of two treatments on patients who underwent CPR for a heart attack and were subsequently admitted to a hospital. Each patient was randomly assigned to either receive a blood thinner (treatment group) or not receive a blood thinner (control group). The outcome variable of interest was whether the patient survived for at least 24 hours. [@Bottiger:2001]
 
-```{r malaria-vaccine-20-exp-summary}
-malaria %>%
-  count(treatment, outcome) %>%
-  pivot_wider(names_from = outcome, values_from = n, values_fill = 0) %>%
+The results are summarized in Table \@ref(tab:cpr-summary-again) (which is a replica of Table \@ref(tab:cpr-summary)).
+11 out of the 50 patients in the control group and 14 out of the 40 patients in the treatment group survived.
+
+```{r cpr-summary-again}
+cpr %>%
+  mutate(
+    outcome = str_to_title(outcome),
+    group   = str_to_title(group)
+    ) %>%
+  count(group, outcome) %>%
+  pivot_wider(names_from = outcome, values_from = n) %>%
   janitor::adorn_totals(where = c("row", "col")) %>%
-  kbl(linesep = "", booktabs = TRUE, caption = "Summary results for the malaria vaccine experiment.",
-      col.names = c("Group", "Infection", "No infection", "Total")) %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  kbl(linesep = "", booktabs = TRUE, 
+    caption = "Results for the CPR study. Patients in the treatment group were given a blood thinner, and patients in the control group were not.",
+    col.names = c("Group", "Died", "Survived", "Total"),
+    align = "lccc"
+    ) %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"),
+                latex_options = c("striped", "hold_position"), 
+                full_width = FALSE) %>%
   column_spec(1:4, width = "7em")
 ```
 
@@ -41,37 +53,36 @@ What implications does the study type have on what can be inferred from the resu
 :::
 
 [^inference-two-props-1]: The study is an experiment, as patients were randomly assigned an experiment group.
-    Since this is an experiment, the results can be used to evaluate a causal relationship between the malaria vaccine and whether patients showed signs of an infection.
+    Since this is an experiment, the results can be used to evaluate a causal relationship between blood thinner use after CPR and whether patients survived.
 
-In this study, a smaller proportion of patients who received the vaccine showed signs of an infection (35.7% versus 100%).
-However, the sample is very small, and it is unclear whether the difference provides *convincing evidence* that the vaccine is effective.
+In this study, a larger proportion of patients who received blood thinner after CPR,$\hat{p}_T = \frac{14}{40} = 0.35,$ survived compared to those who did not receive blood thinner, $\hat{p}_C = \frac{11}{50} = 0.22.$ However, based on these observed proportions alone, we cannot determine whether the difference ($\hat{p}_T - \hat{p}_C = 0.35 - 0.22 = 0.13$) provides *convincing evidence* that blood thinner usage after CPR is effective.
 
-As we saw in Chapter \@ref(foundations-randomization), we can randomize the responses (`infection` or `no infection`) to the treatment conditions under the null hypothesis of independence and compute possible differences in proportions.
+As we saw in Chapter \@ref(foundations-randomization), we can randomize the responses (`survived` or `died`) to the treatment conditions under the null hypothesis of independence and compute possible differences in proportions.
 The process by which we randomize observations to two groups is summarized and visualized in Figure \@ref(fig:fullrand).
 
 ### Variability of the statistic
 
 Figure \@ref(fig:malaria-rand-dot-plot-18) shows a stacked plot of the differences found from 100 randomization simulations (i.e., repeated iterations as described in Figure \@ref(fig:fullrand)), where each dot represents a simulated difference between the infection rates (control rate minus treatment rate).
 
-```{r malaria-rand-dot-plot-18, fig.cap="(ref:malaria-rand-dot-plot-18-cap)"}
-set.seed(19)
-malaria %>%
-  specify(response = outcome, explanatory = treatment, success = "infection") %>%
+```{r cpr-rand-dot-plot, fig.cap="(ref:cpr-rand-dot-plot-cap)"}
+set.seed(47)
+cpr %>%
+  specify(response = outcome, explanatory = group, success = "survived") %>%
   hypothesize(null = "independence") %>%
   generate(reps = 100, type = "permute") %>%
-  calculate(stat = "diff in props", order = c("placebo", "vaccine")) %>%
+  calculate(stat = "diff in props", order = c("treatment", "control")) %>%
   # simplify by rounding
   mutate(stat = round(stat, 3)) %>%
   ggplot(aes(x = stat)) +
-  geom_dotplot(binwidth = 0.1, dotsize = 0.2) +
-  labs(y = NULL, x = "Difference in infection rates") +
+  geom_dotplot(binwidth = 0.02, dotsize = 0.5) +
+  labs(y = NULL, x = "Difference in survival rates (treatment - control)") +
   theme(axis.title.y = element_blank(),
         axis.text.y  = element_blank(),
         axis.ticks.y = element_blank()) +
-  gghighlight(stat >= 0.643)
+  gghighlight(stat >= 0.13)
 ```
 
-(ref:malaria-rand-dot-plot-18-cap) A stacked dot plot of differences from 100 simulations produced under the independence model $H_0,$ where in these simulations infections are unaffected by the vaccine. Two of the 100 simulations had a difference of at least 64.3%, the difference observed in the study.
+(ref:cpr-rand-dot-plot-cap) A stacked dot plot of differences from 100 simulations produced under the independence model $H_0,$ where in these simulations survival is unaffected by the treatment. Twelve of the 100 simulations had a difference of at least 13%, the difference observed in the study.
 
 ### Observed statistic vs null statistics
 
@@ -79,29 +90,29 @@ Note that the distribution of these simulated differences is centered around 0.
 We simulated the differences assuming that the independence model was true, and under this condition, we expect the difference to be near zero with some random fluctuation, where *near* is pretty generous in this case since the sample sizes are so small in this study.
 
 ::: {.workedexample data-latex=""}
-How often would you observe a difference of at least 64.3% (0.643) according to Figure \@ref(fig:malaria-rand-dot-plot-18)?
-Often, sometimes, rarely, or never?
+How often would you observe a difference of at least 13% (0.13) according to Figure \@ref(fig:cpr-rand-dot-plot)?
+Is this a rare event?
 
 ------------------------------------------------------------------------
 
-It appears that a difference of at least 64.3% due to chance alone would only happen about 2% of the time according to Figure \@ref(fig:malaria-rand-dot-plot-18).
-Such a low probability indicates a rare event.
+It appears that a difference of at least 13% due to chance alone would happen about 12% of the time according to Figure \@ref(fig:cpr-rand-dot-plot).
+This is not a very rare event.
 :::
 
-The difference of 64.3% being a rare event suggests two possible interpretations of the results of the study:
+The difference of 13% not being a rare event suggests two possible interpretations of the results of the study:
 
--   $H_0$ Independence model. The vaccine has no effect on infection rate, and we just happened to observe a difference that would only occur on a rare occasion.
--   $H_A$ Alternative model. The vaccine has an effect on infection rate, and the difference we observed was actually due to the vaccine being effective at combating malaria, which explains the large difference of 64.3%.
+-   $H_0$ Independence model. Blood thinners after CPR have no effect on survival, and we just happened to observe a difference that would only occur on a rare occasion.
+-   $H_A$ Alternative model. Blood thinners after CPR increase chance of survival, and the difference we observed was actually due to the blood thinners after CPR being effective at increasing the chance of survival, which explains the difference of 13%.
 
 Based on the simulations, we have two options:
 
 1.  We conclude that the study results do not provide strong evidence against the independence model.
-    That is, we do not have sufficiently strong evidence to conclude the vaccine had an effect in this clinical setting.
+    That is, we do not have sufficiently strong evidence to conclude blood thinners after CPR had an effect on survival in this clinical setting.
 
-2.  We conclude the evidence is sufficiently strong to reject $H_0$ and assert that the vaccine was useful.
-    When we conduct formal studies, usually we reject the notion that we just happened to observe a rare event.[^inference-two-props-2]
+2.  We conclude the evidence is sufficiently strong to reject $H_0$ and assert that blood thinners after CPR were useful.
+    When we conduct formal studies, and determine that the observed outcome (or something more extreme) is unlikely to happen under the assumption that $H_0$ is true, we usually reject the notion that we just happened to observe a rare event.[^inference-two-props-2]
     In this case, we reject the independence model in favor of the alternative.
-    That is, we are concluding the data provide strong evidence that the vaccine provides some protection against malaria in this clinical setting.
+    That is, we are concluding the data provide strong evidence that blood thinners after CPR increases the chance of survival in this clinical setting.
 
 [^inference-two-props-2]: This reasoning does not generally extend to anecdotal observations.
     Each of us observes incredibly rare events every day, events we could not possibly hope to predict.
@@ -111,6 +122,9 @@ Based on the simulations, we have two options:
     That is, *any set of numbers we could have observed would ultimately be incredibly rare*.
     This type of situation is typical of our daily lives: each possible event in itself seems incredibly rare, but if we consider every alternative, those outcomes are also incredibly rare.
     We should be cautious not to misinterpret such anecdotal evidence.
+
+In this case, since we determined that the outcome is not that rare (12% chance of observing a difference of 13% or more under the assumption that blood thinners after CPR have no effect on survival), we fail to reject $H_0$, and conclude that the study results do not provide strong evidence against the independence model.
+This doesn't mean that we have proved that blood thinners are not effective, it just means that this study does not provide convincing evidence that they are effective in this setting.
 
 Statistical inference, is built on evaluating whether such differences are due to chance.
 In statistical inference, data scientists evaluate which model is most reasonable given the data.
@@ -124,11 +138,7 @@ Now, through bootstrapping, we study the variability of $\hat{p}_1 - \hat{p}_2$ 
 
 ### Observed data
 
-Reconsider the CPR data from Section \@ref(two-prop-errors) which is provided in Table \@ref(tab:resultsForCPRStudyInSmallSampleSection).
-The experiment consisted of two treatments on patients who underwent CPR for a heart attack and were subsequently admitted to a hospital.
-Each patient was randomly assigned to either receive a blood thinner (treatment group) or not receive a blood thinner (control group).
-The outcome variable of interest was whether the patient survived for at least 24 hours.
-
+Reconsider the CPR data from Section \@ref(two-prop-errors) which is provided in Table \@ref(tab:cpr-summary).
 Again, we use the difference in sample proportions as the observed statistic of interest.
 Here, the value of the statistic is: $\hat{p}_T - \hat{p}_C = 0.35 - 0.22 = 0.13.$
 
@@ -139,27 +149,27 @@ Now, we have two samples, so each sample estimates the population from which the
 In the CPR setting, the `treatment` sample estimates the population of all individuals who have gotten (or will get) the treatment; the `control` sample estimate the population of all individuals who do not get the treatment and are controls.
 Figure \@ref(fig:boot2proppops) extends Figure \@ref(fig:boot1) to show the bootstrapping process from two samples simultaneously.
 
-```{r boot2proppops, fig.cap = "Creating two populations from which to take each of the bootstrap samples.", warning = FALSE, out.width = "95%"}
+```{r boot2proppops, fig.cap = "Creating two populations from which to take each of the bootstrap samples.", warning = FALSE, out.width = "100%"}
 include_graphics("images/boot2proppops.png")
 ```
 
 As before, once the population is estimated, we can randomly resample observations to create bootstrap samples, as seen in Figure \@ref(fig:boot2propresamps).
 
-```{r boot2propresamps, fig.cap = "Taking each bootstrap sample from the estimated population.", warning = FALSE, out.width = "95%"}
+```{r boot2propresamps, fig.cap = "Taking each bootstrap sample from the estimated population.", out.width = "100%"}
 include_graphics("images/boot2propresamps.png")
 ```
 
 The variability of the statistic (the difference in sample proportions) can be calculated by taking one bootstrap resample from Sample 1 and one bootstrap resample from Sample 2 and calculating the difference of the bootstrap proportions.
 One resample from each of the estimated populations has been taken with the bootstrap proportions calculated for each of the bootstrap resamples.
 
-```{r boot2samp2, fig.cap = "For example, the first bootstrap resamples from Sample 1 and Sample 2 provide resample proportions of 2/7 and 5/9, respectively.", warning = FALSE, out.width="75%"}
+```{r boot2samp2, fig.cap = "For example, the first bootstrap resamples from Sample 1 and Sample 2 provide resample proportions of 2/7 and 5/9, respectively.", out.width="75%"}
 include_graphics("images/boot2prop3.png")
 ```
 
 As always, the variability of the difference in proportions can only be estimated by repeated simulations, in this case, repeated bootstrap resamples.
 Figure \@ref(fig:boot2samp2) shows multiple bootstrap differences calculated for each of the repeated bootstrap samples.
 
-```{r boot2samp3, fig.cap = "For each pair of bootstrap samples, we calculate the difference in sample proportions", warning = FALSE,  out.width="75%"}
+```{r boot2samp3, fig.cap = "For each pair of bootstrap samples, we calculate the difference in sample proportions", out.width="100%"}
 include_graphics("images/boot2prop2.png")
 ```
 
@@ -169,7 +179,7 @@ Note that the CPR data includes 40 and 50 people in the respective groups, and t
 Accordingly, the variability in the distribution of sample proportions is higher for the toy example.
 When using the mathematical model (see Section \@ref(math-2prop)), the standard error for the difference in proportions is inversely related to the sample size.
 
-```{r boot2samp1, fig.cap = "The differences in each bootstrapped pair of proportions are combined to create the sampling distribution of the differences in proportions.", warning = FALSE,  out.width="95%"}
+```{r boot2samp1, fig.cap = "The differences in each bootstrapped pair of proportions are combined to create the sampling distribution of the differences in proportions.", out.width="100%"}
 include_graphics("images/boot2prop1.png")
 ```
 
@@ -231,8 +241,8 @@ ggplot(cpr_boot_dist, aes(x = stat)) +
     x = c(cpr_boot_90_lower_perc, cpr_boot_90_upper_perc), xend = c(cpr_boot_90_lower_perc, cpr_boot_90_upper_perc),
     y = 0, yend = 175
   ) +
-  annotate("text", x = cpr_boot_90_lower_perc, y = 190, label = "5 percentile") +
-  annotate("text", x = cpr_boot_90_upper_perc, y = 190, label = "95 percentile")
+  annotate("text", x = cpr_boot_90_lower_perc, y = 190, label = "5th percentile") +
+  annotate("text", x = cpr_boot_90_upper_perc, y = 190, label = "95th percentile")
 ```
 
 **Bootstrap SE confidence interval**
@@ -282,7 +292,7 @@ It is also impossible to know whether the interval captures the true parameter (
 If we are making 95% intervals, then 5% of the intervals we create over our lifetime will *not* capture the parameter of interest (e.g., will be red as in Figure \@ref(fig:ci25ints) ).
 What we know is that over our lifetimes as scientists, 95% of the intervals created and reported on will capture the parameter value of interest: thus the language "95% confident."
 
-```{r ci25ints, fig.cap = "One hypothetical population, parameter value of: $p_1 - p_2 = 0.47.$  Twenty-five different studies all which led to a different point estimate, SE, and confidence interval.  The study at hand is one of the horizontal lines (hopefully a blue line!).", warning = FALSE, fig.width = 10}
+```{r ci25ints, fig.cap = "One hypothetical population, parameter value of: $p_1 - p_2 = 0.47.$  Twenty-five different studies all which led to a different point estimate, SE, and confidence interval.  The study at hand is one of the horizontal lines (hopefully a blue line!)."}
 set.seed(52)
 m <- 103.4594
 s <- 19.31445
@@ -392,7 +402,7 @@ $$SE(\hat{p}_1 -\hat{p}_2) = \sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\h
 We reconsider the experiment for patients who underwent cardiopulmonary resuscitation (CPR) for a heart attack and were subsequently admitted to a hospital.
 These patients were randomly divided into a treatment group where they received a blood thinner or the control group where they did not receive a blood thinner.
 The outcome variable of interest was whether the patients survived for at least 24 hours.
-The results are shown in Table \@ref(tab:resultsForCPRStudyInSmallSampleSection).
+The results are shown in Table \@ref(tab:cpr-summary).
 Check whether we can model the difference in sample proportions using the normal distribution.
 
 ------------------------------------------------------------------------
@@ -462,7 +472,8 @@ fish_oil_18[[3]] %>%
       col.names = c("heart attack", "no event", "Total"),
       row.names = TRUE) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE)
+                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  column_spec(1:4, width = "7em")
 ```
 
 ### Hypothesis test for the difference between two proportions
@@ -635,14 +646,8 @@ Because this p-value is larger than 0.05, we do not reject the null hypothesis.
 That is, the difference in breast cancer death rates is reasonably explained by chance, and we do not observe benefits or harm from mammograms relative to a regular breast exam.
 :::
 
-```{r echo=FALSE}
-normTail(L = -0.17, U = 0.17,
-        col = IMSCOL["blue", "full"],
-        axes = FALSE,
-        xlim = c(-3.2, 3.2))
-at <- c(-10, -2, 0, 2, 10)
-labels <- c(0, -0.0014, 0, 0.0014, 0)
-axis(1, at, labels, cex.axis = 0.9)
+```{r echo=FALSE, out.width = "60%", fig.asp = 0.5}
+normTail(L = -0.17, U = 0.17, col = IMSCOL["blue", "full"])
 ```
 
 Can we conclude that mammograms have no benefits or harm?
