@@ -1,4 +1,278 @@
-1. **Difference of means, Part 1.** 
+1. **Experimental baker.** 
+A baker working on perfecting their bagel recipe is experimenting with active dry (AD) and instant (I) yeast. 
+They bake a dozen bagels with each type of yeast and score each bagel on a scale of 1 to 10 on how well the bagels rise.
+They come up with the following set of hypotheses for evaluating whether there is a difference in the average rise of bagels baked with active dry and instant yeast.
+
+    $$H_0: \bar{x}_{AD} \leq \bar{x}_{I} \quad \quad H_A: \bar{x}_{AD} > \bar{x}_{I}$$
+
+1. **Fill in the blanks.** 
+We use a \_\_\_ to evaluate if data provide convincing evidence of a difference between two population means and we use a \_\_\_ to estimate this difference.
+
+1. **Diamonds, randomization test.**
+The prices of diamonds go up as the carat weight increases, but the increase is not smooth. 
+For example, the difference between the size of a 0.99 carat diamond and a 1 carat diamond is undetectable to the naked human eye, but the price of a 1 carat diamond tends to be much higher than the price of a 0.99 diamond. 
+In this question we use two random samples of diamonds, 0.99 carats and 1 carat, each sample of size 23, and randomize the carat weight to the price values in order compare the average prices of the diamonds to a null distribution.
+In order to be able to compare equivalent units, we first divide the price for each diamond by 100 times its weight in carats. 
+That is, for a 0.99 carat diamond, we divide the price by 99. or a 1 carat diamond, we divide the price by 100. 
+The randomization distribution (with 1,000 repetitions) below describes the null distribution of the difference in sample means (of price per carat) if there really was no difference in the population from which these diamonds came.^[The [`diamonds`](https://ggplot2.tidyverse.org/reference/diamonds.html) data used in this exercise can be found in the **ggplot2** R package.] [@ggplot2]
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(infer)
+    
+    set.seed(47)
+    diamonds_sample <- diamonds %>%
+      filter(carat %in% c(1, 0.99)) %>%
+      group_by(carat) %>%
+      slice_sample(n = 23) %>% 
+      mutate(
+        ppc   = price/carat/100,
+        carat = if_else(carat == 1, paste(carat, "carat"), paste(carat, "carats"))
+        )
+    
+    diamonds_sample %>%
+      specify(ppc ~ carat) %>%
+      hypothesize(null = "independence") %>%
+      generate(1000, type = "permute") %>%
+      calculate(stat = "diff in means", order = c("0.99 carats", "1 carat")) %>%
+      ggplot(aes(x = stat)) + 
+      geom_histogram(fill = IMSCOL["green", "full"]) +
+      geom_vline(xintercept = -12.7, color = IMSCOL["red", "full"], size = 1) +
+      labs(
+        title = "1,000 randomized differences in means",
+        x = "Differences in average price per carat\n(0.99 carats - 1 carat)", 
+        y = "Count"
+        )
+    ```
+
+    Using the randomization distribution of the difference in average price per carat (1,000 randomizations were run), conduct a hypothesis test to evaluate if there is a difference between the prices per carat of diamonds that weigh 0.99 carats and diamonds that weigh 1 carat. Make sure to state your hypotheses clearly and interpret your results in context of the data. [@ggplot2]
+
+1. **Lizards running, randomization test.**
+In order to assess physiological characteristics of common lizards, data on top speeds (in m/sec) measured on a laboratory race track for two species of lizards: Western fence lizard (Sceloporus occidentalis) and Sagebrush lizard (Sceloporus graciosus).
+The original observed difference in lizard speeds is $\bar{x}_{Western fence} - \bar{x}_{Sagebrush} = 0.7 \mbox{m/sec}.$ The histogram below shows the distribution of average differences when speed has been randomly allocated across lizard species 1,000 times.^[The [`lizard_run`](http://openintrostat.github.io/openintro/reference/lizard_run.html) data used in this exercise can be found in the **openintro** R package.] [@Adolph:1987]
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    
+    set.seed(47)
+    lizard_run %>%
+      specify(top_speed ~ common_name) %>%
+      hypothesize(null = "independence") %>%
+      generate(1000, type = "permute") %>%
+      calculate(stat = "diff in means", order = c("Western fence lizard", "Sagebrush lizard")) %>%
+      ggplot(aes(x = stat)) + 
+      geom_histogram(fill = IMSCOL["green", "full"]) +
+      geom_vline(xintercept = 0.7, color = IMSCOL["red", "full"], size = 1) +
+      labs(
+        title = "1,000 randomized differences in means",
+        x = "Differences in average randomized running speed across lizard species\n(Western fence - Sagebush)", 
+        y = "Count"
+        )
+    ```
+    
+    Using the randomization distribution, conduct a hypothesis test to evaluate if there is a difference between the average speed of the Western fence lizard as compared to the Sagebrush lizard. Make sure to state your hypotheses clearly and interpret your results in context of the data.
+
+1. **Diamonds, bootstrap interval.**
+We have data on two random samples of diamonds: one with diamonds that weigh 0.99 carats and one with diamonds that weigh 1 carat. 
+Each sample has 23 diamonds.
+Provided below is a histogram of bootstrap differences in means of price per carat of diamonds that weight 0.99 carats and diamonds that weigh 1 carat.
+Using the bootstrap distribution, create a (rough) 95% confidence interval for the true population difference in prices per carat of diamonds that weigh 0.99 carats and 1 carat. [@ggplot2]
+
+    ```{r}
+    library(tidyverse)
+    library(kableExtra)
+    library(openintro)
+    library(infer)
+    
+    set.seed(47)
+    diamonds_100_99_sample <- diamonds %>%
+      filter(carat %in% c(1, 0.99)) %>%
+      group_by(carat) %>%
+      slice_sample(n = 23) %>% 
+      mutate(
+        ppc   = price/carat/100,
+        carat = if_else(carat == 1, paste(carat, "carat"), paste(carat, "carats"))
+        )
+        
+    diamonds_100_99_sample %>%
+      specify(ppc ~ carat) %>%
+      generate(1000, type = "bootstrap") %>%
+      calculate(stat = "diff in means", order = c("0.99 carats", "1 carat")) %>%
+      ggplot(aes(x = stat)) + 
+      geom_histogram(fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 bootstrap differences in means",
+        x = "Differences in average price per carat\n(0.99 carats - 1 carat)",
+        y = "Count"
+      )
+    ```
+
+1. **Lizards running, bootstrap interval.**
+We have data on top speeds (in m/sec) measured on a laboratory race track for two species of lizards: Western fence lizard (Sceloporus occidentalis) and Sagebrush lizard (Sceloporus graciosus).
+The bootstrap distribution below describes the variability of difference in means captured from 1,000 bootstrap samples of the lizard data. 
+Using the bootstrap distribution, create a (rough) 90% confidence interval for the true population difference in price per carat for Western fence lizard as compared with Sagebrush lizard. [@Adolph:1987]
+    
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(infer)
+    
+    set.seed(47)
+    lizard_run %>%
+      specify(top_speed ~ common_name) %>%
+      generate(1000, type = "bootstrap") %>%
+      calculate(stat = "diff in means", order = c("Western fence lizard", "Sagebrush lizard")) %>%
+      ggplot(aes(x = stat)) + 
+      geom_histogram(fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 bootstrapped differences in means",
+        x = "Differences in average bootstrapped running speed across lizard species\n(Western fence - Sagebush)", 
+        y = "Count"
+        )
+    ```
+
+1. **Weight loss.**
+You are reading an article in which the researchers have created a 95% confidence interval for the difference in average weight loss for two diets. 
+They are 95% confident that the true difference in average weight loss over 6 months for the two diets is somewhere between (1 lb, 25 lbs).
+The authors claim that, "therefore diet A ($\bar{x}_A$ = 20 lbs average loss) results in a much larger average weight loss as compared to diet B ($\bar{x}_B$ = 7 lbs average loss)." Comment on the authors' claim.
+
+1. **Possible randomized means.**
+Data were collected on data from two groups (A and B). There were 3 measurements taken on Group A and two measurements 
+
+    ```{r}
+    library(knitr)
+    library(kableExtra)
+    library(tidyverse)
+    
+    tribble(
+      ~Group, ~`Measurement 1`, ~`Measurement 2`, ~`Measurement 3`, 
+      "A",     1,        15,        5,
+      "B",     7,        3,         NA
+    ) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lccc") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) 
+    ```
+    
+    If the data are (repeatedly) randomly allocated across the two conditions, provide the following:  (1) the values which are assigned to group A, (2) the values which are assigned to group B, and (3) the difference in averages $(\bar{x}_A - \bar{x}_B)$ for each of the following: 
+
+     a. When the randomized difference in averages is as big as possible.
+     
+     b. When the randomized difference in averages is as small as possible (a big in magnitude negative number).
+     
+     c. When the randomized difference in averages is as close to zero as possible.
+     
+     d. When the observed values are randomly assigned to the two groups, to which of the previous parts would you expect the difference in means to fall closest? Explain your reasoning.
+
+1. **Diamonds, mathematical test.** 
+We have data on two random samples of diamonds: one with diamonds that weigh 0.99 carats and one with diamonds that weigh 1 carat. 
+Each sample has 23 diamonds.
+Sample statistics for the price per carat of diamonds in each sample are provided below.
+Conduct a hypothesis test using a mathematical model to evaluate if there is a difference between the prices per carat of diamonds that weigh 0.99 carats and diamonds that weigh 1 carat 
+Make sure to state your hypotheses clearly, check relevant conditions, and interpret your results in context of the data. [@ggplot2]
+
+    ```{r fig.asp=0.4}
+    library(tidyverse)
+    library(scales)
+    library(kableExtra)
+    
+    set.seed(47)
+    diamonds_100_99_sample <- diamonds %>%
+      filter(carat %in% c(1, 0.99)) %>%
+      group_by(carat) %>%
+      slice_sample(n = 23) %>% 
+      mutate(
+        ppc   = price/carat/100,
+        carat = if_else(carat == 1, paste(carat, "carat"), paste(carat, "carats"))
+        )
+    
+    diamonds_100_99_summary <- diamonds_100_99_sample %>%
+      group_by(carat) %>%
+      summarise(
+        Mean = format(mean(ppc), digits = 4, nsmall = 2),
+        SD = format(sd(ppc), digits = 4, nsmall = 2),
+        n = n()
+      ) %>%
+      mutate(
+        Mean = paste0("$", Mean),
+        SD = paste0("$", SD)
+        )
+        
+    diamonds_100_99_summary %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lccc", col.names = c("", "Mean", "SD", "n"), digits = 2) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1:4, width = "6em")
+    
+    ggplot(diamonds_100_99_sample, aes(y = fct_rev(carat), x = ppc)) +
+      geom_boxplot() +
+      labs(y = NULL, x = "Price per carat (USD)") +
+      scale_x_continuous(labels = label_dollar())
+    ```
+
+1. **A/B testing.** 
+A/B testing is a user experience research methodology where two variants of a page are shown to users at random.
+A company wants to evaluate whether users will spend more time, on average, on Page A or Page B using an A/B test.
+Two user experience designers at the company, Noëlly and Müge, are tasked with conducting the analysis of the data collected.
+They agree on how the null hypothesis should be set: on average, users spend the same amount of time on Page A and Page B.
+Noëlly believes that Page B will provide a better experience for users and hence wants to use a one-tailed test, Müge believes that a two-tailed test would be a better choice.
+Which designer do you agree with, and why?
+
+1. **Diamonds, mathematical interval.** 
+We have data on two random samples of diamonds: one with diamonds that weigh 0.99 carats and one with diamonds that weigh 1 carat. 
+Each sample has 23 diamonds. 
+Sample statistics for the price per carat of diamonds in each sample are provided below.
+Assuming that the conditions for conducting inference using a mathematical model are satisfied, construct a 95% confidence interval for the true population difference in prices per carat of diamonds that weigh 0.99 carats and 1 carat. [@ggplot2]
+
+    ```{r}
+    library(tidyverse)
+    library(scales)
+    library(kableExtra)
+    
+    set.seed(47)
+    diamonds_100_99_sample <- diamonds %>%
+      filter(carat %in% c(1, 0.99)) %>%
+      group_by(carat) %>%
+      slice_sample(n = 23) %>% 
+      mutate(
+        ppc   = price/carat/100,
+        carat = if_else(carat == 1, paste(carat, "carat"), paste(carat, "carats"))
+        )
+    
+    diamonds_100_99_summary <- diamonds_100_99_sample %>%
+      group_by(carat) %>%
+      summarise(
+        Mean = format(mean(ppc), digits = 4, nsmall = 2),
+        SD = format(sd(ppc), digits = 4, nsmall = 2),
+        n = n()
+      ) %>%
+      mutate(
+        Mean = paste0("$", Mean),
+        SD = paste0("$", SD)
+        )
+        
+    diamonds_100_99_summary %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lccc", col.names = c("", "Mean", "SD", "n"), digits = 2) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1:4, width = "6em")
+    ```
+
+1. **True / False: comparing means.**
+Determine if the following statements are true or false, and explain your reasoning for statements you identify as false.
+
+    a.  As the degrees of freedom increases, the $t$-distribution approaches normality.
+
+    b.  If a 95% confidence interval for the difference between two population means contains 0, a 99% confidence interval calculated based on the same two samples will also contain 0.
+    
+    c.  If a 95% confidence interval for the difference between two population means contains 0, a 90% confidence interval calculated based on the same two samples will also contain 0.
+
+1. **Difference of means.** 
 Suppose we will collect two random samples from the following distributions.
 In each of the parts below, consider the sample means $\bar{x}_1$ and $\bar{x}_2$ that we might observe from these two samples.
     
@@ -27,23 +301,21 @@ In each of the parts below, consider the sample means $\bar{x}_1$ and $\bar{x}_2
 
     d.  How are the standard deviations from parts (a), (b), and (c) related?
 
-1. **True / False: comparing means.**
-Determine if the following statements are true or false, and explain your reasoning for statements you identify as false.
-
-    a.  As the degrees of freedom increases, the $t$-distribution approaches normality.
-
-    b.  If a 95% confidence interval for the difference between two population means contains 0, a 99% confidence interval calculated based on the same two samples will also contain 0.
-    
-    c.  If a 95% confidence interval for the difference between two population means contains 0, a 90% confidence interval calculated based on the same two samples will also contain 0.
+1. **Gaming, distracted eating, and intake.** 
+A group of researchers who are interested in the possible effects of distracting stimuli during eating, such as an increase or decrease in the amount of food consumption, monitored food intake for a group of 44 patients who were randomized into two equal groups. 
+The treatment group ate lunch while playing solitaire, and the control group ate lunch without any added distractions. 
+Patients in the treatment group ate 52.1 grams of biscuits, with a standard deviation of 45.1 grams, and patients in the control group ate 27.1 grams of biscuits, with a standard deviation of 26.4 grams. 
+Do these data provide convincing evidence that the average food intake (measured in amount of biscuits consumed) is different for the patients in the treatment group compared to the control group? 
+Assume that conditions for conducting inference using mathematical models are satisfied. [@Oldham:2011]
 
 1. **Chicken diet: horsebean vs. linseed.** 
 Chicken farming is a multi-billion dollar industry, and any methods that increase the growth rate of young chicks can reduce consumer costs while increasing company profits, possibly by millions of dollars. 
 An experiment was conducted to measure and compare the effectiveness of various feed supplements on the growth rate of chickens. 
 Newly hatched chicks were randomly allocated into six groups, and each group was given a different feed supplement. 
 In this exercise we consider chicks that were fed horsebean and linseed.
-Below are some summary statistics from this dataset along with box plots showing the distribution of weights by feed type.^[The data used in this exercise can be found in the **datasets** R package: [`chickwts`](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/chickwts.html).] [@data:chickwts]
+Below are some summary statistics from this dataset along with box plots showing the distribution of weights by feed type.^[The [`chickwts`](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/chickwts.html) data used in this exercise can be found in the **datasets** R package.] [@data:chickwts]
 
-    ```{r}
+    ```{r out.width = "100%", fig.asp = 0.5}
     library(tidyverse)
     library(kableExtra)
     library(patchwork)
@@ -62,7 +334,8 @@ Below are some summary statistics from this dataset along with box plots showing
           col.names = c("Feed type", "Mean", "SD", "n")) %>%
       kable_styling(bootstrap_options = c("striped", "condensed"), 
                     latex_options = c("striped", "HOLD_position"),
-                    full_width = FALSE)
+                    full_width = FALSE) %>%
+      column_spec(1:4, width = "6em")
     
     p_box <- chickwts_h_l %>%
       ggplot(aes(y = fct_rev(feed), x = weight)) +
@@ -86,138 +359,12 @@ Below are some summary statistics from this dataset along with box plots showing
 
     d.  Would your conclusion change if we used $\alpha = 0.01$?
 
-1. **Diamonds, Part I.** 
-Prices of diamonds are determined by what is known as the 4 Cs: cut, clarity, color, and carat weight. 
-The prices of diamonds go up as the carat weight increases, but the increase is not smooth. 
-For example, the difference between the size of a 0.99 carat diamond and a 1 carat diamond is undetectable to the naked human eye, but the price of a 1 carat diamond tends to be much higher than the price of a 0.99 diamond. 
-In this question we use two random samples of diamonds, 0.99 carats and 1 carat, each sample of size 23, and compare the average prices of the diamonds. 
-In order to be able to compare equivalent units, we first divide the price for each diamond by 100 times its weight in carats. 
-That is, for a 0.99 carat diamond, we divide the price by 99. 
-For a 1 carat diamond, we divide the price by 100. The distributions and some sample statistics are shown below.
-Conduct a hypothesis test to evaluate if there is a difference between the average standardized prices of 0.99 and 1 carat diamonds. 
-Make sure to state your hypotheses clearly, check relevant conditions, and interpret your results in context of the data. [@ggplot2]
-
-    ```{r}
-    library(tidyverse)
-    library(scales)
-    library(kableExtra)
-    
-    set.seed(47)
-    diamonds_100_99_sample <- diamonds %>%
-      filter(carat %in% c(1, 0.99)) %>%
-      group_by(carat) %>%
-      slice_sample(n = 23) %>% 
-      mutate(
-        ppc   = price/carat/100,
-        carat = if_else(carat == 1, paste(carat, "carat"), paste(carat, "carats"))
-        )
-    
-    diamonds_100_99_summary <- diamonds_100_99_sample %>%
-      group_by(carat) %>%
-      summarise(
-        Mean = format(mean(ppc), digits = 4, nsmall = 2),
-        SD = format(sd(ppc), digits = 4, nsmall = 2),
-        n = n()
-      ) %>%
-      mutate(
-        Mean = paste0("$", Mean),
-        SD = paste0("$", SD)
-        )
-    
-    diamonds_100_99_summary %>%
-      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lccc", col.names = c("", "Mean", "SD", "n"), digits = 2) %>%
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
-                    latex_options = c("striped", "HOLD_position"),
-                    full_width = FALSE)    
-    
-    ggplot(diamonds_100_99_sample, aes(y = fct_rev(carat), x = ppc)) +
-      geom_boxplot() +
-      labs(y = NULL, x = "Point price (in USD)") +
-      scale_x_continuous(labels = label_dollar())
-    ```
-
-1. **Chicken diet: casein vs. soybean.** 
-Casein is a common weight gain supplement for humans. 
-Does it have an effect on chickens? 
-An experiment was conducted to measure and compare the effectiveness of various feed supplements on the growth rate of chickens. 
-Newly hatched chicks were randomly allocated into six groups, and each group was given a different feed supplement. 
-In this exercise we consider chicks that were fed casein and soybean.
-Assume that the conditions for conducting inference using mathematical models are met, and using the data provided below, test the hypothesis that the average weight of chickens that were fed casein is different than the average weight of chickens that were fed soybean. 
-If your hypothesis test yields a statistically significant result, discuss whether or not the higher average weight of chickens can be attributed to the casein diet.^[The data used in this exercise can be found in the **datasets** R package: [`chickwts`](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/chickwts.html).] [@data:chickwts]
-
-    ```{r}
-    library(tidyverse)
-    library(kableExtra)
-    
-    chickwts %>%
-      filter(feed %in% c("casein", "soybean")) %>%
-      group_by(feed) %>%
-      summarise(
-        mean = format(mean(weight), digits = 2, nsmall = 2),
-        sd   = format(sd(weight), digits = 2, nsmall = 2),
-        n    = n()
-      ) %>%
-      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lccc", 
-          col.names = c("Feed type", "Mean", "SD", "n")) %>%
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
-                    latex_options = c("striped", "HOLD_position"),
-                    full_width = FALSE)
-    ````
-
-1. **Diamonds, Part II.** 
-We have data on two random samples of diamonds: one with diamonds that weigh 0.99 carats and one with diamonds that weigh 1 carat. 
-Each sample has 23 diamonds. 
-Sample statistics for the price per carat of diamonds in each sample are provided below.
-
-    ```{r}
-    library(tidyverse)
-    library(scales)
-    library(kableExtra)
-    
-    set.seed(47)
-    diamonds_100_99_sample <- diamonds %>%
-      filter(carat %in% c(1, 0.99)) %>%
-      group_by(carat) %>%
-      slice_sample(n = 23) %>% 
-      mutate(
-        ppc   = price/carat/100,
-        carat = if_else(carat == 1, paste(carat, "carat"), paste(carat, "carats"))
-        )
-    
-    diamonds_100_99_summary <- diamonds_100_99_sample %>%
-      group_by(carat) %>%
-      summarise(
-        Mean = format(mean(ppc), digits = 4, nsmall = 2),
-        SD = format(sd(ppc), digits = 4, nsmall = 2),
-        n = n()
-      ) %>%
-      mutate(
-        Mean = paste0("$", Mean),
-        SD = paste0("$", SD)
-        )
-    
-    diamonds_100_99_summary %>%
-      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lccc", col.names = c("", "Mean", "SD", "n"), digits = 2) %>%
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
-                    latex_options = c("striped", "HOLD_position"),
-                    full_width = FALSE)
-    ```
-
-    Assuming that the conditions for conducting inference using a mathematical model are satisfied, construct a 95% confidence interval for the average difference between the standardized prices of 0.99 and 1 carat diamonds. [@ggplot2]
-
-1. **Gaming, distracted eating, and intake.** 
-A group of researchers who are interested in the possible effects of distracting stimuli during eating, such as an increase or decrease in the amount of food consumption, monitored food intake for a group of 44 patients who were randomized into two equal groups. 
-The treatment group ate lunch while playing solitaire, and the control group ate lunch without any added distractions. 
-Patients in the treatment group ate 52.1 grams of biscuits, with a standard deviation of 45.1 grams, and patients in the control group ate 27.1 grams of biscuits, with a standard deviation of 26.4 grams. 
-Do these data provide convincing evidence that the average food intake (measured in amount of biscuits consumed) is different for the patients in the treatment group compared to the control group? 
-Assume that conditions for conducting inference using mathematical models are satisfied. [@Oldham:2011]
-
 1. **Fuel efficiency in the city.** 
 Each year the US Environmental Protection Agency (EPA) releases fuel economy data on cars manufactured in that year. 
 Below are summary statistics on fuel efficiency (in miles/gallon) from random samples of cars with manual and automatic transmissions manufactured in 2021. 
-Do these data provide strong evidence of a difference between the average fuel efficiency of cars with manual and automatic transmissions in terms of their average city mileage?^[The data used in this exercise can be found in the **openintro** R package: [`epa2021`](http://openintrostat.github.io/openintro/reference/epa2021.html).] [@data:epaMPG2021]
+Do these data provide strong evidence of a difference between the average fuel efficiency of cars with manual and automatic transmissions in terms of their average city mileage?^[The [`epa2021`](http://openintrostat.github.io/openintro/reference/epa2021.html) data used in this exercise can be found in the **openintro** R package.] [@data:epaMPG2021]
 
-    ```{r}
+    ```{r fig.asp = 0.4}
     library(tidyverse)
     library(kableExtra)
     library(openintro)
@@ -245,20 +392,40 @@ Do these data provide strong evidence of a difference between the average fuel e
       labs(y = NULL, x = "City mileage (MPG)")
     ```
 
-1. **Gaming, distracted eating, and recall.** 
-A group of researchers who are interested in the possible effects of distracting stimuli during eating, such as an increase or decrease in the amount of food consumption, monitored food intake for a group of 44 patients who were randomized into two equal groups. 
-The 22 patients in the treatment group who ate their lunch while playing solitaire were asked to do a serial-order recall of the food lunch items they ate. 
-The average number of items recalled by the patients in this group was 4. 9, with a standard deviation of 1.8. 
-The average number of items recalled by the patients in the control group (no distraction) was 6.1, with a standard deviation of 1.8. 
-Do these data provide strong evidence that the average numbers of food items recalled by the patients in the treatment and control groups are different?
-Assume that conditions for conducting inference using mathematical models are satisfied. [@Oldham:2011]
+1. **Chicken diet: casein vs. soybean.** 
+Casein is a common weight gain supplement for humans. 
+Does it have an effect on chickens? 
+An experiment was conducted to measure and compare the effectiveness of various feed supplements on the growth rate of chickens. 
+Newly hatched chicks were randomly allocated into six groups, and each group was given a different feed supplement. 
+In this exercise we consider chicks that were fed casein and soybean.
+Assume that the conditions for conducting inference using mathematical models are met, and using the data provided below, test the hypothesis that the average weight of chickens that were fed casein is different than the average weight of chickens that were fed soybean. 
+If your hypothesis test yields a statistically significant result, discuss whether or not the higher average weight of chickens can be attributed to the casein diet. [@data:chickwts]
+
+    ```{r}
+    library(tidyverse)
+    library(kableExtra)
+    
+    chickwts %>%
+      filter(feed %in% c("casein", "soybean")) %>%
+      group_by(feed) %>%
+      summarise(
+        mean = format(mean(weight), digits = 2, nsmall = 2),
+        sd   = format(sd(weight), digits = 2, nsmall = 2),
+        n    = n()
+      ) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lccc", 
+          col.names = c("Feed type", "Mean", "SD", "n")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE)
+    ````
 
 1. **Fuel efficiency on the highway.** 
 Each year the US Environmental Protection Agency (EPA) releases fuel economy data on cars manufactured in that year. 
 Below are summary statistics on fuel efficiency (in miles/gallon) from random samples of cars with manual and automatic transmissions manufactured in 2021. 
-Do these data provide strong evidence of a difference between the average fuel efficiency of cars with manual and automatic transmissions in terms of their average highway mileage?^[The data used in this exercise can be found in the **openintro** R package: [`epa2021`](http://openintrostat.github.io/openintro/reference/epa2021.html).] [@data:epaMPG2021]
+Do these data provide strong evidence of a difference between the average fuel efficiency of cars with manual and automatic transmissions in terms of their average highway mileage? [@data:epaMPG2021]
 
-    ```{r}
+    ```{r fig.asp = 0.4}
     library(tidyverse)
     library(kableExtra)
     library(openintro)
@@ -285,3 +452,18 @@ Do these data provide strong evidence of a difference between the average fuel e
       geom_boxplot() +
       labs(y = NULL, x = "Highway mileage (MPG)")
     ```
+
+1. **Gaming, distracted eating, and intake.** 
+A group of researchers who are interested in the possible effects of distracting stimuli during eating, such as an increase or decrease in the amount of food consumption, monitored food intake for a group of 44 patients who were randomized into two equal groups. 
+The treatment group ate lunch while playing solitaire, and the control group ate lunch without any added distractions. 
+Patients in the treatment group ate 52.1 grams of biscuits, with a standard deviation of 45.1 grams, and patients in the control group ate 27.1 grams of biscuits, with a standard deviation of 26.4 grams. 
+Do these data provide convincing evidence that the average food intake (measured in amount of biscuits consumed) is different for the patients in the treatment group compared to the control group? 
+Assume that conditions for conducting inference using mathematical models are satisfied. [@Oldham:2011]
+
+1. **Gaming, distracted eating, and recall.** 
+A group of researchers who are interested in the possible effects of distracting stimuli during eating, such as an increase or decrease in the amount of food consumption, monitored food intake for a group of 44 patients who were randomized into two equal groups. 
+The 22 patients in the treatment group who ate their lunch while playing solitaire were asked to do a serial-order recall of the food lunch items they ate. 
+The average number of items recalled by the patients in this group was 4. 9, with a standard deviation of 1.8. 
+The average number of items recalled by the patients in the control group (no distraction) was 6.1, with a standard deviation of 1.8. 
+Do these data provide strong evidence that the average numbers of food items recalled by the patients in the treatment and control groups are different?
+Assume that conditions for conducting inference using mathematical models are satisfied. [@Oldham:2011]
