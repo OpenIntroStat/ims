@@ -35,13 +35,224 @@ In each of the following scenarios, determine if the data are paired.
 
     c.  A school board would like to determine whether there is a difference in average SAT scores for students at one high school versus another high school in the district. To check, they take a simple random sample of 100 students from each high school.
 
-1. **Global warming, Part I.** 
+1. **Sample size and pairing.**
+Determine if the following statement is true or false, and if false, explain your reasoning: If comparing means of two groups with equal sample sizes, always use a paired test.
+
+1. **High School and Beyond, randomization test.** 
+The National Center of Education Statistics conducted a survey of high school seniors, collecting test data on reading, writing, and several other subjects. 
+Here we examine a simple random sample of 200 students from this survey.
+Side-by-side box plots of reading and writing scores as well as a histogram of the differences in scores are shown below.
+Also provided below is a histogram of randomized averages of paired differences of scores (read - write), with the observed difference ($\bar{x}_{read-write} = -0.545$) marked with a red vertical line.
+The randomization distribution was produced by doing the following 1000 times: for each student, the two scores were randomly assigned to either read or write, and the average was taken across all students in the sample.^[The [`hsb2`](http://openintrostat.github.io/openintro/reference/hsb2.html) data used in this exercise can be found in the **openintro** R package.]
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(patchwork)
+    library(infer)
+    
+    set.seed(1234)
+    p_box <- hsb2 %>%
+      pivot_longer(cols = c(read, write), names_to = "test", values_to = "score") %>%
+      ggplot(aes(x = test, y = score, color = test)) +
+      geom_boxplot(show.legend = FALSE) +
+      geom_jitter(alpha = 0.6, width = 0.35, show.legend = FALSE) +
+      scale_color_manual(values = c(IMSCOL["green", "full"], IMSCOL["red", "full"])) +
+      labs(x = NULL, y = "Score")
+    
+    p_hist <- ggplot(hsb2, aes(x = read - write)) +
+      geom_histogram(binwidth = 5) +
+      labs(x = "Differences in scores (read - write)", y = "Count")
+    
+    set.seed(1234)
+    p_rand <- hsb2 %>%
+      mutate(diff = read - write) %>%
+      specify(response = diff) %>%
+      hypothesize(null = "point", mu = 0) %>%
+      generate(1000, type = "bootstrap") %>%
+      calculate(stat = "mean") %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.2, fill = IMSCOL["green", "full"]) +
+      geom_vline(xintercept = -0.545, color = IMSCOL["red", "full"], size = 1) +
+      labs(
+        title = "1,000 randomized means of differences",
+        x = "Averages of differences in score\n(read - write)", 
+        y = "Count"
+      )
+    
+    (p_box + p_hist) /
+      p_rand
+    ```
+
+    a.  Is there a clear difference in the average reading and writing scores?
+
+    b.  Are the reading and writing scores of each student independent of each other?
+
+    c.  Create hypotheses appropriate for the following research question: is there an evident difference in the average scores of students in the reading and writing exam?
+
+    d.  Is the average of the observed difference in scores $(\bar{x}_{read-write} = -0.545)$ consistent with the distribution of randomized average differences? Explain.  
+
+    e.  Do these data provide convincing evidence of a difference between the average scores on the two exams?  Estimate the p-value from the randomization test, and conclude the hypothesis test using words like "score on reading test" and "score on writing test."
+
+1. **Forest management.**
+Forest rangers wanted to better understand the rate of growth for younger trees in the park. They took measurements of a random sample of 50 young trees in 2009 and again measured those same trees in 2019. The data below summarize their measurements, where the heights are in feet.
+
+    ```{r}
+    library(tidyverse)
+    library(kableExtra)
+    
+    tribble(
+      ~Year,        ~Mean, ~SD, ~n,
+      "2009",       12,    3.5, 50,
+      "2019",       24.5,  9.5, 50,
+      "Difference", 12.5,  7.2, 50
+      ) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lccc") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1:4, width = "5em")
+    ```
+
+    Construct a 99% confidence interval for the average growth of (what had been) younger trees in the park over 2009-2019.
+
+1. **High School and Beyond, bootstrap interval.** 
+We considered the differences between the reading and writing scores of a random sample of 200 students who took the High School and Beyond Survey.
+The mean and standard deviation of the differences are $\bar{x}_{read-write} = -0.545$ and $s_{read-write}$ = 8.887 points.
+The bootstrap distribution below was produced by bootstrapping from the sample of differences in reading and writing scores 1,000 times.
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(patchwork)
+    
+    set.seed(1234)
+    hsb2 %>%
+      mutate(diff = read - write) %>%
+      specify(response = diff) %>%
+      generate(1000, type = "bootstrap") %>%
+      calculate(stat = "mean") %>%
+      ggplot(aes(x = stat)) + 
+      geom_histogram(binwidth = 0.2, fill = IMSCOL["green", "full"]) +
+      labs(        
+        title = "1,000 bootstrapped means of differences",
+        x = "Averages of differences in score\n(read - write)", 
+        y = "Count"
+        )
+    ```
+
+    a.  Find an approximate 95% confidence interval for the true average difference in scores (read - write).
+
+    b.  Interpret the confidence interval using words like "population" and "score".
+
+    c.  From the confidence interval calculated above, does it appear that there is a significant difference in reading and writing scores, on average?
+
+1. **Possible randomized means.**
+Data were collected on data from two groups (A and B). There were 3 measurements taken on Group A and two measurements 
+
+    ```{r}
+    library(knitr)
+    library(kableExtra)
+    library(tidyverse)
+    
+    tribble(
+      ~Group, ~`Measurement 1`, ~`Measurement 2`, ~`Measurement 3`, 
+      "A",     1,        15,        5,
+      "B",     7,        3,         NA
+    ) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lccc") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) 
+    ```
+    
+    If the data are (repeatedly) randomly allocated across the two conditions, provide the following:  (1) the values which are assigned to group A, (2) the values which are assigned to group B, and (3) the difference in averages $(\bar{x}_A - \bar{x}_B)$ for each of the following: 
+
+     a. When the randomized difference in averages is as big as possible.
+     
+     b. When the randomized difference in averages is as small as possible (a big in magnitude negative number).
+     
+     c. When the randomized difference in averages is as close to zero as possible.
+     
+     d. When the observed values are randomly assigned to the two groups, to which of the previous parts would you expect the difference in means to fall closest? Explain your reasoning.
+
+1. **Study environment.**
+In order to test the effects of listening to music while studying versus studying in silence, students agree to be randomized to two treatments (i.e., study with music or study in silence).
+There are two exams during the semester, so the researchers can either randomize the students to have one exam with music and one with silence (randomly selecting which exam corresponds to which study environment) or the researchers can randomize the students to one study habit for both exams.
+
+    The researchers are interested in estimating the true population difference of exam score for those who listen to music while studying as compared to those who study in silence.
+
+    a. Describe the experiment which is consistent with a paired designed experiment.  How is the treatment assigned, and how are the data collected such that the observations are paired?
+
+    b. Describe the experiment which is consistent with an indpenedent samples experiment.  How is the treatment assigned, and how are the data collected such that the observations are independent?
+
+1. **Global warming, randomization test.** 
 Let's consider a limited set of climate data, examining temperature differences in 1948 vs 2018. 
 We sampled 197 locations from the National Oceanic and Atmospheric Administration's (NOAA) historical data, where the data was available for both years of interest. 
 We want to know: were there more days with temperatures exceeding 90F in 2018 or in 1948? [@webpage:noaa19482018] 
 The difference in number of days exceeding 90F (number of days in 2018 - number of days in 1948) was calculated for each of the 197 locations. 
 The average of these differences was 2.9 days with a standard deviation of 17.2 days. 
-We are interested in determining whether these data provide strong evidence that there were more days in 2018 that exceeded 90F from NOAA's weather stations.
+We are interested in determining whether these data provide strong evidence that there were more days in 2018 that exceeded 90F from NOAA's weather stations.^[The [`climate70`](http://openintrostat.github.io/openintro/reference/climate70.html) data used in this exercise can be found in the **openintro** R package.]
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    
+    set.seed(1234)
+    climate70 %>%
+      mutate(diff = dx90_2018 - dx90_1948) %>%
+      specify(response = diff) %>%
+      hypothesize(null = "point", mu = 0) %>%
+      generate(1000, type = "bootstrap") %>%
+      calculate(stat = "mean") %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.5, fill = IMSCOL["green", "full"]) +
+      geom_vline(xintercept = 2.9, color = IMSCOL["red", "full"], size = 1) +
+      labs(
+        title = "1,000 randomized means of differences",
+        x = "Averages of differences in score\n(Year 2018 - Year 1948)", 
+        y = "Count"
+      )
+    ```
+    
+    a.  Create hypotheses appropriate for the following research question: is there an evident difference in the average number of days greater than 90F across the two years (1948 and 2018)?
+
+    b.  Is the average of the observed difference in scores $(\bar{x}_{2018-1948} = 2.9)$ consistent with the distribution of randomized average differences?  Explain.  
+
+    c.  Do these data provide convincing evidence of a difference between the average number of days?  Estimate the p-value from the randomization test, and conclude the hypothesis test using words like "number of days in 1948" and "number of days in 2018."
+
+1. **Global warming, bootstrap interval.** 
+We considered the change in the number of days exceeding 90F from 1948 and 2018 at 197 randomly sampled locations from the NOAA database. 
+The mean and standard deviation of the reported differences are 2.9 days and 17.2 days.
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    
+    set.seed(1234)
+    climate70 %>%
+      mutate(diff = dx90_2018 - dx90_1948) %>%
+      specify(response = diff) %>%
+      generate(1000, type = "bootstrap") %>%
+      calculate(stat = "mean") %>%
+      ggplot(aes(x = stat)) + 
+      geom_histogram(binwidth = 0.5, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 bootstrapped means of differences",
+        x = "Averages of differences in score\n(Year 2018 - Year 1948)", 
+        y = "Count"
+      )
+    ```
+
+    a.  Calculate a 90% confidence interval for the average difference between number of days exceeding 90F between 1948 and 2018. 
+
+    b.  Interpret the interval in context.
+
+    c.  Does the confidence interval provide convincing evidence that there were more days exceeding 90F in 2018 than in 1948 at NOAA stations? Explain your reasoning.
+
+1. **Global warming, mathematical test.** 
+We considered the change in the number of days exceeding 90F from 1948 and 2018 at 197 randomly sampled locations from the NOAA database. 
+The mean and standard deviation of the reported differences are 2.9 days and 17.2 days.
 
     ```{r}
     library(tidyverse)
@@ -68,47 +279,20 @@ We are interested in determining whether these data provide strong evidence that
 
     g.  Based on the results of this hypothesis test, would you expect a confidence interval for the average difference between the number of days exceeding 90F from 1948 and 2018 to include 0? Explain your reasoning.
 
-1. **High School and Beyond, Part I.** 
-The National Center of Education Statistics conducted a survey of high school seniors, collecting test data on reading, writing, and several other subjects. 
-Here we examine a simple random sample of 200 students from this survey. 
-Side-by-side box plots of reading and writing scores as well as a histogram of the differences in scores are shown below.
+1. **High School and Beyond, mathematical test.** 
+We considered the differences between the reading and writing scores of a random sample of 200 students who took the High School and Beyond Survey.
 
-    ```{r}
-    library(tidyverse)
-    library(openintro)
-    library(patchwork)
-    
-    set.seed(1234)
-    p_box <- hsb2 %>%
-      pivot_longer(cols = c(read, write), names_to = "test", values_to = "score") %>%
-      ggplot(aes(x = test, y = score, color = test)) +
-      geom_boxplot(show.legend = FALSE) +
-      geom_jitter(alpha = 0.6, width = 0.35, show.legend = FALSE) +
-      scale_color_manual(values = c(IMSCOL["green", "full"], IMSCOL["red", "full"])) +
-      labs(x = NULL, y = "Score")
-    
-    p_hist <- ggplot(hsb2, aes(x = read - write)) +
-      geom_histogram(binwidth = 5) +
-      labs(x = "Differences in scores (read - write)", y = "Count")
-    
-    p_box + p_hist
-    ```
+    a.  Create hypotheses appropriate for the following research question: is there an evident difference in the average scores of students in the reading and writing exam?
 
-    a.  Is there a clear difference in the average reading and writing scores?
+    b.  Check the conditions required to complete this test.
 
-    b.  Are the reading and writing scores of each student independent of each other?
+    c.  The average observed difference in scores is $\bar{x}_{read-write} = -0.545$, and the standard deviation of the differences is $s_{read-write} = 8.887$ points. Do these data provide convincing evidence of a difference between the average scores on the two exams?
 
-    c.  Create hypotheses appropriate for the following research question: is there an evident difference in the average scores of students in the reading and writing exam?
+    d.  What type of error might we have made? Explain what the error means in the context of the application.
 
-    d.  Check the conditions required to complete this test.
+    e.  Based on the results of this hypothesis test, would you expect a confidence interval for the average difference between the reading and writing scores to include 0? Explain your reasoning.
 
-    e.  The average observed difference in scores is $\bar{x}_{read-write} = -0.545$, and the standard deviation of the differences is $s_{read-write} = 8.887$ points. Do these data provide convincing evidence of a difference between the average scores on the two exams?
-
-    f.  What type of error might we have made? Explain what the error means in the context of the application.
-
-    g.  Based on the results of this hypothesis test, would you expect a confidence interval for the average difference between the reading and writing scores to include 0? Explain your reasoning.
-
-1. **Global warming, Part II.** 
+1. **Global warming, mathematical interval.** 
 We considered the change in the number of days exceeding 90F from 1948 and 2018 at 197 randomly sampled locations from the NOAA database. 
 The mean and standard deviation of the reported differences are 2.9 days and 17.2 days.
 
@@ -118,7 +302,7 @@ The mean and standard deviation of the reported differences are 2.9 days and 17.
 
     c.  Does the confidence interval provide convincing evidence that there were more days exceeding 90F in 2018 than in 1948 at NOAA stations? Explain your reasoning.
 
-1. **High school and beyond, Part II.** 
+1. **High school and beyond, mathematical interval.** 
 We considered the differences between the reading and writing scores of a random sample of 200 students who took the High School and Beyond Survey. 
 The mean and standard deviation of the differences are $\bar{x}_{read-write} = -0.545$ and $s_{read-write}$ = 8.887 points.
 
@@ -127,3 +311,104 @@ The mean and standard deviation of the differences are $\bar{x}_{read-write} = -
     b.  Interpret this interval in context.
 
     c.  Does the confidence interval provide convincing evidence that there is a real difference in the average scores? Explain.
+
+1. **Friday the 13th, traffic.**
+In the early 1990's, researchers in the UK collected data on traffic flow on Friday the 13th with the goal of addressing issues of how superstitions regarding Friday the 13th affect human behavior and and whether Friday the 13th is an unlucky day.
+The histograms below show the distributions of numbers of cars passing by a specific intersection on Friday the 6th and Friday the 13th for many such date pairs.
+Also provided are some sample statistics, where the difference is the number of cars on the 6th minus the number of cars on the 13th.^[The [`friday`](http://openintrostat.github.io/openintro/reference/friday.html) data used in this exercise can be found in the **openintro** R package.] [@Scanlon:1993]
+
+    ```{r out.width = "100%", fig.asp = 0.3}
+    library(tidyverse)
+    library(openintro)
+    library(scales)
+    library(kableExtra)
+    
+    friday_traffic <- friday %>% filter(type == "traffic") %>%
+      pivot_longer(
+        cols = sixth:diff,
+        names_to = "observation",
+        values_to = "count"
+      ) %>%
+      mutate(observation = fct_relevel(observation, "sixth", "thirteenth", "diff"))
+    
+    friday_traffic %>%
+      ggplot(aes(x = count)) +
+      geom_histogram(bins = 5) +
+      facet_wrap(~observation, scales = "free") +
+      scale_x_continuous(labels = label_number(scale = 1/1000, suffix = "K", accuracy = 1)) +
+      labs(x = "Number of cars", y = "Count")
+    
+    friday_traffic %>%
+      group_by(observation) %>%
+      summarise(
+        n = n(),
+        Mean = mean(count),
+        SD = sd(count)
+      ) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrr",
+          format.args = list(big.mark = ","), col.names = c("", "n", "Mean", "SD")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1:4, width = "5em")
+    ```
+
+    a.  Are there any underlying structures in these data that should be considered in an analysis? Explain.
+
+    b.  What are the hypotheses for evaluating whether the number of people out on Friday the 6$^{\text{th}}$ is different than the number out on Friday the 13$^{\text{th}}$?
+
+    c.  Check conditions to carry out the hypothesis test from part (b) using mathematical models.
+
+    d.  Calculate the test statistic and the p-value.
+
+    e.  What is the conclusion of the hypothesis test?
+
+    f.  Interpret the p-value in this context.
+
+    g.  What type of error might have been made in the conclusion of your test? Explain.
+
+1. **Friday the 13th, accidents.** 
+In the early 1990's, researchers in the UK collected data the number of traffic accident related emergency room (ER) admissions on Friday the 13th with the goal of addressing issues of how superstitions regarding Friday the 13th affect human behavior and and whether Friday the 13th is an unlucky day.
+The histograms below show the distributions of numbers of ER admissions at specific emergency rooms on Friday the 6th and Friday the 13th for many such date pairs.
+Also provided are some sample statistics, where the difference is the ER admissions on the 6th minus the ER admissions on the 13th.[@Scanlon:1993]
+
+    ```{r out.width = "100%", fig.asp = 0.3}
+    library(tidyverse)
+    library(openintro)
+    library(scales)
+    library(kableExtra)
+    
+    friday_accident <- friday %>% filter(type == "accident") %>%
+      pivot_longer(
+        cols = sixth:diff,
+        names_to = "observation",
+        values_to = "count"
+      ) %>%
+      mutate(observation = fct_relevel(observation, "sixth", "thirteenth", "diff"))
+    
+    friday_accident %>%
+      ggplot(aes(x = count)) +
+      geom_histogram(bins = 5) +
+      facet_wrap(~observation, scales = "free") +
+      labs(x = "Number of traffic accident related ER admissions", y = "Count")
+    
+    friday_accident %>%
+      group_by(observation) %>%
+      summarise(
+        n = n(),
+        Mean = mean(count),
+        SD = sd(count)
+      ) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrr", digits = 0,
+          format.args = list(big.mark = ","), col.names = c("", "n", "Mean", "SD")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1:4, width = "5em")
+    ```
+
+    a.  Conduct a hypothesis test using mathematical models to evaluate if there is a difference between the average numbers of traffic accident related emergency room admissions between Friday the 6$^{\text{th}}$ and Friday the 13$^{\text{th}}$.
+
+    b.  Calculate a 95% confidence interval using mathematical models for the difference between the average numbers of traffic accident related emergency room admissions between Friday the 6$^{\text{th}}$ and Friday the 13$^{\text{th}}$.
+
+    c.  The conclusion of the original study states, "Friday 13th is unlucky for some. The risk of hospital admission as a result of a transport accident may be increased by as much as 52%. Staying at home is recommended." Do you agree with this statement? Explain your reasoning.
