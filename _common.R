@@ -127,7 +127,7 @@ inference_method_summary_table <- tribble(
     "Quick analyses through, for example, calculating a Z score.",
   "What physical object represents the simulation process?", 
     "Shuffling cards", 
-    "Pulling marbles from a bag", 
+    "Pulling marbles from a bag with replacement", 
     "Not applicable",
   "What are the technical conditions?", 
     "Independence", 
