@@ -1,0 +1,555 @@
+1. **Body measurements, randomization test.** 
+Researchers studying anthropometry collected body and skeletal diameter measurements, as well as age, weight, height and sex for 507 physically active individuals. 
+A linear model is built to predict height based on shoulder girth (circumference of shoulders measured over deltoid muscles), both measured in centimeters.^[The [`bdims`](http://openintrostat.github.io/openintro/reference/bdims.html) data used in this exercise can be found in the **openintro** R package.] [@Heinz:2003]
+    
+    Below are two items.
+    The first is the standard linear model output for predicting height from shoulder girth.
+    The second is a histogram of slopes from 1,000 randomized datasets (1,000 times, `hgt` was permuted and regressed against `sho_gi`).
+    The red vertical line is drawn at the observed slope value which was produced in the linear model output.
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(infer)
+    library(broom)
+    library(kableExtra)
+    
+    lm(hgt ~ sho_gi, data = bdims) %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 3) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+
+    set.seed(47)
+    bdims %>%
+      specify(hgt ~ sho_gi) %>%
+      hypothesize(null = "independence") %>%
+      generate(reps = 1000, type = "permute") %>%
+      calculate(stat = "slope") %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.02, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 randomized slopes",
+        x = "Slope from randomly permuted data", 
+        y = "Count"
+        ) +
+      geom_vline(xintercept = 0.604, color = IMSCOL["red", "full"], size = 1)
+    ```
+
+    a. What are the null and alternative hypotheses for evaluating whether the slope of the model predicting height from shoulder girth is differen than 0.
+    
+    b. Using the histogram which describes the distribution of slopes when the null hypothesis is true, find the p-value and conclude the hypothesis test in the context of the problem (use words like shoulder girth and height).
+    
+    c. Is the conclusion based on the histogram of randomized slopes consistent with the conclusion which would have been obtained using the mathematical model?  Explain.
+
+1. **Body measurements, mathematical test.**
+The scatterplot and least squares summary below show the relationship between weight measured in kilograms and height measured in centimeters of 507 physically active individuals. [@Heinz:2003]
+
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(kableExtra)
+    library(broom)
+    
+    ggplot(bdims, aes(x = hgt, y = wgt)) +
+      geom_point() +
+      labs(
+        x = "Height (cm)",
+        y = "Weight (kg)"
+      )
+    
+    m_wgt_hgt <- lm(wgt ~ hgt, data = bdims)
+    r_wgt_hgt <- round(cor(bdims$wgt, bdims$hgt), 2)
+    
+    tidy(m_wgt_hgt) %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 2) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    ```
+
+    a.  Describe the relationship between height and weight.
+
+    b.  Write the equation of the regression line. Interpret the slope and intercept in context.
+
+    c.  Do the data provide convincing evidence that an increase in height is associated with an increase in weight? State the null and alternative hypotheses, report the p-value (using a mathematical model), and state your conclusion.
+
+    d.  The correlation coefficient for height and weight is `r r_wgt_hgt`. Calculate $R^2$ and interpret it in context.
+
+1.  **Body measurements, percentile bootstrap interval.** 
+In order to estimate the slope of the model predicting height based on shoulder girth (circumference of shoulders measured over deltoid muscles), 1,000 bootstrap samples are taken from a dataset of body measurements from 507 people. 
+A linear model predicting height based on shoulder girth is fit to each bootstrap sample, and the slope is estimated.
+A histogram of these slopes is shown below. [@Heinz:2003]
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(infer)
+    
+    set.seed(47)
+    bdims %>%
+      specify(hgt ~ sho_gi) %>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "slope") %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.01, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 bootstrap slopes",
+        x = "Slope from bootstrapped data", 
+        y = "Count"
+        )
+    ```
+
+    a. Using the percentile bootstrap method and the histogram above, find a 98% confidence interval for the slope parameter.
+    
+    b. Interpret the confidence interval in the context of the problem.
+
+1.  **Body measurements, standard error bootstrap interval.** 
+A linear model is built to predict height based on shoulder girth (circumference of shoulders measured over deltoid muscles), both measured in centimeters. [@Heinz:2003]
+
+    Below are two items.
+    The first is the standard linear model output for predicting height from shoulder girth.
+    The second is the bootstrap distribution of the slope statistic from 1,000 different bootstrap samples of the data.
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(infer)
+    library(broom)
+    
+    lm(hgt ~ sho_gi, data = bdims) %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 3) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    
+    set.seed(47)
+    bdims %>%
+      specify(hgt ~ sho_gi) %>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "slope") %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.01, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 bootstrapped slopes",
+        x = "Slope from bootstrapped data", 
+        y = "Count"
+        )
+    ```
+
+    a. Using the histogram, approximate the standard error of the slope statistic (that is, quantify the variability of the slope statistic from sample to sample).
+    
+    b. Find a 98% confidence interval for the slope parameter using the SE bootstrap method.
+    
+    c. Interpret the confidence interval in the context of the problem.
+
+1. **Murders and poverty, randomization test.** 
+The following regression output is for predicting annual murders per million (`annual_murders_per_mil`) from percentage living in poverty (`perc_pov`) in a random sample of 20 metropolitan areas.
+
+    Below are two items.
+    The first is the standard linear model output for predicting annual murders per million from percentage living in poverty for metropolitan areas.
+    The second is a histogram of slopes from 1000 randomized datasets (1000 times, `annual_murders_per_mil` was permuted and regressed against `perc_pov`).
+    The red vertical line is drawn at the observed slope value which was produced in the linear model output.
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(infer)
+    library(broom)
+    library(kableExtra)
+
+    lm(annual_murders_per_mil ~ perc_pov, data = murders) %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 3) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    
+    set.seed(47)
+    murders %>%
+      specify(annual_murders_per_mil ~ perc_pov) %>%
+      hypothesize(null = "independence") %>%
+      generate(reps = 1000, type = "permute") %>%
+      calculate(stat = "slope") %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.2, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 randomized slopes",
+        x = "Slope from randomly permuted data", 
+        y = "Count"
+        ) +
+      geom_vline(xintercept = 2.559, color = IMSCOL["red", "full"], size = 1)
+    ```
+    
+    a. What are the null and alternative hypotheses for evaluating whether the slope of the model for predicting annual murder rate from poverty percentage is different than 0?
+    
+    b. Using the histogram which describes the distribution of slopes when the null hypothesis is true, find the p-value and conclude the hypothesis test in the context of the problem (use words like murder rate and poverty).
+    
+    c. Is the conclusion based on the histogram of randomized slopes consistent with the conclusion which would have been obtained using the mathematical model? Explain.
+
+1.  **Murders and poverty, mathematical test.**
+The table below shows the output of a linear model annual murders per million (`annual_murders_per_mil`) from percentage living in poverty (`perc_pov`) in a random sample of 20 metropolitan areas.
+
+    ```{r}
+    library(MASS)
+    library(kableExtra)
+    library(broom)
+    
+    lm(annual_murders_per_mil ~ perc_pov, data = murders) %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 4) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    ```
+
+    a. What are the hypotheses for evaluating whether the slope of the model predicting annual murder rate from poverty percentage is different than 0?
+
+    b. State the conclusion of the hypothesis test from part (a) in context of the data. What does this say about whether poverty percentage is a useful predictor of annual murder rate?
+
+    c. Calculate a 95% confidence interval for the slope of poverty percentage, and interpret it in context of the data.
+
+    d. Do your results from the hypothesis test and the confidence interval agree? Explain.
+
+1.  **Murders and poverty, percentile bootstrap interval.**
+Data on annual murders per million (`annual_murders_per_mil`) and percentage living in poverty (`perc_pov`) is collected from a random sample of 20 metropolitan areas.
+Using these data we want to estimate the slope of the model predicting `annual_murders_per_mil` from `perc_pov`.
+We take 1,000 bootstrap samples of the data and fit a linear model predicting `annual_murders_per_mil` from `perc_pov` to each bootstrap sample.
+A histogram of these slopes is shown below.
+
+    ```{r}
+    library(openintro)
+    library(infer)
+    library(tidyverse)
+   
+    set.seed(470)
+    murders %>%
+      specify(annual_murders_per_mil ~ perc_pov) %>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "slope") %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.2, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 bootstrap slopes",
+        x = "Slope from bootstrapped data", 
+        y = "Count"
+        )
+    ```
+    
+    a. Using the percentile bootstrap method and the histogram above, find a 90% confidence interval for the slope parameter.
+    
+    b. Interpret the confidence interval in the context of the problem.
+
+1.  **Murders and poverty, standard error bootstrap interval.**
+A linear model is built to predict annual murders per million (`annual_murders_per_mil`) from percentage living in poverty (`perc_pov`) in a random sample of 20 metropolitan areas.
+
+    Below are two items.
+    The first is the standard linear model output for predicting annual murders per million from percentage living in poverty for metropolitan areas.
+    The second is the bootstrap distribution of the slope statistic from 1000 different bootstrap samples of the data.
+
+    ```{r}
+    library(openintro)
+    library(broom)
+    library(knitr)
+    library(infer)
+
+    lm(annual_murders_per_mil ~ perc_pov, data = murders) %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 3) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    
+    set.seed(470)
+    murders %>%
+      specify(annual_murders_per_mil ~ perc_pov) %>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "slope") %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.2, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 bootstrapped slopes",
+        x = "Slope from bootstrapped data", 
+        y = "Count"
+        )
+    ```
+    
+    a. Using the histogram, approximate the standard error of the slope statistic (that is, quantify the variability of the slope statistic from sample to sample).
+    
+    b. Find a 90% confidence interval for the slope parameter using the SE bootstrap method.
+    
+    c. Interpret the confidence interval in the context of the problem.
+
+1. **Baby's weight and father's age, randomization test.**
+US Department of Health and Human Services, Centers for Disease Control and Prevention collect information on births recorded in the country.
+The data used here are a random sample of 1000 births from 2014.
+Here, we study the relationship between the father's age and the weight of the baby.^[The [`births14`](http://openintrostat.github.io/openintro/reference/births14.html) data used in this exercise can be found in the **openintro** R package.] [@data:births14]
+
+    Below are two items.
+    The first is the standard linear model output for predicting baby's weight (in pounds) from father's age (in years).
+    The second is a histogram of slopes from 1000 randomized datasets (1000 times, `weight` was permuted and regressed against `fage`).
+    The red vertical line is drawn at the observed slope value which was produced in the linear model output.
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(infer)
+    library(broom)
+    
+    births14 %>%
+      drop_na() %>%
+      lm(weight ~ fage, data = .) %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 3) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+
+    set.seed(47)
+    births14 %>%
+      drop_na() %>%
+      specify(weight ~ fage) %>%
+      hypothesize(null = "independence") %>%
+      generate(reps = 1000, type = "permute") %>%
+      calculate(stat = "slope") %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.0025, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 randomized slopes",
+        x = "Slope from randomly permuted data", 
+        y = "Count"
+        ) +
+      geom_vline(xintercept = 0.005, color = IMSCOL["red", "full"], size = 1)
+    ```
+
+    a. What are the null and alternative hypotheses for evaluating whether the slope of the model for predicting baby's weight from father's age is different than 0?
+
+    b. Using the histogram which describes the distribution of slopes when the null hypothesis is true, find the p-value and conclude the hypothesis test in the context of the problem (use words like father's age and weight of baby). What does the conclusion of your test say about whether the father's age is a useful predictor of baby's weight?
+
+    c. Is the conclusion based on the histogram of randomized slopes consistent with the conclusion which would have been obtained using the mathematical model? Explain.
+
+1. **Baby's weight and father's age, mathematical test.**
+Is the father's age useful in predicting the baby's weight?
+The scatterplot and least squares summary below show the relationship between baby's weight (measured in pounds) and father's age or a random sample of babies. [@data:births14]
+
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(kableExtra)
+    library(broom)
+    
+    ggplot(births14, aes(x = fage, y = weight)) +
+      geom_point() +
+      labs(
+        x = "Father's age",
+        y = "Weight (lbs)"
+      )
+    
+    m_weight_fage <- lm(weight ~ fage, data = births14)
+
+    tidy(m_weight_fage) %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 4) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    ```
+    
+    a. What is the predicted weight of a baby whose father is 30 years old.
+    
+    b. Do the data provide convincing evidence that the model for predicting baby weights from father's age has a slope different than 0? State the null and alternative hypotheses, report the p-value (using a mathematical model), and state your conclusion.
+    
+    c. Based on your conclusion, is father's age a useful predictor of baby's weight?
+
+1.  **Baby's weight and father's age, percentile bootstrap interval.**
+US Department of Health and Human Services, Centers for Disease Control and Prevention collect information on births recorded in the country.
+The data used here are a random sample of 1000 births from 2014.
+Here, we study the relationship between the father's age and the weight of the baby.
+Below is the bootstrap distribution of the slope statistic from 1,000 different bootstrap samples of the data. [@data:births14]
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(infer)
+    
+    set.seed(47)
+    births14 %>%
+      drop_na() %>%
+      specify(weight ~ fage) %>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "slope") %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.005, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 bootstrapped slopes",
+        x = "Slope from bootstrapped data", 
+        y = "Count"
+        )
+    ```
+
+    a. Using the percentile bootstrap method and the histogram above, find a 95% confidence interval for the slope parameter.
+    
+    b. Interpret the confidence interval in the context of the problem.
+
+1.  **Baby's weight and father's age, standard error bootstrap interval.** 
+US Department of Health and Human Services, Centers for Disease Control and Prevention collect information on births recorded in the country.
+The data used here are a random sample of 1000 births from 2014.
+Here, we study the relationship between the father's age and the weight of the baby. [@data:births14]
+
+    Below are two items.
+    The first is the standard linear model output for predicting baby's weight (in pounds) from father's age (in years).
+    The second is the bootstrap distribution of the slope statistic from 1000 different bootstrap samples of the data.
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(infer)
+    library(broom)
+    
+    births14 %>%
+      drop_na() %>%
+      lm(weight ~ fage, data = .) %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 3) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    
+    set.seed(47)
+    births14 %>%
+      drop_na() %>%
+      specify(weight ~ fage) %>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "slope") %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.005, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 bootstrapped slopes",
+        x = "Slope from bootstrapped data", 
+        y = "Count"
+        )
+    ```
+
+    a. Using the histogram, approximate the standard error of the slope statistic (that is, quantify the variability of the slope statistic from sample to sample).
+    
+    b. Find a 95% confidence interval for the slope parameter using the SE bootstrap method.
+    
+    c. Interpret the confidence interval in the context of the problem.
+
+1. **I heart cats.**
+Researchers collected data on heart and body weights of 144 domestic adult cats. 
+The table below shows the output of a linear model predicting heat weight (measured in grams) from body weight (measured in kilograms) of these cats.^[The [`cats`](https://stat.ethz.ch/R-manual/R-patched/library/MASS/html/cats.html) data used in this exercise can be found in the **MASS** R package.]
+
+    ```{r}
+    library(MASS)
+    library(kableExtra)
+    library(broom)
+    
+    m_cat <- lm(Hwt ~ Bwt, data = cats)
+
+    tidy(m_cat) %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 4) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    ```
+
+    a. What are the hypotheses for evaluating whether body weight is positively associated with heart weight in cats?
+
+    b. State the conclusion of the hypothesis test from part (a) in context of the data.
+
+    c. Calculate a 95% confidence interval for the slope of body weight, and interpret it in context of the data.
+
+    d. Do your results from the hypothesis test and the confidence interval agree? Explain.
+
+1. **Beer and blood alcohol content**
+Many people believe that weight, drinking habits, and many other factors are much more important in predicting blood alcohol content (BAC) than simply considering the number of drinks a person consumed. Here we examine data from sixteen student volunteers at Ohio State University who each drank a randomly assigned number of cans of beer. These students were evenly divided between men and women, and they differed in weight and drinking habits. Thirty minutes later, a police officer measured their blood alcohol content (BAC) in grams of alcohol per deciliter of blood. The scatterplot and regression table summarize the findings. ^[The [`bac`](http://openintrostat.github.io/openintro/reference/bac.html) data used in this exercise can be found in the **openintro** R package.] [@Malkevitc+Lesser:2008] 
+
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(kableExtra)
+    library(broom)
+    
+    ggplot(bac, aes(x = beers, y = bac)) +
+      geom_point(size = 2) +
+      labs(
+        x = "Cans of beer",
+        y = "BAC (grams / deciliter)"
+      )
+    
+    m_bac <- lm(bac ~ beers, data = bac)
+    r_bac <- round(cor(bac$bac, bac$beers), 2)
+
+    tidy(m_bac) %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 4) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    ```
+
+    a.  Describe the relationship between the number of cans of beer and BAC.
+
+    b.  Write the equation of the regression line. Interpret the slope and intercept in context.
+
+    c.  Do the data provide convincing evidence that drinking more cans of beer is associated with an increase in blood alcohol? State the null and alternative hypotheses, report the p-value, and state your conclusion.
+
+    d.  The correlation coefficient for number of cans of beer and BAC is `r r_bac`. Calculate $R^2$ and interpret it in context.
+
+    e.  Suppose we visit a bar, ask people how many drinks they have had, and also take their BAC. Do you think the relationship between number of drinks and BAC would be as strong as the relationship found in the Ohio State study?
+
+1. **Urban homeowners, conditions.**
+The scatterplot below shows the percent of families who own their home vs. the percent of the population living in urban areas. [@data:urbanOwner] There are 52 observations, each corresponding to a state in the US. Puerto Rico and District of Columbia are also included.
+
+    ````{r out.width = "50%"}
+    library(openintro)
+    
+    lmPlot(urban_owner$poppct_urban, 
+       urban_owner$pct_owner_occupied, 
+       col = IMSCOL["blue", "full"], 
+       xlab = "% Urban population", ylab = "% Who own home", 
+       lCol = IMSCOL["gray", "full"], lwd = 2, 
+       resSymm = TRUE, 
+       resAxis = 3, xAxis = 5, yAxis = 5, 
+       cex.lab = 1.5, cex.axis = 1.5)
+    
+    rsq_uo <- round(cor(urban_owner$poppct_urban,  urban_owner$pct_owner_occupied), 2)^2*100
+    ````
+
+    a. For these data, $R^2$ is `r rsq_uo`%. What is the value of the correlation coefficient? How can you tell if it is positive or negative?
+
+    b. Examine the residual plot. What do you observe? Is a simple least squares fit appropriate for these data?

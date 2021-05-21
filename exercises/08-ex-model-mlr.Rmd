@@ -97,44 +97,38 @@ The summary table below shows the results of a linear regression model for predi
         the $R^2$ and the adjusted $R^2$. Note that there are 1,236
         observations in the dataset.
 
-1. **Absenteeism, Part I** Researchers interested in the relationship
-    between absenteeism from school and certain demographic
-    characteristics of children collected data from 146 randomly sampled
-    students in rural New South Wales, Australia, in a particular school
-    year. Below are three observations from this dataset.
+1. **Palmer penguins, predicting body mass.**
+Researchers studying a community of Antarctic penguins collected body measurement (bill length, bill depth, and flipper length measured in millimeters and body mass, measured in grams), species (*Adelie*, *Chinstrap*, or *Gentoo*), and sex (female or male) data on 344 penguins living on three islands (Torgersen, Biscoe, and Dream) in the Palmer Archipelago, Antarctica.^[The [`penguins`](https://allisonhorst.github.io/palmerpenguins/reference/penguins.html) data used in this exercise can be found in the **palmerpenguins** R package.] The summary table below shows the results of a linear regression model for predicting body mass (which is more difficult to measure) from the other variables in the dataset. [@palmerpenguins] 
+    
+    ```{r}
+    library(palmerpenguins)
+    library(broom)
+    library(kableExtra)
+    library(tidyverse)
+    
+    m_full_penguins <- lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins)
+    
+    m_full_penguins_rsq <- round(glance(m_full_penguins)$r.squared*100, 1)
+    m_full_penguins_tidy <- tidy(m_full_penguins)
+    
+    m_full_penguins_tidy %>%
+      mutate(
+        p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4)),
+        ) %>%
+      kbl(linesep = "", booktabs = TRUE, align = "lrrrr", digits = 1) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "hold_position"), 
+                    full_width = FALSE) %>%
+      column_spec(1:5, width = "5em")
+    ```
 
-                    eth        sex        lrn        days
-      ---------- ---------- ---------- ---------- ----------
-               1     0          1          1          2
-               2     0          1          1          11
-        $\vdots$  $\vdots$   $\vdots$   $\vdots$   $\vdots$
-             146     1          0          0          37
+    a.  Write the equation of the regression model.
 
-    The summary table below shows the results of a linear regression
-    model for predicting the average number of days absent based on
-    ethnic background (`eth`: 0 - aboriginal, 1 - not aboriginal), sex
-    (`sex`: 0 - female, 1 - male), and learner status (`lrn`: 0 -
-    average learner, 1 - slow learner). [@data:quine]
+    a.  Interpret each one of the slopes in this context.
 
-                      Estimate   Std. Error   t value   Pr($>$$|$t$|$)
-      ------------- ---------- ------------ --------- ----------------
-        (Intercept)      18.93         2.57      7.37           0.0000
-                eth      -9.11         2.60     -3.51           0.0000
-                sex       3.10         2.64      1.18           0.2411
-                lrn       2.15         2.65      0.81           0.4177
-
-    1. Write the equation of the regression model.
-
-    2.  Interpret each one of the slopes in this context.
-
-    3.  Calculate the residual for the first observation in the data
-        set: a student who is aboriginal, male, a slow learner, and
-        missed 2 days of school.
-
-    4.  The variance of the residuals is 240.57, and the variance of the
-        number of absent days for all students in the dataset is
-        264.17. Calculate the $R^2$ and the adjusted $R^2$. Note that
-        there are 146 observations in the dataset.
+    b.  Calculate the residual for a male Adelie penguin that weighs 3750 grams with the following body measurements: `bill_length_mm` = 39.1, `bill_depth_mm` = 18.7, `flipper_length_mm` = 181. Does the model overpredict or underpredict this penguin's weight?
+    
+    c.  The $R^2$ of this model is `r m_full_penguins_rsq`%. Interpret this value in context of the data and the model.
 
 1. **GPA** A survey of 55 Duke University students asked about their
     GPA, number of hours they study at night, number of nights they go
@@ -180,6 +174,47 @@ The summary table below shows the results of a linear regression model for predi
         overestimates or underestimates the volume of this tree, and by
         how much.
 
+1.  **Multiple regression fact checking** Determine which of the
+    following statements are true and false. For each statement that is
+    false, explain why it is false.
+
+    1.  If predictors are collinear, then removing one variable will
+        have no influence on the point estimate of another variable's
+        coefficient.
+
+    2.  Suppose a numerical variable $x$ has a coefficient of
+        $b_1 = 2.5$ in the multiple regression model. Suppose also that
+        the first observation has $x_1 = 7.2$, the second observation
+        has a value of $x_1 = 8.2$, and these two observations have the
+        same values for all other predictors. Then the predicted value
+        of the second observation will be 2.5 higher than the prediction
+        of the first observation based on the multiple regression model.
+
+    3.  If a regression model's first variable has a coefficient of
+        $b_1 = 5.7$, then if we are able to influence the data so that
+        an observation will have its $x_1$ be 1 larger than it would
+        otherwise, the value $y_1$ for this observation would increase
+        by 5.7.
+
+    4.  Suppose we fit a multiple regression model based on a dataset
+        of 472 observations. We also notice that the distribution of the
+        residuals includes some skew but does not include any
+        particularly extreme outliers. Because the residuals are not
+        nearly normal, we should not use this model and require more
+        advanced methods to model these data.
+
+1. **Movie returns, Part II** The student from
+    Exercise [\[movie_returns_altogether\]](#movie_returns_altogether){reference-type="ref"
+    reference="movie_returns_altogether"} analyzed return-on-investment
+    (ROI) for movies based on release year and genre of movies. The
+    plots below show the predicted ROI vs. actual ROI for each of the
+    genres separately. Do these figures support the comment in the
+    FiveThirtyEight.com article that states, "The return-on-investment
+    potential for horror movies is absurd." Note that the x-axis range
+    varies for each plot.
+
+    ![](figures/horror_movies_by_genre){width="60%"}
+
 1.  **Baby weights, Part IV**
     Exercise [\[baby_weights_mlr\]](#baby_weights_mlr){reference-type="ref"
     reference="baby_weights_mlr"} considers a model that predicts a
@@ -201,21 +236,61 @@ The summary table below shows the results of a linear regression model for predi
 
     Which, if any, variable should be removed from the model first?
 
-1. **Absenteeism, Part II**
-    Exercise [\[absent_from_school_mlr\]](#absent_from_school_mlr){reference-type="ref"
-    reference="absent_from_school_mlr"} considers a model that predicts
-    the number of days absent using three predictors: ethnic background
-    (), gender (), and learner status (). The table below shows the
-    adjusted R-squared for the model as well as adjusted R-squared
-    values for all models we evaluate in the first step of the backwards
-    elimination process.
+1. **Palmer penguins, backwards elimination.**
+The following full model is built to predict the weights of three species (*Adelie*, *Chinstrap*, or *Gentoo*) of penguins living in the Palmer Archipelago, Antarctica. [@palmerpenguins]
 
-          Model                 Adjusted $R^2$
-      --- ------------------- ----------------
-        1 Full model                    0.0701
-        2 No ethnicity                 -0.0033
-        3 No sex                        0.0676
-        4 No learner status             0.0723
+    ```{r}
+    library(palmerpenguins)
+    library(broom)
+    library(kableExtra)
+    library(tidyverse)
+    
+    m_full_penguins <- lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins)
+    
+    m_full_penguins_rsq_adj <- round(glance(m_full_penguins)$adj.r.squared*100, 1)
+    m_full_penguins_tidy <- tidy(m_full_penguins)
+    
+    m_full_penguins_tidy %>%
+      mutate(
+        p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4)),
+        ) %>%
+      kbl(linesep = "", booktabs = TRUE, align = "lrrrr", digits = 1) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "hold_position"), 
+                    full_width = FALSE) %>%
+      column_spec(1:5, width = "5em")
+    ```
+    
+    The adjusted $R^2$ of the full model is `r m_full_penguins_rsq_adj`%. In order to evaluate whether any of the predictors can be dropped from the model without losing predictive performance of the model, the researchers dropped one variable at a time, refit the model, and recorded the adjusted $R^2$ of the smaller model. These values are given below.
+    
+    ```{r}
+    m_bl <- update(m_full_penguins, . ~ . - bill_length_mm, data = penguins) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_bd <- update(m_full_penguins, . ~ . - bill_depth_mm, data = penguins) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_fl <- update(m_full_penguins, . ~ . - flipper_length_mm, data = penguins) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_sex <- update(m_full_penguins, . ~ . - sex, data = penguins) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_sp <- update(m_full_penguins, . ~ . - species, data = penguins) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    ```
+    
+    -  Drop `bill_length_mm`:    `r m_bl*100`%
+    -  Drop `bill_depth_mm`:     `r m_bd*100`%
+    -  Drop `flipper_length_mm`: `r m_fl*100`%
+    -  Drop `sex`:               `r m_sex*100`%
+    -  Drop `species`:           `r m_sp*100`%
 
     Which, if any, variable should be removed from the model first?
 
@@ -235,21 +310,44 @@ The summary table below shows the results of a linear regression model for predi
       p-value        $2.2 \times 10^{-16}$   0.1052   0.2375   $2.97 \times 10^{-12}$   $8.2 \times 10^{-8}$   $2.2 \times 10^{-16}$
       $R_{adj}^2$           0.1657           0.0013   0.0003           0.0386                  0.0229                 0.0569
 
-1.  **Absenteeism, Part III**
-    Exercise [\[absent_from_school_mlr\]](#absent_from_school_mlr){reference-type="ref"
-    reference="absent_from_school_mlr"} provides regression output for
-    the full model, including all predictors available in the
-    dataset, for predicting the number of days absent from school. In
-    this exercise we consider a forward-selection algorithm and add
-    variables to the model one-at-a-time. The table below shows the
-    p-value and adjusted $R^2$ of each model where we include only the
-    corresponding predictor. Based on this table, which variable should
-    be added to the model first?
+1. **Palmer penguins, backwards elimination.**
+Using body measurement and other relevant data on three species (*Adelie*, *Chinstrap*, or *Gentoo*) of penguins living in the Palmer Archipelago, Antarctica, we want to predict their body mass. In order to do so, we will evaluate five candidate predictors and make a decision about including them in the model using forward selection and adjusted $R^2$. Below are the five models we evaluate and their adjusted $R^2$ values:
 
-      variable       ethnicity    sex     learner status
-      ------------- ----------- -------- ----------------
-      p-value         0.0007     0.3142       0.5870
-      $R_{adj}^2$     0.0714     0.0001         0
+    ```{r}
+    library(palmerpenguins)
+    library(broom)
+    library(kableExtra)
+    library(tidyverse)
+    
+    m_bl  <- lm(body_mass_g ~ bill_length_mm, data = penguins) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_bd  <- lm(body_mass_g ~ bill_depth_mm, data = penguins) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_fl  <- lm(body_mass_g ~ flipper_length_mm, data = penguins) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_sex <- lm(body_mass_g ~ sex, data = penguins) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_sp  <- lm(body_mass_g ~ species, data = penguins) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    ```
+
+    -  Add `bill_length_mm`:    `r m_bl*100`%
+    -  Add `bill_depth_mm`:     `r m_bd*100`%
+    -  Add `flipper_length_mm`: `r m_fl*100`%
+    -  Add `sex`:               `r m_sex*100`%
+    -  Add `species`:           `r m_sp*100`%
+
+    Which variable should be added to the model first?
 
 1. **Baby weights, Part V**
     Exercise [\[baby_weights_mlr\]](#baby_weights_mlr){reference-type="ref"
@@ -444,44 +542,3 @@ The summary table below shows the results of a linear regression model for predi
     3.  Describe any concerns you may have regarding applying logistic
         regression in this application, and note any assumptions that
         are required to accept the model's validity.
-
-1.  **Multiple regression fact checking** Determine which of the
-    following statements are true and false. For each statement that is
-    false, explain why it is false.
-
-    1.  If predictors are collinear, then removing one variable will
-        have no influence on the point estimate of another variable's
-        coefficient.
-
-    2.  Suppose a numerical variable $x$ has a coefficient of
-        $b_1 = 2.5$ in the multiple regression model. Suppose also that
-        the first observation has $x_1 = 7.2$, the second observation
-        has a value of $x_1 = 8.2$, and these two observations have the
-        same values for all other predictors. Then the predicted value
-        of the second observation will be 2.5 higher than the prediction
-        of the first observation based on the multiple regression model.
-
-    3.  If a regression model's first variable has a coefficient of
-        $b_1 = 5.7$, then if we are able to influence the data so that
-        an observation will have its $x_1$ be 1 larger than it would
-        otherwise, the value $y_1$ for this observation would increase
-        by 5.7.
-
-    4.  Suppose we fit a multiple regression model based on a dataset
-        of 472 observations. We also notice that the distribution of the
-        residuals includes some skew but does not include any
-        particularly extreme outliers. Because the residuals are not
-        nearly normal, we should not use this model and require more
-        advanced methods to model these data.
-
-1. **Movie returns, Part II** The student from
-    Exercise [\[movie_returns_altogether\]](#movie_returns_altogether){reference-type="ref"
-    reference="movie_returns_altogether"} analyzed return-on-investment
-    (ROI) for movies based on release year and genre of movies. The
-    plots below show the predicted ROI vs. actual ROI for each of the
-    genres separately. Do these figures support the comment in the
-    FiveThirtyEight.com article that states, "The return-on-investment
-    potential for horror movies is absurd." Note that the x-axis range
-    varies for each plot.
-
-    ![](figures/horror_movies_by_genre){width="60%"}

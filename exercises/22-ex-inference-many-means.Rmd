@@ -1,0 +1,143 @@
+1. **Cuckoo bird egg lengths, randomize once.**
+Cuckoo birds lay their eggs in other birds' nests, making them known as brood parasites.  One question relates to whether the size of the cuckoo egg differs depending on the species of the host bird.^[The [`Cuckoo`](https://rdrr.io/cran/Stat2Data/man/Cuckoo.html) data used in this exercise can be found in the **Stat2Data** R package.] [@Latter:1902]
+
+    Consider the following plots, one represents the original data, the second represents data where the host species has been randomly assigned to the egg length.
+
+    ```{r}
+    library(tidyverse)
+    library(Stat2Data)
+    library(infer)
+    library(patchwork)
+    
+    data(Cuckoo)
+    
+    p_orig <- ggplot(Cuckoo, aes(y = Bird, x = Length)) +
+      geom_boxplot(size = 1) +
+      labs(
+        y = "Host bird species",
+        x = "Cuckoo egg length",
+        title = "Original host species"
+      )
+
+    set.seed(4747)
+    p_rand <- Cuckoo %>%
+      specify(Length ~ Bird) %>%
+      hypothesize(null = "independence") %>%
+      generate(1, type = "permute") %>%
+      ggplot(aes(y = Bird, x = Length)) + 
+      geom_boxplot(color = IMSCOL["green", "full"], size = 1) +
+      labs(
+        y = "Host bird species",
+        x = "Cuckoo egg length",
+        title = "Host species randomized to egg length"
+      )
+    
+    p_orig /
+      p_rand
+    ```
+
+    a.  Consider the average length of the eggs for each species. Is the average length for the original data: more variable, less variable, or about the same as the randomized species?  Describe what you see in the plots.
+
+    b.  Consider the standard deviation of the lengths of the eggs within each species. Is the within species standard deviation of the length for the original data: bigger, smaller, or about the same as the randomized species?
+
+    c.  Recall that the F statistic's numerator measures how much the groups vary (MSG) with the denominator measuring how much the within species values vary (MSE), which of the plots above would have a larger F statistic, the original data or the randomized data?  Explain.
+
+1. **Cuckoo bird egg lengths, randomization test.**
+Cuckoo birds lay their eggs in other birds' nests, making them known as brood parasites.  One question relates to whether the size of the cuckoo egg differs depending on the species of the host bird.^[The data [`Cuckoo`](https://rdrr.io/cran/Stat2Data/man/Cuckoo.html) used in this exercise can be found in the **Stat2Data** R package.] [@Latter:1902]
+
+    ```{r}
+    library(tidyverse)
+    library(Stat2Data)
+    library(infer)
+    
+    data(Cuckoo)
+    
+    F_obs <- Cuckoo %>%
+      specify(Length ~ Bird) %>%
+      calculate(stat = "F") %>% pull()
+    
+    set.seed(4747)
+    Cuckoo %>%
+      specify(Length ~ Bird) %>%
+      hypothesize(null = "independence") %>%
+      generate(1000, type = "permute") %>%
+      calculate(stat = "F") %>%
+      ggplot(aes(x = stat)) + 
+      geom_histogram(fill = IMSCOL["green", "full"]) +
+      geom_vline(xintercept = F_obs, color = IMSCOL["red", "full"], size = 1) +
+      labs(
+        x = "F statistic for egg lengths randomized to host species", 
+        y = "Count",
+        title = "1,000 F statistics for egg lengths randomized to host species"
+        )
+    ```
+
+    Using the randomization distribution of the F statistic (host species randomized to egg length), conduct a hypothesis test to evaluate if there is a difference, in the population, between the average egg lengths for different host bird species. Make sure to state your hypotheses clearly and interpret your results in context of the data.
+
+1. **Matching observed data with randomized F statistics.**
+Consider the following two datasets. The response variable is the `score` and the explanatory variable is whether the individual is in one of four groups.
+
+    ```{r}
+    library(tidyverse)
+    library(infer)
+    library(patchwork)
+    set.seed(470)
+    
+    data_A <- tibble(
+      group = rep(c("Group 1", "Group 2", "Group 3", "Group 4"), each = 25),
+      score = c(rnorm(25, 10, 5), rnorm(25, 5, 5), rnorm(25, 8, 5), rnorm(25, 2, 5))
+      )
+
+    F_A <- data_A %>%
+      specify(score ~ group) %>%
+      calculate(stat = "F") %>% pull()
+
+    p_A <- data_A %>%
+      ggplot(aes(x = group, y = score)) + 
+      geom_boxplot() +
+      labs(y = "Score", title = "Dataset A")
+
+    rand_A <- data_A %>%
+      specify(score ~ group) %>%
+      hypothesize(null = "independence") %>%
+      generate(1000, type = "permute") %>%
+      calculate(stat = "F") %>%
+      ggplot(aes(x = stat)) + 
+      geom_histogram(fill = IMSCOL["green", "full"]) +
+      geom_vline(xintercept = F_A, color = IMSCOL["red", "full"]) +
+      labs(x = "F statistic", y = "Count", title = "Right randomization")
+
+    data_B <- tibble(
+      group = rep(c("Group 1", "Group 2", "Group 3", "Group 4"), each = 25),
+      score = c(rnorm(25, 10, 20), rnorm(25, 5, 20), rnorm(25, 8, 20), rnorm(25, 2, 20))
+      )
+    
+    F_B <- data_B %>%
+      specify(score ~ group) %>%
+      calculate(stat = "F") %>% 
+      pull()
+    
+    p_B <- data_B %>%
+      ggplot() + 
+      geom_boxplot(aes(x = group, y = score)) +
+      labs(y = "Score", title = "Dataset B")
+
+    rand_B <- data_B %>%
+      specify(score ~ group) %>%
+      hypothesize(null = "independence") %>%
+      generate(1000, type = "permute") %>%
+      calculate(stat = "F") %>%
+      ggplot(aes(x = stat)) + 
+      geom_histogram(fill = IMSCOL["green", "full"]) +
+      geom_vline(xintercept = F_B, color = IMSCOL["red", "full"], size = 1) +
+      labs(x = "F statistic", y = "Count", title = "Left randomization")
+
+    p_A + p_B + rand_B + rand_A + 
+      plot_layout(widths = c(2, 2)) 
+    ```
+
+    The randomizations (randomly assigning group to the score, calculating a randomization F statistic) were done 1000 times for each of Dataset A and B.  The red line on each plot indicates the observed F statistic for the original (unrandomized) data.
+
+    a. Does the randomization distribution on the left correspond to Dataset A or B?  Explain.
+
+    b. Does the randomization distribution on the right correspond to Dataset A or B?  Explain.
