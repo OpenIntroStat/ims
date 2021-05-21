@@ -1,101 +1,213 @@
-1.  **Baby weights and smoking.** 
-The Child Health and Development Studies investigate a range of topics. One study considered all pregnancies between 1960 and 1967 among women in the Kaiser Foundation Health Plan in the San Francisco East Bay area. 
+1. **High correlation, good or bad?**
+Two friends, Frances and Annika, are in disagreement about whether high correlation values are *always* good in the context of regression.
+Frances claims that it's desirable for all variables in the dataset to be highly correlated to each other when building linear models.
+Annika claims that while it's desirable for each of the predictors to be highly correlated with the outcome, it is not desirable for the predictors to be highly correlated with each other.
+Who is right: Frances, Annika, both, or neither? 
+Explain your reasoning using appropriate terminology.
+
+1. **Dealing with categorical predictors.**
+Two friends, Elliott and Adrian, want to build a model predicting typing speed (average number of words typed per minute) from whether the person wears glasses or not.
+Before building the model they want to conduct some exploratory analysis to evaluate the strength of the association between these two variables, but they're in disagreement about how to evaluate how strongly a categorical predictor is associated with a numerical outcome.
+Elliott claims that it is not possible to calculate a correlation coefficient to summarize the relationship between a categorical predictor and a numerical outcome, however they're not sure what a better alternative is.
+Adrian claims that you can recode a binary predictor as a 0/1 variable (assign one level to be 0 and the other to be 1), thus converting it to a numerical variable.
+According to Adrian, you can then calculate the correlation coefficient between the predictor and the outcome.
+Who is right: Elliott or Adrian?
+If you pick Elliott, can you suggest a better alternative for evaluating the association between the categorical predictor and the numerical outcome?
+
+1. **Training for the 5K.**
+Nico signs up for a 5K (a 5,000 metre running race) 30 days prior to the race. 
+They decide to run a 5K every day to train for it, and each day they record the following information: `days_since_start` (number of days since starting training), `days_till_race` (numer of days left until the race), `mood` (poor, good, awesome), `tiredness` (1-not tired to 10-very tired), and `time` (time it takes to run 5K, recorded as mm:ss).
+Top few rows of the data they collect is shown below.
+
+    ```{r}
+    library(tidyverse)
+    tribble(
+      ~days_since_start, ~days_till_race, ~mood, ~tiredness, ~time,
+      "1", "29", "good", "3", "25:45",
+      "2", "28", "poor", "5", "27:13",
+      "3", "27", "awesome", "4", "24:13",
+      "...", "...", "...", "...", "..."
+    )
+    ```
+    
+    Using these data Nico wants to build a model predicting `time` from the other variables. Should they include all variables shown above in their model? Why or why not?
+
+1. **Multiple regression fact checking.**
+Determine which of the following statements are true and false.
+For each statement that is false, explain why it is false.
+
+    a. If predictors are collinear, then removing one variable will have no influence on the point estimate of another variable's coefficient.
+
+    b. Suppose a numerical variable $x$ has a coefficient of $b_1 = 2.5$ in the multiple regression model. Suppose also that the first observation has $x_1 = 7.2$, the second observation has a value of $x_1 = 8.2$, and these two observations have the same values for all other predictors. Then the predicted value of the second observation will be 2.5 higher than the prediction of the first observation based on the multiple regression model.
+
+    c. If a regression model's first variable has a coefficient of $b_1 = 5.7$, then if we are able to influence the data so that an observation will have its $x_1$ be 1 larger than it would otherwise, the value $y_1$ for this observation would increase by 5.7.
+
+1. **Baby weights and smoking.** 
+US Department of Health and Human Services, Centers for Disease Control and Prevention collect information on births recorded in the country.
+The data used here are a random sample of 1,000 births from 2014.
 Here, we study the relationship between smoking and weight of the baby. 
 The variable `smoke` is coded 1 if the mother is a smoker, and 0 if not. 
-The summary table below shows the results of a linear regression model for predicting the average birth weight of babies, measured in ounces, based on the smoking status of the mother. [@data:babies]
+The summary table below shows the results of a linear regression model for predicting the average birth weight of babies, measured in pounds, based on the smoking status of the mother.^[The [`births14`](http://openintrostat.github.io/openintro/reference/births14.html) data used in this exercise can be found in the **openintro** R package.] [@data:births14]
 
-                      Estimate   Std. Error   t value   Pr($>$$|$t$|$)
-      ------------- ---------- ------------ --------- ----------------
-        (Intercept)     123.05         0.65    189.60           0.0000
-              smoke      -8.94         1.03     -8.65           0.0000
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(kableExtra)
+    library(broom)
 
-    The variability within the smokers and non-smokers are about equal
-    and the distributions are symmetric. With these conditions
-    satisfied, it is reasonable to apply the model. (Note that we don't
-    need to check linearity since the predictor has only two levels.)
+    m_habit_fage <- lm(weight ~ habit, data = births14)
 
-    1.  Write the equation of the regression model.
+    tidy(m_habit_fage) %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 4) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    ```
 
-    2.  Interpret the slope in this context, and calculate the predicted
-        birth weight of babies born to smoker and non-smoker mothers.
+    a.  Write the equation of the regression model.
 
-    3.  Is there a statistically significant relationship between the
-        average birth weight and smoking?
+    b.  Interpret the slope in this context, and calculate the predicted birth weight of babies born to smoker and non-smoker mothers.
 
-1.  **Baby weights, Part II**
-    Exercise [\[baby_weights_smoke\]](#baby_weights_smoke){reference-type="ref"
-    reference="baby_weights_smoke"} introduces a dataset on birth
-    weight of babies. Another variable we consider is `parity`, which is
-    1 if the child is the first born, and 0 otherwise. The summary table
-    below shows the results of a linear regression model for predicting
-    the average birth weight of babies, measured in ounces, from
-    `parity`.
+1. **Baby weights and mature moms.**
+The following is a model for predicting baby weight from whether the mom is classified as a `mature` mom (35 years or older at the time of pregnancy). [@data:births14]
 
-                      Estimate   Std. Error   t value   Pr($>$$|$t$|$)
-      ------------- ---------- ------------ --------- ----------------
-        (Intercept)     120.07         0.60    199.94           0.0000
-             parity      -1.93         1.19     -1.62           0.1052
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(kableExtra)
+    library(broom)
 
-    1.  Write the equation of the regression model.
+    m_weight_mature <- lm(weight ~ mature, data = births14)
+    
+    m_weight_mature %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 4) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "15em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    ```
 
-    2.  Interpret the slope in this context, and calculate the predicted
-        birth weight of first borns and others.
+    a.  Write the equation of the regression model.
 
-    3.  Is there a statistically significant relationship between the
-        average birth weight and parity?
+    b.  Interpret the slope in this context, and calculate the predicted birth weight of babies born to mature and younger mothers.
 
-1. **Baby weights, Part III** We considered the variables `smoke` and
-    `parity`, one at a time, in modeling birth weights of babies in
-    Exercises [\[baby_weights_smoke\]](#baby_weights_smoke){reference-type="ref"
-    reference="baby_weights_smoke"}
-    and [\[baby_weights_parity\]](#baby_weights_parity){reference-type="ref"
-    reference="baby_weights_parity"}. A more realistic approach to
-    modeling infant weights is to consider all possibly related
-    variables at once. Other variables of interest include length of
-    pregnancy in days (`gestation`), mother's age in years (`age`),
-    mother's height in inches (`height`), and mother's pregnancy weight
-    in pounds (`weight`). Below are three observations from this data
-    set.
+1. **Movie returns, prediction.**
+A model was fit to predict return-on-investment (ROI) on movies based on release year and genre (Adventure, Action, Drama, Horror, and Comedy). The model output is shown below. [@webpage:horrormovies]
 
-                    bwt      gestation    parity      age       height     weight     smoke
-      ---------- ---------- ----------- ---------- ---------- ---------- ---------- ----------
-               1    120         284         0          27         62        100         0
-               2    113         282         0          33         64        135         0
-        $\vdots$  $\vdots$   $\vdots$    $\vdots$   $\vdots$   $\vdots$   $\vdots$   $\vdots$
-            1236    117         297         0          38         65        129         0
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(kableExtra)
+    library(lubridate)
+    library(broom)
+    
+    movie_profit <- read_csv("data/movie_profit.csv")
+    movie_profit <- movie_profit %>%
+      mutate(
+        release_date = mdy(release_date),
+        release_year = year(release_date),
+        oct_release = ifelse(month(release_date) == 10, "yes", "no"),
+        dom_gross_to_prod = domestic_gross / production_budget,
+        ww_gross_to_prod = worldwide_gross / production_budget
+        )%>%
+      filter(
+        release_year >= 2010,
+        release_year < 2019
+        )
+    
+    m_movie_small <- lm(ww_gross_to_prod ~ release_year + genre, data = movie_profit)
+    m_movie_large <- lm(ww_gross_to_prod ~ release_year + genre + production_budget, data = movie_profit)
+    
+    m_movie_small_adj_rsq <- round(glance(m_movie_small)$adj.r.squared, 4)*100
+    m_movie_large_adj_rsq <- round(glance(m_movie_large)$adj.r.squared, 4)*100
+    
+    m_movie_small %>%
+      tidy() %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 2) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    ```
+    
+    a. For a given release year, which genre of movies are predicted, on average, to have the highest predicted return on investment?
+    
+    b. The adjusted $R^2$ of this model is `r m_movie_small_adj_rsq`%. Adding the production budget of the movie to the model increases the adjusted $R^2$ to `r m_movie_large_adj_rsq`%. Should production budget be added to the model?
 
-    The summary table below shows the results of a regression model for
-    predicting the average birth weight of babies based on all of the
-    variables included in the dataset.
+1. **Movie returns by genre.**
+A model was fit to predict return-on-investment (ROI) on movies based on release year and genre (Adventure, Action, Drama, Horror, and Comedy). 
+The plots below show the predicted ROI vs. actual ROI for each of the genres separately. Do these figures support the comment in the FiveThirtyEight.com article that states, "The return-on-investment potential for horror movies is absurd." Note that the x-axis range varies for each plot. [@webpage:horrormovies]
 
-                      Estimate   Std. Error   t value   Pr($>$$|$t$|$)
-      ------------- ---------- ------------ --------- ----------------
-        (Intercept)     -80.41        14.35     -5.60           0.0000
-          gestation       0.44         0.03     15.26           0.0000
-             parity      -3.33         1.13     -2.95           0.0033
-                age      -0.01         0.09     -0.10           0.9170
-             height       1.15         0.21      5.63           0.0000
-             weight       0.05         0.03      1.99           0.0471
-              smoke      -8.40         0.95     -8.81           0.0000
+    ```{r}
+    movie_profit <- read_csv("data/movie_profit.csv")
+    movie_profit <- movie_profit %>%
+      mutate(
+        release_date = mdy(release_date),
+        release_year = year(release_date),
+        oct_release = ifelse(month(release_date) == 10, "yes", "no"),
+        dom_gross_to_prod = domestic_gross / production_budget,
+        ww_gross_to_prod = worldwide_gross / production_budget
+        ) %>%
+      filter(
+        release_year >= 2010,
+        release_year < 2019
+        )
+    
+    m_movie <- lm(ww_gross_to_prod ~ release_year + genre, data = movie_profit)
+    m_movie_aug <- augment(m_movie)
+    
+    ggplot(m_movie_aug, aes(y = .fitted, x = ww_gross_to_prod, color = genre)) + 
+      geom_point(alpha = 0.5, show.legend = FALSE, size = 2) +
+      facet_wrap(~genre, scales = "free_x") +
+      theme_minimal() + 
+      labs(x = "Actual ROI", y = "Predicted ROI", color = "Genre") +
+      scale_color_openintro("five")
+    ````
 
-    1. Write the equation of the regression model that includes all of
-        the variables.
+1. **Predicting baby weights.**
+A more realistic approach to modeling baby weights is to consider all possibly related variables at once. Other variables of interest include length of pregnancy in weeks (`weeks`), mother's age in years (`mage`), the sex of the baby (`sex`), smoking status of the mother (`habit`), and the number of hospital (`visits`) visits during pregnancy. Below are three observations from this data set.
 
-    2.  Interpret the slopes of `gestation` and `age` in this context.
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    
+    births14 %>%
+      dplyr::select(weight, weeks, mage, sex, visits, habit) %>%
+      slice_head(n = 3) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "ccccc") %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1:5, width = "5em")
+    ```
 
-    3.  The coefficient for `parity` is different than in the linear
-        model shown in
-        Exercise [\[baby_weights_parity\]](#baby_weights_parity){reference-type="ref"
-        reference="baby_weights_parity"}. Why might there be a
-        difference?
+    The summary table below shows the results of a regression model for predicting the average birth weight of babies based on all of the variables presented above.
+    
+    ```{r}
+    lm(weight ~ weeks + mage + sex + visits + habit, births14) %>%
+      tidy() %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 2) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    ```
 
-    4.  Calculate the residual for the first observation in the data
-        set.
+    a. Write the equation of the regression model that includes all of the variables.
 
-    5.  The variance of the residuals is 249.28, and the variance of the
-        birth weights of all babies in the dataset is 332.57. Calculate
-        the $R^2$ and the adjusted $R^2$. Note that there are 1,236
-        observations in the dataset.
+    b. Interpret the slopes of `weeks` and `habit` in this context.
+
+    c. If we fit a model predicting baby weight from only `habit` (whether the mom smokes), we observe a difference in the slope coefficient for `habit` in this small model and the slope coefficient for `habit` in the larger model. Why might there be a difference?
+
+    d. Calculate the residual for the first observation in the data set.
 
 1. **Palmer penguins, predicting body mass.**
 Researchers studying a community of Antarctic penguins collected body measurement (bill length, bill depth, and flipper length measured in millimeters and body mass, measured in grams), species (*Adelie*, *Chinstrap*, or *Gentoo*), and sex (female or male) data on 344 penguins living on three islands (Torgersen, Biscoe, and Dream) in the Palmer Archipelago, Antarctica.^[The [`penguins`](https://allisonhorst.github.io/palmerpenguins/reference/penguins.html) data used in this exercise can be found in the **palmerpenguins** R package.] The summary table below shows the results of a linear regression model for predicting body mass (which is more difficult to measure) from the other variables in the dataset. [@palmerpenguins] 
@@ -119,7 +231,8 @@ Researchers studying a community of Antarctic penguins collected body measuremen
       kable_styling(bootstrap_options = c("striped", "condensed"), 
                     latex_options = c("striped", "hold_position"), 
                     full_width = FALSE) %>%
-      column_spec(1:5, width = "5em")
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
     ```
 
     a.  Write the equation of the regression model.
@@ -130,109 +243,51 @@ Researchers studying a community of Antarctic penguins collected body measuremen
     
     c.  The $R^2$ of this model is `r m_full_penguins_rsq`%. Interpret this value in context of the data and the model.
 
-1. **GPA** A survey of 55 Duke University students asked about their
-    GPA, number of hours they study at night, number of nights they go
-    out, and their gender. Summary output of the regression model is
-    shown below. Note that male is coded as 1.
+1.  **Baby weights, backwards elimination.**
+Let's consider a model that predicts `weight` of newborns using several predictors: whether the mother is considered `mature`, number of `weeks` of gestation, number of hospital `visits` during pregnancy, weight `gained` by the mother during pregnancy, `sex` of the baby, and whether the mother smoke cigarettes during pregnancy (`habit`). [@data:births14]
 
-                      Estimate   Std. Error   t value   Pr($>$$|$t$|$)
-      ------------- ---------- ------------ --------- ----------------
-        (Intercept)       3.45         0.35      9.85             0.00
-          studyweek       0.00         0.00      0.27             0.79
-         sleepnight       0.01         0.05      0.11             0.91
-           outnight       0.05         0.05      1.01             0.32
-             gender      -0.08         0.12     -0.68             0.50
-
-    1. Calculate a 95% confidence interval for the coefficient of
-        gender in the model, and interpret it in the context of the
-        data.
-
-    2.  Would you expect a 95% confidence interval for the slope of the
-        remaining variables to include 0? Explain
-
-1.  **Cherry trees** Timber yield is approximately equal to the volume
-    of a tree, however, this value is difficult to measure without first
-    cutting the tree down. Instead, other variables, such as height and
-    diameter, may be used to predict a tree's volume and yield.
-    Researchers wanting to understand the relationship between these
-    variables for black cherry trees collected data from 31 such trees
-    in the Allegheny National Forest, Pennsylvania. Height is measured
-    in feet, diameter in inches (at 54 inches above ground), and volume
-    in cubic feet. [@Hand:1994]
-
-                      Estimate   Std. Error   t value   Pr($>$$|$t$|$)
-      ------------- ---------- ------------ --------- ----------------
-        (Intercept)     -57.99         8.64     -6.71             0.00
-             height       0.34         0.13      2.61             0.01
-           diameter       4.71         0.26     17.82             0.00
-
-    1.  Calculate a 95% confidence interval for the coefficient of
-        height, and interpret it in the context of the data.
-
-    2.  One tree in this sample is 79 feet tall, has a diameter of 11.3
-        inches, and is 24.2 cubic feet in volume. Determine if the model
-        overestimates or underestimates the volume of this tree, and by
-        how much.
-
-1.  **Multiple regression fact checking** Determine which of the
-    following statements are true and false. For each statement that is
-    false, explain why it is false.
-
-    1.  If predictors are collinear, then removing one variable will
-        have no influence on the point estimate of another variable's
-        coefficient.
-
-    2.  Suppose a numerical variable $x$ has a coefficient of
-        $b_1 = 2.5$ in the multiple regression model. Suppose also that
-        the first observation has $x_1 = 7.2$, the second observation
-        has a value of $x_1 = 8.2$, and these two observations have the
-        same values for all other predictors. Then the predicted value
-        of the second observation will be 2.5 higher than the prediction
-        of the first observation based on the multiple regression model.
-
-    3.  If a regression model's first variable has a coefficient of
-        $b_1 = 5.7$, then if we are able to influence the data so that
-        an observation will have its $x_1$ be 1 larger than it would
-        otherwise, the value $y_1$ for this observation would increase
-        by 5.7.
-
-    4.  Suppose we fit a multiple regression model based on a dataset
-        of 472 observations. We also notice that the distribution of the
-        residuals includes some skew but does not include any
-        particularly extreme outliers. Because the residuals are not
-        nearly normal, we should not use this model and require more
-        advanced methods to model these data.
-
-1. **Movie returns, Part II** The student from
-    Exercise [\[movie_returns_altogether\]](#movie_returns_altogether){reference-type="ref"
-    reference="movie_returns_altogether"} analyzed return-on-investment
-    (ROI) for movies based on release year and genre of movies. The
-    plots below show the predicted ROI vs. actual ROI for each of the
-    genres separately. Do these figures support the comment in the
-    FiveThirtyEight.com article that states, "The return-on-investment
-    potential for horror movies is absurd." Note that the x-axis range
-    varies for each plot.
-
-    ![](figures/horror_movies_by_genre){width="60%"}
-
-1.  **Baby weights, Part IV**
-    Exercise [\[baby_weights_mlr\]](#baby_weights_mlr){reference-type="ref"
-    reference="baby_weights_mlr"} considers a model that predicts a
-    newborn's weight using several predictors (gestation length, parity,
-    age of mother, height of mother, weight of mother, smoking status of
-    mother). The table below shows the adjusted R-squared for the full
-    model as well as adjusted R-squared values for all models we
-    evaluate in the first step of the backwards elimination process.
-
-          Model                 Adjusted $R^2$
-      --- ------------------- ----------------
-        1 Full model                    0.2541
-        2 No gestation                  0.1031
-        3 No parity                     0.2492
-        4 No age                        0.2547
-        5 No height                     0.2311
-        6 No weight                     0.2536
-        7 No smoking status             0.2072
+    ```{r}
+    library(openintro)
+    library(tidyverse)    
+    library(kableExtra)
+    library(broom)    
+    
+    m_full <- lm(weight ~ mature + weeks + gained + sex + habit, data = births14)
+    m_full_adj_rsq <- round(glance(m_full)$adj.r.squared, 4) * 100
+    ```
+    
+    The adjusted $R^2$ of the full model is `r m_full_adj_rsq`%.
+    We remove each variable one by one, refit the model, and record the adjusted $R^2$.
+    Which, if any, variable should be removed from the model?
+    
+    ```{r}
+    m_m <- update(m_full, . ~ . - mature, data = births14) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_w <- update(m_full, . ~ . - weeks, data = births14) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_v <- update(m_full, . ~ . - visits, data = births14) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_g <- update(m_full, . ~ . - gained, data = births14) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_s <- update(m_full, . ~ . - sex, data = births14) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    ```
+    
+    -  Drop `mature`:  `r m_m*100`%
+    -  Drop `weeks`:   `r m_w*100`%
+    -  Drop `visits`:  `r m_v*100`%
+    -  Drop `gained`:  `r m_g*100`%
+    -  Drop `sex`:     `r m_s*100`%
 
     Which, if any, variable should be removed from the model first?
 
@@ -258,7 +313,8 @@ The following full model is built to predict the weights of three species (*Adel
       kable_styling(bootstrap_options = c("striped", "condensed"), 
                     latex_options = c("striped", "hold_position"), 
                     full_width = FALSE) %>%
-      column_spec(1:5, width = "5em")
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
     ```
     
     The adjusted $R^2$ of the full model is `r m_full_penguins_rsq_adj`%. In order to evaluate whether any of the predictors can be dropped from the model without losing predictive performance of the model, the researchers dropped one variable at a time, refit the model, and recorded the adjusted $R^2$ of the smaller model. These values are given below.
@@ -294,23 +350,54 @@ The following full model is built to predict the weights of three species (*Adel
 
     Which, if any, variable should be removed from the model first?
 
-1. **Baby weights, Part V**
-    Exercise [\[baby_weights_mlr\]](#baby_weights_mlr){reference-type="ref"
-    reference="baby_weights_mlr"} provides regression output for the
-    full model (including all explanatory variables available in the
-    dataset) for predicting birth weight of babies. In this exercise we
-    consider a forward-selection algorithm and add variables to the
-    model one-at-a-time. The table below shows the p-value and adjusted
-    $R^2$ of each model where we include only the corresponding
-    predictor. Based on this table, which variable should be added to
-    the model first?
+1.  **Baby weights, forward selection.**
+Using information on the mother and the sex of the baby (which can be determined prior to birth), we want to build a model that predicts the birth weight of babies.
+In order to do so, we will evaluate six candidate predictors: whether the mother is considered `mature`, number of `weeks` of gestation, number of hospital `visits` during pregnancy, weight `gained` by the mother during pregnancy, `sex` of the baby, and whether the mother smoke cigarettes during pregnancy (`habit`).
+And we will make a decision about including them in the model using forward selection and adjusted $R^2$. 
+Below are the six models we evaluate and their adjusted $R^2$ values. [@data:births14]
 
-      variable             gestation         parity    age             height                  weight                  smoke
-      ------------- ----------------------- -------- -------- ------------------------ ---------------------- -----------------------
-      p-value        $2.2 \times 10^{-16}$   0.1052   0.2375   $2.97 \times 10^{-12}$   $8.2 \times 10^{-8}$   $2.2 \times 10^{-16}$
-      $R_{adj}^2$           0.1657           0.0013   0.0003           0.0386                  0.0229                 0.0569
+    ```{r}
+    library(openintro)
+    library(broom)
+    library(kableExtra)
+    library(tidyverse)
+    
+    m_mature  <- lm(weight ~ mature, data = births14) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_weeks  <- lm(weight ~ weeks, data = births14) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_visits  <- lm(weight ~ visits, data = births14) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_gained <- lm(weight ~ gained, data = births14) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_sex  <- lm(weight ~ sex, data = births14) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    m_habit  <- lm(weight ~ habit, data = births14) %>%
+      glance() %>%
+      pull(adj.r.squared) %>%
+      round(3)
+    ```
 
-1. **Palmer penguins, backwards elimination.**
+    -  Predict `weight` from `mature`: `r m_mature*100`%
+    -  Predict `weight` from `weeks`:  `r m_weeks*100`%
+    -  Predict `weight` from `visits`: `r m_visits*100`%
+    -  Predict `weight` from `gained`: `r m_gained*100`%
+    -  Predict `weight` from `sex`:    `r m_sex*100`%
+    -  Predict `weight` from `habit`:  `r m_habit*100`%
+
+    Which variable should be added to the model first?
+
+1. **Palmer penguins, forward selection.**
 Using body measurement and other relevant data on three species (*Adelie*, *Chinstrap*, or *Gentoo*) of penguins living in the Palmer Archipelago, Antarctica, we want to predict their body mass. In order to do so, we will evaluate five candidate predictors and make a decision about including them in the model using forward selection and adjusted $R^2$. Below are the five models we evaluate and their adjusted $R^2$ values:
 
     ```{r}
@@ -341,204 +428,10 @@ Using body measurement and other relevant data on three species (*Adelie*, *Chin
       round(3)
     ```
 
-    -  Add `bill_length_mm`:    `r m_bl*100`%
-    -  Add `bill_depth_mm`:     `r m_bd*100`%
-    -  Add `flipper_length_mm`: `r m_fl*100`%
-    -  Add `sex`:               `r m_sex*100`%
-    -  Add `species`:           `r m_sp*100`%
+    -  Predict body mass from `bill_length_mm`:    `r m_bl*100`%
+    -  Predict body mass from `bill_depth_mm`:     `r m_bd*100`%
+    -  Predict body mass from `flipper_length_mm`: `r m_fl*100`%
+    -  Predict body mass from `sex`:               `r m_sex*100`%
+    -  Predict body mass from `species`:           `r m_sp*100`%
 
     Which variable should be added to the model first?
-
-1. **Baby weights, Part V**
-    Exercise [\[baby_weights_mlr\]](#baby_weights_mlr){reference-type="ref"
-    reference="baby_weights_mlr"} provides regression output for the
-    full model (including all explanatory variables available in the
-    dataset) for predicting birth weight of babies. In this exercise we
-    consider a forward-selection algorithm and add variables to the
-    model one-at-a-time. The table below shows the p-value and adjusted
-    $R^2$ of each model where we include only the corresponding
-    predictor. Based on this table, which variable should be added to
-    the model first?
-
-      variable             gestation         parity    age             height                  weight                  smoke
-      ------------- ----------------------- -------- -------- ------------------------ ---------------------- -----------------------
-      p-value        $2.2 \times 10^{-16}$   0.1052   0.2375   $2.97 \times 10^{-12}$   $8.2 \times 10^{-8}$   $2.2 \times 10^{-16}$
-      $R_{adj}^2$           0.1657           0.0013   0.0003           0.0386                  0.0229                 0.0569
-
-1. **Movie lovers, Part II** Suppose an online media streaming company
-    is interested in building a movie recommendation system. The website
-    maintains data on the movies in their database (genre, length, cast,
-    director, budget, etc.) and additionally collects data from their
-    subscribers ( demographic information, previously watched movies,
-    how they rated previously watched movies, etc.). The recommendation
-    system will be deemed successful if subscribers actually watch, and
-    rate highly, the movies recommended to them. Should the company use
-    the adjusted $R^2$ or the p-value approach in selecting variables
-    for their recommendation system?
-
-1. **Possum classification, Part I** The common brushtail possum of the
-    Australia region is a bit cuter than its distant cousin, the
-    American opossum (see
-    Figure [\[brushtail_possum\]](#brushtail_possum){reference-type="ref+page"
-    reference="brushtail_possum"}). We consider 104 brushtail possums
-    from two regions in Australia, where the possums may be considered a
-    random sample from the population. The first region is Victoria,
-    which is in the eastern half of Australia and traverses the southern
-    coast. The second region consists of New South Wales and Queensland,
-    which make up eastern and northeastern Australia. We use logistic
-    regression to differentiate between possums in these two regions.
-    The outcome variable, called , takes value 1 when a possum is from
-    Victoria and 0 when it is from New South Wales or Queensland. We
-    consider five predictors: (an indicator for a possum being male), ,
-    , , and . Each variable is summarized in a histogram. The full
-    logistic regression model and a reduced model after variable
-    selection are summarized in the table.
-
-    ![](figures/possum_variables.png){width="\\textwidth"}
-
-      -------------- ---------- --------- ------- ---------------- -- ---------- -------- ------- ----------------
-                                                                                                  
-                                                                                                  
-                       Estimate        SE       Z   Pr($>$$|$Z$|$)      Estimate       SE       Z   Pr($>$$|$Z$|$)
-                                                                                                  
-         (Intercept)    39.2349   11.5368    3.40           0.0007       33.5095   9.9053    3.38           0.0007
-            sex_male    -1.2376    0.6662   -1.86           0.0632       -1.4207   0.6457   -2.20           0.0278
-         head_length    -0.1601    0.1386   -1.16           0.2480                                
-         skull_width    -0.2012    0.1327   -1.52           0.1294       -0.2787   0.1226   -2.27           0.0231
-        total_length     0.6488    0.1531    4.24           0.0000        0.5687   0.1322    4.30           0.0000
-         tail_length    -1.8708    0.3741   -5.00           0.0000       -1.8057   0.3599   -5.02           0.0000
-      -------------- ---------- --------- ------- ---------------- -- ---------- -------- ------- ----------------
-
-    1. Examine each of the predictors. Are there any outliers that are
-        likely to have a very large influence on the logistic regression
-        model?
-
-    2.  The summary table for the full model indicates that at least one
-        variable should be eliminated when using the p-value approach
-        for variable selection: . The second component of the table
-        summarizes the reduced model following variable selection.
-        Explain why the remaining estimates change between the two
-        models.
-
-1. **Challenger disaster and model building.** On January 28, 1986, a routine
-    launch was anticipated for the Challenger space shuttle.
-    Seventy-three seconds into the flight, disaster happened: the
-    shuttle broke apart, killing all seven crew members on board. An
-    investigation into the cause of the disaster focused on a critical
-    seal called an O-ring, and it is believed that damage to these
-    O-rings during a shuttle launch may be related to the ambient
-    temperature during the launch. The table below summarizes
-    observational data on O-rings for 23 shuttle missions, where the
-    mission order is based on the temperature at the time of the launch.
-    *Temp* gives the temperature in Fahrenheit, *Damaged* represents the
-    number of damaged O- rings, and *Undamaged* represents the number of
-    O-rings that were not damaged.
-    
-    ```{r}
-    library(openintro)
-    library(tidyverse)
-    library(knitr)
-    library(broom)
-    
-    orings %>%
-      slice_head(n = 12) %>%
-      t() %>%
-      kbl(linesep = "\\addlinespace", booktabs = TRUE, col.names = NULL)
-    
-    orings %>%
-      slice_tail(n = 11) %>%
-      t() %>%
-      kbl(linesep = "\\addlinespace", booktabs = TRUE, col.names = NULL)
-    
-    orings %>%
-      pivot_longer(cols = c(damaged, undamaged), names_to = "outcome", values_to = "n") %>%
-      uncount(n) %>%
-      mutate(outcome = fct_relevel(outcome, "undamaged", "damaged")) %>%
-      glm(outcome ~ temperature, data = ., family = "binomial") %>%
-      tidy()
-    ```
-
-    a.  Each column of the table above represents a different shuttle
-        mission. Examine these data and describe what you observe with
-        respect to the relationship between temperatures and damaged
-        O-rings.
-
-    b.  Failures have been coded as 1 for a damaged O-ring and 0 for an
-        undamaged O-ring, and a logistic regression model was fit to
-        these data. The regression output for this model is given above.
-        Describe the key components of the output in words.
-
-    c.  Write out the logistic model using the point estimates of the
-        model parameters.
-
-    d.  Based on the model, do you think concerns regarding O-rings are
-        justified? Explain.
-
-1.  **Possum classification, Part II** A logistic regression model was
-    proposed for classifying common brushtail possums into their two
-    regions in
-    Exercise [\[possum_classification_model_select\]](#possum_classification_model_select){reference-type="ref"
-    reference="possum_classification_model_select"}. The outcome
-    variable took value 1 if the possum was from Victoria and 0
-    otherwise.
-
-      -------------- ---------- -------- ------- ----------------
-                                                 
-                       Estimate       SE       Z   Pr($>$$|$Z$|$)
-                                                 
-         (Intercept)    33.5095   9.9053    3.38           0.0007
-            sex_male    -1.4207   0.6457   -2.20           0.0278
-         skull_width    -0.2787   0.1226   -2.27           0.0231
-        total_length     0.5687   0.1322    4.30           0.0000
-         tail_length    -1.8057   0.3599   -5.02           0.0000
-      -------------- ---------- -------- ------- ----------------
-
-    1.  Write out the form of the model. Also identify which of the
-        variables are positively associated when controlling for other
-        variables.
-
-    2.  Suppose we see a brushtail possum at a zoo in the US, and a sign
-        says the possum had been captured in the wild in Australia, but
-        it doesn't say which part of Australia. However, the sign does
-        indicate that the possum is male, its skull is about 63 mm wide,
-        its tail is 37 cm long, and its total length is 83 cm. What is
-        the reduced model's computed probability that this possum is
-        from Victoria? How confident are you in the model's accuracy of
-        this probability calculation?
-
-1.  **Challenger disaster and prediction.**
-    On January 28, 1986, a routine launch was anticipated for the Challenger space shuttle.
-    Seventy-three seconds into the flight, disaster happened: the shuttle broke apart, killing all seven crew members on board. 
-    An investigation into the cause of the disaster focused on a critical seal called an O-ring, and it is believed that damage to these O-rings during a shuttle launch may be related to the ambient temperature during the launch. 
-    The investigation found that the ambient temperature at the time of the shuttle launch was closely related to the damage of O-rings, which are a critical component of the shuttle. 
-    
-
-    ![](figures/challenger_disaster_damage_temp.png){width="60%"}
-
-    1.  The data provided in the previous exercise are shown in the
-        plot. The logistic model fit to these data may be written as
-        $$\begin{aligned}
-        \log\left( \frac{\hat{p}}{1 - \hat{p}} \right) = 11.6630 - 0.2162\times Temperature\end{aligned}$$
-        where $\hat{p}$ is the model-estimated probability that an
-        O-ring will become damaged. Use the model to calculate the
-        probability that an O-ring will become damaged at each of the
-        following ambient temperatures: 51, 53, and 55 degrees
-        Fahrenheit. The model-estimated probabilities for several
-        additional ambient temperatures are provided below, where
-        subscripts indicate the temperature: $$\begin{aligned}
-        &\hat{p}_{57} = 0.341
-            && \hat{p}_{59} = 0.251
-            && \hat{p}_{61} = 0.179
-            && \hat{p}_{63} = 0.124 \\
-        &\hat{p}_{65} = 0.084
-            && \hat{p}_{67} = 0.056
-            && \hat{p}_{69} = 0.037
-            && \hat{p}_{71} = 0.024\end{aligned}$$
-
-    2.  Add the model-estimated probabilities from part (a) on the plot,
-        then connect these dots using a smooth curve to represent the
-        model-estimated probabilities.
-
-    3.  Describe any concerns you may have regarding applying logistic
-        regression in this application, and note any assumptions that
-        are required to accept the model's validity.
