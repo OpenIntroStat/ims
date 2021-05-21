@@ -26,6 +26,7 @@ suppressMessages(library(palmerpenguins))
 suppressMessages(library(survival))
 suppressMessages(library(waffle))
 suppressMessages(library(ggrepel))
+suppressMessages(library(ggpubr))
 
 # knitr chunk options ----------------------------------------------------------
 

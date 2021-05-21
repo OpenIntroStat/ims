@@ -61,12 +61,12 @@ What implications does the study type have on what can be inferred from the resu
 
 In this study, a larger proportion of patients who received blood thinner after CPR,$\hat{p}_T = \frac{14}{40} = 0.35,$ survived compared to those who did not receive blood thinner, $\hat{p}_C = \frac{11}{50} = 0.22.$ However, based on these observed proportions alone, we cannot determine whether the difference ($\hat{p}_T - \hat{p}_C = 0.35 - 0.22 = 0.13$) provides *convincing evidence* that blood thinner usage after CPR is effective.
 
-As we saw in Chapter \@ref(foundations-randomization), we can randomize the responses (`survived` or `died`) to the treatment conditions under the null hypothesis of independence and compute possible differences in proportions.
+As we saw in Chapter \@ref(foundations-randomization), we can re-randomize the responses (`survived` or `died`) to the treatment conditions assuming the null hypothesis is true and compute possible differences in proportions.
 The process by which we randomize observations to two groups is summarized and visualized in Figure \@ref(fig:fullrand).
 
 ### Variability of the statistic
 
-Figure \@ref(fig:malaria-rand-dot-plot-18) shows a stacked plot of the differences found from 100 randomization simulations (i.e., repeated iterations as described in Figure \@ref(fig:fullrand)), where each dot represents a simulated difference between the infection rates (control rate minus treatment rate).
+Figure \@ref(fig:cpr-rand-dot-plot) shows a stacked plot of the differences found from 100 randomization simulations (i.e., repeated iterations as described in Figure \@ref(fig:fullrand)), where each dot represents a simulated difference between the infection rates (control rate minus treatment rate).
 
 ```{r cpr-rand-dot-plot, fig.cap="(ref:cpr-rand-dot-plot-cap)"}
 set.seed(47)
@@ -91,7 +91,8 @@ cpr %>%
 ### Observed statistic vs null statistics
 
 Note that the distribution of these simulated differences is centered around 0.
-We simulated the differences assuming that the independence model was true, and under this condition, we expect the difference to be near zero with some random fluctuation, where *near* is pretty generous in this case since the sample sizes are so small in this study.
+We simulated the differences assuming that the independence model was true, that blood thinners after CPR have no effect on survival.
+Under the null hypothesis, we expect the difference to be near zero with some random fluctuation, where *near* is pretty generous in this case since the sample sizes are so small in this study.
 
 ::: {.workedexample data-latex=""}
 How often would you observe a difference of at least 13% (0.13) according to Figure \@ref(fig:cpr-rand-dot-plot)?
@@ -99,7 +100,7 @@ Is this a rare event?
 
 ------------------------------------------------------------------------
 
-It appears that a difference of at least 13% due to chance alone would happen about 12% of the time according to Figure \@ref(fig:cpr-rand-dot-plot).
+It appears that a difference of at least 13% due to chance alone, if the null hypothesis was true would happen about 12% of the time according to Figure \@ref(fig:cpr-rand-dot-plot).
 This is not a very rare event.
 :::
 
@@ -108,29 +109,10 @@ The difference of 13% not being a rare event suggests two possible interpretatio
 -   $H_0$ Independence model. Blood thinners after CPR have no effect on survival, and we just happened to observe a difference that would only occur on a rare occasion.
 -   $H_A$ Alternative model. Blood thinners after CPR increase chance of survival, and the difference we observed was actually due to the blood thinners after CPR being effective at increasing the chance of survival, which explains the difference of 13%.
 
-Based on the simulations, we have two options:
-
-1.  We conclude that the study results do not provide strong evidence against the independence model.
-    That is, we do not have sufficiently strong evidence to conclude blood thinners after CPR had an effect on survival in this clinical setting.
-
-2.  We conclude the evidence is sufficiently strong to reject $H_0$ and assert that blood thinners after CPR were useful.
-    When we conduct formal studies, and determine that the observed outcome (or something more extreme) is unlikely to happen under the assumption that $H_0$ is true, we usually reject the notion that we just happened to observe a rare event.[^inference-two-props-2]
-    In this case, we reject the independence model in favor of the alternative.
-    That is, we are concluding the data provide strong evidence that blood thinners after CPR increases the chance of survival in this clinical setting.
-
-[^inference-two-props-2]: This reasoning does not generally extend to anecdotal observations.
-    Each of us observes incredibly rare events every day, events we could not possibly hope to predict.
-    However, in the non-rigorous setting of anecdotal evidence, almost anything may appear to be a rare event, so the idea of looking for rare events in day-to-day activities is treacherous.
-    For example, we might look at the lottery: there was only a 1 in 292 million chance that the Powerball numbers for the largest jackpot in history (January 13th, 2016) would be (04, 08, 19, 27, 34) with a Powerball of (10), but nonetheless those numbers came up!
-    However, no matter what numbers had turned up, they would have had the same incredibly rare odds.
-    That is, *any set of numbers we could have observed would ultimately be incredibly rare*.
-    This type of situation is typical of our daily lives: each possible event in itself seems incredibly rare, but if we consider every alternative, those outcomes are also incredibly rare.
-    We should be cautious not to misinterpret such anecdotal evidence.
-
-In this case, since we determined that the outcome is not that rare (12% chance of observing a difference of 13% or more under the assumption that blood thinners after CPR have no effect on survival), we fail to reject $H_0$, and conclude that the study results do not provide strong evidence against the independence model.
+Since we determined that the outcome is not that rare (12% chance of observing a difference of 13% or more under the assumption that blood thinners after CPR have no effect on survival), we fail to reject $H_0$, and conclude that the study results do not provide strong evidence against the independence model.
 This doesn't mean that we have proved that blood thinners are not effective, it just means that this study does not provide convincing evidence that they are effective in this setting.
 
-Statistical inference, is built on evaluating whether such differences are due to chance.
+Statistical inference, is built on evaluating how likely such differences are to occur due to chance if in fact the null hypothesis is true.
 In statistical inference, data scientists evaluate which model is most reasonable given the data.
 Errors do occur, just like rare events, and we might choose the wrong model.
 While we do not always choose correctly, statistical inference gives us tools to control and evaluate how often these errors occur.
@@ -138,7 +120,7 @@ While we do not always choose correctly, statistical inference gives us tools to
 ## Bootstrap confidence interval for the difference in proportions {#two-prop-boot-ci}
 
 In Section \@ref(two-prop-errors), we worked with the randomization distribution to understand the distribution of $\hat{p}_1 - \hat{p}_2$ when the null hypothesis $H_0: p_1 - p_2 = 0$ is true.
-Now, through bootstrapping, we study the variability of $\hat{p}_1 - \hat{p}_2$ without the null assumption.
+Now, through bootstrapping, we study the variability of $\hat{p}_1 - \hat{p}_2$ without assuming the null hypothesis is true.
 
 ### Observed data
 
@@ -163,8 +145,7 @@ As before, once the population is estimated, we can randomly resample observatio
 include_graphics("images/boot2propresamps.png")
 ```
 
-The variability of the statistic (the difference in sample proportions) can be calculated by taking one bootstrap resample from Sample 1 and one bootstrap resample from Sample 2 and calculating the difference of the bootstrap proportions.
-One resample from each of the estimated populations has been taken with the bootstrap proportions calculated for each of the bootstrap resamples.
+The variability of the statistic (the difference in sample proportions) can be calculated by taking one bootstrap resample from Sample 1 and one bootstrap resample from Sample 2 and calculating the difference in the bootstrap proportions.
 
 ```{r boot2samp2, fig.cap = "For example, the first bootstrap resamples from Sample 1 and Sample 2 provide resample proportions of 2/7 and 5/9, respectively.", out.width="75%"}
 include_graphics("images/boot2prop3.png")
@@ -178,16 +159,16 @@ include_graphics("images/boot2prop2.png")
 ```
 
 Repeated bootstrap simulations lead to a bootstrap sampling distribution of the statistic of interest, here the difference in sample proportions.
-Figure \@ref(fig:boot2samp1) visualizes the process in the toy example, and Figure \@ref(fig:bootCPR1000) shows 1,000 bootstrap differences in proportions for the CPR data.
-Note that the CPR data includes 40 and 50 people in the respective groups, and the toy example includes 7 and 9 people in the two groups.
-Accordingly, the variability in the distribution of sample proportions is higher for the toy example.
-When using the mathematical model (see Section \@ref(math-2prop)), the standard error for the difference in proportions is inversely related to the sample size.
+Figure \@ref(fig:boot2samp1) visualizes the process and Figure \@ref(fig:bootCPR1000) shows 1,000 bootstrap differences in proportions for the CPR data.
+Note that the CPR data includes 40 and 50 people in the respective groups, and the illustrated example includes 7 and 9 people in the two groups.
+Accordingly, the variability in the distribution of sample proportions is higher for the illustrated example.
+As you will see in the mathematical models discussed in Section \@ref(math-2prop), large sample sizes lead to smaller standard errors for a difference in proportions.
 
 ```{r boot2samp1, fig.cap = "The differences in each bootstrapped pair of proportions are combined to create the sampling distribution of the differences in proportions.", out.width="100%"}
 include_graphics("images/boot2prop1.png")
 ```
 
-```{r bootCPR1000, fig.cap="A histogram of differences in proportions from 1000 bootstrap simulations of the CPR data.  Note that because the CPR data has a larger sample size than the toy example, the variability of the difference in proportions is much smaller with the CPR histogram."}
+```{r bootCPR1000, fig.cap="A histogram of differences in proportions from 1000 bootstrap simulations of the CPR data.  Note that because the CPR data has a larger sample size than the illustrated example, the variability of the difference in proportions is much smaller with the CPR histogram."}
 set.seed(47)
 cpr_boot_dist <- cpr %>%
   specify(response = outcome, explanatory = group, success = "survived") %>%
@@ -224,7 +205,7 @@ As in Chapter \@ref(foundations-bootstrapping), the bootstrap confidence interva
 The interval created from the percentiles of the distribution is called the **percentile interval**.
 Note that here we calculate the 90% confidence interval by finding the $5^{th}$ and $95^{th}$ percentile values from the bootstrapped differences.
 The bootstrap 5 percentile proportion is `r cpr_boot_90_lower_perc` and the 95 percentile is `r cpr_boot_90_upper_perc`.
-The result is: we are 90% confident that, in the population, the true difference in probability of survival is between `r cpr_boot_90_lower_perc` and `r cpr_boot_90_upper_perc`.
+The result is: we are 90% confident that, in the population, the true difference in probability of survival for individuals receiving blood thinners after CPR is between `r cpr_boot_90_lower_perc` lower and `r cpr_boot_90_upper_perc` higher than those who did not receive blood thinners.
 The interval shows that we do not have much definitive evidence of the affect of blood thinners, one way or another.
 
 ```{r include=FALSE}
@@ -262,7 +243,7 @@ cpr_boot_90_upper_se <- round((14/40 - 11/50) + 2 * cpr_boot_se, 3)
 
 Alternatively, we can use the variability in the bootstrapped differences to calculate a standard error of the difference.
 The resulting interval is called the **SE interval**.
-Section \@ref(math-2prop) details the mathematical model for the standard error of the difference in sample proportions, but the bootstrap distribution typically does an excellent job of estimating the variability.
+Section \@ref(math-2prop) details the mathematical model for the standard error of the difference in sample proportions, but the bootstrap distribution typically does an excellent job of estimating the variability of the sampling distribution of the sample statistic.
 
 ```{r include=FALSE}
 terms_chp_17 <- c(terms_chp_17, "SE interval")
@@ -273,7 +254,7 @@ $$SE(\hat{p}_T - \hat{p}_C) \approx SE(\hat{p}_{T, boot} - \hat{p}_{C, boot}) = 
 The variability of the difference in proportions was calculated in R using the `sd()` function, but any statistical software will calculate the standard deviation of the differences, here, the exact quantity we hope to approximate.
 
 Note that we do not know know the true distribution of $\hat{p}_T - \hat{p}_C,$ so we will use a rough approximation to find a confidence interval for $p_T - p_C.$ As seen in the bootstrap histograms, the shape of the distribution is roughly symmetric and bell-shaped.
-So for a rough approximation, we will apply the 67-95-99.7 rule which tells us that 95% of observed differences should be roughly no farther than 2 SE from the true parameter difference.
+So for a rough approximation, we will apply the 67-95-99.7 rule which tells us that 95% of observed differences should be roughly no farther than 2 SE from the true parameter (difference in proportions).
 A 95% confidence interval for $p_T - p_C$ is given by:
 
 $$\hat{p}_T - \hat{p}_C \pm 2 \cdot SE \ \ \ \rightarrow \ \ \ 14/40 - 11/50 \pm 2 \cdot `r cpr_boot_se` \ \ \  \rightarrow \ \ \  (`r cpr_boot_90_lower_se`, `r cpr_boot_90_upper_se`)$$
@@ -293,8 +274,8 @@ One way to understand a confidence interval is to think about all the confidence
 Figure \@ref(fig:ci25ints) demonstrates a hypothetical situation in which 25 different studies are performed on the exact same population (with the same goal of estimating the true parameter value of $p_1 - p_2 = 0.47).$ The study at hand represents one point estimate (a dot) and a corresponding interval.
 It is not possible to know whether the interval at hand is to the right of the unknown true parameter value (the black line) or to the left of that line.
 It is also impossible to know whether the interval captures the true parameter (is blue) or doesn't (is red).
-If we are making 95% intervals, then 5% of the intervals we create over our lifetime will *not* capture the parameter of interest (e.g., will be red as in Figure \@ref(fig:ci25ints) ).
-What we know is that over our lifetimes as scientists, 95% of the intervals created and reported on will capture the parameter value of interest: thus the language "95% confident."
+If we are making 95% intervals, then about 5% of the intervals we create over our lifetime will *not* capture the parameter of interest (e.g., will be red as in Figure \@ref(fig:ci25ints) ).
+What we know is that over our lifetimes as scientists, about 95% of the intervals created and reported on will capture the parameter value of interest: thus the language "95% confident."
 
 ```{r ci25ints, fig.cap = "One hypothetical population, parameter value of: $p_1 - p_2 = 0.47.$  Twenty-five different studies all which led to a different point estimate, SE, and confidence interval.  The study at hand is one of the horizontal lines (hopefully a blue line!)."}
 set.seed(52)
@@ -336,7 +317,7 @@ for(i in 1:k){
 }
 ```
 
-The choice of 95% or 90% or even 99% as a confidence level is admittedly somewhat arbitrary; however, it is related to the logic we used when deciding that a p-value should be declared as significant if it is lower than 0.05 (or 0.10 or 0.01, respectively).
+The choice of 95% or 90% or even 99% as a confidence level is admittedly somewhat arbitrary; however, it is related to the logic we used when deciding that a p-value should be declared as "significant" if it is lower than 0.05 (or 0.10 or 0.01, respectively).
 Indeed, one can show mathematically, that a 95% confidence interval and a two-sided hypothesis test at a cutoff of 0.05 will provide the same conclusion when the same data and mathematical tools are applied for the analysis.
 A full derivation of the explicit connection between confidence intervals and hypothesis tests is beyond the scope of this text.
 
@@ -389,15 +370,15 @@ We can apply the generic confidence interval formula for a difference of two pro
 
 $$
 \begin{aligned}
-\text{point estimate} \ \pm \  z^{\star} \ \times \ SE \\
-(\hat{p}_1 - \hat{p}_2) \ \pm \ z^{\star} \times \sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}
+\text{point estimate} \ &\pm \  z^{\star} \ \times \ SE \\
+(\hat{p}_1 - \hat{p}_2) \ &\pm \ z^{\star} \times \sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}
 \end{aligned}
 $$
 
 ::: {.important data-latex=""}
 **Standard error of the difference in two proportions,** $\hat{p}_1 -\hat{p}_2.$
 
-When the conditions are met so that the distribution of $\hat{p}_1$ and $\hat{p}_2$ are both nearly normal, the **variability** of the difference in proportions, $\hat{p}_1 -\hat{p}_2,$ is well described by:
+When the conditions for the normal model are are met, the **variability** of the difference in proportions, $\hat{p}_1 -\hat{p}_2,$ is well described by:
 
 $$SE(\hat{p}_1 -\hat{p}_2) = \sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}$$
 :::
@@ -411,7 +392,7 @@ Check whether we can model the difference in sample proportions using the normal
 
 ------------------------------------------------------------------------
 
-We first check for independence: since this is a randomized experiment, this condition is satisfied.
+We first check for independence: since this is a randomized experiment, it seems reasonable to assume that the observations are idependent.
 
 Next, we check the success-failure condition for each group.
 We have at least 10 successes and 10 failures in each experiment arm (11, 14, 39, 26), so this condition is also satisfied.
@@ -437,13 +418,13 @@ For a 90% confidence interval, we use $z^{\star} = 1.65:$
 
 $$
 \begin{aligned}
-\text{point estimate} \ \pm \ z^{\star} \ \times \ SE \\
-0.13 \ \pm \ 1.65 \ \times \ 0.095 \\
+\text{point estimate} \ &\pm \ z^{\star} \ \times \ SE \\
+0.13 \ &\pm \ 1.65 \ \times \ 0.095 \\
 (-0.027 \ &, \ 0.287)
 \end{aligned}
 $$
 
-We are 90% confident that blood thinners have a difference of -2.7% to +28.7% percentage point impact on survival rate for patients who are like those in the study.
+We are 90% confident that individuals receiving blood thinners have between a 2.7% less chance of survival to a 28.7% greater chance of survival than those in the control group.
 Because 0% is contained in the interval, we do not have enough information to say whether blood thinners help or harm heart attack patients who have been admitted after they have undergone CPR.
 
 Note, the problem was set up as 90% to indicate that there was not a need for a high level of confidence (such a 95% or 99%).
@@ -451,14 +432,14 @@ A lower degree of confidence increases potential for error, but it also produces
 :::
 
 ::: {.guidedpractice data-latex=""}
-A 5-year experiment was conducted to evaluate the effectiveness of fish oils on reducing cardiovascular events, where each subject was randomized into one of two treatment groups.
-[@Manson:2019] We'll consider heart attack outcomes in the patients listed in Table \@ref(tab:fish-oil-data).
+A 5-year experiment was conducted to evaluate the effectiveness of fish oils on reducing cardiovascular events, where each subject was randomized into one of two treatment groups [@Manson:2019].
+We'll consider heart attack outcomes in the patients listed in Table \@ref(tab:fish-oil-data).
 
 Create a 95% confidence interval for the effect of fish oils on heart attacks for patients who are well-represented by those in the study.
-Also interpret the interval in the context of the study.[^inference-two-props-3]
+Also interpret the interval in the context of the study.[^inference-two-props-2]
 :::
 
-[^inference-two-props-3]: Because the patients were randomized, the subjects are independent, both within and between the two groups.
+[^inference-two-props-2]: Because the patients were randomized, the subjects are independent, both within and between the two groups.
     The success-failure condition is also met for both groups as all counts are at least 10.
     This satisfies the conditions necessary to model the difference in proportions using a normal distribution.
     Compute the sample proportions $(\hat{p}_{\text{fish oil}} = 0.0112,$ $\hat{p}_{\text{placebo}} = 0.0155),$ point estimate of the difference $(0.0112 - 0.0155 = -0.0043),$ and standard error $SE = \sqrt{\frac{0.0112 \times 0.9888}{12933} + \frac{0.0155 \times 0.9845}{12938}},$ $SE = 0.00145.$ Next, plug the values into the general formula for a confidence interval, where we'll use a 95% confidence level with $z^{\star} = 1.96:$ $-0.0043 \pm 1.96 \times 0.00145 = (-0.0071, -0.0015).$ We are 95% confident that fish oils decreases heart attacks by 0.15 to 0.71 percentage points (off of a baseline of about 1.55%) over a 5-year period for subjects who are similar to those in the study.
@@ -511,7 +492,7 @@ See the box below for calculation of the pooled proportion of successes.
 
 Conditions:
 
--   Independently observed data
+-   Independent observations
 -   Large samples: $(n_1 p_1 \geq 10$ and $n_1 (1-p_1) \geq 10$ and $n_2 p_2 \geq 10$ and $n_2 (1-p_2) \geq 10)$
 -   Check conditions using: $(n_1 \hat{p}_{\textit{pool}} \geq 10$ and $n_1 (1-\hat{p}_{\textit{pool}}) \geq 10$ and $n_2 \hat{p}_{\textit{pool}}\geq 10$ and $n_2 (1-\hat{p}_{\textit{pool}}) \geq 10)$
 :::
@@ -523,8 +504,8 @@ terms_chp_17 <- c(terms_chp_17, "Z score two proportions")
 A mammogram is an X-ray procedure used to check for breast cancer.
 Whether mammograms should be used is part of a controversial discussion, and it's the topic of our next example where we learn about 2-proportion hypothesis tests when $H_0$ is $p_1 - p_2 = 0$ (or equivalently, $p_1 = p_2).$
 
-A 30-year study was conducted with nearly 90,000 female participants.
-During a 5-year screening period, each woman was randomized to one of two groups: in the first group, women received regular mammograms to screen for breast cancer, and in the second group, women received regular non-mammogram breast cancer exams.
+A 30-year study was conducted with nearly 90,000 participants who identified as female.
+During a 5-year screening period, each participant was randomized to one of two groups: in the first group, participants received regular mammograms to screen for breast cancer, and in the second group, participants received regular non-mammogram breast cancer exams.
 No intervention was made during the following 25 years of the study, and we'll consider death resulting from breast cancer over the full 30-year period.
 Results from the study are summarized in Figure \@ref(tab:mammogramStudySummaryTable).
 
@@ -551,18 +532,18 @@ mammogram %>%
 ```
 
 ::: {.guidedpractice data-latex=""}
-Is this study an experiment or an observational study?[^inference-two-props-4]
+Is this study an experiment or an observational study?[^inference-two-props-3]
 :::
 
-[^inference-two-props-4]: This is an experiment.
+[^inference-two-props-3]: This is an experiment.
     Patients were randomized to receive mammograms or a standard breast cancer exam.
     We will be able to make causal conclusions based on this study.
 
 ::: {.guidedpractice data-latex=""}
-Set up hypotheses to test whether there was a difference in breast cancer deaths in the mammogram and control groups.[^inference-two-props-5]
+Set up hypotheses to test whether there was a difference in breast cancer deaths in the mammogram and control groups.[^inference-two-props-4]
 :::
 
-[^inference-two-props-5]: $H_0:$ the breast cancer death rate for patients screened using mammograms is the same as the breast cancer death rate for patients in the control, $p_{MGM} - p_{C} = 0.$ $H_A:$ the breast cancer death rate for patients screened using mammograms is different than the breast cancer death rate for patients in the control, $p_{MGM} - p_{C} \neq 0.$
+[^inference-two-props-4]: $H_0:$ the breast cancer death rate for patients screened using mammograms is the same as the breast cancer death rate for patients in the control, $p_{MGM} - p_{C} = 0.$ $H_A:$ the breast cancer death rate for patients screened using mammograms is different than the breast cancer death rate for patients in the control, $p_{MGM} - p_{C} \neq 0.$
 
 The research question describing mammograms is set up to address specific hypotheses (in contrast to a confidence interval for a parameter).
 In order to fully take advantage of the hypothesis testing structure, we asses the randomness under the condition that the null hypothesis is true (as we always do for hypothesis testing).
@@ -590,7 +571,7 @@ Is it reasonable to model the difference in proportions using a normal distribut
 
 ------------------------------------------------------------------------
 
-Because the patients are randomized, they can be treated as independent, both within and between groups.
+Because the patients were randomized, observations can be assumed to be independent, both within each group and between treatment groups.
 We also must check the success-failure condition for each group.
 Under the null hypothesis, the proportions $p_{MGM}$ and $p_{C}$ are equal, so we check the success-failure condition with our best estimate of these values under $H_0,$ the pooled proportion from the two samples, $\hat{p}_{\textit{pool}} = 0.0112:$
 
@@ -611,10 +592,10 @@ The success-failure condition is satisfied since all values are at least 10.
 With both conditions satisfied, we can safely model the difference in proportions using a normal distribution.
 :::
 
-In the previous example, the pooled proportion was used to check the success-failure condition[^inference-two-props-6].
+In the previous example, the pooled proportion was used to check the success-failure condition[^inference-two-props-5].
 In the next example, we see an additional place where the pooled proportion comes into play: the standard error calculation.
 
-[^inference-two-props-6]: For an example of a two-proportion hypothesis test that does not require the success-failure condition to be met, see Section \@ref(two-prop-errors).
+[^inference-two-props-5]: For an example of a two-proportion hypothesis test that does not require the success-failure condition to be met, see Section \@ref(two-prop-errors).
 
 ::: {.workedexample data-latex=""}
 Compute the point estimate of the difference in breast cancer death rates in the two groups, and use the pooled proportion $\hat{p}_{\textit{pool}} = 0.0112$ to calculate the standard error.
@@ -649,7 +630,8 @@ $$Z = \frac{\text{point estimate} - \text{null value}}{SE} = \frac{-0.00012 - 0}
 
 The lower tail area is 0.4325, which we double to get the p-value: 0.8650.
 Because this p-value is larger than 0.05, we do not reject the null hypothesis.
-That is, the difference in breast cancer death rates is reasonably explained by chance, and we do not observe benefits or harm from mammograms relative to a regular breast exam.
+That is, the difference in breast cancer death rates is likely to have occurred just by chance, if the null hypothesis is true.
+Thus, we do not observe benefits or harm from mammograms relative to a regular breast exam.
 :::
 
 ```{r echo=FALSE, out.width = "60%", fig.asp = 0.5}
@@ -676,8 +658,9 @@ Experts and medical boards who study medical treatments use considerations like 
 When the parameter of interest is the difference in population proportions across two groups, randomization tests, bootstrapping, and mathematical modeling can be applied.
 For confidence intervals, bootstrapping from each group separately will provide a sampling distribution for the difference in sample proportions; the mathematical model shows a similar distributional shape as long as the sample size is large enough to fulfill the success-failure conditions and so that the data are representative of the entire population.
 Keep in mind that some datasets will produce a confidence interval which does not capture the true parameter, this is the nature of variability!
-Over your lifetime, 95% of the confidence intervals you create will capture the parameter of interest.
-For hypothesis testing, repeated randomization (permuting) of the explanatory variable creates a null sampling distribution for the null differences in sample proportions; the mathematical model shows a similar null distribution as long as the sample size is large enough to fulfill the success-failure conditions.
+Over your lifetime, about 95% of the confidence intervals you create will capture the parameter of interest, and about 5% won't.
+For hypothesis testing, repeated randomization of the explanatory variable creates a null distribution of differences in sample proportions that could have occurred under the null hypothesis.
+Randomization and the mathematical model will have similar null distributions, as long as the sample size is large enough to fulfill the success-failure conditions.
 
 ### Terms
 

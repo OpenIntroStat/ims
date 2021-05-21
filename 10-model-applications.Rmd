@@ -2,13 +2,424 @@
 
 ```{r, include = FALSE}
 source("_common.R")
+library(ggpubr)
 ```
 
-## Case study: ??? {#model-case-study}
+## Case study: Houses for sale {#model-case-study}
 
-::: {.todo}
-Add case study
+Take a walk around your neighborhood and you'll probably see a few houses for sale.
+If you find a house for sale, you can probably go online and look up its price.
+You'll quickly note that the prices seem a bit arbitrary -- the homeowners get to decide what the amount they want to list their house for, and many criteria factor into this decision, e.g. what do comparable houses ("comps" in real estate speak) sell for, how quickly they need to sell the house, etc.
+
+In this case study we'll formalize the process of figuring out how much to list a house for by using data on current home sales In November of 2020, information on `r nrow(duke_forest)` houses in the Duke Forest neighborhood of Durham, NC were scraped from [Zillow](https://www.zillow.com).
+The homes were all recently sold at the time of data collection, and the goal of the project was to build a model for predicting the sale price based on a particular home's characteristics.
+
+::: {.data data-latex=""}
+The [`duke_forest`](http://openintrostat.github.io/openintro/reference/duke_forest.html) data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
 :::
+
+The first four homes are shown in Table \@ref(tab:duke-data-frame), and descriptions for each variable are shown in Table \@ref(tab:duke-variables).
+
+```{r duke-data-frame}
+duke_forest %>%
+  select(price, bed, bath, area, year_built, lot) %>%
+  slice_head(n = 4) %>%
+  kbl(
+    linesep = "", booktabs = TRUE, caption = caption_helper("Top four rows of the data describing homes for sale in the Duke Forest neighborhood of Durham, NC."),
+    row.names = FALSE, format.args = list(big.mark = ",")
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position")
+  )
+```
+
+```{r duke-variables}
+duke_forest_var_def <- tribble(
+  ~variable, ~description,
+  "price", "Sale price, in USD",
+  "bed", "Number of bedrooms",
+  "bath", "Number of bathrooms",
+  "area", "Area of home, in square feet",
+  "year_built", "Year the home was built",
+  "cooling", "Cooling system: central or other",
+  "lot", "Area of the entire property, in acres"
+)
+
+duke_forest_var_def %>%
+  kbl(
+    linesep = "", booktabs = TRUE, caption = caption_helper("Variables and their descriptions for the `duke_forest` dataset."),
+    col.names = c("Variable", "Description")
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  ) %>%
+  column_spec(1, width = "15em", monospace = TRUE) %>%
+  column_spec(2, width = "25em")
+```
+
+### Correlating with `price`
+
+As mentioned, the goal of the data collection was to build a model for the sale price of homes.
+While using multiple predictor variables is likely preferable to using only one variable, we start by learning about the variables themselves and their relationship to price.
+Figure \@ref(fig:single-scatter) shows scatterplots describing price as a function of each of the predictor variables.
+All of the variables seem
+
+```{r single-scatter, out.width = "100%", fig.asp = 1, fig.cap = "Scatter plots describing six different predictor variables' relationship with the price of a home.", fig.width=8}
+pr_bed <- ggplot(duke_forest, aes(x = bed, y = price)) +
+  geom_point(alpha = 0.8) +
+    labs(
+    x = "Number of bedrooms",
+    y = "Sale price (USD)"
+  ) +  
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
+
+
+pr_bath <- ggplot(duke_forest, aes(x = bath, y = price)) +
+  geom_point(alpha = 0.8) +
+    labs(
+    x = "Number of bathrooms",
+    y = "Sale price (USD)"
+  ) +
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
+
+pr_area <- ggplot(duke_forest, aes(x = area, y = price)) +
+  geom_point(alpha = 0.8) +
+    labs(
+    x = "Area of home (in square feet)",
+    y = "Sale price (USD)"
+  ) + 
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
+
+pr_year <- ggplot(duke_forest, aes(x = year_built, y = price)) +
+  geom_point(alpha = 0.8) +
+    labs(
+    x = "Year built",
+    y = "Sale price (USD)"
+  ) +
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
+
+pr_cool <- ggplot(duke_forest, aes(x = cooling, y = price)) +
+  geom_point(alpha = 0.8) +
+    labs(
+    x = "Cooling type",
+    y = "Sale price (USD)"
+  ) +
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
+
+pr_lot <- ggplot(duke_forest, aes(x = lot, y = price)) +
+  geom_point(alpha = 0.8) +
+    labs(
+    x = "Area of property (in acres)",
+    y = "Sale price (USD)"
+  ) + 
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
+
+pr_bed + pr_bath + pr_area + pr_year + pr_cool + pr_lot +
+  plot_layout(ncol = 2) 
+```
+
+::: {.guidedpractice data-latex=""}
+In Figure \@ref(fig:single-scatter) there does not appear to be a correlation value calculated for the predictor variable, `cooling`.
+Why not?
+Can the variable still be used in the linear model?
+Explain.[^model-applications-1]
+:::
+
+[^model-applications-1]: The correlation coefficient can only be calculated two describe the relationship between two numerical variables.
+    The predictor variable `cooling` is categorical, not numerical.
+    It *can*, however, be used in the linear model as a binary indicator variable coded, for example, with a `1` for central and `0` for other.
+
+::: {.workedexample data-latex=""}
+In Figure \@ref(fig:single-scatter) which variable seems to be most informative for predicting house price?
+Provide two reasons for your answer.
+
+------------------------------------------------------------------------
+
+The `area` of the home is the variable which is most highly correlated with `price`.
+Additionally, the scatterplot for `price` vs. `area` seems to show a strong linear relationship between the two variables.
+Note that the correlation coefficient and the scatterplot linearity will often give the same conclusion.
+However, recall that the correlation coefficient is very sensitive to outliers, so it is always wise to look at the scatterplot even when the variables are highly correlated.
+:::
+
+### Modeling `price` with `area`
+
+A linear model was fit to predict `price` from `area`.
+The resulting model information is given in Table \@ref(tab:price-slr).
+
+```{r price-slr}
+m_small <- duke_forest %>%
+  lm(price ~ area, data = .) 
+
+m_small_r_sq_adj <-  glance(m_small)$adj.r.squared %>% round(4)
+m_small_df_residual <-  glance(m_small)$df.residual %>% round(4)
+
+m_small_w_rsq <- m_small %>%
+  tidy() %>%
+  mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
+  add_row(term = glue("Adjusted R-sq = {m_small_r_sq_adj}")) %>%
+  add_row(term = glue("df = {m_small_df_residual}"))
+
+m_small_w_rsq %>%
+  kbl(linesep = "", booktabs = TRUE, 
+      caption = "Summary of least squares fit for price on area.", 
+      digits = c(0,0,0,2,4), align = "lrrrr", format.args = list(big.mark = ","))  %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "20em") %>%
+  column_spec(1, monospace = ifelse(as.numeric(rownames(m_small_w_rsq)) < 11, TRUE, FALSE)) %>%
+  column_spec(2:5, width = "5em") %>%
+  pack_rows("", 3,4) %>%
+  add_indent(3:4) %>%
+  row_spec(3:4, italic = TRUE)
+```
+
+::: {.guidedpractice data-latex=""}
+Interpret the value of $b_1$ = 159 in the context of the problem.[^model-applications-2]
+:::
+
+[^model-applications-2]: For each additional square foot of house, we would expect such houses to cost, on average, \$159 more.
+
+::: {.guidedpractice data-latex=""}
+Using the output in Table \@ref(tab:price-slr), write out the model for predicting `price` from `area`.[^model-applications-3]
+:::
+
+[^model-applications-3]: $\widehat{\texttt{price}} = 116,652 - 159 \times \texttt{area}$
+
+The residuals from the linear model can be to assess whether or not a linear model is appropriate.
+Figure \@ref(fig:price-resid-slr) plots the residuals $e_i = y_i - \hat{y}_i$ on the $y$-axis and the fitted (or predicted) values $\hat{y}_i$ on the $x$-axis.
+
+```{r price-resid-slr, fig.cap = "Residuals versus predicted values for the model predicting sale price from area of home."}
+duke_forest %>%
+  lm(price ~ area, data = .) %>%
+  augment() %>%
+  ggplot(aes(x = .fitted, y = .resid)) +
+  geom_point(size = 2, alpha = 0.8) +
+  labs(
+    x = "Predicted values of sale price (in USD)",
+    y = "Residuals"
+  ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_x_continuous(labels = label_dollar(scale = 1/1000, suffix = "K")) +
+  scale_y_continuous(labels = label_dollar(scale = 1/1000, suffix = "K"))
+```
+
+::: {.guidedpractice data-latex=""}
+What aspect(s) of the residual plot indicate that a linear model is appropriate?
+What aspect(s) of the residual plot seem concerning when fitting a linear model?[^model-applications-4]
+:::
+
+[^model-applications-4]: The residual plot shows that the relationship between `area` and the average `price` of a home is indeed linear.
+    However, the residuals are quite large for expensive homes.
+    The large residuals indicate potential outliers or increasing variability, either of which could warrant more involved modeling techniques than are presented in this text.
+
+### Modeling `price` with multiple variables
+
+It seems as though the predictions of home price might be more accurate if more than one predictor variable was used in the linear model.
+Table \@ref(tab:price-mlr) displays the output from a linear model of `price` regressed on `area`, `bed`, `bath`, `year_built`, `cooling`, and `lot`.
+
+```{r price-mlr}
+m_full <- duke_forest %>%
+  lm(price ~ area + bed + bath + year_built + cooling + lot, data = .) 
+
+m_full_r_sq_adj <-  glance(m_full)$adj.r.squared %>% round(4)
+m_full_df_residual <-  glance(m_full)$df.residual %>% round(4)
+
+m_full_w_rsq <- m_full %>%
+  tidy() %>%
+  mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
+  add_row(term = glue("Adjusted R-sq = {m_full_r_sq_adj}")) %>%
+  add_row(term = glue("df = {m_full_df_residual}"))
+
+m_full_w_rsq %>%
+  kbl(linesep = "", booktabs = TRUE, 
+      caption = "Summary of least squares fit for price on multiple predictor variables.", 
+      digits = c(0,0,0,2,4), align = "lrrrr", format.args = list(big.mark = ","))  %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "20em") %>%
+  column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_w_rsq)) < 11, TRUE, FALSE)) %>%
+  column_spec(2:5, width = "5em") %>%
+  pack_rows("", 8, 9) %>%
+  add_indent(8:9) %>%
+  row_spec(8:9, italic = TRUE)
+```
+
+::: {.workedexample data-latex=""}
+Using Table \@ref(tab:price-mlr), write out the linear model of price on the six predictor variables.
+
+------------------------------------------------------------------------
+
+$$
+\begin{aligned}
+\widehat{\texttt{price}} &= -2,826,650 \\
+&+ 102 \times \texttt{area} - 13,692 \times \texttt{bed} \\
+&+ 41,076 \times \texttt{bath} + 1,459 \times \texttt{year_built}\\
+&+ 84,065 \times \texttt{cooling}_{\texttt{central}} + 356,141 \times \texttt{lot}
+\end{aligned}
+$$
+:::
+
+::: {.guidedpractice data-latex=""}
+The value of the estimated coefficient on $\texttt{cooling}_{\texttt{central}}$ is $b_5 = 84,065$.
+Interpret the value of $b_5$ in the context of the problem.[^model-applications-5]
+:::
+
+[^model-applications-5]: The coefficient indicates that if all the other variables are kept constant, homes with central air conditioning cost \$84,065 more, on average.
+
+A friend suggest that maybe you don't need all six variables to have a good model for `price`.
+You consider taking a variable out, but you aren't sure which one to remove.
+
+```{r backward-step-1}
+m_area_r_sq_adj <- update(m_full, . ~ . - area, data = duke_forest) %>% glance() %>% pull(adj.r.squared) %>% round(4)
+m_bed_r_sq_adj <- update(m_full, . ~ . - bed, data = duke_forest) %>% glance() %>% pull(adj.r.squared) %>% round(4)
+m_bath_r_sq_adj <- update(m_full, . ~ . - bath, data = duke_forest) %>% glance() %>% pull(adj.r.squared) %>% round(4)
+m_year_built_r_sq_adj <- update(m_full, . ~ . - year_built, data = duke_forest) %>% glance() %>% pull(adj.r.squared) %>% round(4)
+m_cooling_r_sq_adj <- update(m_full, . ~ . - cooling, data = duke_forest) %>% glance() %>% pull(adj.r.squared) %>% round(4)
+m_lot_r_sq_adj <- update(m_full, . ~ . - lot, data = duke_forest) %>% glance() %>% pull(adj.r.squared) %>% round(4)
+```
+
+::: {.workedexample data-latex=""}
+Results corresponding to the full model for the housing data are shown in Table \@ref(tab:price-mlr).
+How should we proceed under the backward elimination strategy?
+
+------------------------------------------------------------------------
+
+Our baseline adjusted $R^2$ from the full model is `r m_full_r_sq_adj`, and we need to determine whether dropping a predictor will improve the adjusted $R^2$.
+To check, we fit models that each drop a different predictor, and we record the adjusted $R^2$:
+
+-   Excluding `area`: `r m_area_r_sq_adj`
+-   Excluding `bed`: `r m_bed_r_sq_adj`
+-   Excluding `bath`: `r m_bath_r_sq_adj`
+-   Excluding `year_built`: `r m_year_built_r_sq_adj`
+-   Excluding `cooling`: `r m_cooling_r_sq_adj`
+-   Excluding `lot`: `r m_lot_r_sq_adj`
+
+The model without `bed` has the highest adjusted $R^2$ of `r m_bed_r_sq_adj`, higher than the adjusted $R^2$ for the full model.
+Because eliminating `bed` leads to a model with a higher adjusted $R^2$, we drop `bed` from the model.
+
+It might seem counter-intuitive to exclude information on number of bedrooms from the model.
+After all, we would expect homes with more bedrooms to cost more, and we can see a clear relationship between number of bedrooms and sale price in Figure \@ref(fig:single-scatter).
+However note that `area` is still in the model, and it's quite likely that the area of the home and the number of bedrooms are highly associated.
+Therefore, we the model already has information on "how much space is available in the house" with the inclusion of `area` alone.
+
+Since we eliminated a predictor from the model in the first step, we see whether we should eliminate any additional predictors.
+Our baseline adjusted $R^2$ is now `r m_bed_r_sq_adj`.
+We now fit new models, which consider eliminating each of the remaining predictors in addition to `bed`:
+
+```{r backward-step-2}
+m_full_no_bed <- duke_forest %>%
+  lm(price ~ area + bath + year_built + cooling + lot, data = .) 
+
+m_area_r_sq_adj <- update(m_full_no_bed, . ~ . - area, data = duke_forest) %>% glance() %>% pull(adj.r.squared) %>% round(4)
+m_bath_r_sq_adj <- update(m_full_no_bed, . ~ . - bath, data = duke_forest) %>% glance() %>% pull(adj.r.squared) %>% round(4)
+m_year_built_r_sq_adj <- update(m_full_no_bed, . ~ . - year_built, data = duke_forest) %>% glance() %>% pull(adj.r.squared) %>% round(4)
+m_cooling_r_sq_adj <- update(m_full_no_bed, . ~ . - cooling, data = duke_forest) %>% glance() %>% pull(adj.r.squared) %>% round(4)
+m_lot_r_sq_adj <- update(m_full_no_bed, . ~ . - lot, data = duke_forest) %>% glance() %>% pull(adj.r.squared) %>% round(4)
+```
+
+-   Excluding `bed` and `area`: `r m_area_r_sq_adj`
+-   Excluding `bed` and `bath`: `r m_bath_r_sq_adj`
+-   Excluding `bed` and `year_built`: `r m_year_built_r_sq_adj`
+-   Excluding `bed` and `cooling`: `r m_cooling_r_sq_adj`
+-   Excluding `bed` and `lot`: `r m_lot_r_sq_adj`
+
+None of these models lead to an improvement in adjusted $R^2$, so we do not eliminate any of the remaining predictors.
+:::
+
+That is, after backward elimination, we are left with the model that keeps all predictors except `bed`, which we can summarize using the coefficients from Table \@ref(tab:price-full-except-bed).
+
+```{r price-full-except-bed}
+m_full_no_bed_r_sq_adj <-  glance(m_full_no_bed)$adj.r.squared %>% round(4)
+m_full_no_bed_df_residual <-  glance(m_full_no_bed)$df.residual %>% round(4)
+
+m_full_no_bed_w_rsq <- m_full_no_bed %>%
+  tidy() %>%
+  mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
+  add_row(term = glue("Adjusted R-sq = {m_full_no_bed_r_sq_adj}")) %>%
+  add_row(term = glue("df = {m_full_no_bed_df_residual}"))
+
+m_full_no_bed_w_rsq %>%
+  kbl(linesep = "", booktabs = TRUE, 
+      caption = "Summary of least squares fit for price on multiple predictor variables, excluding number of bedrooms.", 
+      digits = c(0,0,0,2,4), align = "lrrrr", format.args = list(big.mark = ","))  %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "HOLD_position")) %>%
+  column_spec(1, width = "20em") %>%
+  column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_no_bed_w_rsq)) < 11, TRUE, FALSE)) %>%
+  column_spec(2:5, width = "5em") %>%
+  pack_rows("", 7,8) %>%
+  add_indent(7:8) %>%
+  row_spec(7:8, italic = TRUE)
+```
+
+Then, the linear model for predicting sale price based on this model is as follows:
+
+$$ 
+\begin{aligned}
+\widehat{\texttt{price}} &= -2,868,784 + 99 \times \texttt{area}\\ 
+&+ 36,228 \times \texttt{bath} + 1,466 \times \texttt{year_built}\\
+&+ 83,856 \times \texttt{cooling}_{\texttt{central}} + 357,119 \times \texttt{lot}
+\end{aligned}
+$$
+
+::: {.workedexample data-latex=""}
+The residual plot for the model with all of the predictor variables except `bed` is given in Figure \@ref(fig:price-resid-mlr-nobed).
+How do the residuals in Figure \@ref(fig:price-resid-mlr-nobed) compare to the residuals in Figure \@ref(fig:price-resid-slr)?
+
+------------------------------------------------------------------------
+
+The residuals, for the most part, are randomly scattered around 0.
+However there is one extreme outlier with a residual of -\$750,000, a house whose actual sale price is a lot lower than its predicted price.
+Also, we observe again that the residuals are quite large for expensive homes.
+Once again, the large residuals indicate potential outliers or increasing variability.
+:::
+
+```{r price-resid-mlr-nobed, fig.cap = "Residuals versus predicted values for the model predicting sale price from all predictors except for number of bedrooms."}
+m_full_no_bed %>%
+  augment() %>%
+  ggplot(aes(x = .fitted, y = .resid)) +
+  geom_point(size = 2, alpha = 0.8) +
+  labs(
+    x = "Predicted values of house price (in USD)",
+    y = "Residuals"
+  ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_x_continuous(labels = label_dollar(scale = 1/1000, suffix = "K")) +
+  scale_y_continuous(labels = label_dollar(scale = 1/1000, suffix = "K"))
+```
+
+```{r}
+new_house <- tibble(
+ area = 1803,
+ bath = 2.5,
+ lot = 0.145,
+ year_built = 1941,
+ cooling = "central"
+)
+
+new_house_pred <- round(predict(m_full_no_bed, newdata = new_house), 0)
+new_house_obs  <- 804133
+new_house_resid <- 804133 - new_house_pred
+```
+
+::: {.guidedpractice data-latex=""}
+Consider a house with 1,803 square feet, 2.5 bathrooms, 0.145 acres, built in 1941, that has central air conditioning.
+What is the predicted price of the home?[^model-applications-6]
+:::
+
+[^model-applications-6]: $\widehat{\texttt{price}} = -2,868,784 + 99 \times 1803 + 36,228 \times 2.5 + 1,466 \times 1941 + 83,856 \times 1 + 357,119 \times 0.145 = \$`r format(new_house_pred, big.mark = ",")`.$
+
+::: {.guidedpractice data-latex=""}
+If you later learned that the house (with a predicted price of \$`r format(new_house_pred, big.mark = ",")`) had recently sold for \$`r format(new_house_obs, big.mark = ",")`, would you think the model was terrible?
+What if you learned that the house was in California?[^model-applications-7]
+:::
+
+[^model-applications-7]: A residual of \$`r format(new_house_resid, big.mark = ",")` is reasonably big.
+    Note that the large residuals (except a few homes) in Figure \@ref(fig:price-resid-mlr-nobed) are closer to \$250,000 (about half as big).
+    After we learn that the house is in California, we realize that the model shouldn't be applied to the new home at all!
+    The original data are from Durham, NC, and models based on the Durham, NC data should be used only to explore patterns in prices for homes in Durham, NC.
 
 ## Interactive R tutorials {#model-tutorials}
 
