@@ -21,14 +21,14 @@ The details for working through inferential problems in the two independent mean
 We first cover a randomization test where the observations are shuffled under the assumption that the null hypothesis is true.
 Then we bootstrap the data (with no imposed null hypothesis) to create a confidence interval for the true difference in population means, $\mu_1 - \mu_2.$ The mathematical model, here the $t$-distribution, is able to describe both the randomization test and the bootstrapping as long as the conditions are met.
 
-The inferential tools are applied to three different data contexts: determining whether stem cells can improve heart function, exploring the relationship between pregnant women's smoking habits and birth weights of newborns, and exploring whether there is statistically significant evidence that one variation of an exam is harder than another variation.
+The inferential tools are applied to three different data contexts: determining whether stem cells can improve heart function, exploring the relationship between pregnant women's smoking habits and birth weights of newborns, and exploring whether there is convincing evidence that one variation of an exam is harder than another variation.
 This section is motivated by questions like "Is there convincing evidence that newborns from mothers who smoke have a different average birth weight than newborns from mothers who don't smoke?"
 
 ## Randomization test for the difference in means {#rand2mean}
 
 An instructor decided to run two slight variations of the same exam.
-Prior to passing out the exams, she shuffled the exams together to ensure each student received a random version.
-Anticipating complaints from students who took Version B, she would like to evaluate whether the difference observed in the groups is so large that it provides convincing evidence that Version B was more difficult (on average) than Version A.
+Prior to passing out the exams, they shuffled the exams together to ensure each student received a random version.
+Anticipating complaints from students who took Version B, they would like to evaluate whether the difference observed in the groups is so large that it provides convincing evidence that Version B was more difficult (on average) than Version A.
 
 ::: {.data data-latex=""}
 The [`classdata`](http://openintrostat.github.io/openintro/reference/classdata.html) data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
@@ -66,13 +66,13 @@ classdata %>%
 ```{r boxplotTwoVersionsOfExams, fig.cap = "Exam scores for students given one of three different exams."}
 ggplot(classdata, aes(x = exam, y = m1, color = exam)) +
   geom_boxplot(show.legend = FALSE) +
-  geom_point() +
+  geom_jitter(width = 0.1) +
   labs(title = "Boxplot of exam score broken down by version of exam.", x = "Exam", y = "Score") +
   scale_color_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"]))
 ```
 
 ::: {.guidedpractice data-latex=""}
-Construct hypotheses to evaluate whether the observed difference in sample means, $\bar{x}_A - \bar{x}_B=3.1,$ is due to chance.
+Construct hypotheses to evaluate whether the observed difference in sample means, $\bar{x}_A - \bar{x}_B=3.1,$ is likely to have happened due to chance, if the null hypothesis is true.
 We will later evaluate these hypotheses using $\alpha = 0.01.$[^inference-two-means-1]
 :::
 
@@ -122,7 +122,7 @@ classdata %>%
 
 ### Observed statistic vs. null statistics
 
-The goal of the randomization test is to assess the observed data, here the statistic of interest is $\bar{x}_A - \bar{x}_B=3.1.$ The randomization distribution allows us to identify whether a difference of 3.1 points is more than one would expect by natural variability.
+The goal of the randomization test is to assess the observed data, here the statistic of interest is $\bar{x}_A - \bar{x}_B=3.1.$ The randomization distribution allows us to identify whether a difference of 3.1 points is more than one would expect by natural variability of the scores if the two tests were equally difficult.
 By plotting the value of 3.1 on Figure \@ref(fig:randexamspval), we can measure how different or similar 3.1 is to the randomized differences which were generated under the null hypothesis.
 
 ```{r randexamspval, fig.cap = "Histogram of differences in means, calculated from 1000 different randomizations of the exam types.  The observed difference of 3.1 points is plotted as a vertical line, and the area more extreme than 3.1 is shaded to represent the p-value."}
@@ -140,14 +140,6 @@ classdata %>%
   shade_p_value(obs_stat = stat_2means, direction = "two-sided", color = IMSCOL["red", "full"])
 ```
 
-::: {.guidedpractice data-latex=""}
-Using the histogram of bootstrapped difference in means, estimate the standard error of the differences in sample means, $\bar{x}_{ESC} - \bar{x}_{Control}.$[^inference-two-means-3]
-:::
-
-[^inference-two-means-3]: The bootstrapped differences in sample means vary roughly from 4 to 12, a range of 8.
-    Using the empirical rule (that with bell-shaped distributions, most observations are within two standard errors of the center), the standard error of the difference in sample means is approximated to be 2 units of pumping capacity.
-    You might note that the standard error calculation given in Section \@ref(math2samp) is $SE(\bar{x}_{ESC} - \bar{x}_{Control}) = \\\sqrt{s^2_{ESC}/n_{ESC} + s^2_{Control}/n_{Control}} = \\ \sqrt{5.17^2/9 + 2.76^2/9} = 1.95,$ very close to the bootstrap approximation.
-
 ::: {.workedexample data-latex=""}
 Approximate the p-value depicted in Figure \@ref(fig:randexamspval), and provide a conclusion in the context of the case study.
 
@@ -158,7 +150,7 @@ So 10% of the simulations are larger than the observed difference.
 To get the p-value, we double the proportion of randomized differences which are larger than the observed difference, p-value = 0.2.
 
 Previously, we specified that we would use $\alpha = 0.01.$ Since the p-value is larger than $\alpha,$ we do not reject the null hypothesis.
-That is, the data do not convincingly show that one exam version is more difficult than the other, and the teacher should not be convinced that she should add points to the Version B exam scores.
+That is, the data do not convincingly show that one exam version is more difficult than the other, and the teacher should not be convinced that they should add points to the Version B exam scores.
 :::
 
 ```{r echo = FALSE, eval=FALSE}
@@ -287,12 +279,16 @@ boot_2mean %>%
                      guide = "legend")
 ```
 
+::: {.guidedpractice data-latex=""} Using the histogram of bootstrapped difference in means, estimate the standard error of the differences in sample means, $\bar{x}_{ESC} - \bar{x}_{Control}.$[^inference-two-means-3] :::
+
+[^inference-two-means-3]: The point estimate of the population difference ($\bar{x}_{n} - \bar{x}_{s}$) is `r xbar_difference`.
+
 ::: {.workedexample data-latex=""}
 Choose one of the bootstrap confidence intervals for the true difference in average pumping capacity, $\mu_{esc} - \mu_{control}.$ Does the interval show that there is a difference across the two treatments?
 
 ------------------------------------------------------------------------
 
-Because neither of the 90% intervals (either percentile or SE) above overlap zero (note that zero is never one of the bootstrapped differences so 95% and 99% intervals would have given the same conclusion!), we conclude that the ESC treatment is significantly better with respect to heart pumping capacity than the treatment.
+Because neither of the 90% intervals (either percentile or SE) above overlap zero (note that zero is never one of the bootstrapped differences so 95% and 99% intervals would have given the same conclusion!), we conclude that the ESC treatment is substantially better with respect to heart pumping capacity than the treatment.
 
 Because the study is a randomized controlled experiment, we can conclude that it is the treatment (ESC) which is causing the change in pumping capacity.
 :::
@@ -413,8 +409,8 @@ When the null hypothesis is true and the conditions are met, T has a t-distribut
 
 Conditions:
 
--   independent observations within and across groups\
--   large samples and no extreme outliers\
+-   Independent observations within and between groups
+-   Large samples and no extreme outliers
 :::
 
 ```{r include=FALSE}
@@ -520,7 +516,7 @@ stem_cell <- stem_cell %>%
   mutate(change = after - before)
 ```
 
-```{r stem-cell-histograms, fig.cap = "Histograms for both the treatment group (which received an the embryonic stem cell treatment) and the control group (which did not receive that treatment)."}
+```{r stem-cell-histograms, fig.cap = "Histograms for the difference in heart pumping function after a heart attack for both the treatment group (which received an the embryonic stem cell treatment) and the control group (which did not receive that treatment)."}
 stem_cell %>%
   mutate(
     trmt = if_else(trmt == "ctrl", "Control", "Treatment"),
@@ -564,7 +560,7 @@ $$
 \end{aligned} 
 $$
 
-We are 95% confident that embryonic stem cells improve the heart's pumping function in sheep that have suffered a heart attack by 3.32% to 12.34% .
+We are 95% confident that the heart pumping function in sheep that received embryonic stem cells is between 3.32% and 12.34% higher than for sheep that did not receive the stem cell treatment.
 :::
 
 \clearpage
