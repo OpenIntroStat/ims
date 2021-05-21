@@ -36,7 +36,7 @@ The scripted buyers started with "Okay, I guess I'm supposed to go first. So you
 
 The question is the treatment given to the sellers, and the response is whether the question prompted them to disclose the freezing issue with the iPod.
 The results are shown in Table \@ref(tab:ipod-ask-data-summary), and the data suggest that asking the, *What problems does it have?*, was the most effective at getting the seller to disclose the past freezing issues.
-However, you should also be asking yourself: could we see these results due to chance alone, or is this in fact evidence that some questions are more effective for getting at the truth?
+However, you should also be asking yourself: could we see these results due to chance alone if there really is no difference in the question asked, or is this in fact evidence that some questions are more effective for getting at the truth?
 
 ```{r ask-data-prep}
 ask <- ask %>%
@@ -69,7 +69,7 @@ ask %>%
 The [`ask`](http://openintrostat.github.io/openintro/reference/ask.html) data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
 :::
 
-The hypothesis test for the iPod experiment is really about assessing whether there is statistically significant evidence that there was a difference in the success rates that each question had on getting the participant to disclose the problem with the iPod.
+The hypothesis test for the iPod experiment is really about assessing whether there is convincing evidence that there was a difference in the success rates that each question had on getting the participant to disclose the problem with the iPod.
 In other words, the goal is to check whether the buyer's question was independent of whether the seller disclosed a problem.
 
 ```{r include=FALSE}
@@ -79,10 +79,10 @@ terms_chp_18 <- c("independence")
 ### Expected counts in two-way tables
 
 While we would not expect the number of disclosures to be exactly the same across the three question classes, the rate of disclosure seems substantially different across the three groups.
-In order to investigate whether the differences in rates is due to natural variability or due to a treatment effect (i.e., the question causing the differences), we need to compute estimated counts for each cell in a two-way table.
+In order to investigate whether the differences in rates is due to natural variability in people's honesty or due to a treatment effect (i.e., the question causing the differences), we need to compute estimated counts for each cell in a two-way table.
 
 ::: {.workedexample data-latex=""}
-From the experiment, we can compute the proportion of all sellers who disclosed the freezing problem as $61/219 = 0.2785.$ If there really is no difference among the questions and 27.85% of sellers were going to disclose the freezing problem no matter the question that was put to them, how many of the 73 people in the `General` group would we have expected to disclose the freezing problem?
+From the experiment, we can compute the proportion of all sellers who disclosed the freezing problem as $61/219 = 0.2785.$ If there really is no difference among the questions and 27.85% of sellers were going to disclose the freezing problem no matter the question they were asked, how many of the 73 people in the `General` group would we have expected to disclose the freezing problem?
 
 ------------------------------------------------------------------------
 
@@ -185,7 +185,7 @@ terms_chp_18 <- c(terms_chp_18, "expected counts")
 
 ### The observed chi-squared statistic
 
-The chi-squared test statistic for a two-way table is found by comparing the observed and expected counts for each cell in the table.
+The chi-squared test statistic for a two-way table is found by finding the ratio of how far the observed counts are from the expected counts, as compared to the expected counts, for every cell in the table.
 For each table count, compute:
 
 $$
@@ -270,7 +270,7 @@ terms_chp_18 <- c(terms_chp_18, "chi-squared statistic")
 ### Observed statistic vs. null chi-squared statistics
 
 As before, one randomization will not be sufficient for understanding if the observed data are particularly different from the expected chi-squared statistics when $H_0$ is true.
-To investigate whether 40.13 is large enough to indicate the observed and expected counts are significantly different, we need to understand what values of the chi-squared statistic would happen just due to chance.
+To investigate whether 40.13 is large enough to indicate the observed and expected counts are substantially different, we need to understand the variability in the values of the chi-squared statistic we would expect to see if the null hypothesis was true. 
 Figure \@ref(fig:ipodRandDotPlot) plots 1,000 chi-squared statistics generated under the null hypothesis.
 We can see that the observed value is so far from the null statistics that the simulated p-value is zero.
 That is, the probability of seeing the observed statistic when the null hypothesis is true is virtually zero.
@@ -279,8 +279,13 @@ We use the causal language of "changed" because the study was an experiment.
 Note that with a chi-squared test, we only know that the two variables (`question_class` and `response`) are related (i.e., not independent).
 We are not able to claim which type of question causes which type of response.
 
-```{r ipodRandDotPlot, fig.cap="A histogram of chi-squared statisics from 1,000 simulations produced under the null hypothesis, $H_0,$ where the question is independent of the response. None of the 1,000 simulations had a chi-squared value of at least 40.13, the chi-squared value observed in the study. In fact, none of the simulated chi-squared statistics came anywhere close to the observed statistic!"}
+```{r ipodRandDotPlot, fig.cap="A histogram of chi-squared statisics from 1,000 simulations produced under the null hypothesis, $H_0,$ where the question is independent of the response. The observed statistic of 40.13 is marked by the red line. None of the 1,000 simulations had a chi-squared value of at least 40.13. In fact, none of the simulated chi-squared statistics came anywhere close to the observed statistic!"}
 set.seed(4747)
+
+ask_rand_obs <- ask %>%
+  specify(response ~ question_class) %>%
+  calculate(stat = "Chisq") %>% 
+  pull()
 
 ask_rand_dist <- ask %>%
   specify(response ~ question_class) %>%
@@ -290,6 +295,7 @@ ask_rand_dist <- ask %>%
 
 ggplot(ask_rand_dist, aes(x = stat)) +
   geom_histogram(binwidth = 1) +
+  geom_vline(xintercept = ask_rand_obs, col = "red", lwd = 1.5) +
   expand_limits(x = 40.13) +
   labs(
     x = "Chi-squared statistics assuming a true null hypothesis",
@@ -302,12 +308,12 @@ ggplot(ask_rand_dist, aes(x = stat)) +
 ### The chi-squared test of independence
 
 Previously, in Section \@ref(math-2prop), we applied the Central Limit Theorem to the sampling variability of $\hat{p}_1 - \hat{p}_2.$ The result was that we could use the normal distribution (e.g., $z^*$ values (see Figure \@ref(fig:choosingZForCI) ) and p-values from $Z$ scores) to complete the mathematical inferential procedure.
-The chi-squared test statistic has a different mathematical distribution called the chi-squared distribution.
+The chi-squared test statistic has a different mathematical distribution called the Chi-squared distribution.
 The important specification to make in describing the chi-squared distribution is something called degrees of freedom.
 The degrees of freedom change the shape of the chi-squared distribution to fit the problem at hand.
 Figure \@ref(fig:chisqDistDF) visualizes different chi-squared distributions corresponding to different degrees of freedom.
 
-```{r chisqDistDF, fig.cap = "The chi-squared distribution for differing degrees of freedom. The larger the degrees of freedom, the longer the right tail extends."}
+```{r chisqDistDF, fig.cap = "The chi-squared distribution for differing degrees of freedom. The larger the degrees of freedom, the longer the right tail extends. The smaller the degrees of freedom, the more peaked the mode on the left becomes."}
 
 x <- c(0, seq(0.0000001, 40, 0.05))
 DF <- c(2.0000001, 4, 9)
@@ -342,12 +348,12 @@ legend("topright",
 
 ### Variability of the chi-squared statistic
 
-As it turns out, the chi-squared test statistic follows a chi-squared distribution when the null hypothesis is true.
+As it turns out, the chi-squared test statistic follows a Chi-squared distribution when the null hypothesis is true.
 For two way tables, the degrees of freedom is equal to: $df = \text{(number of rows minus 1)}\times \text{(number of columns minus 1)}$.
 In our example, the degrees of freedom parameter is $df = (2-1)\times (3-1) = 2$.
 
 ```{r include=FALSE}
-terms_chp_18 <- c(terms_chp_18, "chi-squared distribution")
+terms_chp_18 <- c(terms_chp_18, "Chi-squared distribution")
 ```
 
 ### Observed statistic vs. null chi-squared statistics
@@ -355,19 +361,19 @@ terms_chp_18 <- c(terms_chp_18, "chi-squared distribution")
 ::: {.important data-latex=""}
 **The test statistic for assessing the independence between two categorical variables is a** $X^2.$
 
-The $X^2$ statistic is a ratio of how the expected counts vary from the observed counts as compared to the expected counts (which are a measure of how large the sample size is).
+The $X^2$ statistic is a ratio of how the observed counts vary from the expected counts as compared to the expected counts (which are a measure of how large the sample size is).
 
 $$X^2 = \sum_{i,j} \frac{(\text{observed count} - \text{expected count})^2}{\text{expected count}}$$
 
-When the null hypothesis is true and the conditions are met, $X^2$ has a chi-squared distribution with $df = (r-1) \times (c-1).$
+When the null hypothesis is true and the conditions are met, $X^2$ has a Chi-squared distribution with $df = (r-1) \times (c-1).$
 
 Conditions:
 
--   Independently observed data
--   Large samples: 5 expected observations in each cell
+-   Independent observations 
+-   Large samples: 5 expected counts in each cell
 :::
 
-To bring it back to the example, if the null hypothesis is true (i.e., the questions had no impact on the sellers in the experiment), then the test statistic $X^2 = 40.13$ closely follows a chi-squared distribution with 2 degrees of freedom.
+To bring it back to the example, we can safely assume that the observations are independent, as the question groups were randomly assigned. Additionally, there are over 5 expected counts in each cell, so the conditions for using the Chi-square distribution are met. If the null hypothesis is true (i.e., the questions had no impact on the sellers in the experiment), then the test statistic $X^2 = 40.13$ is expected to follow a Chi-squared distribution with 2 degrees of freedom.
 Using this information, we can compute the p-value for the test, which is depicted in Figure \@ref(fig:iPodChiSqTail).
 
 ::: {.important data-latex=""}
@@ -408,7 +414,7 @@ That is, the data provide convincing evidence that the question asked did affect
 
 ::: {.workedexample data-latex=""}
 Table \@ref(tab:diabetes2ExpMetRosiLifestyleSummary) summarizes the results of an experiment evaluating three treatments for Type 2 Diabetes in patients aged 10-17 who were being treated with metformin.
-The three treatments considered were continued treatment with metformin (`met`), treatment with metformin combined with rosiglitazone (`rosi`), or a lifestyle intervention program.
+The three treatments considered were continued treatment with metformin (`met`), treatment with metformin combined with rosiglitazone (`rosi`), or a `lifestyle` intervention program.
 Each patient had a primary outcome, which was either lacked glycemic control (failure) or did not lack that control (success).
 What are appropriate hypotheses for this test?
 
@@ -438,7 +444,7 @@ The [`diabetes2`](http://openintrostat.github.io/openintro/reference/diabetes2.h
 
 Typically we will use a computer to do the computational work of finding the chi-squared statistic.
 However, it is always good to have a sense for what the computer is doing, and in particular, calculating the values which would be expected if the null hypothesis is true can help to understand the null hypothesis claim.
-Additionally, comparing the expected and observed values by eye often gives the researcher some insight into why or why not the result of the test ends up being significant.
+Additionally, comparing the expected and observed values by eye often gives the researcher some insight into why or why not the null hypothesis for a given test is rejected or not. 
 
 ::: {.guidedpractice data-latex=""}
 A chi-squared test for a two-way table may be used to test the hypotheses in the diabetes Example above.

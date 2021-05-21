@@ -1,60 +1,119 @@
-1. **Possum classification, Part I** The common brushtail possum of the
-    Australia region is a bit cuter than its distant cousin, the
-    American opossum (see
-    Figure [\[brushtail_possum\]](#brushtail_possum){reference-type="ref+page"
-    reference="brushtail_possum"}). We consider 104 brushtail possums
-    from two regions in Australia, where the possums may be considered a
-    random sample from the population. The first region is Victoria,
-    which is in the eastern half of Australia and traverses the southern
-    coast. The second region consists of New South Wales and Queensland,
-    which make up eastern and northeastern Australia. We use logistic
-    regression to differentiate between possums in these two regions.
-    The outcome variable, called , takes value 1 when a possum is from
-    Victoria and 0 when it is from New South Wales or Queensland. We
-    consider five predictors: (an indicator for a possum being male), ,
-    , , and . Each variable is summarized in a histogram. The full
-    logistic regression model and a reduced model after variable
-    selection are summarized in the table.
+1. **True / False.**
+Determine which of the following statements is true and false. If false, explain why.
+"In logistic regression we fit a line to model the relationship between the predictor(s) and the binary outcome."
 
-    ![](figures/possum_variables.png){width="\\textwidth"}
+1. **Logistic regression fact checking.**
+Determine which of the following statements are true and false. For each statement that is false, explain why it is false.
 
-      -------------- ---------- --------- ------- ---------------- -- ---------- -------- ------- ----------------
-                                                                                                  
-                                                                                                  
-                       Estimate        SE       Z   Pr($>$$|$Z$|$)      Estimate       SE       Z   Pr($>$$|$Z$|$)
-                                                                                                  
-         (Intercept)    39.2349   11.5368    3.40           0.0007       33.5095   9.9053    3.38           0.0007
-            sex_male    -1.2376    0.6662   -1.86           0.0632       -1.4207   0.6457   -2.20           0.0278
-         head_length    -0.1601    0.1386   -1.16           0.2480                                
-         skull_width    -0.2012    0.1327   -1.52           0.1294       -0.2787   0.1226   -2.27           0.0231
-        total_length     0.6488    0.1531    4.24           0.0000        0.5687   0.1322    4.30           0.0000
-         tail_length    -1.8708    0.3741   -5.00           0.0000       -1.8057   0.3599   -5.02           0.0000
-      -------------- ---------- --------- ------- ---------------- -- ---------- -------- ------- ----------------
+    a.  Suppose we consider the first two observations based on a logistic regression model, where the first variable in observation 1 takes a value of $x_1 = 6$ and observation 2 has $x_1 = 4$. Suppose we realized we made an error for these two observations, and the first observation was actually $x_1 = 7$ (instead of 6) and the second observation actually had $x_1 = 5$ (instead of 4). Then the predicted probability from the logistic regression model would increase the same amount for each observation after we correct these variables.
 
-    1. Examine each of the predictors. Are there any outliers that are
-        likely to have a very large influence on the logistic regression
-        model?
+    b.  When using a logistic regression model, it is impossible for the model to predict a probability that is negative or a probability that is greater than 1.
 
-    2.  The summary table for the full model indicates that at least one
-        variable should be eliminated when using the p-value approach
-        for variable selection: . The second component of the table
-        summarizes the reduced model following variable selection.
-        Explain why the remaining estimates change between the two
-        models.
+    c.  Because logistic regression predicts probabilities of outcomes, observations used to build a logistic regression model need not be independent.
 
-1. **Challenger disaster and model building.** On January 28, 1986, a routine
-    launch was anticipated for the Challenger space shuttle.
-    Seventy-three seconds into the flight, disaster happened: the
-    shuttle broke apart, killing all seven crew members on board. An
-    investigation into the cause of the disaster focused on a critical
-    seal called an O-ring, and it is believed that damage to these
-    O-rings during a shuttle launch may be related to the ambient
-    temperature during the launch. The table below summarizes
-    observational data on O-rings for 23 shuttle missions, where the
-    mission order is based on the temperature at the time of the launch.
-    *Temp* gives the temperature in Fahrenheit, *Damaged* represents the
-    number of damaged O- rings, and *Undamaged* represents the number of
-    O-rings that were not damaged.
+    d.  When fitting logistic regression, we typically complete model selection using adjusted $R^2$.
+
+1. **Possum classification, model selection.**
+The common brushtail possum of the Australia region is a bit cuter than its distant cousin, the American opossum (see Figure \@ref(fig:brushtail-possum). We consider 104 brushtail possums from two regions in Australia, where the possums may be considered a random sample from the population. The first region is Victoria, which is in the eastern half of Australia and traverses the southern coast. The second region consists of New South Wales and Queensland, which make up eastern and northeastern Australia.^[The [`possum`](http://openintrostat.github.io/openintro/reference/possum.html) data used in this exercise can be found in the **openintro** R package.] 
+    
+    We use logistic regression to differentiate between possums in these two regions. The outcome variable, called `pop`, takes value 1 when a possum is from Victoria and 0 when it is from New South Wales or Queensland. We consider five predictors: `sex` (an indicator for a possum being male), `head_l` (head length), `skull_w` (skull width), `total_l` (total length), and `tail_l` (tail length). Each variable is summarized in a histogram. The full logistic regression model and a reduced model after variable selection are summarized in the tables below.
+
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(knitr)
+    library(broom)
+    library(patchwork)
+    library(kableExtra)
+
+    possum <- openintro::possum %>%
+      mutate(sex = ifelse(sex == "m", "male", "female")) %>%
+      mutate(pop = as.factor(ifelse(pop == "Vic", "Victoria", "other")))
+    
+    hist_sex <- ggplot(possum, aes(x = sex)) +
+      geom_bar() +
+      labs(
+        x = "Sex",
+        y = "Count"
+        ) 
+
+    hist_head <- ggplot(possum, aes(x = head_l)) +
+      geom_histogram() +
+      labs(
+        x = "Head length (in mm)",
+        y = "Count"
+        ) 
+    
+    hist_skull <- ggplot(possum, aes(x = skull_w)) +
+      geom_histogram() +
+      labs(
+        x = "Skull width (in mm)",
+        y = "Count"
+        )     
+
+    hist_total <- ggplot(possum, aes(x = total_l)) +
+      geom_histogram() +
+      labs(
+        x = "Total length (in cm)",
+        y = "Count"
+        )   
+    
+    hist_tail <- ggplot(possum, aes(x = tail_l)) +
+      geom_histogram() +
+      labs(
+        x = "Tail length (in cm)",
+        y = "Count"
+        )     
+
+    hist_pop <- ggplot(possum, aes(x = pop)) +
+      geom_bar() +
+      labs(
+        x = "Population",
+        y = "Count"
+        ) 
+    
+    
+    hist_sex + hist_head + hist_skull + hist_total + hist_tail + hist_pop+ plot_layout(ncol = 2) 
+    ```
+
+    ```{r}
+    possum %>%
+      glm(pop ~ sex + head_l + skull_w + total_l + tail_l, data = ., family = "binomial") %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(
+        linesep = "", booktabs = TRUE,
+        digits = 2, align = "lrrrr"
+      ) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"),
+        latex_options = c("striped", "hold_position")
+      ) %>%
+      column_spec(1, width = "15em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+
+    possum %>%
+      glm(pop ~ sex + skull_w + total_l + tail_l, data = ., family = "binomial") %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(
+        linesep = "", booktabs = TRUE,
+        digits = 2, align = "lrrrr"
+      ) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"),
+        latex_options = c("striped", "hold_position")
+      ) %>%
+      column_spec(1, width = "15em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    ```
+
+    a. Examine each of the predictors. Are there any outliers that are likely to have a very large influence on the logistic regression model?
+
+    b. The summary table for the full model indicates that at least one variable should be eliminated when using the p-value approach for variable selection: `head_l`. The second component of the table summarizes the reduced model following variable selection. Explain why the remaining estimates change between the two models.
+
+1. **Challenger disaster and model building.** 
+On January 28, 1986, a routine launch was anticipated for the Challenger space shuttle. Seventy-three seconds into the flight, disaster happened: the shuttle broke apart, killing all seven crew members on board. An investigation into the cause of the disaster focused on a critical seal called an O-ring, and it is believed that damage to these O-rings during a shuttle launch may be related to the ambient temperature during the launch. The table below summarizes observational data on O-rings for 23 shuttle missions, where the mission order is based on the temperature at the time of the launch. `temperature` gives the temperature in Fahrenheit, `damaged` represents the number of damaged O-rings, and `undamaged` represents the number of O-rings that were not damaged.^[The [`orings`](http://openintrostat.github.io/openintro/reference/orings.html) data used in this exercise can be found in the **openintro** R package.] 
     
     ```{r}
     library(openintro)
@@ -65,89 +124,115 @@
     orings %>%
       slice_head(n = 12) %>%
       t() %>%
-      kbl(linesep = "\\addlinespace", booktabs = TRUE, col.names = NULL)
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, col.names = NULL) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"),
+        latex_options = c("striped", "hold_position")
+      )
     
     orings %>%
       slice_tail(n = 11) %>%
       t() %>%
-      kbl(linesep = "\\addlinespace", booktabs = TRUE, col.names = NULL)
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, col.names = NULL) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"),
+        latex_options = c("striped", "hold_position")
+      )
+    ```
     
+    ```{r}
     orings %>%
       pivot_longer(cols = c(damaged, undamaged), names_to = "outcome", values_to = "n") %>%
       uncount(n) %>%
       mutate(outcome = fct_relevel(outcome, "undamaged", "damaged")) %>%
       glm(outcome ~ temperature, data = ., family = "binomial") %>%
-      tidy()
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(
+        linesep = "", booktabs = TRUE,
+        digits = 2, align = "lrrrr"
+      ) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"),
+        latex_options = c("striped", "hold_position")
+      ) %>%
+      column_spec(1, width = "15em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
     ```
 
-    a.  Each column of the table above represents a different shuttle
-        mission. Examine these data and describe what you observe with
-        respect to the relationship between temperatures and damaged
-        O-rings.
+    a.  Each column of the table above represents a different shuttle mission. Examine these data and describe what you observe with respect to the relationship between temperatures and damaged O-rings.
 
-    b.  Failures have been coded as 1 for a damaged O-ring and 0 for an
-        undamaged O-ring, and a logistic regression model was fit to
-        these data. The regression output for this model is given above.
-        Describe the key components of the output in words.
+    b.  Failures have been coded as 1 for a damaged O-ring and 0 for an undamaged O-ring, and a logistic regression model was fit to these data. The regression output for this model is given above. Describe the key components of the output in words.
 
-    c.  Write out the logistic model using the point estimates of the
-        model parameters.
+    c.  Write out the logistic model using the point estimates of the model parameters.
 
-    d.  Based on the model, do you think concerns regarding O-rings are
-        justified? Explain.
+    d.  Based on the model, do you think concerns regarding O-rings are justified? Explain.
 
-1.  **Possum classification, Part II** A logistic regression model was
-    proposed for classifying common brushtail possums into their two
-    regions in
-    Exercise [\[possum_classification_model_select\]](#possum_classification_model_select){reference-type="ref"
-    reference="possum_classification_model_select"}. The outcome
-    variable took value 1 if the possum was from Victoria and 0
-    otherwise.
+1.  **Possum classification, prediction.**
+A logistic regression model was proposed for classifying common brushtail possums into their two regions. The outcome variable took value 1 if the possum was from Victoria and 0 otherwise.
+    
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(kableExtra)
+    library(broom)
 
-      -------------- ---------- -------- ------- ----------------
-                                                 
-                       Estimate       SE       Z   Pr($>$$|$Z$|$)
-                                                 
-         (Intercept)    33.5095   9.9053    3.38           0.0007
-            sex_male    -1.4207   0.6457   -2.20           0.0278
-         skull_width    -0.2787   0.1226   -2.27           0.0231
-        total_length     0.5687   0.1322    4.30           0.0000
-         tail_length    -1.8057   0.3599   -5.02           0.0000
-      -------------- ---------- -------- ------- ----------------
+    openintro::possum %>%
+      mutate(
+        sex = ifelse(sex == "m", "male", "female"),
+        pop = as.factor(ifelse(pop == "Vic", "Victoria", "other"))
+        ) %>%
+      glm(pop ~ sex + skull_w + total_l + tail_l, data = ., family = "binomial") %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(
+        linesep = "", booktabs = TRUE,
+        digits = 2, align = "lrrrr"
+      ) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"),
+        latex_options = c("striped", "hold_position")
+      ) %>%
+      column_spec(1, width = "15em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    ```
 
-    1.  Write out the form of the model. Also identify which of the
-        variables are positively associated when controlling for other
-        variables.
+    a.  Write out the form of the model. Also identify which of the variables are positively associated with the outcome of living in Victoria, when controlling for other variables.
 
-    2.  Suppose we see a brushtail possum at a zoo in the US, and a sign
-        says the possum had been captured in the wild in Australia, but
-        it doesn't say which part of Australia. However, the sign does
-        indicate that the possum is male, its skull is about 63 mm wide,
-        its tail is 37 cm long, and its total length is 83 cm. What is
-        the reduced model's computed probability that this possum is
-        from Victoria? How confident are you in the model's accuracy of
-        this probability calculation?
+    b.  Suppose we see a brushtail possum at a zoo in the US, and a sign says the possum had been captured in the wild in Australia, but it doesn't say which part of Australia. However, the sign does indicate that the possum is male, its skull is about 63 mm wide, its tail is 37 cm long, and its total length is 83 cm. What is the reduced model's computed probability that this possum is from Victoria? How confident are you in the model's accuracy of this probability calculation?
 
 1.  **Challenger disaster and prediction.**
-    On January 28, 1986, a routine launch was anticipated for the Challenger space shuttle.
-    Seventy-three seconds into the flight, disaster happened: the shuttle broke apart, killing all seven crew members on board. 
-    An investigation into the cause of the disaster focused on a critical seal called an O-ring, and it is believed that damage to these O-rings during a shuttle launch may be related to the ambient temperature during the launch. 
-    The investigation found that the ambient temperature at the time of the shuttle launch was closely related to the damage of O-rings, which are a critical component of the shuttle. 
+On January 28, 1986, a routine launch was anticipated for the Challenger space shuttle.
+Seventy-three seconds into the flight, disaster happened: the shuttle broke apart, killing all seven crew members on board. 
+An investigation into the cause of the disaster focused on a critical seal called an O-ring, and it is believed that damage to these O-rings during a shuttle launch may be related to the ambient temperature during the launch. 
+The investigation found that the ambient temperature at the time of the shuttle launch was closely related to the damage of O-rings, which are a critical component of the shuttle. 
     
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(knitr)
+    library(broom)
 
-    ![](figures/challenger_disaster_damage_temp.png){width="60%"}
+    orings %>%
+      pivot_longer(cols = c(damaged, undamaged), names_to = "outcome", values_to = "n") %>%
+      uncount(n) %>%
+        group_by(temperature) %>%
+        summarize(prop_damaged = mean(outcome == "damaged")) %>%
+        ggplot() +
+        geom_point(aes(x = temperature, y = prop_damaged), size = 2) +
+        xlab("Temperature (Fahrenehit)") +
+        ylab("Probability of damage") +
+        xlim(c(50,85))
+    ```
 
-    1.  The data provided in the previous exercise are shown in the
-        plot. The logistic model fit to these data may be written as
-        $$\begin{aligned}
-        \log\left( \frac{\hat{p}}{1 - \hat{p}} \right) = 11.6630 - 0.2162\times Temperature\end{aligned}$$
-        where $\hat{p}$ is the model-estimated probability that an
-        O-ring will become damaged. Use the model to calculate the
-        probability that an O-ring will become damaged at each of the
-        following ambient temperatures: 51, 53, and 55 degrees
-        Fahrenheit. The model-estimated probabilities for several
-        additional ambient temperatures are provided below, where
-        subscripts indicate the temperature: $$\begin{aligned}
+    a.  The data provided in the previous exercise are shown in the plot. The logistic model fit to these data may be written as
+    
+    $\log\left( \frac{\hat{p}}{1 - \hat{p}} \right) = 11.6630 - 0.2162\times \texttt{temperature}$
+    
+    where $\hat{p}$ is the model-estimated probability that an O-ring will become damaged. Use the model to calculate the probability that an O-ring will become damaged at each of the following ambient temperatures: 51, 53, and 55 degrees Fahrenheit. The model-estimated probabilities for several additional ambient temperatures are provided below, where subscripts indicate the temperature: 
+    
+    $$
+    \begin{aligned}
         &\hat{p}_{57} = 0.341
             && \hat{p}_{59} = 0.251
             && \hat{p}_{61} = 0.179
@@ -155,114 +240,257 @@
         &\hat{p}_{65} = 0.084
             && \hat{p}_{67} = 0.056
             && \hat{p}_{69} = 0.037
-            && \hat{p}_{71} = 0.024\end{aligned}$$
+            && \hat{p}_{71} = 0.024
+    \end{aligned}
+    $$
 
-    2.  Add the model-estimated probabilities from part (a) on the plot,
-        then connect these dots using a smooth curve to represent the
-        model-estimated probabilities.
+    b.  Add the model-estimated probabilities from part (a) on the plot, then connect these dots using a smooth curve to represent the model-estimated probabilities.
 
-    3.  Describe any concerns you may have regarding applying logistic
-        regression in this application, and note any assumptions that
-        are required to accept the model's validity.
+    c.  Describe any concerns you may have regarding applying logistic regression in this application, and note any assumptions that are required to accept the model's validity.
 
-1. **Logistic regression fact checking** Determine which of the
-    following statements are true and false. For each statement that is
-    false, explain why it is false.
+1. **Spam filtering, model selection.** 
+Spam filters are built on principles similar to those used in logistic regression. Using characteristics of individual emails, we fit a probability that each message is spam or not spam. We have several email variables for this problem, and we won't describe what each variable means here for the sake of brevity, but each is either a numerical or indicator variable.^[The [`email`](http://openintrostat.github.io/openintro/reference/email.html) data used in this exercise can be found in the **openintro** R package.] 
 
-    1. Suppose we consider the first two observations based on a
-        logistic regression model, where the first variable in
-        observation 1 takes a value of $x_1 = 6$ and observation 2 has
-        $x_1 = 4$. Suppose we realized we made an error for these two
-        observations, and the first observation was actually $x_1 = 7$
-        (instead of 6) and the second observation actually had $x_1 = 5$
-        (instead of 4). Then the predicted probability from the logistic
-        regression model would increase the same amount for each
-        observation after we correct these variables.
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(kableExtra)
+    library(broom)
 
-    2.  When using a logistic regression model, it is impossible for the
-        model to predict a probability that is negative or a probability
-        that is greater than 1.
+    m_full <- glm(spam ~ to_multiple + cc + attach + dollar +
+      winner + inherit + password + format +
+      re_subj + exclaim_subj + sent_email,
+    data = email, family = "binomial"
+    )
+    m_full_aic <- round(glance(m_full)$AIC, 1)
+    m_full %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(
+        linesep = "", booktabs = TRUE,
+        digits = 2, align = "lrrrr"
+      ) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"),
+        latex_options = c("striped", "hold_position")
+      ) %>%
+      column_spec(1, width = "15em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    ```
+    
+    The AIC of the full model is `r m_full_aic`. We remove each variable one by one, refit the model, and record the updated AIC. Which, if any, variable should be removed from the model?
+    
+    ```{r}
+    m_tm <- update(m_full, . ~ . - to_multiple, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_cc <- update(m_full, . ~ . - cc, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_a <- update(m_full, . ~ . - attach, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_d <- update(m_full, . ~ . - dollar, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_w <- update(m_full, . ~ . - winner, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_i <- update(m_full, . ~ . - inherit, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_p <- update(m_full, . ~ . - password, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_f <- update(m_full, . ~ . - format, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_re <- update(m_full, . ~ . - re_subj, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_ex <- update(m_full, . ~ . - exclaim_subj, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_se <- update(m_full, . ~ . - sent_email, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    ```
+    
+    a. For variable selection, we fit the full model, which includes all variables, and then we also fit each model where we've dropped exactly one of the variables. In each of these reduced models, the AIC value for the model is reported below. Based on these results, which variable, if any, should we drop as part of model selection? Explain.
 
-    3.  Because logistic regression predicts probabilities of outcomes,
-        observations used to build a logistic regression model need not
-        be independent.
+    -  None Dropped:        `r m_full_aic`
+    -  Drop `to_multiple`:  `r m_tm`
+    -  Drop `cc`:           `r m_cc`
+    -  Drop `attach`:       `r m_a`
+    -  Drop `dollar`:       `r m_d`
+    -  Drop `winner`:       `r m_w`
+    -  Drop `inherit`:      `r m_i`
+    -  Drop `password`:     `r m_p`
+    -  Drop `format`:       `r m_f`
+    -  Drop `re_subj`:      `r m_re`
+    -  Drop `exclaim_subj`: `r m_ex`
+    -  Drop `sent_email`:    `r m_se`
 
-    4.  When fitting logistic regression, we typically complete model
-        selection using adjusted $R^2$.
+    b.  Consider the subsequent model selection stage (where the variable from part (a) has been removed, and we are considering removal of a second variable). Here again we've computed the AIC for each leave-one-variable-out model. Based on the results, which variable, if any, should we drop as part of model selection? Explain.
 
-1. **Spam filtering, Part I** Spam filters are built on principles
-    similar to those used in logistic regression. We fit a probability
-    that each message is spam or not spam. We have several email
-    variables for this problem: , , , , , , , , , , and . We won't
-    describe what each variable means here for the sake of brevity, but
-    each is either a numerical or indicator variable.
+    ```{r}
+    m_full2 <- glm(spam ~ to_multiple + cc + attach + dollar + 
+                      winner + inherit + password + format+
+                      re_subj + sent_email, 
+                  data = email, family = "binomial")
+    m_full2_aic <- round(glance(m_full2)$AIC, 1)
 
-    1. For variable selection, we fit the full model, which includes
-        all variables, and then we also fit each model where we've
-        dropped exactly one of the variables. In each of these reduced
-        models, the AIC value for the model is reported below. Based on
-        these results, which variable, if any, should we drop as part of
-        model selection? Explain.
+    m_tm_no_ex <- update(m_full2, . ~ . - to_multiple, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_cc_no_ex <- update(m_full2, . ~ . - cc, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_a_no_ex <- update(m_full2, . ~ . - attach, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_d_no_ex <- update(m_full2, . ~ . - dollar, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_w_no_ex <- update(m_full2, . ~ . - winner, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_i_no_ex <- update(m_full2, . ~ . - inherit, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_p_no_ex <- update(m_full2, . ~ . - password, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_f_no_ex <- update(m_full2, . ~ . - format, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_re_no_ex <- update(m_full2, . ~ . - re_subj, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_se_no_ex <- update(m_full2, . ~ . - sent_email, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    ```
 
-          Variable Dropped      AIC
-          ------------------ ---------
-          None Dropped        1863.50
-                              2023.50
-                              1863.18
-                              1871.89
-                              1879.70
-                              1885.03
-                              1865.55
-                              1879.31
-                              2008.85
-                              1904.60
-                              1862.76
-                              1958.18
+    -  None Dropped:        `r m_full2_aic`
+    -  Drop `to_multiple`:  `r m_tm_no_ex`
+    -  Drop `cc`:           `r m_cc_no_ex`
+    -  Drop `attach`:       `r m_a_no_ex`
+    -  Drop `dollar`:       `r m_d_no_ex`
+    -  Drop `winner`:       `r m_w_no_ex`
+    -  Drop `inherit`:      `r m_i_no_ex`
+    -  Drop `password`:     `r m_p_no_ex`
+    -  Drop `format`:       `r m_f_no_ex`
+    -  Drop `re_subj`:      `r m_re_no_ex`
+    -  Drop `sent_email`:   `r m_se_no_ex`
 
-    2.  Consider the following model selection stage. Here again we've
-        computed the AIC for each leave-one-variable-out model. Based on
-        the results, which variable, if any, should we drop as part of
-        model selection? Explain.
+    c.  Consider one more step in the process.  Now we've removed two the subsequent model selection stage (where the variable from part (a) has been removed, and we are considering removal of a second variable). Here again we've computed the AIC for each leave-one-variable-out model. Based on the results, which variable, if any, should we drop as part of model selection? Explain.
 
-          Variable Dropped      AIC
-          ------------------ ---------
-          None Dropped        1862.41
-                              2019.55
-                              1871.17
-                              1877.73
-                              1884.95
-                              1864.52
-                              1878.19
-                              2007.45
-                              1902.94
-                              1957.56
+    ```{r}
+    m_full3 <- glm(spam ~ to_multiple + attach + dollar + 
+                      winner + inherit + password + format+
+                      re_subj + sent_email, 
+                  data = email, family = "binomial")
+    m_full3_aic <- round(glance(m_full3)$AIC, 1)
 
-1. **Spam filtering, Part II** In
-    Exercise [\[spam_filtering_model_sel\]](#spam_filtering_model_sel){reference-type="ref"
-    reference="spam_filtering_model_sel"}, we encountered a dataset
-    where we applied logistic regression to aid in spam classification
-    for individual emails. In this exercise, we've taken a small set of
-    these variables and fit a formal model with the following output:
+    m_tm_no_ex_no_cc <- update(m_full3, . ~ . - to_multiple, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_a_no_ex_no_cc <- update(m_full3, . ~ . - attach, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_d_no_ex_no_cc <- update(m_full3, . ~ . - dollar, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_w_no_ex_no_cc <- update(m_full3, . ~ . - winner, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_i_no_ex_no_cc <- update(m_full3, . ~ . - inherit, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_p_no_ex_no_cc <- update(m_full3, . ~ . - password, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_f_no_ex_no_cc <- update(m_full3, . ~ . - format, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_re_no_ex_no_cc <- update(m_full3, . ~ . - re_subj, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    m_se_no_ex_no_cc <- update(m_full3, . ~ . - sent_email, data = email) %>%
+      glance() %>%
+      pull(AIC) %>%
+      round(1)
+    ```
 
-                      Estimate   Std. Error   z value   Pr($>$$|$z$|$)
-      ------------- ---------- ------------ --------- ----------------
-        (Intercept)    -0.8124       0.0870     -9.34           0.0000
-         tomultiple    -2.6351       0.3036     -8.68           0.0000
-             winner     1.6272       0.3185      5.11           0.0000
-             format    -1.5881       0.1196    -13.28           0.0000
-             resubj    -3.0467       0.3625     -8.40           0.0000
+    -  None Dropped:        `r m_full3_aic`
+    -  Drop `to_multiple`:  `r m_tm_no_ex_no_cc`
+    -  Drop `attach`:       `r m_a_no_ex_no_cc`
+    -  Drop `dollar`:       `r m_d_no_ex_no_cc`
+    -  Drop `winner`:       `r m_w_no_ex_no_cc`
+    -  Drop `inherit`:      `r m_i_no_ex_no_cc`
+    -  Drop `password`:     `r m_p_no_ex_no_cc`
+    -  Drop `format`:       `r m_f_no_ex_no_cc`
+    -  Drop `re_subj`:      `r m_re_no_ex_no_cc`
+    -  Drop `sent_email`:   `r m_se_no_ex_no_cc`
 
-    1. Write down the model using the coefficients from the model fit.
+1. **Spam filtering, prediction.**
+Recall running a logistic regression to aid in spam classification for individual emails. In this exercise, we've taken a small set of the variables and fit a logistic model with the following output:
 
-    2.  Suppose we have an observation where
-        $\var{to\us{}multiple} = 0$, $\var{winner} = 1$,
-        $\var{format} = 0$, and $\var{re\us{}subj} = 0$. What is the
-        predicted probability that this message is spam?
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(knitr)
+    library(broom)
 
-    3.  Put yourself in the shoes of a data scientist working on a spam
-        filter. For a given message, how high must the probability a
-        message is spam be before you think it would be reasonable to
-        put it in a *spambox* (which the user is unlikely to check)?
-        What tradeoffs might you consider? Any ideas about how you might
-        make your spam-filtering system even better from the perspective
-        of someone using your email service?
+    glm(spam ~ to_multiple + winner + format + re_subj,
+      data = email, family = "binomial"
+    ) %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(
+        linesep = "", booktabs = TRUE,
+        digits = 2, align = "lrrrr"
+      ) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"),
+        latex_options = c("striped", "hold_position")
+      ) %>%
+      column_spec(1, width = "15em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    ```
+ 
+    a. Write down the model using the coefficients from the model fit.
+
+    b.  Suppose we have an observation where $\texttt{to_multiple} = 0$, $\texttt{winner}= 1$, $\texttt{format} = 0$, and $\texttt{re_subj} = 0$. What is the predicted probability that this message is spam?
+
+    c.  Put yourself in the shoes of a data scientist working on a spam filter. For a given message, how high must the probability a message is spam be before you think it would be reasonable to put it in a *spambox* (which the user is unlikely to check)? What tradeoffs might you consider? Any ideas about how you might make your spam-filtering system even better from the perspective of someone using your email service?
