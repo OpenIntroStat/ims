@@ -394,7 +394,8 @@ terms_chp_24 <- c(terms_chp_24, "bootstrap CI for the slope")
 Returning to the births data, we may want to consider the relationship between `mage` (mother's age) and `weight`.
 Is `mage` a good predictor of `weight`?
 And if so, what is the relationship?
-That is, what is the slope that models `average weight` of baby as a function of `mage` (mother's age)?
+That is, what is the slope that models average `weight` of baby as a function of `mage` (mother's age)?
+The linear model regressing `weight` on `mage` is provided in Table \@ref(tab:ls-births-mage).
 
 ```{r echo = FALSE}
 set.seed(4747)
@@ -417,6 +418,19 @@ ggplot(births14_100) +
 ```
 
 (ref:magePlot-cap) Original data: `weight` of baby as a linear model of mother's age. Notice that the relationship between `mage` and `weight` is not as strong as the relationship we saw previously between `weeks` and `weight`.
+
+```{r ls-births-mage}
+lm(weight ~ mage, data = births14_100) %>%
+  tidy() %>%
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+  kbl(linesep = "", booktabs = TRUE, 
+      caption = "The least squares estimates of the intercept and slope are given in the estimate column. The observed slope is 0.036",
+      digits = 2, align = "lrrrr") %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position")) %>%
+  column_spec(1, width = "10em", monospace = TRUE) %>%
+  column_spec(2:5, width = "5em")
+```
 
 ### Variability of the statistic
 
@@ -489,18 +503,30 @@ upper <- round(quantile(births_many_lm_BS$estimate, 0.975), 3)
 
 ggplot(births_many_lm_BS, aes(x = estimate)) +
   geom_histogram() +
-  annotate("segment", x = lower, xend = lower, y = 0, yend = 20, linetype = "dashed") +
-  annotate("segment", x = upper, xend = upper, y = 0, yend = 20, linetype = "dashed") +
-  annotate("text", x = lower, y = 25, label = "2.5 percentile\n-0.01", size = 6) +
-  annotate("text", x = upper, y = 25, label = "97.5 percentile\n0.081", size = 6) +
+  annotate("segment", x = lower, xend = lower, y = 0, yend = 25, linetype = "dashed") +
+  annotate("segment", x = upper, xend = upper, y = 0, yend = 25, linetype = "dashed") +
+  annotate("text", x = lower, y = 35, label = "2.5 percentile\n-0.01", size = 5) +
+  annotate("text", x = upper, y = 35, label = "97.5 percentile\n0.081", size = 5) +
   labs(
-    x = "Bootstrapped values of the slope statistic describing weight and mother's age",
+    x = "Bootstrapped values of the slope modeling weight on mother's age",
     y = NULL
   ) +
   theme(axis.text.y = element_blank())
 ```
 
 (ref:mageBSslopes-cap) The original births data on `weight` and `mage` is bootstrapped 1,000 times. The histogram provides a sense for the variability of the slope of the linear model slope from sample to sample.
+
+::: {.workedexample data-latex=""}
+Using Figure \@ref(fi:mageBSslopes), calculate the bootstrap estimate for the standard error of the slope.
+Using the bootstrap standard error, find a 95% bootstrap SE confidence interval for the true population slope, and interpret the interval in context.
+
+------------------------------------------------------------------------
+
+Notice that most of the bootstrapped slopes fall between -0.01 and +0.08 (a range of 0.09).
+Using the empirical rule (that with bell-shaped distributions, most observations are within two standard errors of the center), the standard error of the slopes is approximately 0.0225.
+The normal cutoff for a 95% confidence interval is $z^\star = 1.96$ which leads to a confidence interval of $b_1 \pm 1.96 \cdot SE \rightarrow 0.036 \pm 1.96 \cdot 0.0225 \rightarrow (0-0.0081, 0.0801).$ The bootstrap SE confidence interval is almost identical to the bootstrap percentile interval.
+In context, we are 95% confident that for the model describing the population of births, described by mother's age and `weight` of baby, a one unit increase in `mage` (in years) will be associated with an increase in predicted average baby `weight` of between -0.0081 and 0.0801 pounds
+:::
 
 ## Mathematical model for testing the slope {#mathslope}
 
