@@ -18,10 +18,10 @@ The [`mariokart`](http://openintrostat.github.io/openintro/reference/mariokart.h
 :::
 
 The `mariokart` data set includes results from 141 auctions.
-Four observations from this data set are shown in Table \@ref(tab:marioKartDataMatrix), and descriptions for each variable are shown in Table \@ref(tab:marioKartVariables).
-Notice that the condition and stock photo variables are indicator variables\index{indicator variable}, similar to `bankruptcy` in the `loan` data set.
+Four observations from this data set are shown in Table \@ref(tab:mariokart-data-frame), and descriptions for each variable are shown in Table \@ref(tab:mariokart-var-def).
+Notice that the condition and stock photo variables are indicator variables\index{indicator variable}, similar to `bankruptcy` in the `loans` data set from Chapter \@ref(inf-model-mlr).
 
-```{r marioKartDataMatrix}
+```{r mariokart-data-frame}
 mariokart <- mariokart %>%
   mutate(price = total_pr, cond_new = forcats::fct_rev(cond)) %>%
   filter(price < 100)
@@ -29,40 +29,49 @@ mariokart <- mariokart %>%
 mariokart %>%
   select(price, cond_new, stock_photo, duration, wheels) %>%
   slice_head(n = 4) %>%
-  kbl(linesep = "", booktabs = TRUE, caption = caption_helper("Top four rows of the `mariokart` dataset."),
-      row.names = FALSE) %>%
+  kbl(linesep = "", booktabs = TRUE, 
+      caption = caption_helper("Top four rows of the `mariokart` dataset."),
+      row.names = FALSE, align = "ccccc") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"))
+                latex_options = c("striped", "hold_position"),
+                full_width = FALSE) %>%
+  column_spec(1:5, width = "5em")
 ```
 
-```{r marioKartVariables}
+```{r mariokart-var-def}
 mariokart_var_def <- tribble(
-  ~variable,   ~description,
-  "price",      "Final auction price plus shipping costs, in US dollars.",
-  "cond_new",  "Indicator variable for if the game is new (`1`) or used (`0`).",
-  "stock_photo",  "Indicator variable for if the auction's main photo is a stock photo.",
-  "duration",     "The length of the auction, in days, taking values from 1 to 10.",
-  "wheels", "The number of Wii wheels included with the auction.  A *Wii wheel* is an optional steering wheel accessory that holds the Wii controller."
+  ~variable, ~description,
+  "price", "Final auction price plus shipping costs, in US dollars.",
+  "cond_new", "Indicator variable for if the game is new (1) or used (0).",
+  "stock_photo", "Indicator variable for if the auction's main photo is a stock photo.",
+  "duration", "The length of the auction, in days, taking values from 1 to 10.",
+  "wheels", "The number of Wii wheels included with the auction. A Wii wheel is an optional steering wheel accessory that holds the Wii controller."
 )
 
 mariokart_var_def %>%
-  kbl(linesep = "", booktabs = TRUE, caption = caption_helper("Variables and their descriptions for the `mariokart` dataset."), 
-      col.names = c("Variable", "Description")) %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
+  kbl(
+    linesep = "", booktabs = TRUE, 
+    caption = caption_helper("Variables and their descriptions for the `mariokart` dataset."),
+    col.names = c("Variable", "Description")
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), 
+    full_width = TRUE
+  ) %>%
   column_spec(1, monospace = TRUE) %>%
   column_spec(2, width = "30em")
 ```
 
 ### Mathematical approach to linear models
 
-In Table \@ref(tab:MarioKartModelOutput) we fit a mathematical linear regression model with the game's condition as a predictor of auction price.
+In Table \@ref(tab:mariokart-model-output) we fit a mathematical linear regression model with the game's condition as a predictor of auction price.
 
 $$E[\texttt{price}] = \beta_0 + \beta_1\times \texttt{cond_new}$$
 
 Results of the model are summarized below:
 
-```{r MarioKartModelOutput}
+```{r mariokart-model-output}
 mariokart <- mariokart %>%
   mutate(cond_new = ifelse(cond_new == "used", 0 , 1),
          stock_photo = ifelse(stock_photo == "yes", 1, 0)) 
@@ -80,7 +89,7 @@ mariokart %>%
     bootstrap_options = c("striped", "condensed"),
     latex_options = c("striped", "hold_position")
   ) %>%
-  column_spec(1, width = "17em", monospace = TRUE) %>%
+  column_spec(1, width = "10em", monospace = TRUE) %>%
   column_spec(2:5, width = "5em")
 ```
 
@@ -109,10 +118,10 @@ E[\texttt{price}]
 \end{align*}
 $$
 
-Table \@ref(tab:MarioKartFullModelOutput) summarizes the full model.
+Table \@ref(tab:mariokart-full-model-output) summarizes the full model.
 Using the output, we identify the point estimates of each coefficient and the corresponding significance (measured with information for the standard error to compute the p-value).
 
-```{r MarioKartFullModelOutput}
+```{r mariokart-full-model-output}
 mariokart %>%
   lm(price ~ cond_new + stock_photo + duration + wheels, data = .) %>% 
   tidy() %>%
@@ -126,12 +135,12 @@ mariokart %>%
     bootstrap_options = c("striped", "condensed"),
     latex_options = c("striped", "hold_position")
   ) %>%
-  column_spec(1, width = "17em", monospace = TRUE) %>%
+  column_spec(1, width = "10em", monospace = TRUE) %>%
   column_spec(2:5, width = "5em")
 ```
 
 ::: {.guidedpractice data-latex=""}
-Write out the model's equation using the point estimates from Table \@ref(tab:MarioKartFullModelOutput).
+Write out the model's equation using the point estimates from Table \@ref(tab:mariokart-full-model-output).
 How many predictors are there in the model?
 How many coefficients are estimated?[^inf-model-applications-2]
 :::
@@ -147,13 +156,13 @@ What is the point estimate of $\beta_4?$[^inf-model-applications-3]
     The point estimate is $b_4 = 7.29$
 
 ::: {.guidedpractice data-latex=""}
-Compute the residual of the first observation in Table \@ref(tab:marioKartDataMatrix) using the equation identified in Table \@ref(tab:MarioKartFullModelOutput).[^inf-model-applications-4]
+Compute the residual of the first observation in Table \@ref(tab:mariokart-data-frame) using the equation identified in Table \@ref(tab:mariokart-full-model-output).[^inf-model-applications-4]
 :::
 
 [^inf-model-applications-4]: $e_i = y_i - \hat{y_i} = 51.55 - 49.62 = 1.93$.
 
 ::: {.workedexample data-latex=""}
-In Table \@ref(tab:MarioKartModelOutput), we estimated a coefficient for `cond_new` in of $b_1 = 10.90$ with a standard error of $SE_{b_1} = 1.26$ when using simple linear regression.
+In Table \@ref(tab:mariokart-model-output), we estimated a coefficient for `cond_new` in of $b_1 = 10.90$ with a standard error of $SE_{b_1} = 1.26$ when using simple linear regression.
 Why might there be a difference between that estimate and the one in the multiple regression setting?
 
 ------------------------------------------------------------------------
@@ -168,33 +177,38 @@ When we use both variables, this particular underlying and unintentional bias is
 
 Previously, using a mathematical model, we investigated the coefficient and significance for predicting `price` from `cond_new` in a linear model.
 
-```{r randmario, fig.cap = "Estimated slopes from linear models (`price` regressed on `cond_new`) built on 1000 randomized datasets.  Each dataset was permuted under the null hypothesis."}
+```{r mariokart-rand-dist, fig.cap = "Estimated slopes from linear models (`price` regressed on `cond_new`) built on 1,000 randomized datasets. Each dataset was permuted under the null hypothesis."}
 set.seed(47)
 mariokart %>%
   specify(price ~ cond_new) %>%
   hypothesize(null = "independence") %>%
   generate(reps = 1000, type = "permute") %>%
   calculate(stat = "slope") %>%
-  ggplot() +
-  geom_histogram(aes(x = stat)) +
-  xlab("Slopes from randomly permuted data") +
-  geom_vline(xintercept = 10.9, color = IMSCOL["red",1])
+  ggplot(aes(x = stat)) +
+  geom_histogram(binwidth = 0.5, fill = IMSCOL["green", "full"]) +
+  labs(
+    title = "Slopes from models fit to 1,000 permutations of the data",
+    x = "Slope of model fit to permuted data",
+    y = "Count"
+    ) +
+  geom_vline(xintercept = 10.9, color = IMSCOL["red","full"], size = 1) +
+  theme(plot.title.position = "plot")
 ```
 
 ::: {.workedexample data-latex=""}
-In Figure \@ref(fig:randmario), the red line (the observed slope) is far from the bulk of the histogram.
+In Figure \@ref(fig:mariokart-rand-dist), the red line (the observed slope) is far from the bulk of the histogram.
 Explain why the randomly permuted datasets produce slopes that are quite different from the observed slope.
 
 ------------------------------------------------------------------------
 
 The null hypothesis is that, in the population, there is no linear relationship between the `price` and the `cond_new` of the *Mario Kart* games.
-When it is permuted, the observed data values randomly assign a price to a condition (new or used), so that the null hypothesis is forced to be true (that is, so that there is no relationship between the two variables).
+When the data are randomly permuted, prices are randomly assigned to a condition (new or used), so that the null hypothesis is forced to be true, i.e. permutation is done under the assumption that no relationship between the two variables exists.
 In the actual study, the new *Mario Kart* games do actually cost more (on average) than the used games!
-So the slope describing the actual observed relationship is not one that could have happened by randomly selecting a set of games from a null dataset.
+So the slope describing the actual observed relationship is not one that is likely to have happened in a randomly dataset permuted under the assumption that the null hypothesis is true.
 :::
 
 ::: {.guidedpractice data-latex=""}
-Using the histogram in Figure \@ref(fig:randmario), find the p-value and conclude the hypothesis test in the context of the problem (use words like price of the game and whether or not it is new).[^inf-model-applications-5]
+Using the histogram in Figure \@ref(fig:mariokart-rand-dist), find the p-value and conclude the hypothesis test in the context of the problem (use words like price of the game and whether or not it is new).[^inf-model-applications-5]
 :::
 
 [^inf-model-applications-5]: The observed slope is 10.9 which is nowhere near the range of values for the permuted slopes (roughly -5 to 5).
@@ -206,25 +220,30 @@ Is the conclusion based on the histogram of randomized slopes consistent with th
 Explain.[^inf-model-applications-6]
 :::
 
-[^inf-model-applications-6]: The p-value in Table \@ref(tab:MarioKartModelOutput) is also essentially zero, so the null hypothesis is also rejected when the mathematical model approach is taken.
+[^inf-model-applications-6]: The p-value in Table \@ref(tab:mariokart-model-output) is also essentially zero, so the null hypothesis is also rejected when the mathematical model approach is taken.
     Often, the mathematical and computational approaches to inference will give quite similar answers.
 
 Although knowing there is a relationship between the condition of the game and its price, we might be more interested in the difference in price, here given by the slope of the linear regression line.
 That is, $\beta_1$ represents the population value for the difference in price between new *Mario Kart* games and used games.
 
-```{r bootmario, fig.cap = "Estimated slopes from linear models (`price` regressed on `cond_new`) built on 1000 bootstrapped datasets.  Each bootstrap dataset was a resample taken from the original Mario Kart auction data."}
+```{r mariokart-boot-dist, fig.cap = "Estimated slopes from linear models (`price` regressed on `cond_new`) built on 1000 bootstrapped datasets. Each bootstrap dataset was a resample taken from the original Mario Kart auction data."}
 set.seed(47)
 mariokart %>%
- specify(price ~ cond_new) %>%
- generate(reps = 1000, type = "bootstrap") %>%
- calculate(stat = "slope") %>%
- ggplot() +
- geom_histogram(aes(x = stat)) +
- xlab("Slopes from bootstrapped data") 
+  specify(price ~ cond_new) %>%
+  generate(reps = 1000, type = "bootstrap") %>%
+  calculate(stat = "slope") %>%
+  ggplot(aes(x = stat)) +
+  geom_histogram(binwidth = 0.5, fill = IMSCOL["green", "full"]) +
+  labs(
+    title = "Slopes from models fit to 1,000 bootstrap samples of the data",
+    x = "Slope of model fit to bootstrapped data",
+    y = "Count"
+    ) +
+  theme(plot.title.position = "plot")
 ```
 
 ::: {.workedexample data-latex=""}
-Figure \@ref(fig:bootmario) displays the slope estimates taken from bootstrap samples of the original data.
+Figure \@ref(fig:mariokart-boot-dist) displays the slope estimates taken from bootstrap samples of the original data.
 Using the histogram, estimate the standard error of the slope.
 Is your estimate similar to the value of the standard error of the slope provided in the output of the mathematical linear model?
 
@@ -233,18 +252,18 @@ Is your estimate similar to the value of the standard error of the slope provide
 The slopes seem to vary from approximately 8 to 14.
 Using the empirical rule, we know that if a variable has a bell-shaped distribution, most of the observations will be with 2 standard errors of the center.
 Therefore, a rough approximation of the standard error is 1.5.
-The standard error given in Table \@ref(tab:MarioKartModelOutput) is 1.26 which is not too different from the value computed using the bootstrap approach.
+The standard error given in Table \@ref(tab:mariokart-model-output) is 1.26 which is not too different from the value computed using the bootstrap approach.
 :::
 
 ::: {.guidedpractice data-latex=""}
-Use Figure \@ref(fig:bootmario) to create a 90% SE bootstrap confidence interval for the true slope.
+Use Figure \@ref(fig:mariokart-boot-dist) to create a 90% standard error bootstrap confidence interval for the true slope.
 Interpret the interval in context.[^inf-model-applications-7]
 :::
 
 [^inf-model-applications-7]: Using the bootstrap SE method, we know the normal percentile is $z^\star = 1.645$, which gives a CI of $b_1 \pm 1.645 \cdot SE \rightarrow 10.9 \pm 1.645 \cdot 1.5 \rightarrow (8.43, 13.37).$ For games that are new, the average price is higher by between \$8.43 and \$13.37, with 90% confidence.
 
 ::: {.guidedpractice data-latex=""}
-Use Figure \@ref(fig:bootmario) to create a 90% percentile bootstrap confidence interval for the true slope.
+Use Figure \@ref(fig:mariokart-boot-dist) to create a 90% percentile bootstrap confidence interval for the true slope.
 Interpret the interval in context.[^inf-model-applications-8]
 :::
 
@@ -252,95 +271,116 @@ Interpret the interval in context.[^inf-model-applications-8]
     Looking at the bootstrap histogram, the rough 95% confidence interval is \$9 to \$13.10.
     For games that are new, the average price is higher by between \$9.00 and \$13.10, with 90% confidence.
 
-### Cross validating
+### Cross-validation
 
 In Chapter \@ref(model-mlr), models were compared using $R^2_{adj}.$ In Chapter \@ref(inf-model-mlr), however, a computational approach was introduced to compare models by removing chunks of data one at a time and assessing how well the variables predicted the observations that had been held out.
 
-Figure \@ref(fig:cvresidmario) was created by cross validating models with the same variables as in Table \@ref(tab:MarioKartModelOutput) and Table \@ref(tab:MarioKartFullModelOutput).
-We applied 3-fold cross validation, so 1/3 of the data was removed while 2/3 of the observations were used to build each model (first `cond_new` only and then `cond_new`, `stock_photo`, `duration`, and `wheels`).
+Figure \@ref(fig:mariokart-cv-residuals) was created by cross-validating models with the same variables as in Table \@ref(tab:mariokart-model-output) and Table \@ref(tab:mariokart-full-model-output).
+We applied 3-fold cross-validation, so 1/3 of the data was removed while 2/3 of the observations were used to build each model (first `cond_new` only and then `cond_new`, `stock_photo`, `duration`, and `wheels`).
 Note that each time 1/3 of the data is removed, the resulting model will produce slightly different coefficients.
 
-The points in Figure \@ref(fig:cvresidmario) represent the prediction (x-axis) and residual (y-axis) for each observation run through the cross validated model.
-That is to say, the model is built (using the other 2/3) without the observation (which is in the 1/3) being used.
+The points in Figure \@ref(fig:mariokart-cv-residuals) represent the prediction (x-axis) and residual (y-axis) for each observation run through the cross-validated model.
+In other words, the model is built (using the other 2/3) without the observation (which is in the 1/3) being used.
 The residuals give us a sense for how well the model will do at predicting observations which were not a part of the original dataset (e.g., future studies).
 
-```{r cvresidmario, fig.cap = "Cross validation predictions and errors from linear models built on two different sets of variables.  Left regressed `price` on `cond_new`; right regressed `price` on `cond_new`, `stock_photo`, `duration`, and `wheels`."}
+```{r mariokart-cv-residuals, fig.cap = "Cross-validation predictions and errors from linear models built on two different sets of variables. Left regressed `price` on `cond_new`; right regressed `price` on `cond_new`, `stock_photo`, `duration`, and `wheels`.", out.width = "100%", fig.width = 8}
 set.seed(4)
 mario_CV1 <- train(price ~ cond_new,
-                   data = mariokart,
-                   na.action = na.omit,
-                   method = "lm",
-                   trControl = trainControl(method = "cv", number = 3,
-                                            savePredictions = TRUE))
+  data = mariokart,
+  na.action = na.omit,
+  method = "lm",
+  trControl = trainControl(
+    method = "cv", number = 3,
+    savePredictions = TRUE
+  )
+)
 
 mario_CV2 <- train(price ~ cond_new + stock_photo + duration + wheels,
-                   data = mariokart,
-                   na.action = na.omit,
-                   method = "lm",
-                   trControl = trainControl(method = "cv", number = 3,
-                                            savePredictions = TRUE))
+  data = mariokart,
+  na.action = na.omit,
+  method = "lm",
+  trControl = trainControl(
+    method = "cv", number = 3,
+    savePredictions = TRUE
+  )
+)
 
-SSE_CV1 <- mario_CV1$pred %>% 
+SSE_CV1 <- mario_CV1$pred %>%
   mutate(resid = obs - pred) %>%
-  select(resid) %>% pull() %>% `^`(2) %>% sum() %>% round(2)
+  select(resid) %>%
+  pull() %>%
+  `^`(2) %>%
+  sum() %>%
+  round(2)
 
-SSE_CV2 <- mario_CV2$pred %>% 
+SSE_CV2 <- mario_CV2$pred %>%
   mutate(resid = obs - pred) %>%
-  select(resid) %>% pull() %>% `^`(2) %>% sum() %>% round(2)
+  select(resid) %>%
+  pull() %>%
+  `^`(2) %>%
+  sum() %>%
+  round(2)
 
-p1 <- mario_CV1$pred %>% 
+p1 <- mario_CV1$pred %>%
   mutate(resid = obs - pred) %>%
-  ggplot() + 
-  geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample)) + 
-  geom_rug(aes( y = resid)) + 
+  ggplot() +
+  geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample)) +
+  geom_rug(aes(y = resid)) +
   geom_hline(yintercept = 0) +
-  ylim(c(-15,25)) +
-  xlim(c(20,65)) +
-  labs(color = "CV Fold", shape = "CV Fold",
-       x = "Predicted", y = "Prediction error (residual)") +
-  annotate(geom = "text", x = 40, y = 23, label = paste("CV SSE =", SSE_CV1)) +
-  ggtitle("Model with cond_new") +
-  theme(legend.position = "none")
+  ylim(c(-15, 25)) +
+  xlim(c(20, 65)) +
+  labs(
+    color = "CV Fold", shape = "CV Fold",
+    x = "Predicted", y = "Prediction error (residual)"
+  ) +
+  annotate(geom = "text", x = 40, y = 25, label = paste("CV SSE =", SSE_CV1)) +
+  labs(title = "Model with cond_new") +
+  #theme(legend.position = "none") +
+  scale_color_openintro("three")
 
-p2 <- mario_CV2$pred %>% 
+p2 <- mario_CV2$pred %>%
   mutate(resid = obs - pred) %>%
-  ggplot() + 
-  geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample)) + 
-  geom_rug(aes( y = resid)) + 
+  ggplot() +
+  geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample)) +
+  geom_rug(aes(y = resid)) +
   geom_hline(yintercept = 0) +
-  ylim(c(-15,25)) +
-  xlim(c(20,65)) +
-  labs(color = "CV Fold", shape = "CV Fold", 
-       x = "Predicted", y = "Prediction error (residual)") +
-  annotate(geom = "text", x = 40, y = 23, label = paste("CV SSE =", SSE_CV2)) +
-  ggtitle("Model with 4 predictors")
+  ylim(c(-15, 25)) +
+  xlim(c(20, 65)) +
+  labs(
+    color = "CV Fold", shape = "CV Fold",
+    x = "Predicted", y = "Prediction error (residual)"
+  ) +
+  annotate(geom = "text", x = 40, y = 25, label = paste("CV SSE =", SSE_CV2)) +
+  labs(title = "Model with 4 predictors") +
+  scale_color_openintro("three")
 
 
-p1 + p2
+p1 + p2 + plot_layout(guides = "collect") & 
+  theme(legend.position = "bottom")
 ```
 
 ::: {.guidedpractice data-latex=""}
-In the second graph in Figure \@ref(fig:cvresidmario), note the point at roughly (predicted = 50 and error = 10).
+In the second graph in Figure \@ref(fig:mariokart-cv-residuals), note the point at roughly (predicted = 50 and error = 10).
 Estimate the observed and predicted value for that observation.[^inf-model-applications-9]
 :::
 
 [^inf-model-applications-9]: The predicted value is roughly $\widehat{\texttt{price}} = \$50.$ The observed value is roughly $\texttt{price}_i = \$60$ riders (using $e_i = y_i - \hat{y}_i).$
 
 ::: {.guidedpractice data-latex=""}
-In the second graph in Figure \@ref(fig:cvresidmario), for the same point at roughly (predicted = 50 and error = 10), describe which cross validation fold(s) were used to build its prediction model.[^inf-model-applications-10]
+In the second graph in Figure \@ref(fig:mariokart-cv-residuals), for the same point at roughly (predicted = 50 and error = 10), describe which cross-validation fold(s) were used to build its prediction model.[^inf-model-applications-10]
 :::
 
 [^inf-model-applications-10]: The point appears to be in fold 2, so folds 1 and 3 were used to build the prediction model.
 
 ::: {.guidedpractice data-latex=""}
-By noting the spread of the cross validated prediction errors (on the y-axis) in Figure \@ref(fig:cvresidmario), which model should be chosen for a final report on these data?[^inf-model-applications-11]
+By noting the spread of the cross-validated prediction errors (on the y-axis) in Figure \@ref(fig:mariokart-cv-residuals), which model should be chosen for a final report on these data?[^inf-model-applications-11]
 :::
 
-[^inf-model-applications-11]: The cross validated residuals on `cond_new` only vary roughly from -15 to 15, while the cross validated residuals on the four predictor model vary less, roughly from -10 to 10.
+[^inf-model-applications-11]: The cross-validated residuals on `cond_new` only vary roughly from -15 to 15, while the cross-validated residuals on the four predictor model vary less, roughly from -10 to 10.
     Given the smaller residuals from the four predictor model, it seems as though the larger model is better.
 
 ::: {.guidedpractice data-latex=""}
-Using the summary statistic (CV SSE), which model should be chosen for a final report on these data?[^inf-model-applications-12]
+Using the summary statistic cross-validation sum of squared errors (CV SSE), which model should be chosen for a final report on these data?[^inf-model-applications-12]
 :::
 
 [^inf-model-applications-12]: The CV SSE is smaller (by a factor of almost two!) for the model with four predictors.
