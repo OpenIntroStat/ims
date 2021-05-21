@@ -51,17 +51,17 @@ aa_cars <- data.frame(price = c(18300, 20100, 9600, 10700, 27000))
 
 The sample average car price of \$`r formatC(mean(aa_cars$price), format = "f", digits = 2)` is a first guess at the price of the average car price at Awesome Auto.
 However, as a student of statistics, you understand that one sample mean based on a sample of five observations will not necessarily equal the true population average car price for all the cars at Awesome Auto.
-Indeed, you can see that the observed car prices vary with a standard deviation of \$`r sd(aa_cars$price)`, and surely the average car price would be different if a different sample of size five had been taken from the population.
+Indeed, you can see that the observed car prices vary with a standard deviation of \$`r formatC(sd(aa_cars$price), format = "f", digits = 2)`, and surely the average car price would be different if a different sample of size five had been taken from the population.
 Fortunately, as it did in previous chapters for the sample proportion, bootstrapping will approximate the variability of the sample mean from sample to sample.
 
 ### Variability of the statistic
 
 As with the inferential ideas covered in Chapters \@ref(foundations-randomization), \@ref(foundations-bootstrapping), and \@ref(foundations-mathematical), the inferential analysis methods in this chapter are grounded in quantifying how one dataset differs from another when they are both taken from the same population.
 To repeat, the idea is that we want to know how datasets differ from one another, but we aren't ever going to take more than one sample of observations.
-It doesn't make sense to take repeated samples from the same population because if you have the ability to take more samples, a larger sample size will benefit you more than the exact same sample twice.
+It doesn't make sense to take repeated samples from the same population because if you have the ability to take more samples, a larger sample size will benefit you more than taking two samples from the population.
 Instead of taking repeated samples from the actual population, we use bootstrapping to measure how the samples behave under an estimate of the population.
 
-As mentioned previously, to get a sense of the cars at Awesome Auto, you take a sample of 5 cars from the Awesome Auto branch near you as a way to gauge the price of the cars being sold.
+As mentioned previously, to get a sense of the cars at Awesome Auto, you take a sample of five cars from the Awesome Auto branch near you as a way to gauge the price of the cars being sold.
 Figure \@ref(fig:bootpop1mean) shows how the unknown original population can be estimated by using the sample to approximate the distribution of car prices from the population of cars at Awesome Auto.
 
 ```{r bootpop1mean, fig.cap = "As seen previously, the idea behind bootstrapping is to consider the sample at hand as an estimate of the population.  Sampling from the sample (of 5 cars) is identical to sampling from an infinite population which is made up of only the cars in the original sample."}
@@ -78,7 +78,7 @@ include_graphics("images/bootsamps1mean.png")
 ```
 
 By summarizing each of the bootstrap samples (here, using the sample mean), we see, directly, the variability of the sample mean, $\bar{x},$ from sample to sample.
-The distribution of $\hat{x}_{bs}$ for the Awesome Auto cars is shown in Figure \@ref(fig:bootmeans1mean).
+The distribution of $\bar{x}_{bs}$ for the Awesome Auto cars is shown in Figure \@ref(fig:bootmeans1mean).
 
 ```{r bootmeans1mean, fig.cap = "Because each of the bootstrap resamples respresents a different set of cars, the mean of the each bootstrap resample will be a different value.  Each of the bootstrapped means is calculated, and a histogram of the values describes the inherent natural variability of the sample mean which is due to the sampling process.", out.width="100%"}
 include_graphics("images/bootmeans1mean.png")
@@ -286,7 +286,7 @@ As you might guess, the larger the random sample, the more accurately that sampl
 ## Mathematical model for a mean {#one-mean-math}
 
 As with the sample proportion, the variability of the sample mean is well described by the mathematical theory given by the Central Limit Theorem.
-However, because of missing information about the inherent variability in the population, a $t$-distribution is used in place of the standard normal when performing hypothesis test or confidence interval analyses.
+However, because of missing information about the inherent variability in the population ($\sigma$), a $t$-distribution is used in place of the standard normal when performing hypothesis test or confidence interval analyses.
 
 ### Mathematical distribution of the sample mean
 
@@ -452,6 +452,7 @@ ggplot(df, aes(x = x, y = y, color = distribution, linetype = distribution, size
 The $t$-distribution is always centered at zero and has a single parameter: degrees of freedom.
 The **degrees of freedom** describes the precise form of the bell-shaped $t$-distribution.
 Several $t$-distributions are shown in Figure \@ref(fig:tDistConvergeToNormalDist) in comparison to the normal distribution.
+Similar to the Chi-square distribution, the shape of the $t$-distribution also depends on the degrees of freedom.
 
 In general, we'll use a $t$-distribution with $df = n - 1$ to model the sample mean when the sample size is $n.$ That is, when we have more observations, the degrees of freedom will be larger and the $t$-distribution will look more like the standard normal distribution; when the degrees of freedom is about 30 or more, the $t$-distribution is nearly indistinguishable from the normal distribution.
 
@@ -500,7 +501,7 @@ legend(2.5, 0.4,
 **Degrees of freedom: df.**
 
 The degrees of freedom describes the shape of the $t$-distribution.
-The larger the degrees of freedom, the more closely the distribution approximates the normal model.
+The larger the degrees of freedom, the more closely the distribution approximates the normal distribution.
 
 When modeling $\bar{x}$ using the $t$-distribution, use $df = n - 1.$
 :::
@@ -539,7 +540,7 @@ axis(1)
 ```
 
 ::: {.workedexample data-latex=""}
-A $t$-distribution with 20 degrees of freedom is shown in the top panel of Figure \@ref(fig:tDistDF20RightTail1Point65).
+A $t$-distribution with 20 degrees of freedom is shown in Figure \@ref(fig:tDistDF20RightTail1Point65).
 Estimate the proportion of the distribution falling above 1.65.
 
 ------------------------------------------------------------------------
@@ -549,20 +550,20 @@ With a normal distribution, this would correspond to about 0.05, so we should ex
 Using statistical software: 0.0573.
 :::
 
-```{r tDistDF20RightTail1Point65, fig.cap = "Top: The $t$-distribution with 20 degrees of freedom, with the area above 1.65 shaded. Bottom: The $t$-distribution with 2 degrees of freedom, with the area further than 3 units from 0 shaded.", out.width="50%"}
+```{r echo = TRUE}
+# using pt() to find probability under the $t$-distribution
+1 - pt(1.65, df = 20)
+```
+
+```{r tDistDF20RightTail1Point65, fig.cap = "Top: The $t$-distribution with 20 degrees of freedom, with the area above 1.65 shaded.", out.width="50%"}
 normTail(U = 1.65,
   df = 12,
   xlim = c(-4, 4),
   col = IMSCOL["blue", "full"])
-normTail(L = -3,
-  U = 3,
-  df = 2.3,
-  xlim = c(-4.5, 4.5),
-  col = IMSCOL["blue", "full"])
 ```
 
 ::: {.workedexample data-latex=""}
-A $t$-distribution with 2 degrees of freedom is shown in the bottom panel of Figure \@ref(fig:tDistDF20RightTail1Point65).
+A $t$-distribution with 2 degrees of freedom is shown in Figure \@ref(fig:tDistDF23UnitsFromMean).
 Estimate the proportion of the distribution falling more than 3 units from the mean (above or below).
 
 ------------------------------------------------------------------------
@@ -572,6 +573,19 @@ Under a normal distribution, the area would be about 0.003 using the 68-95-99.7 
 For a $t$-distribution with $df = 2,$ the area in both tails beyond 3 units totals 0.0955.
 This area is dramatically different than what we obtain from the normal distribution.
 :::
+
+```{r echo = TRUE}
+# using pt() to find probability under the $t$-distribution
+pt(-3, df = 2) + (1 - pt(3, df = 2))
+```
+
+```{r tDistDF23UnitsFromMean, fig.cap = "The $t$-distribution with 2 degrees of freedom, with the area further than 3 units from 0 shaded.", out.width="50%"}
+normTail(L = -3,
+  U = 3,
+  df = 2.3,
+  xlim = c(-4.5, 4.5),
+  col = IMSCOL["blue", "full"])
+```
 
 ::: {.guidedpractice data-latex=""}
 What proportion of the $t$-distribution with 19 degrees of freedom falls above -1.79 units?
@@ -616,7 +630,7 @@ Are the independence and normality conditions satisfied for this dataset?
 
 ------------------------------------------------------------------------
 
-The observations are a simple random sample, therefore independence is reasonable.
+The observations are a simple random sample, therefore it is reasonable to assume that the dolphins are independent.
 The summary statistics in Table \@ref(tab:summaryStatsOfHgInMuscleOfRissosDolphins) do not suggest any clear outliers, with all observations within 2.5 standard deviations of the mean.
 Based on this evidence, the normality condition seems reasonable.
 :::
@@ -636,7 +650,7 @@ Using the summary statistics in Table \@ref(tab:summaryStatsOfHgInMuscleOfRissos
 
 ------------------------------------------------------------------------
 
-We plug in $s$ and $n$ into the formula: $SE = s / \sqrt{n} = 2.3 / \sqrt{19} = 0.528.$
+We plug in $s$ and $n$ into the formula: $SE = \frac{s}{\sqrt{n}} = \frac{2.3}{\sqrt{19}} = 0.528.$
 :::
 
 The value $t^{\star}_{df}$ is a cutoff we obtain based on the confidence level and the $t$-distribution with $df$ degrees of freedom.
@@ -766,7 +780,7 @@ When the null hypothesis is true and the conditions are met, T has a t-distribut
 
 Conditions:
 
--   Independently observed data.
+-   Independent observations
 -   Large samples and no extreme outliers.
 :::
 
@@ -844,13 +858,12 @@ $$ T = \frac{98.8 - 93.29}{1.66} = 3.32 $$
 For $df = 100 - 1 = 99,$ we can determine using statistical software (or a $t$-table) that the one-tail area is 0.000631, which we double to get the p-value: 0.00126.
 
 Because the p-value is smaller than 0.05, we reject the null hypothesis.
-That is, the data provide strong evidence that the average run time for the Cherry Blossom Run in 2017 is different than the 2006 average.
-Since the observed value is above the null value and we have rejected the null hypothesis, we would conclude that the data provide evidence of runners being slower, on average, in 2017 than in 2006.
+That is, the data provide convincing evidence that the average run time for the Cherry Blossom Run in 2017 is different than the 2006 average.
 :::
 
 ```{r echo = TRUE}
-# using pt() to find the tail area
-1 - pt(3.32, df = 99)
+# using pt() to find the left tail and multiply by 2 to get both tails
+(1 - pt(3.32, df = 99)) * 2 
 ```
 
 ::: {.important data-latex=""}
