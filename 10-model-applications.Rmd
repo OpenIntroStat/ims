@@ -66,7 +66,7 @@ While using multiple predictor variables is likely preferable to using only one 
 Figure \@ref(fig:single-scatter) shows scatterplots describing price as a function of each of the predictor variables.
 All of the variables seem
 
-```{r single-scatter, out.width = "100%", fig.asp = 1, fig.cap = "Scatter plots describing six different predictor variables' relationship with the price of a home."}
+```{r single-scatter, out.width = "100%", fig.asp = 1, fig.cap = "Scatter plots describing six different predictor variables' relationship with the price of a home.", fig.width=8}
 pr_bed <- ggplot(duke_forest, aes(x = bed, y = price)) +
   geom_point(alpha = 0.8) +
     labs(
@@ -158,7 +158,7 @@ m_small_df_residual <-  glance(m_small)$df.residual %>% round(4)
 m_small_w_rsq <- m_small %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
-  add_row(term = glue("Adjusted R-squared = {m_small_r_sq_adj}")) %>%
+  add_row(term = glue("Adjusted R-sq = {m_small_r_sq_adj}")) %>%
   add_row(term = glue("df = {m_small_df_residual}"))
 
 m_small_w_rsq %>%
@@ -167,7 +167,7 @@ m_small_w_rsq %>%
       digits = c(0,0,0,2,4), align = "lrrrr", format.args = list(big.mark = ","))  %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "17em") %>%
+  column_spec(1, width = "20em") %>%
   column_spec(1, monospace = ifelse(as.numeric(rownames(m_small_w_rsq)) < 11, TRUE, FALSE)) %>%
   column_spec(2:5, width = "5em") %>%
   pack_rows("", 3,4) %>%
@@ -176,13 +176,13 @@ m_small_w_rsq %>%
 ```
 
 ::: {.guidedpractice data-latex=""}
-Interpret the value of \$b_1 = 159 in the context of the problem.[^model-applications-2]
+Interpret the value of $b_1$ = 159 in the context of the problem.[^model-applications-2]
 :::
 
 [^model-applications-2]: For each additional square foot of house, we would expect such houses to cost, on average, \$159 more.
 
 ::: {.guidedpractice data-latex=""}
-Using the output in Table \@ref(tab:), write out the model for predicting `price` from `area`.[^model-applications-3]
+Using the output in Table \@ref(tab:price-slr), write out the model for predicting `price` from `area`.[^model-applications-3]
 :::
 
 [^model-applications-3]: $\widehat{\texttt{price}} = 116,652 - 159 \times \texttt{area}$
@@ -229,7 +229,7 @@ m_full_df_residual <-  glance(m_full)$df.residual %>% round(4)
 m_full_w_rsq <- m_full %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
-  add_row(term = glue("Adjusted R-squared = {m_full_r_sq_adj}")) %>%
+  add_row(term = glue("Adjusted R-sq = {m_full_r_sq_adj}")) %>%
   add_row(term = glue("df = {m_full_df_residual}"))
 
 m_full_w_rsq %>%
@@ -238,7 +238,7 @@ m_full_w_rsq %>%
       digits = c(0,0,0,2,4), align = "lrrrr", format.args = list(big.mark = ","))  %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "17em") %>%
+  column_spec(1, width = "20em") %>%
   column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_w_rsq)) < 11, TRUE, FALSE)) %>%
   column_spec(2:5, width = "5em") %>%
   pack_rows("", 8, 9) %>%
@@ -246,7 +246,8 @@ m_full_w_rsq %>%
   row_spec(8:9, italic = TRUE)
 ```
 
-::: {workedexample data-latex=""} Using Table \@ref(tab:price-mlr), write out the linear model of price on the six predictor variables.
+::: {.workedexample data-latex=""}
+Using Table \@ref(tab:price-mlr), write out the linear model of price on the six predictor variables.
 
 ------------------------------------------------------------------------
 
@@ -258,7 +259,6 @@ $$
 &+ 84,065 \times \texttt{cooling}_{\texttt{central}} + 356,141 \times \texttt{lot}
 \end{aligned}
 $$
-
 :::
 
 ::: {.guidedpractice data-latex=""}
@@ -326,6 +326,8 @@ m_lot_r_sq_adj <- update(m_full_no_bed, . ~ . - lot, data = duke_forest) %>% gla
 -   Excluding `bed` and `lot`: `r m_lot_r_sq_adj`
 
 None of these models lead to an improvement in adjusted $R^2$, so we do not eliminate any of the remaining predictors.
+:::
+
 That is, after backward elimination, we are left with the model that keeps all predictors except `bed`, which we can summarize using the coefficients from Table \@ref(tab:price-full-except-bed).
 
 ```{r price-full-except-bed}
@@ -335,7 +337,7 @@ m_full_no_bed_df_residual <-  glance(m_full_no_bed)$df.residual %>% round(4)
 m_full_no_bed_w_rsq <- m_full_no_bed %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
-  add_row(term = glue("Adjusted R-squared = {m_full_no_bed_r_sq_adj}")) %>%
+  add_row(term = glue("Adjusted R-sq = {m_full_no_bed_r_sq_adj}")) %>%
   add_row(term = glue("df = {m_full_no_bed_df_residual}"))
 
 m_full_no_bed_w_rsq %>%
@@ -343,8 +345,8 @@ m_full_no_bed_w_rsq %>%
       caption = "Summary of least squares fit for price on multiple predictor variables, excluding number of bedrooms.", 
       digits = c(0,0,0,2,4), align = "lrrrr", format.args = list(big.mark = ","))  %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "17em") %>%
+                latex_options = c("striped", "HOLD_position")) %>%
+  column_spec(1, width = "20em") %>%
   column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_no_bed_w_rsq)) < 11, TRUE, FALSE)) %>%
   column_spec(2:5, width = "5em") %>%
   pack_rows("", 7,8) %>%
@@ -361,7 +363,6 @@ $$
 &+ 83,856 \times \texttt{cooling}_{\texttt{central}} + 357,119 \times \texttt{lot}
 \end{aligned}
 $$
-:::
 
 ::: {.workedexample data-latex=""}
 The residual plot for the model with all of the predictor variables except `bed` is given in Figure \@ref(fig:price-resid-mlr-nobed).
