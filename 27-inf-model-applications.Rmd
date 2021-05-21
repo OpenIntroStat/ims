@@ -187,12 +187,12 @@ mariokart %>%
   ggplot(aes(x = stat)) +
   geom_histogram(binwidth = 0.5, fill = IMSCOL["green", "full"]) +
   labs(
-    title = "1,000 slopes",
-    subtitle = "Models fit to 1,000 random permutations of the data",
+    title = "Slopes from models fit to 1,000 permutations of the data",
     x = "Slope of model fit to permuted data",
     y = "Count"
     ) +
-  geom_vline(xintercept = 10.9, color = IMSCOL["red","full"], size = 1)
+  geom_vline(xintercept = 10.9, color = IMSCOL["red","full"], size = 1) +
+  theme(plot.title.position = "plot")
 ```
 
 ::: {.workedexample data-latex=""}
@@ -235,10 +235,11 @@ mariokart %>%
   ggplot(aes(x = stat)) +
   geom_histogram(binwidth = 0.5, fill = IMSCOL["green", "full"]) +
   labs(
-    title = "Slopes of models fit to 1,000 random bootstrap samples of the data",
+    title = "Slopes from models fit to 1,000 bootstrap samples of the data",
     x = "Slope of model fit to bootstrapped data",
     y = "Count"
-    )
+    ) +
+  theme(plot.title.position = "plot")
 ```
 
 ::: {.workedexample data-latex=""}
@@ -282,7 +283,7 @@ The points in Figure \@ref(fig:mariokart-cv-residuals) represent the prediction 
 In other words, the model is built (using the other 2/3) without the observation (which is in the 1/3) being used.
 The residuals give us a sense for how well the model will do at predicting observations which were not a part of the original dataset (e.g., future studies).
 
-```{r mariokart-cv-residuals, fig.cap = "Cross-validation predictions and errors from linear models built on two different sets of variables. Left regressed `price` on `cond_new`; right regressed `price` on `cond_new`, `stock_photo`, `duration`, and `wheels`.", out.width = "100%", fig.asp = 0.5, fig.width = 8}
+```{r mariokart-cv-residuals, fig.cap = "Cross-validation predictions and errors from linear models built on two different sets of variables. Left regressed `price` on `cond_new`; right regressed `price` on `cond_new`, `stock_photo`, `duration`, and `wheels`.", out.width = "100%", fig.width = 8}
 set.seed(4)
 mario_CV1 <- train(price ~ cond_new,
   data = mariokart,
@@ -332,9 +333,9 @@ p1 <- mario_CV1$pred %>%
     color = "CV Fold", shape = "CV Fold",
     x = "Predicted", y = "Prediction error (residual)"
   ) +
-  annotate(geom = "text", x = 40, y = 23, label = paste("CV SSE =", SSE_CV1)) +
+  annotate(geom = "text", x = 40, y = 25, label = paste("CV SSE =", SSE_CV1)) +
   labs(title = "Model with cond_new") +
-  theme(legend.position = "none") +
+  #theme(legend.position = "none") +
   scale_color_openintro("three")
 
 p2 <- mario_CV2$pred %>%
@@ -349,12 +350,13 @@ p2 <- mario_CV2$pred %>%
     color = "CV Fold", shape = "CV Fold",
     x = "Predicted", y = "Prediction error (residual)"
   ) +
-  annotate(geom = "text", x = 40, y = 23, label = paste("CV SSE =", SSE_CV2)) +
+  annotate(geom = "text", x = 40, y = 25, label = paste("CV SSE =", SSE_CV2)) +
   labs(title = "Model with 4 predictors") +
   scale_color_openintro("three")
 
 
-p1 + p2
+p1 + p2 + plot_layout(guides = "collect") & 
+  theme(legend.position = "bottom")
 ```
 
 ::: {.guidedpractice data-latex=""}
