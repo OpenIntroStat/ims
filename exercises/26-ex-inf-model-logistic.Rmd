@@ -1,0 +1,414 @@
+1. **Marijuana use in college.** 
+Researchers studying whether the value systems adolescents conflict with those of their children asked 445 college students if they use marijuana. They also asked the students' parents if they've used marijuana when they were in college.
+The following model was fit to predict student drug use from parent drug use.^[The [`drug_use`](http://openintrostat.github.io/openintro/reference/drug_use.html) data used in this exercise can be found in the **openintro** R package.] [@Ellis:1979]
+
+    ```{r}
+    library(openintro)
+    library(kableExtra)
+    library(tidyverse)
+    library(broom)
+   
+    drug_use %>%
+      glm(student ~ parents, data = ., family = "binomial") %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 3) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "10em", monospace = TRUE) %>%
+      column_spec(2:5, width = "5em")
+    ```
+
+    a. State the hypotheses for evaluating whether parents' marijuana usage is a significant predictor of their kids' marijuana usage.
+    
+    b. Based on the regression output, state the sample statistic and the p-value of the test.
+    
+    c. State the conclusion of the hypothesis test in context of the data and the research question.
+
+1. **Treating heart attacks.**
+Researchers studying the effectiveness of Sulfinpyrazone in the prevention of sudden death after a heart attack conducted a randomized experiment on 1,475 patients. 
+The following model was fit to predict experiment outcome (`died` or `lived`, where success is defined as `lived`) from the experimental group (`control` and `treatment`).^[The [`sulphinpyrazone`](http://openintrostat.github.io/openintro/reference/sulphinpyrazone.html) data used in this exercise can be found in the **openintro** R package.] [@Anturane:1980]
+
+    ```{r}
+   library(openintro)
+   library(kableExtra)
+   
+   sulphinpyrazone %>%
+     glm(outcome ~ group, data = ., family = "binomial") %>%
+     tidy() %>%
+     mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+     kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lrrrr", digits = 3) %>%
+     kable_styling(bootstrap_options = c("striped", "condensed"), 
+                   latex_options = c("striped", "HOLD_position"),
+                   full_width = FALSE) %>%
+     column_spec(1, width = "10em", monospace = TRUE) %>%
+     column_spec(2:5, width = "5em")
+    ```
+
+    a. State the hypotheses for evaluating whether experimental group is a significant predictor of treatment outcome.
+    
+    b. Based on the regression output, state the sample statistic and the p-value of the test.
+    
+    c. State the conclusion of the hypothesis test in context of the data and the research question.
+
+1. **Possum classification with cross-validation.** 
+The common brushtail possum of the Australia region is a bit cuter than its distant cousin, the American opossum.
+We consider 104 brushtail possums from two regions in Australia, where the possums may be considered a random sample from the population.
+The first region is Victoria, which is in the eastern half of Australia and traverses the southern coast. 
+The second region consists of New South Wales and Queensland, which make up eastern and northeastern Australia. 
+We use logistic regression to differentiate between possums in these two regions.
+The outcome variable, called `pop`, takes value 1 when a possum is from Victoria and 0 when it is from New South Wales or Queensland.^[The [`possum`](http://openintrostat.github.io/openintro/reference/possum.html) data used in this exercise can be found in the **openintro** R package.]
+
+    $$
+    \begin{aligned}
+    \log_e \bigg(\frac{p}{1-p}\bigg) = \beta_0 &+ \beta_1\times \texttt{tail_l}
+    \end{aligned}
+    $$
+    
+    $$
+    \begin{aligned}
+    \log_e \bigg(\frac{p}{1-p}\bigg) = \beta_0 &+ \beta_1\times \texttt{total_l} + \beta_2\times     \texttt{sex}
+    \end{aligned}
+    $$
+
+    ```{r}
+    library(tidyverse)
+    library(broom)
+    library(caret)
+    library(patchwork)
+    library(openintro)
+
+    possum <- openintro::possum %>%
+      mutate(pop = as.factor(ifelse(pop == "Vic", "Victoria", "other")))
+
+    set.seed(4)
+    possum_CV1 <- train(pop ~ tail_l,
+      data = possum,
+      na.action = na.omit,
+      method = "glm",
+      family = "binomial",
+      trControl = trainControl(
+        method = "cv", number = 4,
+        classProbs = TRUE,
+        savePredictions = TRUE
+      )
+    )
+    possum_CV2 <- train(pop ~ total_l + sex,
+      data = possum,
+      na.action = na.omit,
+      method = "glm",
+      family = "binomial",
+      trControl = trainControl(
+        method = "cv", number = 4,
+        classProbs = TRUE,
+        savePredictions = TRUE
+      )
+    )
+
+    possum_CV1$pred %>%
+      select(obs, pred, Resample) %>%
+      table() %>%
+      as.data.frame() %>%
+      ggplot(aes(x = forcats::fct_rev(pred), y = obs)) +
+      geom_tile(aes(fill = Freq)) +
+      ylab("Observed region") +
+      xlab("Predicted region") +
+      geom_text(aes(label = sprintf("%1.0f", Freq)), vjust = 1) +
+      facet_wrap(~Resample) +
+      theme(legend.position = "none") +
+      scale_fill_continuous(high = IMSCOL["blue", 1], low = IMSCOL["blue", 6]) +
+      ggtitle("Model with tail length predictor")
+
+    possum_CV2$pred %>%
+      select(obs, pred, Resample) %>%
+      table() %>%
+      as.data.frame() %>%
+      ggplot(aes(x = forcats::fct_rev(pred), y = obs)) +
+      geom_tile(aes(fill = Freq)) +
+      ylab("Observed region") +
+      xlab("Predicted region") +
+      geom_text(aes(label = sprintf("%1.0f", Freq)), vjust = 1) +
+      facet_wrap(~Resample) +
+      theme(legend.position = "none") +
+      scale_fill_continuous(high = IMSCOL["blue", 1], low = IMSCOL["blue", 6]) +
+      ggtitle("Model with total length and sex as predictors")
+    ```
+    
+    a. How many observations are in Fold2?  Use the model with only tail length as a predictor variable. Of the observations in Fold2, how many of them were correctly predicted to be from Vicotria?  How many of them were incorrectly predicted to be from Victoria?
+     
+    b. How many observations are used to build the model which predicts for the observations in Fold2?
+    
+    c. For one of the cross-validation folds, how many coefficients were estimated for the model which uses tail length as a predictor?  For one of the cross-validation folds, how many coefficients were estimated for the model which uses total length and sex as predictors?
+
+1. **Possum classification, cross-validation to choose model.** 
+In this exercise we consider 104 brushtail possums from two regions in Australia (the first region is Victoria and the second is New South Wales and Queensland), where the possums may be considered a random sample from the population. 
+We use logistic regression to classify the possums into the two regions.
+The outcome variable, called `pop`, takes value 1 when a possum is from Victoria and 0 when it is from New South Wales or Queensland.
+
+    $$
+    \begin{aligned}
+    \log_e \bigg(\frac{p}{1-p}\bigg) = \beta_0 &+ \beta_1\times \texttt{tail_l}
+    \end{aligned}
+    $$
+    
+    $$
+    \begin{aligned}
+    \log_e \bigg(\frac{p}{1-p}\bigg) = \beta_0 &+ \beta_1\times \texttt{total_l} + \beta_2\times     \texttt{sex}
+    \end{aligned}
+    $$
+
+    ```{r}
+    library(tidyverse)
+    library(broom)
+    library(caret)
+    library(patchwork)
+    library(openintro)
+
+    possum <- openintro::possum %>%
+      mutate(pop = as.factor(ifelse(pop == "Vic", "Victoria", "other")))
+
+    set.seed(4)
+    possum_CV1 <- train(pop ~ tail_l,
+      data = possum,
+      na.action = na.omit,
+      method = "glm",
+      family = "binomial",
+      trControl = trainControl(
+        method = "cv", number = 4,
+        classProbs = TRUE,
+        savePredictions = TRUE
+      )
+    )
+    possum_CV2 <- train(pop ~ total_l + sex,
+      data = possum,
+      na.action = na.omit,
+      method = "glm",
+      family = "binomial",
+      trControl = trainControl(
+        method = "cv", number = 4,
+        classProbs = TRUE,
+        savePredictions = TRUE
+      )
+    )
+    
+    possum_CV1$pred %>%
+      select(obs, pred, Resample) %>%
+      table() %>%
+      as.data.frame() %>%
+      ggplot(aes(x = forcats::fct_rev(pred), y = obs)) +
+      geom_tile(aes(fill = Freq)) +
+      ylab("Observed region") +
+      xlab("Predicted region") +
+      geom_text(aes(label = sprintf("%1.0f", Freq)), vjust = 1) +
+      facet_wrap(~Resample) +
+      theme(legend.position = "none") +
+      scale_fill_continuous(high = IMSCOL["blue", 1], low = IMSCOL["blue", 6]) +
+      ggtitle("Model with tail length predictor")
+    
+    possum_CV2$pred %>%
+      select(obs, pred, Resample) %>%
+      table() %>%
+      as.data.frame() %>%
+      ggplot(aes(x = forcats::fct_rev(pred), y = obs)) +
+      geom_tile(aes(fill = Freq)) +
+      ylab("Observed region") +
+      xlab("Predicted region") +
+      geom_text(aes(label = sprintf("%1.0f", Freq)), vjust = 1) +
+      facet_wrap(~Resample) +
+      theme(legend.position = "none") +
+      scale_fill_continuous(high = IMSCOL["blue", 1], low = IMSCOL["blue", 6]) +
+      ggtitle("Model with total length and sex as predictors")
+    ```
+
+    a. For the model with tail length, how many of the observations were correctly classified?  What proportion of the observations were correctly classified?
+    
+    b. For the model with total length and sex, how many of the observations were correctly classified?  What proportion of the observations were correctly classified?
+    
+    c. If you have to choose between using only tail length as a predictor versus using total length and sex as predictors (for classification into region), which model would you choose?  Explain.
+    
+    d. Given the predictions provided, what model might be preferable to either of the models given above?
+
+1.  **Premature babies with cross-validation.** 
+US Department of Health and Human Services, Centers for Disease Control and Prevention collect information on births recorded in the country.
+The data used here are a random sample of 1000 births from 2014 (with some rows removed due to missing data).
+Here, we use logistic regression to model whether or not the baby is premature from various explanatory variables.^[The [`births14`](http://openintrostat.github.io/openintro/reference/births14.html) data used in this exercise can be found in the **openintro** R package.] [@data:births14]
+
+    $$
+    \begin{aligned}
+    \log_e \bigg(\frac{p}{1-p}\bigg)  = \beta_0 &+ \beta_1\times \texttt{mage} + \beta_2\times     \texttt{weight}\\
+    &+ \beta_3 \times \texttt{mature} + \beta_4 \times \texttt{visits}\\
+    &+ \beta_5 \times \texttt{gained}+ \beta_6 \times \texttt{habit}\\
+    \end{aligned}
+    $$
+    
+    $$
+    \begin{aligned}
+    \log_e \bigg(\frac{p}{1-p}\bigg)  = \beta_0 &+ \beta_1\times \texttt{weight} + \beta_2\times     \texttt{mature}
+    \end{aligned}
+    $$
+
+    ```{r}
+    library(tidyverse)
+    library(broom)
+    library(caret)
+    library(openintro)
+
+    births14_nona <- births14 %>%
+      select(-fage) %>%
+      drop_na() %>%
+      mutate(lowbw = as.factor(ifelse(lowbirthweight == "low", "low", "not_low"))) %>%
+      mutate(premie = as.factor(ifelse(premie == "premie", "premie", "full_term")))
+
+    set.seed(473)
+    premie_CV1 <- train(premie ~ mage + weight + mature + visits + gained + habit,
+      data = births14_nona,
+      na.action = na.omit,
+      method = "glm",
+      family = "binomial",
+      trControl = trainControl(
+        method = "cv", number = 3,
+        classProbs = TRUE,
+        savePredictions = TRUE
+      )
+    )
+    set.seed(473)
+    premie_CV2 <- train(premie ~ weight + mature,
+      data = births14_nona,
+      na.action = na.omit,
+      method = "glm",
+      family = "binomial",
+      trControl = trainControl(
+        method = "cv", number = 3,
+        classProbs = TRUE,
+        savePredictions = TRUE
+      )
+    )
+
+    premie_CV1$pred %>%
+      select(obs, pred, Resample) %>%
+      table() %>%
+      as.data.frame() %>%
+      ggplot(aes(x = forcats::fct_rev(pred), y = obs)) +
+      geom_tile(aes(fill = Freq)) +
+      ylab("Observed birth") +
+      xlab("Predicted birth") +
+      geom_text(aes(label = sprintf("%1.0f", Freq)), vjust = 1) +
+      facet_wrap(~Resample) +
+      theme(legend.position = "none") +
+      scale_fill_continuous(high = IMSCOL["blue", 1], low = IMSCOL["blue", 6]) +
+      ggtitle("Model with 6 predictors")
+
+    premie_CV2$pred %>%
+      select(obs, pred, Resample) %>%
+      table() %>%
+      as.data.frame() %>%
+      ggplot(aes(x = forcats::fct_rev(pred), y = obs)) +
+      geom_tile(aes(fill = Freq)) +
+      ylab("Observed birth") +
+      xlab("Predicted birth") +
+      geom_text(aes(label = sprintf("%1.0f", Freq)), vjust = 1) +
+      facet_wrap(~Resample) +
+      theme(legend.position = "none") +
+      scale_fill_continuous(high = IMSCOL["blue", 1], low = IMSCOL["blue", 6]) +
+      ggtitle("Model with 2 predictors")
+    ```
+    
+    a. How many observations are in Fold2?  Use the model with only `weight` and `mature` as predictor variables. Of the observations in Fold2, how many of them were correctly predicted to be premature?  How many of them were incorrectly predicted to be premature?
+     
+    b. How many observations are used to build the model which predicts for the observations in Fold2?
+    
+    c. In the original dataset, are most of the births premature or full term?  Explain.
+    
+    d. For one of the cross-validation folds, how many coefficients were estimated for the model which uses `mage`, `weight`, `mature`, `visits`, `gained`, and `habit` as predictors?  For one of the cross-validation folds, how many coefficients were estimated for the model which uses `weight` and `mature` as predictors?
+
+1.  **Premature babies, cross-validation to choose model.** 
+US Department of Health and Human Services, Centers for Disease Control and Prevention collect information on births recorded in the country.
+The data used here are a random sample of 1000 births from 2014 (with some rows removed due to missing data).
+Here, we use logistic regression to model whether or not the baby is premature from various explanatory variables. [@data:births14]
+
+    $$
+    \begin{aligned}
+    \log_e \bigg(\frac{p}{1-p}\bigg)  = \beta_0 &+ \beta_1\times \texttt{mage} + \beta_2\times     \texttt{weight}\\
+    &+ \beta_3 \times \texttt{mature} + \beta_4 \times \texttt{visits}\\
+    &+ \beta_5 \times \texttt{gained}+ \beta_6 \times \texttt{habit}\\
+    \end{aligned}
+    $$
+    
+    $$
+    \begin{aligned}
+    \log_e \bigg(\frac{p}{1-p}\bigg)  = \beta_0 &+ \beta_1\times \texttt{weight} + \beta_2\times     \texttt{mature}
+    \end{aligned}
+    $$
+
+    ```{r}
+    library(tidyverse)
+    library(broom)
+    library(caret)
+    library(openintro)
+
+    births14_nona <- births14 %>%
+      select(-fage) %>%
+      drop_na() %>%
+      mutate(lowbw = as.factor(ifelse(lowbirthweight == "low", "low", "not_low"))) %>%
+      mutate(premie = as.factor(ifelse(premie == "premie", "premie", "full_term")))
+
+    set.seed(473)
+    premie_CV1 <- train(premie ~ mage + weight + mature + visits + gained + habit,
+      data = births14_nona,
+      na.action = na.omit,
+      method = "glm",
+      family = "binomial",
+      trControl = trainControl(
+        method = "cv", number = 3,
+        classProbs = TRUE,
+        savePredictions = TRUE
+      )
+    )
+    set.seed(473)
+    premie_CV2 <- train(premie ~ weight + mature,
+      data = births14_nona,
+      na.action = na.omit,
+      method = "glm",
+      family = "binomial",
+      trControl = trainControl(
+        method = "cv", number = 3,
+        classProbs = TRUE,
+        savePredictions = TRUE
+      )
+    )
+
+    premie_CV1$pred %>%
+      select(obs, pred, Resample) %>%
+      table() %>%
+      as.data.frame() %>%
+      ggplot(aes(x = forcats::fct_rev(pred), y = obs)) +
+      geom_tile(aes(fill = Freq)) +
+      ylab("Observed birth") +
+      xlab("Predicted birth") +
+      geom_text(aes(label = sprintf("%1.0f", Freq)), vjust = 1) +
+      facet_wrap(~Resample) +
+      theme(legend.position = "none") +
+      scale_fill_continuous(high = IMSCOL["blue", 1], low = IMSCOL["blue", 6]) +
+      ggtitle("Model with 6 predictors")
+
+    premie_CV2$pred %>%
+      select(obs, pred, Resample) %>%
+      table() %>%
+      as.data.frame() %>%
+      ggplot(aes(x = forcats::fct_rev(pred), y = obs)) +
+      geom_tile(aes(fill = Freq)) +
+      ylab("Observed birth") +
+      xlab("Predicted birth") +
+      geom_text(aes(label = sprintf("%1.0f", Freq)), vjust = 1) +
+      facet_wrap(~Resample) +
+      theme(legend.position = "none") +
+      scale_fill_continuous(high = IMSCOL["blue", 1], low = IMSCOL["blue", 6]) +
+      ggtitle("Model with 2 predictors")
+    ```
+
+    a. For the model with 6 predictors, how many of the observations were correctly classified?  What proportion of the observations were correctly classified?
+    
+    b. For the model with 2 predictors, how many of the observations were correctly classified?  What proportion of the observations were correctly classified?
+    
+    c. If you have to choose between the model with 6 predictors and the model with 2 predictors (for predicting whether a baby will be premature), which model would you choose?  Explain.

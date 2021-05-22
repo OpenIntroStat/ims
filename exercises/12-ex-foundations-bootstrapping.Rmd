@@ -1,0 +1,274 @@
+1. **Outside YouTube videos.**
+Let's say that you want to estimate the proportion of YouTube videos which take place outside (define "outside" to be if any part of the video takes place outdoors).
+You take a random sample of 128 YouTube videos^[There are many choices for implementing a random selection of YouTube videos, but it isn't clear how "random" they are.] and determine that 37 of them take place outside.
+You'd like to estimate the proportion of all YouTube videos which take place outside, so you decide to create a bootstrap interval from the original sample of 128 videos.
+
+    ```{r}
+    library(tidyverse)
+    library(infer)
+    library(openintro)
+
+    tibble(videos = c(rep("inside", 91), rep("outdoors", 37))) %>%
+      specify(response = videos, success = "outdoors") %>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.025, fill = IMSCOL["green", "full"]) +
+      labs(x = "Bootstrapped sample proportions", y = "Count")
+    ```
+
+    a.  Describe in words the relevant statistic and parameter for this problem.  If you know the numerical value for either one, provide it. If you don't know the numerical value, explain why the value is unknown.
+    
+    b.  What notation is used to describe, respectively, the statistic and the parameter?
+    
+    c.  If using software to bootstrap the original dataset, what is the statistic calculated on each bootstrap sample?
+    
+    d.  When creating a bootstrap sampling distribution (histogram) of the bootstrapped sample proportions, where should the center of the histogram lie?
+    
+    e.  The histogram provides a bootstrap sampling distribution for the sample proportion (with 1000 bootstrap repetitions). Using the histogram, estimate a 90% confidence interval for the proportion of YouTube videos which take place outdoors.
+    
+    f.  In words of the problem, interpret the confidence interval which was estimated in the previous part.
+
+1. **Chronic illness.**
+In 2012 the Pew Research Foundation reported that "45% of US adults report that they live with one or more chronic conditions." However, this value was based on a sample, so it may not be a perfect estimate for the population parameter of interest on its own. The study was based on a sample of 3014 adults. Below is a distribution of 1000 bootstrapped sample proportions from the Pew dataset. [@data:pewdiagnosis:2013]
+
+    ```{r}
+    library(tidyverse)
+    library(infer)
+   
+    data <- data.frame(chronic = rep(c("no","yes"), times = c(1658,1356)))
+    
+    data %>%
+      specify(response = chronic, success = "yes")%>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(bins = 40, fill = IMSCOL["green", "full"]) +
+      xlab("Bootstrapped proportions")
+    ```
+
+    Using the distribution of 1000 bootstrapped proportions, approximate a 92% confidence interval for the true proportion of US adults who live with one or more chronic conditions.  Interpret the interval in the context of the problem.
+
+1. **Twitter users and news.**
+A poll conducted in 2013 found that 52% of all US adult Twitter users get at least some news on Twitter.  However, this value was based on a sample, so it may not be a perfect estimate for the population parameter of interest on its own.  The study was based on a sample of 736 adults.  Below is a distribution of 1000 bootstrapped sample proportions from the Pew dataset. [@data:pewtwitternews:2013]
+
+    ```{r}
+    library(tidyverse)
+    library(infer)
+   
+    data <- data.frame(news = rep(c("no","yes"), times = c(353,383)))
+    
+    data %>%
+      specify(response = news, success = "yes")%>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot() +
+      geom_histogram(aes(x = stat), bins = 40, fill = IMSCOL["green", "full"]) +
+      xlab("Bootstrapped proportions")
+    ```
+    
+    Using the distribution of 1000 bootstrapped proportions, approximate a 98% confidence interval for the true proportion of US adult Twitter users (in 2013) who get at least some of their news from Twitter.  Interpret the interval in the context of the problem.
+
+1. **Bootstrap distributions of $\hat{p}$, I.**
+Each of the following four distributions was created using a different dataset.
+Each dataset was based on $n=23$ observations.
+The original datasets had the following proportions of successes: $$\hat{p} = 0.13 \ \ \hat{p} = 0.22 \ \ \hat{p} = 0.30 \ \ \hat{p} = 0.43.$$ 
+Match each histogram with the original data proportion of success.
+
+    ```{r fig.asp = 1}
+    library(tidyverse)
+    library(patchwork)
+    library(infer)
+    
+    data1 <- data.frame(outcome = rep(c("no","yes"), times = c(20,3)))
+    data2 <- data.frame(outcome = rep(c("no","yes"), times = c(13,10)))
+    data3 <- data.frame(outcome = rep(c("no","yes"), times = c(17,7)))
+    data4 <- data.frame(outcome = rep(c("no","yes"), times = c(18,5)))
+    
+    set.seed(47)
+    p1 <- data1 %>%
+      specify(response = outcome, success = "yes")%>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot() +
+      geom_histogram(aes(x = stat), bins = 40, fill = IMSCOL["green", "full"]) +
+      xlab("A. Bootstrapped proportions")
+    
+    set.seed(47)
+    p2<- data2 %>%
+      specify(response = outcome, success = "yes")%>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot() +
+      geom_histogram(aes(x = stat), bins = 40, fill = IMSCOL["green", "full"]) +
+      xlab("B. Bootstrapped proportions")
+    
+        set.seed(47)
+    p3 <- data3 %>%
+      specify(response = outcome, success = "yes")%>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot() +
+      geom_histogram(aes(x = stat), bins = 40, fill = IMSCOL["green", "full"]) +
+      xlab("C. Bootstrapped proportions")
+    
+        set.seed(47)
+    p4 <- data4 %>%
+      specify(response = outcome, success = "yes")%>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot() +
+      geom_histogram(aes(x = stat), bins = 40, fill = IMSCOL["green", "full"]) +
+      xlab("D. Bootstrapped proportions")
+    
+    p1 + p2 + p3 + p4 + plot_layout(ncol = 2)
+    ```
+
+1. **Bootstrap distributions of $\hat{p}$, II.**
+Each of the following four distributions was created using a different dataset.
+Each dataset was based on $n=23$ observations. 
+
+    ```{r fig.asp = 1}
+    library(tidyverse)
+    library(patchwork)
+    library(infer)
+    
+    data1 <- data.frame(outcome = rep(c("no","yes"), times = c(20,3)))
+    data2 <- data.frame(outcome = rep(c("no","yes"), times = c(13,10)))
+    data3 <- data.frame(outcome = rep(c("no","yes"), times = c(17,7)))
+    data4 <- data.frame(outcome = rep(c("no","yes"), times = c(18,5)))
+    
+    set.seed(47)
+    p1 <- data1 %>%
+      specify(response = outcome, success = "yes")%>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot() +
+      geom_histogram(aes(x = stat), bins = 40, fill = IMSCOL["green", "full"]) +
+      xlab("A. Bootstrapped proportions")
+    
+    set.seed(47)
+    p2<- data2 %>%
+      specify(response = outcome, success = "yes")%>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot() +
+      geom_histogram(aes(x = stat), bins = 40, fill = IMSCOL["green", "full"]) +
+      xlab("B. Bootstrapped proportions")
+    
+        set.seed(47)
+    p3 <- data3 %>%
+      specify(response = outcome, success = "yes")%>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot() +
+      geom_histogram(aes(x = stat), bins = 40, fill =  IMSCOL["green", "full"]) +
+      xlab("C. Bootstrapped proportions")
+    
+        set.seed(47)
+    p4 <- data4 %>%
+      specify(response = outcome, success = "yes")%>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot() +
+      geom_histogram(aes(x = stat), bins = 40, fill = IMSCOL["green", "full"]) +
+      xlab("D. Bootstrapped proportions")
+    
+    p1 + p2 + p3 + p4 + plot_layout(ncol = 2)
+    ```
+    
+    Consider each of the following values for the true popluation $p$ (proportion of success). Datasets A, B, C, D were bootstrapped 1000 times, with bootstrap proportions as given in the histograms provided. For each parameter value, list the datasets which could plausibly have come from that population. (Hint:  there may be more than one dataset for each parameter value.)
+    
+    a. $p = 0.05$
+    
+    b. $p = 0.25$
+    
+    c. $p = 0.45$
+    
+    d. $p = 0.55$
+    
+    e. $p = 0.75$
+
+1. **Bootstrap distributions of $\hat{p}$, III.**
+Each of the following four distributions was created using a different dataset.
+Each dataset had the same proportion of successes $(\hat{p} = 0.4)$ but a different sample size.  The four datasets were given by $n = 10, 100, 500, 1000$.
+
+    ```{r fig.asp=1}
+    library(tidyverse)
+    library(patchwork)
+    library(infer)
+    library(openintro)
+    
+    data1 <- data.frame(outcome = rep(c("no","yes"), times = c(6,4)))
+    data2 <- data.frame(outcome = rep(c("no","yes"), times = c(60,40)))
+    data3 <- data.frame(outcome = rep(c("no","yes"), times = c(300,200)))
+    data4 <- data.frame(outcome = rep(c("no","yes"), times = c(600,400)))
+    
+    set.seed(47)
+    p1 <- data1 %>%
+      specify(response = outcome, success = "yes")%>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot() +
+      geom_histogram(aes(x = stat), bins = 40, fill = IMSCOL["green", "full"]) +
+      xlab("Bootstrapped proportions, n = 10")
+    
+    set.seed(47)
+    p2<- data2 %>%
+      specify(response = outcome, success = "yes")%>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot() +
+      geom_histogram(aes(x = stat), bins = 40, fill = IMSCOL["green", "full"]) +
+      xlab("Bootstrapped proportions, n = 100")
+    
+        set.seed(47)
+    p3 <- data3 %>%
+      specify(response = outcome, success = "yes")%>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot() +
+      geom_histogram(aes(x = stat), bins = 40, fill = IMSCOL["green", "full"]) +
+      xlab("Bootstrapped proportions, n = 500")
+    
+        set.seed(47)
+    p4 <- data4 %>%
+      specify(response = outcome, success = "yes")%>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot() +
+      geom_histogram(aes(x = stat), bins = 40, fill = IMSCOL["green", "full"]) +
+      xlab("Bootstrapped proportions, n = 1000")
+    
+    p1 + p2 + p3 + p4 + plot_layout(ncol = 2)
+    ```
+
+    Consider each of the following values for the true popluation $p$ (proportion of success). Datasets A, B, C, D were bootstrapped 1000 times, with bootstrap proportions as given in the histograms provided.  For each parameter value, list the datasets which could plausibly have come from that population.  (Hint:  there may be more than one dataset for each parameter value.)
+    
+    a. $p = 0.05$
+    
+    b. $p = 0.25$
+    
+    c. $p = 0.45$
+    
+    d. $p = 0.55$
+    
+    e. $p = 0.75$
+
+1. **Cyberbullying rates.** 
+Teens were surveyed about cyberbullying, and 54% to 64% reported experiencing cyberbullying (95% confidence interval). Answer the following questions based on this interval. [@pew_cyber_bully_2018]
+
+    a. A newspaper claims that a majority of teens have experienced cyberbullying. Is this claim supported by the confidence interval? Explain your reasoning.
+
+    b. A researcher conjectured that 70% of teens have experienced cyberbullying. Is this claim supported by the confidence interval? Explain your reasoning.
+
+    c. Without actually calculating the interval, determine if the claim of the researcher from part (b) would be supported based on a 90% confidence interval?
+
+1.  **Waiting at an ER.**
+A 95% confidence interval for the mean waiting time at an emergency room (ER) of (128 minutes, 147 minutes). Answer the following questions based on this interval.
+
+    a. A local newspaper claims that the average waiting time at this ER exceeds 3 hours. Is this claim supported by the confidence interval? Explain your reasoning.
+
+    b. The Dean of Medicine at this hospital claims the average wait time is 2.2 hours. Is this claim supported by the confidence interval? Explain your reasoning.
+
+    c. Without actually calculating the interval, determine if the claim of the Dean from part (b) would be supported based on a 99% confidence interval?
