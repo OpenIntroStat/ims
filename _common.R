@@ -38,13 +38,18 @@ knitr::opts_chunk$set(
   warning = FALSE,
   #cache = TRUE,
   echo = FALSE, # hide code unless otherwise noted in chunk options
-  out.width = "90%",
   fig.align = "center",
   fig.width = 6,
   fig.asp = 0.618,  # 1 / phi
   fig.show = "hold",
   dpi = 300
 )
+
+if (knitr::is_html_output()) {
+  knitr::opts_chunk$set(out.width = "90%")
+} else if (knitr::is_latex_output()) {
+  knitr::opts_chunk$set(out.width = "80%")
+}
 
 # knit options -----------------------------------------------------------------
 
