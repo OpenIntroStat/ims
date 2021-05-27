@@ -1,68 +1,137 @@
-1. **Cats like enclosed spaces, Part I.**
-A citizen science project on which type of enclosed spaces cats are most likely to sit in compared (among other options) two different spaces taped to the ground.  The first was a square, and the second was a shape known as Kanizsa square illusion.  When comparing the two options given to 7 cats, 5 chose the square, and 2 chose the Kanizsa.  For this question, we are interested to know whether there is evidence that the cats have a preference for one of the shapes, or not. [@Smith:2021]
+1. **Do aliens exist?**
+In May 2021, YouGov asked 4,839 adult Great Britain residents whether they think aliens exist, and if so, if they have or have not visited Earth.
+You want to evaluate if more than a quarter (25\%) of Great Britain adults think aliens don't exist.
+In the survey 22\% responded "I think they exist, and have visited Earth", 28\% responded "I think they exist, but have not visited Earth", 29% responded "I don't think they exist", and 22\% responded "Don't know".
+A friend of yours offers to help you with setting up the hypothesis test and comes up with the following hypotheses.
+Indicate any errors you see.
+
+    $H_0: \hat{p} = 0.29 \quad \quad H_A: \hat{p} > 0.29$
+
+1. **Married at 25.**
+A study suggests that the 25% of 25 year olds have gotten married.
+You believe that this is incorrect and decide to collect your own sample for a hypothesis test.
+From a random sample of 25 year olds in census data with size 776, you find that 24% of them are married.
+A friend of yours offers to help you with setting up the hypothesis test and comes up with the following hypotheses. Indicate any errors you see.
+
+    $H_0: \hat{p} = 0.24 \quad \quad H_A: \hat{p} \neq 0.24$
+
+1. **Defund the police.**
+A Survey USA poll conducted in Seattle, WA in May 2021 reports that of the 650 respondents (adults living in this area), 159 support proposals to defund police departments. [@data:defundpolice]
+
+    a. A journalist writing a news story on the poll results wants to use the headline "More than 1 in 5 adults living in Seattle support proposals to defund police departments." You caution the journalist that they should first conduct a hypothesis test to see if the poll data provide concincing evidence for this claim Write the hypotheses for this test.
+    
+    b. Calculate the proportion of Seattle adults in thsi sample who support proposals to defund police departments.
+    
+    c. Describe a setup for a simulation that would be appropriate in this situation and how the p-value can be calculated using the simulation results.
+    
+    d. Below is a histogram showing the distribution of $\hat{p}_{sim}$ in 1,000 simulations under the null hypothesis. Estimate the p-value using the plot and use it to evaluate the hypotheses.
 
     ```{r}
     library(tidyverse)
+    library(openintro)
     library(infer)
     
-    cats <- data.frame(choice = c(rep("square", 5), rep("Kanizsa", 2)))
+    defund_police <- tibble(opinion = c(rep("support", 159), rep("do not support", 650-159)))
+    
+    set.seed(47)
+    null_dist <- defund_police %>%
+      specify(response = opinion, success = "support") %>%
+      hypothesize(null = "point", p = 0.20) %>%
+      generate(reps = 1000, type = "simulate") %>%
+      calculate(stat = "prop")
+    
+    null_dist %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(bins = 20, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 parametric bootstrapped proportions",
+        subtitle = "p = 0.20",
+        x = "Proportion of those who support proposals\nto defund police departments",
+        y = "Count"
+        ) +
+      scale_x_continuous(breaks = seq(0.15, 0.25, 0.02))
+    ```
+
+1. **Assisted Reproduction.**
+Assisted Reproductive Technology (ART) is a collection of techniques that help facilitate pregnancy (e.g., in vitro fertilization). The 2018 ART Fertility Clinic Success Rates Report published by the Centers for Disease Control and Prevention reports that ART has been successful in leading to a live birth in 48.8% of cases where the patient is under 35 years old. [@web:art2018] A new fertility clinic claims that their success rate is higher than average for this age group. A random sample of 30 of their patients yielded a success rate of 60%. A consumer watchdog group would like to determine if this provides strong evidence to support the company's claim.
+
+     a. Write the hypotheses to test if the success rate for ART at this clinic is significantly higher than the success rate reported by the CDC.
+
+     b. Describe a setup for a simulation that would be appropriate in this situation and how the p-value can be calculated using the simulation results.
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(infer)
+
+    art <- tibble(fertility = c(rep("success", 12), rep("failure", 18)))
+    
+    set.seed(47)
+    null_dist <- art %>%
+      specify(response = fertility, success = "success") %>%
+      hypothesize(null = "point", p = 0.488) %>%
+      generate(reps = 1000, type = "simulate") %>%
+      calculate(stat = "prop") 
+    
+    null_dist %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.05, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 parametric bootstrapped proportions",
+        subtitle = "p = 0.488",
+        x = "Proportion of successful ART cases",
+        y = "Count"
+        ) +
+      geom_vline(xintercept = 0.6, color = IMSCOL["red", 1], size = 1)
+    ```
+
+     c. Below is a histogram showing the distribution of $\hat{p}_{sim}$ in 1,000 simulations under the null hypothesis. Estimate the p-value using the plot and use it to evaluate the hypotheses.
+
+     d. After performing this analysis, the consumer group releases the following news headline: "Infertility clinic falsely advertises better success rates". Comment on the appropriateness of this statement.
+
+1. **If I fits, I sits, bootstrap test.**
+A citizen science project on which type of enclosed spaces cats are most likely to sit in compared (among other options) two different spaces taped to the ground.  The first was a square, and the second was a shape known as [Kanizsa square illusion](https://en.wikipedia.org/wiki/Illusory_contours#Kanizsa_figures). When comparing the two options given to 7 cats, 5 chose the square, and 2 chose the Kanizsa square illusion. We are interested to know whether these data provide convincing evidence that cats prefer one of the shapes over the other. [@Smith:2021]
+    
+    a. What are the null and alternative hypotheses for evaluating whether these data provide convincing evidence that cats have preference for one of the shapes
+    
+    b. A parametric bootstrap simulation (with 1,000 bootstrap samples) was run and the resulting null distribution is displayed in the histogram below.Find the p-value using this distribution and conclude the hypothesis test in the context of the problem.
+    
+    ```{r}
+    library(tidyverse)
+    library(infer)
+    library(openintro)
+    
+    cats <- tibble(choice = c(rep("square", 5), rep("Kanizsa", 2)))
     
     set.seed(47)
     cats %>%
       specify(response = choice, success = "square") %>%
       hypothesize(null = "point", p = 0.5) %>%
-      generate(reps = 1000, method = "simulate") %>%
+      generate(reps = 1000, type = "simulate") %>%
       calculate(stat = "prop") %>%
-      ggplot() +
-      geom_histogram(aes(x = stat)) + 
-      xlab("Bootstrapped sample proportions of square, p = 0.5")
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.05, fill = IMSCOL["green", "full"]) + 
+      labs(
+        title = "1,000 parametric bootstrapped proportions",
+        subtitle = "p = 0.5",
+        x = "Proportion of cats who prefer squares",
+        y = "Count"
+        )
     ```
 
-    a. Calculate the standard error of the sample proportion using the mathematical model.
+1. **Legalization of marijuana, bootstrap test.**
+The 2018 General Social Survey asked a random sample of 1,563 US adults: "Do you think the use of marijuana should be made legal, or not?" 60% of the respondents said it should be made legal. [@data:gssgrass] Consider a scenario where, in order to become legal, 55% (or more) of voters must approve.
     
-    b. A parametric bootstrap simulation (1000 reps) was run and is displayed in the histogram above.  What is the approximate standard error of the sample proportion given the parametric bootstrap?
+    a. What are the null and alternative hypotheses for evaluating whether these data provide convincing evidence that, if voted on, marijuana would be legalized in the US.
+  
+    b. A parametric bootstrap simulation (with 1,000 bootstrap samples) was run and the resulting null distribution is displayed in the histogram below. Find the p-value using this distribution and conclude the hypothesis test in the context of the problem.
     
-    c. Do the mathematical model and parametric bootstrap give similar standard errors?
-    
-    d. In order to approach the problem using the mathematical model, are the success-failure conditions met for this study?  Explain.
-    
-    e. What is evident in the parametric bootstrap distribution which indicates that the mathematical model should probably not be used?
-
-1. **Cats like enclosed spaces, Part II.**
-A citizen science project on which type of enclosed spaces cats are most likely to sit in compared (among other options) two different spaces taped to the ground.  The first was a square, and the second was a shape known as Kanizsa square illusion.  When comparing the two options given to 7 cats, 5 chose the square, and 2 chose the Kanizsa.  For this question, we are interested to know whether there is evidence that the cats have a preference for one of the shapes, or not. [@Smith:2021]
-
     ```{r}
     library(tidyverse)
     library(infer)
+    library(openintro)
     
-    cats <- data.frame(choice = c(rep("square", 5), rep("Kanizsa", 2)))
-    
-    set.seed(47)
-    cats %>%
-      specify(response = choice, success = "square") %>%
-      hypothesize(null = "point", p = 0.5) %>%
-      generate(reps = 1000, method = "simulate") %>%
-      calculate(stat = "prop") %>%
-      ggplot() +
-      geom_histogram(aes(x = stat)) + 
-      xlab("Bootstrapped sample proportions of square, p = 0.5")
-    ```
-    
-    
-    a. What are the null and alternative hypotheses for the question on whether cats have a preference over the two spaces?
-    
-    b. Using the parametric bootstrap sampling distribution above (on 1000 reps), find the p-value and conclude the hypothesis test in the context of the problem.
-
-1. **Legalization of marijuana, SE Part I.**
-The General Social Survey asked a random sample of 1,563 US adults: "Do you think the use of marijuana should be made legal, or not?" 60% of the respondents said it should be made legal. [@data:gssgrass]  Consider a scenario where, in order to become legal, 55% (or more) of voters must approve.
-
-    A parametric bootstrap sampling distribution is given below with 100 repetitions to show the variability of the sample proportion when 55% of voters approve legalizing marijuana.
-
-    ```{r}
-    library(tidyverse)
-    library(infer)
-    
-    mj <- data.frame(opinion = c(rep("legal", 938),rep("not legal", 625)))
+    mj <- tibble(opinion = c(rep("legal", 938),rep("not legal", 625)))
     
     set.seed(47)
     mj %>%
@@ -70,217 +139,164 @@ The General Social Survey asked a random sample of 1,563 US adults: "Do you thin
       hypothesize(null = "point", p = 0.55) %>%
       generate(reps = 1000, type = "simulate") %>%
       calculate(stat = "prop") %>%
-      ggplot() + 
-      geom_histogram(aes(x = stat)) +
-      xlab("Bootstrapped sample proportions of legal support, p = 0.55")
-    
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.005, fill = IMSCOL["green", "full"]) + 
+      labs(
+        title = "1,000 parametric bootstrapped proportions",
+        subtitle = "p = 0.55",
+        x = "Proportion of US adults who support legalizing marijuana",
+        y = "Count"
+        )
     ```
-    
+
+1. **If I fits, I sits, standard errors.**
+The results of a study on the type of enclosed spaces cats are most likely to sit in show that 5 out of 7 cats chose a square taped to the ground over a shape known as [Kanizsa square illusion](https://en.wikipedia.org/wiki/Illusory_contours#Kanizsa_figures), which was preferred by the remaining 2 cats. To evaluate whether these data provide convincing evidence that cats prefer one of the shapes over the other, we set $H_0: p = 0.5$, where $p$ is the population proportion of cats who prefer square over the Kanizsa square illusion and $H_0: p \neq 0.5$, which suggests some preference, without specifying which shape is more preferred. [@Smith:2021]
+
     a. Calculate the standard error of the sample proportion using the mathematical model.
     
-    b. Use the parametric bootstrap simulation to approximate the standard error of the sample proportion.
-    
-    c. In this setting (to test whether the true underlying population proportion is greater than 0.55), would there be a strong reason to choose the mathematical model over the parametric bootstrap (or vice versa)?
-
-1. **Legalization of marijuana, SE Part II.**
-The General Social Survey asked a random sample of 1,563 US adults: "Do you think the use of marijuana should be made legal, or not?" 60% of the respondents said it should be made legal. [@data:gssgrass] Consider a scenario where, in order to become legal, 55% (or more) of voters must approve.
-
-    A bootstrap sampling distribution is given below with 100 repetitions to show the variability of the sample proportion using the data provided from the General Social Survey.
+    b. A parametric bootstrap simulation (with 1,000 bootstrap samples) was run and the resulting null distribution is displayed in the histogram below. This distribution shows the variability of the sample proportion in samples of size 7 when 50% of cats prefer the square shape over the Kanizsa square illusion. What is the approximate standard error of the sample proportion based on this distribution?
 
     ```{r}
     library(tidyverse)
     library(infer)
+    library(openintro)
     
-    mj <- data.frame(opinion = c(rep("legal", 938),rep("not legal", 625)))
+    cats <- tibble(choice = c(rep("square", 5), rep("Kanizsa", 2)))
+    
+    set.seed(47)
+    cats %>%
+      specify(response = choice, success = "square") %>%
+      hypothesize(null = "point", p = 0.5) %>%
+      generate(reps = 1000, type = "simulate") %>%
+      calculate(stat = "prop") %>%
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.05, fill = IMSCOL["green", "full"]) + 
+      labs(
+        title = "1,000 parametric bootstrapped proportions",
+        subtitle = "p = 0.5",
+        x = "Proportion of cats who prefer squares",
+        y = "Count"
+        )
+    ```
+    
+    c. Do the mathematical model and parametric bootstrap give similar standard errors?
+    
+    d. In order to approach the problem using the mathematical model, is the success-failure condition met for this study?Explain.
+    
+    e. What about the null distribution shown above (generated using the parametric bootstrap) tells us that the mathematical model should probably not be used?
+
+1. **Legalization of marijuana, standard errors.**
+According to the 2018 General Social Survey, in a random sample of 1,563 US adults, 60% think marijuana should be made legal. [@data:gssgrass] Consider a scenario where, in order to become legal, 55% (or more) of voters must approve.
+
+    a. Calculate the standard error of the sample proportion using the mathematical model.
+
+    b. A parametric bootstrap simulation (with 1,000 bootstrap samples) was run and the resulting null distribution is displayed in the histogram below. This distribution shows the variability of the sample proportion in samples of size 1,563 when 55% of voters approve legalizing marijuana. What is the approximate standard error of the sample proportion based on this distribution?
+
+    ```{r}
+    library(tidyverse)
+    library(infer)
+    library(openintro)
+    
+    mj <- tibble(opinion = c(rep("legal", 938),rep("not legal", 625)))
     
     set.seed(47)
     mj %>%
       specify(response = opinion, success = "legal") %>%
-      generate(reps = 1000, type = "bootstrap") %>%
+      hypothesize(null = "point", p = 0.55) %>%
+      generate(reps = 1000, type = "simulate") %>%
       calculate(stat = "prop") %>%
-      ggplot() + 
-      geom_histogram(aes(x = stat)) +
-      xlab("Bootstrapped sample proportions of legal support")
-    
+      ggplot(aes(x = stat)) +
+      geom_histogram(binwidth = 0.005, fill = IMSCOL["green", "full"]) + 
+      labs(
+        title = "1,000 parametric bootstrapped proportions",
+        subtitle = "p = 0.55",
+        x = "Proportion of US adults who support legalizing marijuana",
+        y = "Count"
+        )
     ```
     
-    a. Calculate the standard error of the sample proportion using the mathematical model.
+    c. Do the mathematical model and parametric bootstrap give similar standard errors?
     
-    b. Use the bootstrap simulation to approximate the standard error of the sample proportion.
-    
-    c. In this setting (to test whether the true underlying population proportion is greater than 0.55), would there be a strong reason to choose the mathematical model over the bootstrap taken repeatedly on the dataset (or vice versa)?
-    
+    d. In this setting (to test whether the true underlying population proportion is greater than 0.55), would there be a strong reason to choose the mathematical model over the parametric bootstrap (or vice versa)?
 
-1. **Statistics and employment, Part I.**
-A large university knows that about 70% of the full-time students are employed at least 5 hours per week.  The members of the Statistics Department wonder if the same proportion of their students work at least 5 hours per week.  They sample 25 majors and find that 15 of the students work 5 or more hours each week.
+1. **Statistics and employment, describe the bootstrap.**
+A large university knows that about 70% of the full-time students are employed at least 5 hours per week. The members of the Statistics Department wonder if the same proportion of their students work at least 5 hours per week. They randomly sample 25 majors and find that 15 of the students work 5 or more hours each week.
 
-    Two bootstrap sampling distributions are created to describe the variability in the proportion of statistics majors who work at least 5 hours per week.  The parametric bootstrap imposes a true population proportion of $p=0.7$ while the data bootstrap resamples from the actual data (which has 60% of the observations who work at least 5 hours per week).
+    Two bootstrap sampling distributions are created to describe the variability in the proportion of statistics majors who work at least 5 hours per week. The parametric bootstrap imposes a true population proportion of $p = 0.7$ while the data bootstrap resamples from the actual data (which has 60% of the observations who work at least 5 hours per week).
 
-    ```{r}
+    ```{r out.width = "100%", fig.asp = 0.5}
     library(tidyverse)
     library(infer)
+    library(openintro)
+    library(patchwork)
     
-    students <- data.frame(outside = c(rep("work", 15), rep("don't work", 10)))
+    students <- tibble(outside = c(rep("work", 15), rep("don't work", 10)))
     
     set.seed(47)
-    students %>%
+    p_para <- students %>%
       specify(response = outside, success = "work") %>%
       hypothesize(null = "point", p = 0.7) %>%
       generate(reps = 1000, type = "simulate") %>%
       calculate(stat = "prop") %>%
-      ggplot() + 
-      geom_histogram(aes(x = stat), binwidth = 0.02) +
-      xlab("Parametric bootstrap, proportion who work, p = 0.7")
+      ggplot(aes(x = stat)) + 
+      geom_histogram(binwidth = 0.05, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "Parametric bootstrap",
+        subtitle = "p = 0.7",
+        x = "Proportion who work"
+      )
 
     set.seed(47)
-    students %>%
+    p_data <- students %>%
       specify(response = outside, success = "work") %>%
       generate(reps = 1000, type = "bootstrap") %>%
       calculate(stat = "prop") %>%
-      ggplot() + 
-      geom_histogram(aes(x = stat), binwidth = 0.02) +
-      xlab("Data bootstrap, proportion who work")
+      ggplot(aes(x = stat)) + 
+      geom_histogram(binwidth = 0.05, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "Data bootstrap",
+        x = "Proportion who work"
+      )
+    
+    p_para + p_data
     ```
     
-    a. Where are the two distributions centered?  Are they centered at roughly the same place?
+    a. The bootstrap sampling was done under two different settings to generate each of the distributions shown above. Describe the two different settings.
+
+    b. Where are each of the two distributions centered? Are they centered at roughly the same place?
     
-    b. Do the two distributions indicate that the standard error of the sample proportion is roughly equal?  Provide the standard error values given by each histogram.
+    c. Estimate the standard error of the simulated proportions based on each distribution. Are the two standard errors you estimate roughly equal?
     
-    c. Is the shape of the two histograms roughly the same?  Describe their shapes.
-    
-    d. The bootstrap sampling was done under two different settings.  Describe the two different settings.
+    d. Describe the shapes of the two distributions. Are they roughly the same?
 
-1. **Statistics and employment, Part II.**
-A large university knows that about 70% of the full-time students are employed at least 5 hours per week.  The members of the Statistics Department wonder if the same proportion of their students work at least 5 hours per week.  They sample 25 majors and find that 15 of the students work 5 or more hours each week.
-
-    Two bootstrap sampling distributions are created to describe the variability in the proportion of statistics majors who work at least 5 hours per week.  The parametric bootstrap imposes a true population proportion of $p=0.7$ while the data bootstrap resamples from the actual data (which has 60% of the observations who work at least 5 hours per week).
-
-    ```{r}
-    library(tidyverse)
-    library(infer)
-    
-    students <- data.frame(outside = c(rep("work", 15), rep("don't work", 10)))
-    
-    set.seed(47)
-    students %>%
-      specify(response = outside, success = "work") %>%
-      hypothesize(null = "point", p = 0.7) %>%
-      generate(reps = 1000, type = "simulate") %>%
-      calculate(stat = "prop") %>%
-      ggplot() + 
-      geom_histogram(aes(x = stat), binwidth = 0.02) +
-      xlab("Parametric bootstrap, proportion who work, p = 0.7")
-
-    set.seed(47)
-    students %>%
-      specify(response = outside, success = "work") %>%
-      generate(reps = 1000, type = "bootstrap") %>%
-      calculate(stat = "prop") %>%
-      ggplot() + 
-      geom_histogram(aes(x = stat), binwidth = 0.02) +
-      xlab("Data bootstrap, proportion who work")
-    ```
-    
-    a. Which bootstrap distribution should be used to test whether the proportion of all statistics majors who work is 70%?  And which bootstrap distribution should be used to find a confidence interval for the true poportion of statistics majors who work at least 5 hours per week?
-    
-    b. Using the appropriate histogram, test the claim that 70% of statistics majors, like their peers, work at least 5 hours per week.  State the null and alternative hypotheses, find the p-value, and conclude the test in the context of the problem.
-    
-    c. Using the appropriate histogram, find a 98% bootstrap percentile confidence interval for the true proportion of statistics majors who work at least 5 hours per week.  Interpret the confidence interval in the context of the problem.
-    
-    d. Using the appropriate historgram, find a 98% bootstrap SE confidence interval for the true proportion of statistics majors who work at least 5 hours per week.  Interpret the confidence interval in the context of the problem.
-
-1. **Assisted Reproduction.**
-Assisted Reproductive Technology (ART) is a collection of techniques that help facilitate pregnancy (e.g., in vitro fertilization). A 2008 report by the Centers for Disease Control and Prevention estimated that ART has been successful in leading to a live birth in 31% of cases [@web:art]. A new fertility clinic claims that their success rate is higher than average. A random sample of 30 of their patients yielded a success rate of 40%. A consumer watchdog group would like to determine if this provides strong evidence to support the company's claim.
-
-    ```{r}
-    library(tidyverse)
-    library(openintro)
-    library(infer)
-    
-    set.seed(47)
-    data.frame(fertility = c(rep("success", 12), rep("failure", 18))) %>%
-      specify(response = fertility, success = "success") %>%
-      hypothesize(null = "point", p = 0.31) %>%
-      generate(reps = 10000, type = "simulate") %>%
-      calculate(stat = "prop") %>% 
-      ggplot() +
-      geom_histogram(aes(x = stat), bins = 20) +
-        labs(
-          x = expression(hat(p)[sim]),
-          y = "Count"
-          ) +
-      geom_vline(xintercept = 0.4, color = IMSCOL["red", 1])
-    ```
-    
-     (a) Write the hypotheses to test if the success rate for ART at this clinic is significantly higher than the success rate reported by the CDC.
-
-     (b) Describe a setup for a simulation that would be appropriate in this situation and how the p-value can be calculated using the simulation results.
-
-     (c) Above is a histogram showing the distribution of $\hat{p}_{sim}$ in 10,000 simulations under the null hypothesis. Estimate the p-value using the plot and use it to evaluate the hypotheses.
-
-     (d) After performing this analysis, the consumer group releases the following news headline: "Infertility clinic falsely advertises better success rates". Comment on the appropriateness of this statement.
-
-1. **The Egyptian Revolution.**
-A popular uprising that started on January 25, 2011 in Egypt led to the 2011 Egyptian Revolution. Polls show that about 69% of American adults followed the news about the political crisis and demonstrations in Egypt closely during the first couple weeks following the start of the uprising. Among a random sample of 30 high school students, it was found that only 17 of them followed the news about Egypt closely during this time. [@data:egypt]
-
-    ```{r}
-    library(tidyverse)
-    library(openintro)
-    library(infer)
-    
-    set.seed(47)
-    data.frame(news = c(rep("follow", 17), rep("ignore", 13))) %>%
-      specify(response = news, success = "follow") %>%
-      hypothesize(null = "point", p = 0.69) %>%
-      generate(reps = 10000, type = "simulate") %>%
-      calculate(stat = "prop") %>% 
-      ggplot() +
-      geom_histogram(aes(x = stat), bins = 20) +
-        labs(
-          x = expression(hat(p)[sim]),
-          y = "Count"
-          ) +
-      geom_vline(xintercept = 0.567, color = IMSCOL["red", 1])
-    ```
-
-    a. Write the hypotheses for testing if the proportion of high school students who followed the news about Egypt is different than the proportion of American adults who did.
-
-    b. Calculate the proportion of high schoolers in this sample who followed the news about Egypt closely during this time.
-
-    c. Describe how to perform a simulation and, once you had results, how to estimate the p-value.
-
-    d. Above is a histogram showing the distribution of $\hat{p}_{sim}$ in 10,000 simulations under the null hypothesis. The red line is at the sample proportion $\hat{p} = 17/30.$  Estimate the p-value using the plot and determine the conclusion of the hypothesis test.
-
-1. **National Health Plan.** 
-A *Kaiser Family Foundation* poll for a random sample of US adults in 2019 found that 79% of Democrats, 55% of Independents, and 24% of Republicans supported a generic "National Health Plan". 
+1. **National Health Plan, parametric bootstrap.**
+A Kaiser Family Foundation poll for a random sample of US adults in 2019 found that 79% of Democrats, 55% of Independents, and 24% of Republicans supported a generic "National Health Plan". 
 There were 347 Democrats, 298 Republicans, and 617 Independents surveyed. [@data:KFF2019nathealthplan]
 
-    a. A political pundit on TV claims that a majority of Independents support a National Health Plan. Do these data provide strong evidence to support this type of statement?
-
-    b. Would you expect a confidence interval for the proportion of Independents who oppose the public option plan to include 0.5? Explain.
-
-1. **National Health Plan, Part II.** 
-A *Kaiser Family Foundation* poll for a random sample of US adults in 2019 found that 79% of Democrats, 55% of Independents, and 24% of Republicans supported a generic "National Health Plan". 
-There were 347 Democrats, 298 Republicans, and 617 Independents surveyed. [@data:KFF2019_nat_health_plan]
-
-    A political pundit on TV claims that a majority of Independents support a National Health Plan. Do these data provide strong evidence to support this type of statement?  One approach to assessing the question of whether a majority of Independents support a National Health Plan is to simulate 1000 parametric bootstrap samples with p = 0.5 as the proportion of Independents in support.
+    A political pundit on TV claims that a majority of Independents support a National Health Plan. Do these data provide strong evidence to support this type of statement? One approach to assessing the question of whether a majority of Independents support a National Health Plan is to simulate 1,000 parametric bootstrap samples with $p = 0.5$ as the proportion of Independents in support.
 
     ```{r}
     library(tidyverse)
     library(infer)
     
-    nhp <- data.frame(opinion = c(rep("yes plan", 339),rep("no plan", 278)))
+    nhp <- tibble(opinion = c(rep("yes plan", 339),rep("no plan", 278)))
     
     set.seed(47)
-    nhp %>%
+    null_dist <- nhp %>%
       specify(response = opinion, success = "yes plan") %>%
       hypothesize(null = "point", p = 0.50) %>%
       generate(reps = 1000, type = "simulate") %>%
-      calculate(stat = "prop") %>%
-      ggplot() + 
-      geom_histogram(aes(x = stat)) +
-      xlab("Bootstrapped sample proportions of national health care support, p = 0.50")
+      calculate(stat = "prop")
     
+    null_dist %>%
+      ggplot(aes(x = stat)) + 
+      geom_histogram(binwidth = 0.005, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "1,000 parametric bootstrapped proportions",
+        subtitle = "p = 0.50",
+        x = "Proportion of those who support a national health plan",
+        y = "Count"
+        )
     ```
     
     a. The histogram above displays 1000 values of what?  
@@ -290,12 +306,59 @@ There were 347 Democrats, 298 Republicans, and 617 Independents surveyed. [@data
     c. In order to test the claim that "a majority of Independents support a National Health Plan" what are the null and alternative hypotheses?
     
     d. Using the parametric bootstrap distribution, find the p-value and conclude the hypothesis test in the context of the problem.
-    
 
-1.  **CLT for proportions** Define the term "sampling distribution\" of
-    the sample proportion, and describe how the shape, center, and
-    spread of the sampling distribution change as the sample size
-    increases when $p = 0.1$.
+1. **Statistics and employment, use the bootstrap.**
+In a large university where 70% of the full-time students are employed at least 5 hours per week, the members of the Statistics Department wonder if the same proportion of their students work at least 5 hours per week. They randomly sample 25 majors and find that 15 of the students work 5 or more hours each week.
+
+    Two bootstrap sampling distributions are created to describe the variability in the proportion of statistics majors who work at least 5 hours per week. The parametric bootstrap imposes a true population proportion of $p=0.7$ while the data bootstrap resamples from the actual data (which has 60% of the observations who work at least 5 hours per week).
+
+    ```{r out.width = "100%", fig.asp = 0.5}
+    library(tidyverse)
+    library(infer)
+    library(openintro)
+    library(patchwork)
+    
+    students <- tibble(outside = c(rep("work", 15), rep("don't work", 10)))
+    
+    set.seed(47)
+    p_para <- students %>%
+      specify(response = outside, success = "work") %>%
+      hypothesize(null = "point", p = 0.7) %>%
+      generate(reps = 1000, type = "simulate") %>%
+      calculate(stat = "prop") %>%
+      ggplot(aes(x = stat)) + 
+      geom_histogram(binwidth = 0.05, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "Parametric bootstrap",
+        subtitle = "p = 0.7",
+        x = "Proportion who work"
+      )
+
+    set.seed(47)
+    p_data <- students %>%
+      specify(response = outside, success = "work") %>%
+      generate(reps = 1000, type = "bootstrap") %>%
+      calculate(stat = "prop") %>%
+      ggplot(aes(x = stat)) + 
+      geom_histogram(binwidth = 0.05, fill = IMSCOL["green", "full"]) +
+      labs(
+        title = "Data bootstrap",
+        x = "Proportion who work"
+      )
+    
+    p_para + p_data
+    ```
+    
+    a. Which bootstrap distribution should be used to test whether the proportion of all statistics majors who work is 70%? And which bootstrap distribution should be used to find a confidence interval for the true poportion of statistics majors who work at least 5 hours per week?
+    
+    b. Using the appropriate histogram, test the claim that 70% of statistics majors, like their peers, work at least 5 hours per week. State the null and alternative hypotheses, find the p-value, and conclude the test in the context of the problem.
+    
+    c. Using the appropriate histogram, find a 98% bootstrap percentile confidence interval for the true proportion of statistics majors who work at least 5 hours per week. Interpret the confidence interval in the context of the problem.
+    
+    d. Using the appropriate historgram, find a 98% bootstrap SE confidence interval for the true proportion of statistics majors who work at least 5 hours per week. Interpret the confidence interval in the context of the problem.
+
+1. **CLT for proportions.**
+Define the term "sampling distribution" of the sample proportion, and describe how the shape, center, and spread of the sampling distribution change as the sample size increases when $p = 0.1$.
 
 1. **Vegetarian college students.**
 Suppose that 8% of college students are vegetarians. Determine if the following statements are true or false, and explain your reasoning.
@@ -310,7 +373,7 @@ Suppose that 8% of college students are vegetarians. Determine if the following 
 
     e. The standard error would be reduced by one-half if we increased the sample size from 125 to 250.
 
-1. **Young Americans, Part I.** 
+1. **Young Americans, American dream.** 
 About 77% of young adults think they can achieve the American dream. 
 Determine if the following statements are true or false, and explain your reasoning. [@news:youngAmericans1]
 
@@ -334,7 +397,7 @@ Determine if the following statements are true or false, and explain your reason
 
     d. The distribution of sample proportions of random samples of size 280 is approximately normal.
 
-1. **Young Americans, Part II.**
+1. **Young Americans, starting a family.**
 About 25% of young Americans have delayed starting a family due to the continued economic slump.
 Determine if the following statements are true or false, and explain your reasoning. [@news:youngAmericans2]
 
@@ -348,8 +411,8 @@ Determine if the following statements are true or false, and explain your reason
 
     e. Tripling the sample size will reduce the standard error of the sample proportion by one-third.
 
-1. **Gender equality.**
-The General Social Survey asked a random sample of 1,390 Americans the following question: "On the whole, do you think it should or should not be the government's responsibility to promote equality between men and women?" 82% of the respondents said it "should be". At a 95% confidence level, this sample has 2% margin of error. Based on this information, determine if the following statements are true or false, and explain your reasoning. [@data:gssgendereq]
+1. **Sex equality.**
+The General Social Survey asked a random sample of 1,390 Americans the following question: "On the whole, do you think it should or should not be the government's responsibility to promote equality between men and women?" 82% of the respondents said it "should be". At a 95% confidence level, this sample has 2% margin of error. Based on this information, determine if the following statements are true or false, and explain your reasoning. [@data:gsssexeq]
 
     a. We are 95% confident that between 80% and 84% of Americans in this sample think it's the government's responsibility to promote equality between men and women.
 
@@ -364,13 +427,13 @@ The General Social Survey asked a random sample of 1,390 Americans the following
 1. **Elderly drivers.** 
 The Marist Poll published a report stating that 66% of adults nationally think licensed drivers should be required to retake their road test once they reach 65 years of age. It was also reported that interviews were conducted on a random sample of 1,018 American adults, and that the margin of error was 3% using a 95% confidence level. [@data:elderlyDriving]
 
-    a. Verify the margin of error reported by The Marist Poll.
+    a. Verify the margin of error reported by The Marist Poll using a mathematical model.
 
     b. Based on a 95% confidence interval, does the poll provide convincing evidence that *more than* two thirds of the population think that licensed drivers should be required to retake their road test once they turn 65?
 
 1. **Fireworks on July 4$^{\text{th}}$.** 
 A local news outlet reported that 56% of 600 randomly sampled Kansas residents planned to set off fireworks on July $4^{th}$. 
-Determine the margin of error for the 56% point estimate using a 95% confidence level. [@data:july4]
+Determine the margin of error for the 56% point estimate using a 95% confidence level using a mathematical model. [@data:july4]
 
 1. **Proof of COVID-19 vaccination.**
 A Gallup poll surveyed 3,731 randomly sampled US in April 2021, asking how they felt about requiring proof of COVID-19 vaccination for travel by airplane. 
@@ -378,7 +441,7 @@ The poll found that 57% said they would favor it. [@data:gallupcovidvaccine]
 
     a. Describe the population parameter of interest. What is the value of the point estimate of this parameter?
 
-    b. Check if the conditions required for constructing a confidence interval using mathematical models based on these data are met.
+    b. Check if the conditions required for constructing a confidence interval using a mathematical model based on these data are met.
 
     c. Construct a 95% confidence interval for the proportion of US adults who favor requiring proof of COVID-19 vaccination for travel by airplane.
 
@@ -386,33 +449,33 @@ The poll found that 57% said they would favor it. [@data:gallupcovidvaccine]
 
     e. Without doing any calculations, describe what would happen to the confidence interval if we used a larger sample.
 
-1. **Study abroad** 
+1. **Study abroad.** 
 A survey on 1,509 high school seniors who took the SAT and who completed an optional web survey shows that 55% of high school seniors are fairly certain that they will participate in a study abroad program in college. [@data:studyAbroad]
 
     a.  Is this sample a representative sample from the population of all high school seniors in the US? Explain your reasoning.
 
-    b.  Let's suppose the conditions for inference are met. Even if your answer to part (a) indicated that this approach would not be reliable, this analysis may still be interesting to carry out (though not report). Construct a 90% confidence interval for the proportion of high school seniors (of those who took the SAT) who are fairly certain they will participate in a study abroad program in college, and interpret this interval in context.
+    b.  Let's suppose the conditions for inference are met. Even if your answer to part (a) indicated that this approach would not be reliable, this analysis may still be interesting to carry out (though not report). Using a mathematical model, construct a 90% confidence interval for the proportion of high school seniors (of those who took the SAT) who are fairly certain they will participate in a study abroad program in college, and interpret this interval in context.
 
     c.  What does "90% confidence" mean?
 
     d.  Based on this interval, would it be appropriate to claim that the majority of high school seniors are fairly certain that they will participate in a study abroad program in college?
 
-1. **Legalization of marijuana.**
+1. **Legalization of marijuana, confidence interval.**
 The General Social Survey asked a random sample of 1,563 US adults: "Do you think the use of marijuana should be made legal, or not?" 60% of the respondents said it should be made legal. [@data:gssgrass]
 
     a. Is 60% a sample statistic or a population parameter? Explain.
 
-    b. Construct a 95% confidence interval for the proportion of US adults who think marijuana should be made legal, and interpret it in the context of the data.
+    b. Using a mathematical model, construct a 95% confidence interval for the proportion of US adults who think marijuana should be made legal, and interpret it in the context of the data.
 
     c. A critic points out that this 95% confidence interval is only accurate if the statistic follows a normal distribution, or if the normal model is a good approximation. Is this true for these data? Explain.
 
     d. A news piece on this survey's findings states, "Majority of US adults think marijuana should be legalized." Based on your confidence interval, is this news piece's statement justified?
 
-1. **National Health Plan.** 
-A *Kaiser Family Foundation* poll for a random sample of US adults in 2019 found that 79% of Democrats, 55% of Independents, and 24% of Republicans supported a generic "National Health Plan". 
+1. **National Health Plan, mathematical inference.**
+A Kaiser Family Foundation poll for a random sample of US adults in 2019 found that 79% of Democrats, 55% of Independents, and 24% of Republicans supported a generic "National Health Plan". 
 There were 347 Democrats, 298 Republicans, and 617 Independents surveyed. [@data:KFF2019nathealthplan]
 
-    a. A political pundit on TV claims that a majority of Independents support a National Health Plan. Do these data provide strong evidence to support this type of statement?
+    a. A political pundit on TV claims that a majority of Independents support a National Health Plan. Do these data provide strong evidence to support this type of statement? Your response should use a mathematical model.
 
     b. Would you expect a confidence interval for the proportion of Independents who oppose the public option plan to include 0.5? Explain.
 
@@ -429,7 +492,7 @@ A researcher wanting to test this claim randomly sampled 80 such people.
 He then filled 80 plain white cups with soda, half diet and half regular through random assignment, and asked each person to take one sip from their cup and identify the soda as diet or regular.
 53 participants correctly identified the soda.
 
-    a. Do these data provide strong evidence that these people are able to detect the difference between diet and regular soda, in other words, are the results significantly better than just random guessing?
+    a. Do these data provide strong evidence that these people are able to detect the difference between diet and regular soda, in other words, are the results significantly better than just random guessing? Your response should use a mathematical model.
 
     b. Interpret the p-value in this context.
 
@@ -437,14 +500,13 @@ He then filled 80 plain white cups with soda, half diet and half regular through
 An April 2021 YouGov poll asked 4,265 UK adults whether they think the coronavirus bring the world closer together or leave us further apart. 
 12% of the respondents said it will bring the world closer together. 37% said it would leave us further apart, 39% said it won't make a difference and the remainder didn't have an opinion on the matter. [@data:yougovcovid]
 
-    a. Calculate, using mathematical models, a 90% confidence interval for the proportion of UK adults who think the coronavirus will bring the world closer together, and interpret the interval in context.
+    a. Calculate, using a mathematical model, a 90% confidence interval for the proportion of UK adults who think the coronavirus will bring the world closer together, and interpret the interval in context.
 
     b. Suppose we wanted the margin of error for the 90% confidence level to be about 0.5%. How large of a sample size would you recommend for the poll?
 
-1.  **Quality control** As part of a quality control process for
-    computer chips, an engineer at a factory randomly samples 212 chips
-    during a week of production to test the current rate of chips with
-    severe defects. She finds that 27 of the chips are defective.
+1.  **Quality control.**
+As part of a quality control process for computer chips, an engineer at a factory randomly samples 212 chips during a week of production to test the current rate of chips with severe defects. 
+She finds that 27 of the chips are defective.
 
     a.  What population is under consideration in the data set?
 
@@ -454,20 +516,28 @@ An April 2021 YouGov poll asked 4,265 UK adults whether they think the coronavir
 
     d.  What is the name of the statistic can we use to measure the uncertainty of the point estimate?
 
-    e.  Compute the value of the statistic from part (d) for this context.
+    e.  Compute the value of the statistic from part (d) for this context using a mathematical model.
 
     f.  The historical rate of defects is 10%. Should the engineer be surprised by the observed rate of defects during the current week?
 
     g.  Suppose the true population value was found to be 10%. If we use this proportion to recompute the value in part (d) using $p = 0.1$ instead of $\hat{p}$, how much does the resulting value of the statistic change?
 
-1.  **Nearsighted** It is believed that nearsightedness affects about 8%
-    of all children. In a random sample of 194 children, 21 are
-    nearsighted. Conduct a hypothesis test for the following question:
-    do these data provide evidence that the 8% value is inaccurate?
+1.  **Nearsighted children.**
+Nearsightedness (myopia) is a common vision condition in which you can see objects near to you clearly, but objects farther away are blurry. 
+It is believed that nearsightedness affects about 8% of all children. 
+In a random sample of 194 children, 21 are nearsighted. 
+Using a mathematical model, conduct a hypothesis test for the following question: do these data provide evidence that the 8% value is inaccurate?
 
-1.  **Coupons driving visits** A store randomly samples 603 shoppers
-    over the course of a year and finds that 142 of them made their
-    visit because of a coupon they'd received in the mail. Construct a
-    95% confidence interval for the fraction of all shoppers during the
-    year whose visit was because of a coupon they'd received in the
-    mail.
+1.  **Website registration.**
+A website is trying to increase registration for first-time visitors, exposing 1% of these visitors to a new site design. 
+Of 752 randomly sampled visitors over a month who saw the new design, 64 registered.
+
+    a. Check any conditions required for constructing a confidence interval using a mathematical model.
+
+    b. Compute the standard error.
+
+    c. Construct and interpret a 90% confidence interval for the fraction of first-time visitors of the site who would register under the new design (assuming stable behaviors by new visitors over time).
+
+1. **Coupons driving visits.**
+A store randomly samples 603 shoppers over the course of a year and finds that 142 of them made their visit because of a coupon they'd received in the mail.
+Using a mathematical model, construct a 95% confidence interval for the fraction of all shoppers during the year whose visit was because of a coupon they'd received in the mail.
