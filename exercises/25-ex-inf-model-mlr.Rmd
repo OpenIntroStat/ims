@@ -202,7 +202,7 @@ A FiveThirtyEight.com article reports that "Horror movies get nowhere near as mu
 To investigate how the return-on-investment (ROI) compares between genres and how this relationship has changed over time, an introductory statistics student fit a linear regression model to predict the ratio of gross revenue of movies to the production costs from genre and release year for 1,070 movies released between 2000 and 2018.
 Using the plots given below, determine if this regression model is appropriate for these data. In particular, use the residual plot to check the LINE conditons. [@webpage:horrormovies]
 
-    ```{r out.width = "100%"}
+    ```{r out.width = "100%", fig.asp = 1}
     library(tidyverse)
     library(lubridate)
     library(kableExtra)
@@ -401,7 +401,7 @@ In this exercise we study the relationship between the weight of the baby and tw
     
     c. When using both `visits` and `weeks` to predict the baby's `weight`, are both predictor variables still significant? Explain.
 
-1.  **Baby's weight with cross-validation.** 
+1.  **Baby's weight, cross-validation.** 
 Using a random sample of 1,000 US births from 2014, we study the relationship between the weight of the baby and various explanatory variables. [@data:births14]
 
     The plots below describe prediction errors associated with two different models designed to predict `weight` of baby at birth; one model uses 7 predictors, one model uses 2 predictors. Using 4-fold cross-validation, the data were split into 4 folds. Three of the folds estimate the $\beta_i$ parameters using $b_i$, and the model is applied to the held out fold for prediction. The process was repeated 4 times (each time holding out one of the folds).
@@ -421,7 +421,7 @@ Using a random sample of 1,000 US births from 2014, we study the relationship be
     \end{aligned}
     $$
 
-    ```{r out.width = "100%", fig.asp = 0.5}
+    ```{r out.width = "100%", fig.asp = 1}
     library(tidyverse)
     library(openintro)
     library(broom)
@@ -473,36 +473,38 @@ Using a random sample of 1,000 US births from 2014, we study the relationship be
     p1 <- births_CV1$pred %>%
       mutate(resid = obs - pred) %>%
       ggplot() +
-      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample)) +
-      geom_rug(aes(y = resid)) +
+      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample), alpha = 0.8, size = 2) +
+      geom_rug(aes(y = resid), color = IMSCOL["gray", "full"]) +
       geom_hline(yintercept = 0) +
       ylim(c(-5, 5)) +
       xlim(c(2, 11.5)) +
       labs(
+        title = "Model with 7 predictors",
         color = "CV Fold", shape = "CV Fold",
-        x = "Predicted", y = "Prediction error (residual)"
+        x = "Predicted", y = "Prediction error\n(residual)"
       ) +
-      annotate(geom = "text", x = 7, y = 4, label = paste("CV SSE =", SSE_CV1)) +
-      ggtitle("Model with 7 predictors") +
-      scale_color_openintro("four")
+      annotate(geom = "text", x = 9, y = 4, hjust = 0, label = paste("CV SSE =", SSE_CV1)) +
+      scale_color_openintro("four") +
+      scale_shape_manual(values = c(15, 8, 17, 19))
 
     p2 <- births_CV2$pred %>%
       mutate(resid = obs - pred) %>%
       ggplot() +
-      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample)) +
-      geom_rug(aes(y = resid)) +
+      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample), alpha = 0.8, size = 2) +
+      geom_rug(aes(y = resid), color = IMSCOL["gray", "full"]) +
       geom_hline(yintercept = 0) +
       ylim(c(-5, 5)) +
       xlim(c(2, 11.5)) +
       labs(
+        title = "Model with 2 predictors",
         color = "CV Fold", shape = "CV Fold",
-        x = "Predicted", y = "Prediction error (residual)"
+        x = "Predicted", y = "Prediction error\n(residual)"
       ) +
-      annotate(geom = "text", x = 7, y = 4, label = paste("CV SSE =", SSE_CV2)) +
-      ggtitle("Model with 2 predictors") +
-      scale_color_openintro("four")
+      annotate(geom = "text", x = 9, y = 4, hjust = 0, label = paste("CV SSE =", SSE_CV2)) +
+      scale_color_openintro("four") +
+      scale_shape_manual(values = c(15, 8, 17, 19))
 
-    p1 + p2 + plot_layout(guides = "collect") & 
+    p1 / p2 + plot_layout(guides = "collect") & 
       theme(legend.position = "bottom")
     ```
     
@@ -534,7 +536,7 @@ Using a random sample of 1,000 US births from 2014, we study the relationship be
     \end{aligned}
     $$
 
-    ```{r out.width = "100%", fig.asp = 0.5}
+    ```{r out.width = "100%", fig.asp = 1}
     library(tidyverse)
     library(openintro)
     library(broom)
@@ -572,35 +574,40 @@ Using a random sample of 1,000 US births from 2014, we study the relationship be
     p1 <- births_CV1$pred %>% 
       mutate(resid = obs - pred) %>%
       ggplot() + 
-      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample)) + 
-      geom_rug(aes( y = resid)) + 
+      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample), alpha = 0.8, size = 2) +
+      geom_rug(aes(y = resid), color = IMSCOL["gray", "full"]) +
       geom_hline(yintercept = 0) +
       ylim(c(-5,5)) +
       xlim(c(2,11.5)) +
-      labs(color = "CV Fold", shape = "CV Fold",
-           x = "Predicted", y = "Prediction error (residual)") +
-      annotate(geom = "text", x = 7, y = 4, label = paste("CV SSE =", SSE_CV1)) +
-      ggtitle("Model with 7 predictors") +
-      scale_color_openintro("four")
+      labs(
+        title = "Model with 7 predictors",
+        color = "CV Fold", shape = "CV Fold",
+        x = "Predicted", y = "Prediction error\n(residual)"
+        ) +
+      annotate(geom = "text", x = 9, y = 4, hjust = 0, label = paste("CV SSE =", SSE_CV1)) +
+      scale_color_openintro("four") +
+      scale_shape_manual(values = c(15, 8, 17, 19))
 
     p2 <- births_CV2$pred %>% 
       mutate(resid = obs - pred) %>%
       ggplot() + 
-      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample)) + 
-      geom_rug(aes( y = resid)) + 
+      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample), alpha = 0.8, size = 2) +
+      geom_rug(aes(y = resid), color = IMSCOL["gray", "full"]) +
       geom_hline(yintercept = 0) +
       ylim(c(-5,5)) +
       xlim(c(2,11.5)) +
-      labs(color = "CV Fold", shape = "CV Fold", 
-           x = "Predicted", y = "Prediction error (residual)") +
-      annotate(geom = "text", x = 7, y = 4, label = paste("CV SSE =", SSE_CV2)) +
-      ggtitle("Model with 2 predictors") +
-      scale_color_openintro("four")
+      labs(
+        title = "Model with 2 predictors",
+        color = "CV Fold", shape = "CV Fold", 
+        x = "Predicted", y = "Prediction error\n(residual)"
+        ) +
+      annotate(geom = "text", x = 9, y = 4, hjust = 0, label = paste("CV SSE =", SSE_CV2)) +
+      scale_color_openintro("four") +
+      scale_shape_manual(values = c(15, 8, 17, 19))
     
-    p1 + p2 + plot_layout(guides = "collect") & 
+    p1 / p2 + plot_layout(guides = "collect") & 
       theme(legend.position = "bottom")
     ```
-    
     
     a. Using the spread of the points, which model should be chosen for a final report on these data?  Explain.
     
@@ -608,7 +615,7 @@ Using a random sample of 1,000 US births from 2014, we study the relationship be
     
     c. Why would the model with more predictors fit the data less closely than the model with only two predictors?
 
-1. **RailTrail with cross-validation.**
+1. **RailTrail, cross-validation.**
 The Pioneer Valley Planning Commission (PVPC) collected data north of Chestnut Street in Florence, MA for ninety days from April 5, 2005 to November 15, 2005. Data collectors set up a laser sensor, with breaks in the laser beam recording when a rail-trail user passed the data collection station.^[The [`RailTrail`](https://rdrr.io/cran/mosaicData/man/RailTrail.html) data used in this exercise can be found in the [**mosaicData**](https://cran.r-project.org/web/packages/mosaicData/index.html) R package.]
 
     The plots below describe prediction errors associated with two different models designed to predict the `volume` of riders on the RailTrail; one model uses 6 predictors, one model uses 2 predictors. Using 3-fold cross-validation, the data were split into 3 folds. Three of the folds estimate the $\beta_i$ parameters using $b_i$, and the model is applied to the held out fold for prediction. The process was repeated 4 times (each time holding out one of the folds).
@@ -627,7 +634,7 @@ The Pioneer Valley Planning Commission (PVPC) collected data north of Chestnut S
     \end{aligned}
     $$
 
-    ```{r}
+    ```{r out.width = "100%", fig.asp = 1}
     library(tidyverse)
     library(mosaicData)
     library(broom)
@@ -635,56 +642,74 @@ The Pioneer Valley Planning Commission (PVPC) collected data north of Chestnut S
     library(patchwork)
 
     set.seed(4)
-    rail_CV1 <- train(volume ~ hightemp + lowtemp + spring  + cloudcover + precip + weekday,
-                       data = RailTrail,
-                       na.action = na.omit,
-                       method = "lm",
-                       trControl = trainControl(method = "cv", number = 3,
-                                                savePredictions = TRUE))
+    rail_CV1 <- train(volume ~ hightemp + lowtemp + spring + cloudcover + precip + weekday,
+      data = RailTrail,
+      na.action = na.omit,
+      method = "lm",
+      trControl = trainControl(
+        method = "cv", number = 3,
+        savePredictions = TRUE
+      )
+    )
     rail_CV2 <- train(volume ~ hightemp + precip,
-                       data = RailTrail,
-                       na.action = na.omit,
-                       method = "lm",
-                       trControl = trainControl(method = "cv", number = 3,
-                                                savePredictions = TRUE))
-    
-    SSE_CV1 <- rail_CV1$pred %>% 
+      data = RailTrail,
+      na.action = na.omit,
+      method = "lm",
+      trControl = trainControl(
+        method = "cv", number = 3,
+        savePredictions = TRUE
+      )
+    )
+
+    SSE_CV1 <- rail_CV1$pred %>%
       mutate(resid = obs - pred) %>%
-      select(resid) %>% pull() %>% `^`(2) %>% sum() %>% round(2)
-    
-    SSE_CV2 <- rail_CV2$pred %>% 
+      select(resid) %>%
+      pull() %>%
+      `^`(2) %>%
+      sum() %>%
+      format(0, big.mark = ",")
+
+    SSE_CV2 <- rail_CV2$pred %>%
       mutate(resid = obs - pred) %>%
-      select(resid) %>% pull() %>% `^`(2) %>% sum() %>% round(2)
-    
-    p1 <- rail_CV1$pred %>% 
+      select(resid) %>%
+      pull() %>%
+      `^`(2) %>%
+      sum() %>%
+      format(0, big.mark = ",")
+
+    p1 <- rail_CV1$pred %>%
       mutate(resid = obs - pred) %>%
-      ggplot() + 
-      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample)) + 
-      geom_rug(aes( y = resid)) + 
+      ggplot() +
+      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample), alpha = 0.8, size = 2) +
+      geom_rug(aes(y = resid), color = IMSCOL["gray", "full"]) +
       geom_hline(yintercept = 0) +
-      ylim(c(-300,350)) +
-      xlim(c(0,620)) +
-      labs(color = "CV Fold", shape = "CV Fold",
-           x = "Predicted", y = "Prediction error (residual)") +
-      annotate(geom = "text", x = 450, y = 320, label = paste("CV SSE =", SSE_CV1)) +
-      ggtitle("Model with 6 predictors") +
+      ylim(c(-300, 350)) +
+      xlim(c(0, 620)) +
+      labs(
+        title = "Model with 6 predictors",
+        color = "CV Fold", shape = "CV Fold",
+        x = "Predicted", y = "Prediction error\n(residual)"
+      ) +
+      annotate(geom = "text", x = 20, y = -200, hjust = 0, label = paste("CV SSE =", SSE_CV1)) +
       scale_color_openintro("three")
 
-    p2 <- rail_CV2$pred %>% 
+    p2 <- rail_CV2$pred %>%
       mutate(resid = obs - pred) %>%
-      ggplot() + 
-      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample)) + 
-      geom_rug(aes( y = resid)) + 
+      ggplot() +
+      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample), alpha = 0.8, size = 2) +
+      geom_rug(aes(y = resid), color = IMSCOL["gray", "full"]) +
       geom_hline(yintercept = 0) +
-      ylim(c(-300,350)) +
-      xlim(c(0,620)) +
-      labs(color = "CV Fold", shape = "CV Fold", 
-           x = "Predicted", y = "Prediction error (residual)") +
-      annotate(geom = "text", x = 450, y = 320, label = paste("CV SSE =", SSE_CV2)) +
-      ggtitle("Model with 2 predictors") +
+      ylim(c(-300, 350)) +
+      xlim(c(0, 620)) +
+      labs(
+        title = "Model with 2 predictors",
+        color = "CV Fold", shape = "CV Fold",
+        x = "Predicted", y = "Prediction error\n(residual)"
+      ) +
+      annotate(geom = "text", x = 20, y = -200, hjust = 0, label = paste("CV SSE =", SSE_CV2)) +
       scale_color_openintro("three")
 
-    p1 + p2 + plot_layout(guides = "collect") & 
+    p1 / p2 + plot_layout(guides = "collect") &
       theme(legend.position = "bottom")
     ```
     
@@ -715,7 +740,7 @@ The Pioneer Valley Planning Commission (PVPC) collected data north of Chestnut S
     \end{aligned}
     $$
 
-    ```{r}
+    ```{r out.width = "100%", fig.asp = 1}
     library(tidyverse)
     library(mosaicData)
     library(broom)
@@ -723,57 +748,75 @@ The Pioneer Valley Planning Commission (PVPC) collected data north of Chestnut S
     library(patchwork)
 
     set.seed(4)
-    rail_CV1 <- train(volume ~ hightemp + lowtemp + spring  + cloudcover + precip + weekday,
-                       data = RailTrail,
-                       na.action = na.omit,
-                       method = "lm",
-                       trControl = trainControl(method = "cv", number = 3,
-                                                savePredictions = TRUE))
+    rail_CV1 <- train(volume ~ hightemp + lowtemp + spring + cloudcover + precip + weekday,
+      data = RailTrail,
+      na.action = na.omit,
+      method = "lm",
+      trControl = trainControl(
+        method = "cv", number = 3,
+        savePredictions = TRUE
+      )
+    )
     rail_CV2 <- train(volume ~ hightemp + precip,
-                       data = RailTrail,
-                       na.action = na.omit,
-                       method = "lm",
-                       trControl = trainControl(method = "cv", number = 3,
-                                                savePredictions = TRUE))
-    
-    SSE_CV1 <- rail_CV1$pred %>% 
+      data = RailTrail,
+      na.action = na.omit,
+      method = "lm",
+      trControl = trainControl(
+        method = "cv", number = 3,
+        savePredictions = TRUE
+      )
+    )
+
+    SSE_CV1 <- rail_CV1$pred %>%
       mutate(resid = obs - pred) %>%
-      select(resid) %>% pull() %>% `^`(2) %>% sum() %>% round(2)
-    
-    SSE_CV2 <- rail_CV2$pred %>% 
+      select(resid) %>%
+      pull() %>%
+      `^`(2) %>%
+      sum() %>%
+      format(0, big.mark = ",")
+
+    SSE_CV2 <- rail_CV2$pred %>%
       mutate(resid = obs - pred) %>%
-      select(resid) %>% pull() %>% `^`(2) %>% sum() %>% round(2)
-    
-    p1 <- rail_CV1$pred %>% 
+      select(resid) %>%
+      pull() %>%
+      `^`(2) %>%
+      sum() %>%
+      format(0, big.mark = ",")
+
+    p1 <- rail_CV1$pred %>%
       mutate(resid = obs - pred) %>%
-      ggplot() + 
-      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample)) + 
-      geom_rug(aes( y = resid)) + 
+      ggplot() +
+      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample), alpha = 0.8, size = 2) +
+      geom_rug(aes(y = resid), color = IMSCOL["gray", "full"]) +
       geom_hline(yintercept = 0) +
-      ylim(c(-300,350)) +
-      xlim(c(0,620)) +
-      labs(color = "CV Fold", shape = "CV Fold",
-           x = "Predicted", y = "Prediction error (residual)") +
-      annotate(geom = "text", x = 450, y = 320, label = paste("CV SSE =", SSE_CV1)) +
-      ggtitle("Model with 6 predictors") +
+      ylim(c(-300, 350)) +
+      xlim(c(0, 620)) +
+      labs(
+        title = "Model with 6 predictors",
+        color = "CV Fold", shape = "CV Fold",
+        x = "Predicted", y = "Prediction error\n(residual)"
+      ) +
+      annotate(geom = "text", x = 20, y = -200, hjust = 0, label = paste("CV SSE =", SSE_CV1)) +
       scale_color_openintro("three")
 
-    p2 <- rail_CV2$pred %>% 
+    p2 <- rail_CV2$pred %>%
       mutate(resid = obs - pred) %>%
-      ggplot() + 
-      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample)) + 
-      geom_rug(aes( y = resid)) + 
+      ggplot() +
+      geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample), alpha = 0.8, size = 2) +
+      geom_rug(aes(y = resid), color = IMSCOL["gray", "full"]) +
       geom_hline(yintercept = 0) +
-      ylim(c(-300,350)) +
-      xlim(c(0,620)) +
-      labs(color = "CV Fold", shape = "CV Fold", 
-           x = "Predicted", y = "Prediction error (residual)") +
-      annotate(geom = "text", x = 450, y = 320, label = paste("CV SSE =", SSE_CV2)) +
-      ggtitle("Model with 2 predictors") +
+      ylim(c(-300, 350)) +
+      xlim(c(0, 620)) +
+      labs(
+        title = "Model with 2 predictors",
+        color = "CV Fold", shape = "CV Fold",
+        x = "Predicted", y = "Prediction error\n(residual)"
+      ) +
+      annotate(geom = "text", x = 20, y = -200, hjust = 0, label = paste("CV SSE =", SSE_CV2)) +
       scale_color_openintro("three")
 
-    
-    p1 + p2 + plot_layout(guides = "collect") & 
+
+    p1 / p2 + plot_layout(guides = "collect") &
       theme(legend.position = "bottom")
     ```
     
