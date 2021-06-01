@@ -4,45 +4,53 @@
 source("_common.R")
 ```
 
-## Recap: Computational models {#comp-models-summary}
+## Recap: Computational methods {#comp-methods-summary}
 
 The computational methods presented in this text are used in two settings.
 First, in many real life applications (as in those covered here), the mathematical model and computational model give identical conclusions.
-When there are no differences in conclusions, the advantage of the computational model is that it gives the analyst a good sense for the logic of the statistical inference process.
+When there are no differences in conclusions, the advantage of the computational method is that it gives the analyst a good sense for the logic of the statistical inference process.
 Second, when there is a difference in the conclusions (seen primarily in methods beyond the scope of this text), it is often the case that the computational method relies on fewer technical conditions and is therefore more appropriate to use.
 
 ### Randomization
 
-The important key to remember with randomization tests is that the data is permuted in such a way that the null hypothesis is true.
-The randomization distribution provides a distribution of the statistic of interest under the null distribution, which is exactly the information needed to calculate a p-value (where the p-value is the probability of obtaining the observed data or more extreme when the null hypothesis is true).
-Although there are ways to adjust the randomization for settings other than the null hypothesis, they are not covered in this book nor are they used widely.
+The important feature of randomization tests is that the data is permuted in such a way that the null hypothesis is true.
+The randomization distribution provides a distribution of the statistic of interest under the null hypothesis, which is exactly the information needed to calculate a p-value --- where the p-value is the probability of obtaining the observed data or more extreme when the null hypothesis is true.
+Although there are ways to adjust the randomization for settings other than the null hypothesis being true, they are not covered in this book and they are not used widely.
 In approaching research questions with a randomization test, be sure to ask yourself what the null hypothesis represents and how it is that permuting the data is creating different possible null data representations.
 
 **Hypothesis tests.** When using a randomization test, we proceed as follows:
 
 -   Write appropriate hypotheses.
 
--   Compute the observed statistic of interest.\
+-   Compute the observed statistic of interest.
 
 -   Permute the data repeatedly, each time, recalculating the statistic of interest.
 
--   Compute the proportion of times the permuted statistics are more extreme than the observed statistic, this is the p-value.
+-   Compute the proportion of times the permuted statistics are as extreme as or more extreme than the observed statistic, this is the p-value.
 
--   Make a conclusion based on the p-value, and write a conclusion in context and in plain language so anyone can understand the result.
+-   Make a conclusion based on the p-value, and write the conclusion in context and in plain language so anyone can understand the result.
 
 ### Bootstrapping
 
 Bootstrapping, in contrast to randomization tests, represents a proxy sampling of the original population.
-With bootstrapping, the analyst is not forcing the null hypothesis to be true (or false for that matter), but instead, they are replicating the variability seen in taking repeated samples from a population.
+With bootstrapping, the analyst is not forcing the null hypothesis to be true (or false, for that matter), but instead, they are replicating the variability seen in taking repeated samples from a population.
 Because there is no underlying true (or false) null hypothesis, bootstrapping is typically used for creating confidence intervals for the parameter of interest.
 Bootstrapping can be used to test particular values of a parameter (e.g., by evaluating whether a particular value of interest is contained in the confidence interval), but generally, bootstrapping is used for interval estimation instead of testing.
 
 **Confidence intervals.** The following is how we generally computed a confidence interval using bootstrapping:
 
--   Repeatedly resample the original data, with replacement.\
--   For each resample, calculate the statistic of interest.\
--   Bootstrap percentile interval: obtain the endpoints representing the middle (e.g., 95%) of the bootstrapped statistics. The endpoints will be the confidence interval.
--   Bootstrap SE interval: find the SE of the bootstrapped statistics. The confidence interval will be given by the original observed statistic plus or minus some multiple (e.g., 2) of SEs.
+-   Repeatedly resample the original data, with replacement, using the same sample size as the original data.
+
+-   For each resample, calculate the statistic of interest.
+
+-   Calculate the confidence interval using one of the following methods:
+
+    -   Bootstrap percentile interval: Obtain the endpoints representing the middle (e.g., 95%) of the bootstrapped statistics.
+        The endpoints will be the confidence interval.
+
+    -   Bootstrap standard error (SE) interval: Find the SE of the bootstrapped statistics.
+        The confidence interval will be given by the original observed statistic plus or minus some multiple (e.g., 2) of SEs.
+
 -   Put the conclusions in context and in plain language so even non-statisticians and data scientists can understand the results.
 
 ## Recap: Mathematical models {#math-models-summary}
@@ -163,7 +171,7 @@ shape_names <- c(
   "diamond filled", 
   "triangle filled",
   "circle filled",
-  "square filled", 
+  "square filled",
   "triangle filled", 
   "triangle filled"  
 )
@@ -217,7 +225,11 @@ knitr::include_graphics("images/redundant-adjectives-blue-triangle.png")
 In this case study we will examine data from this study, which the authors have made available on Open Science Framework at [osf.io/9hw68](https://osf.io/9hw68/).
 
 ```{r}
-redundant <- read_csv("data/ENGLISH-SPANISH PRODUCTION.csv") %>%
+# analysis based on 
+# https://osf.io/fqnms/ > Production data > AnalyzeProduction.R
+
+# one row per question
+redundant_individual <- read_csv("data/ENGLISH-SPANISH PRODUCTION.csv") %>%
   clean_names() %>%
   mutate(
     items = if_else(question > 10, 16, 4),
@@ -225,6 +237,21 @@ redundant <- read_csv("data/ENGLISH-SPANISH PRODUCTION.csv") %>%
     adjective = if_else(color_response == 1, "redundant", "not redundant")
     ) %>%
   select(-color_response)
+
+# one row per individual
+redundant <- redundant_individual %>%
+  group_by(language, subject, items) %>%
+  summarise(
+    total = n(),
+    redundant_perc = sum(adjective == "redundant") * 100 / total,
+    .groups = "drop"
+    )
+```
+
+The dataset has `r nrow(redundant)` rows, which amounts to
+
+```{r}
+redundant
 ```
 
 ### Exploratory analysis
@@ -238,12 +265,6 @@ We can see that English speakers are more likely than Spanish speakers to use re
 
 ```{r reduntant-bar, fig.cap = "Results of redundant adjective usage experiment from [@rubio-fernandez2021]. English speakers are more likely than Spanish speakers to use redundant adjectives, regardless of number of items in image. For both images, respondents are more likely to use a redundant adjective when there are more items in the image."}
 redundant_summary <- redundant %>%
-  group_by(language, subject, items) %>%
-  summarise(
-    total = n(),
-    redundant_perc = sum(adjective == "redundant") * 100 / total,
-    .groups = "drop"
-    ) %>%
   group_by(language, items) %>%
   summarise(mean_redundant_perc = mean(redundant_perc), .groups = "drop")
 
@@ -258,7 +279,7 @@ redundant_summary %>%
   scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"]))
 ```
 
-These values are also shown in
+These values are also shown in Table \@ref(tab:redundant-table).
 
 ```{r redundant-table}
 redundant_summary %>%
@@ -272,7 +293,19 @@ redundant_summary %>%
   column_spec(1, width = "10em")
 ```
 
-### Confidence interval for a proportion
+### Confidence interval for a mean
+
+```{r}
+xbar_eng_4 <- redundant_summary %>%
+  filter(language == "English", items == 4) %>%
+  pull(mean_redundant_perc) %>%
+  round(2)
+```
+
+In this experiment, `r phat_eng_4`% of subjects who responded in English used a redundant adjective (i.e. said "the blue triangle") when presented with an image with 4 items in it.
+Using this subset of the data, we can construct a confidence interval for the proportion of English speakers who use redundant color adjectives when describing items in an image that is not very dense.
+
+One way of doing this
 
 Simulation bootstrap for English four item:
 
