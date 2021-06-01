@@ -4,7 +4,7 @@
 source("_common.R")
 ```
 
-## Mathematical Models Summary {#math-models-summary}
+## Recap: Mathematical models {#math-models-summary}
 
 The mathematical models which have been used to produce inferential analyses follow a consistent framework for different parameters of interest.
 As a way to contrast and compare the mathematical approach, we offer the following summaries in Tables \@ref(tab:zcompare) and \@ref(tab:tcompare).
@@ -53,8 +53,8 @@ zsim_table %>%
 
 -   Verify conditions for using the $z$-distribution. (See above.)\
 -   Compute the point estimate of interest, the standard error, and $z^{\star}.$\
--   Calculate the confidence interval using the general formula:  
-point estimate $\pm\ z^{\star} SE$\
+-   Calculate the confidence interval using the general formula:\
+    point estimate $\pm\ z^{\star} SE$\
 -   Put the conclusions in context and in plain language so even non-statisticians and data scientists can understand the results.
 
 ### t-procedures
@@ -102,29 +102,326 @@ tsim_table %>%
 
 -   Verify conditions for using the $t$-distribution. (See above.)\
 -   Compute the point estimate of interest, the standard error, the degrees of freedom, and $t^{\star}_{df}.$\
--   Calculate the confidence interval using the general formula:  
-point estimate $\pm\ t_{df}^{\star} SE$\
+-   Calculate the confidence interval using the general formula:\
+    point estimate $\pm\ t_{df}^{\star} SE$\
 -   Put the conclusions in context and in plain language so even non-statisticians and data scientists can understand the results.
 
-## Case study: General Social Survey {#case-study-gss}
+## Case study: Redundant adjectives {#case-study-redundant-adjectives}
 
-The data come from the General Social Survey, <https://gss.norc.org/About-The-GSS>
+Take a look at the images in Figure \@ref(fig:blue-triangle-shapes).
+How would you describe the circled item in the top image (A)?
+Would you call it "the triangle"?
+Or "the blue triangle"?
+How about in the bottom image (B)?
+Does your answer change?
 
-> The General Social Survey (GSS) is a nationally representative survey of adults in the United States conducted since 1972.
-> The GSS collects data on contemporary American society in order to monitor and explain trends in opinions, attitudes and behaviors.
-> The GSS has adopted questions from earlier surveys which allows researchers to conduct comparisons for up to 80 years.
+```{r blue-triangle-shapes, fig.cap = "Two sets of shapes. In A, the circled triangle is the only triangle. In B, the circled triangle is the only blue triangle."}
+shape_names <- c(
+  "circle filled",
+  "square filled", 
+  "diamond filled", 
+  "triangle filled",
+  "circle filled",
+  "square filled", 
+  "triangle filled", 
+  "triangle filled"  
+)
 
-Consider the adults in the United States to be the population of interest.
-The survey data is a representative sample that we can use to address questions about the population.
+shapes <- data.frame(
+  shape_names = shape_names,
+  figure = c(rep(1, 4), rep(2, 4)),
+  x = rep(1:4, 2),
+  y = 1,
+  color = rep(c(IMSCOL["pink", "full"], IMSCOL["yellow", "full"], 
+            IMSCOL["red", "full"], IMSCOL["blue", "full"]), 2)
+)
 
-This case study will perform a series of hypothesis tests and confidence intervals using a particular package called **infer** in the R software.
-The General Social Survey dataset is called `gss` and is available in the **infer** package.
+p1 <- ggplot(shapes %>% filter(figure == 1), aes(x, y)) +
+  geom_point(aes(shape = shape_names, color = color, fill = color), size = 20) +
+  scale_shape_identity() +
+  scale_color_identity() +
+  scale_fill_identity() +
+  theme_void() +
+  expand_limits(x = c(0.5, 4.5)) +
+  annotate("point", x = 4, y = 1, shape = "circle open", color = "black", size = 40)
 
-### Confidence interval for proportion
+p2 <- ggplot(shapes %>% filter(figure == 2), aes(x, y)) +
+  geom_point(aes(shape = shape_names, color = color, fill = color), size = 20) +
+  scale_shape_identity() +
+  scale_color_identity() +
+  scale_fill_identity() +
+  theme_void() +
+  expand_limits(x = c(0.5, 4.5)) +
+  annotate("point", x = 4, y = 1, shape = "circle open", color = "black", size = 40)
 
-### Two sample t-test
+p1 / p2 +
+  plot_annotation(tag_levels = "A")
+```
 
-### Chi-squared analysis
+In the top image in Figure \@ref(fig:blue-triangle-shapes) the circled item is the only triangle, while in the bottom image the circled item is one of two triangles.
+While in the top image "the triangle" is a sufficient description for the circled item, many of us might choose to refer to it as the "blue triangle" anyway.
+In the bottom image there are two triangles, so "the triangle" is no longer sufficient, and to describe the circled item we must qualify it with the color as well, as "the blue triangle".
+
+Your answers to the above questions might be different if you're answering in a different language than English.
+For example, in Spanish, the adjective comes after the noun (e.g., "el triángulo azul") therefore the incremental value of the additional adjective might be different for the top image.
+
+```{r}
+knitr::include_graphics("images/redundant-adjectives-blue-triangle.png")
+```
+
+Researchers studying frequent use of redundant adjectives (e.g., referring to a single triangle as "the blue triangle") and incrementality of language processing designed an experiment where they showed the following two images to 22 native English speakers (undergraduates from University College London) and 22 native Spanish speakers (undergraduates from the Universidad de las Islas Baleares).
+They found that in both languages, the participants used more redundant color adjectives in denser displays where it would be more efficient.
+[@rubio-fernandez2021]
+
+```{r fig.cap = "Images used in one of the experiments described in [@rubio-fernandez2021]."}
+knitr::include_graphics("images/redundant-adjectives-blue-triangle.png")
+```
+
+In this case study we will examine data from this study, which the authors have made available on Open Science Framework at [osf.io/9hw68](https://osf.io/9hw68/).
+
+```{r}
+redundant <- read_csv("data/ENGLISH-SPANISH PRODUCTION.csv") %>%
+  clean_names() %>%
+  mutate(
+    items = if_else(question > 10, 16, 4),
+    items = as.factor(items),
+    adjective = if_else(color_response == 1, "redundant", "not redundant")
+    ) %>%
+  select(-color_response)
+```
+
+### Exploratory analysis
+
+In one of the images shown to the participants, there are 4 items, and in the other, there are 16 items.
+In each of the images the circled item is the only triangle, therefore referring to it as "the blue triangle" or as "el triángulo azul" is considered redundant.
+If the participant's response was "the triangle" this was recorded as not having used a redundant adjective.
+If the response was "the blue triangle", this was recorded as having used a redundant adjective.
+Figure \@ref(fig:reduntant-bar) shows the results of the experiment.
+We can see that English speakers are more likely than Spanish speakers to use redundant adjectives, and also that in both languages, participants are more likely to use a redundant adjective when there are more items in the image (i.e. in a denser display).
+
+```{r reduntant-bar, fig.cap = "Results of redundant adjective usage experiment from [@rubio-fernandez2021]. English speakers are more likely than Spanish speakers to use redundant adjectives, regardless of number of items in image. For both images, respondents are more likely to use a redundant adjective when there are more items in the image."}
+redundant_summary <- redundant %>%
+  group_by(language, subject, items) %>%
+  summarise(
+    total = n(),
+    redundant_perc = sum(adjective == "redundant") * 100 / total,
+    .groups = "drop"
+    ) %>%
+  group_by(language, items) %>%
+  summarise(mean_redundant_perc = mean(redundant_perc), .groups = "drop")
+
+redundant_summary %>%
+  ggplot(aes(x = items, y = mean_redundant_perc , fill = language))+
+  geom_col(position = "dodge")+
+  scale_y_continuous(labels = label_percent(scale = 1)) +
+  labs(
+    x = "Number of items in image",
+    y = "Percentage of\nredundant adjective usage"
+  ) +
+  scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"]))
+```
+
+These values are also shown in
+
+```{r redundant-table}
+redundant_summary %>%
+  kbl(linesep = "", booktabs = TRUE, 
+      col.names = c("Language", "Number of items", "Percentage redundant"),
+      caption = caption_helper("Summary of redundant adjective usage experiment from [@rubio-fernandez2021]."),
+      align = "lrr") %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position"), 
+                full_width = FALSE) %>%
+  column_spec(1, width = "10em")
+```
+
+### Confidence interval for a proportion
+
+Simulation bootstrap for English four item:
+
+```{r}
+set.seed(74)
+boot_eng_4 <- redundant %>%
+  filter(language == "English", items == 4) %>%
+  specify(response = adjective, success = "redundant") %>%
+  generate(1000, type = "bootstrap") %>%
+  calculate(stat = "prop")
+
+ci_eng_4 <- boot_eng_4 %>%
+  get_confidence_interval(level = 0.95)
+
+boot_eng_4 %>%
+  visualize(fill = IMSCOL["green", "full"]) +
+  shade_confidence_interval(ci_eng_4,
+                            color = IMSCOL["green", "f10"],
+                            fill = IMSCOL["green", "f12"],
+                            alpha = 0.4)
+```
+
+Simulation bootstrap for English 16 item:
+
+```{r}
+set.seed(74)
+boot_eng_16 <- redundant %>%
+  filter(language == "English", items == 16) %>%
+  specify(response = adjective, success = "redundant") %>%
+  generate(1000, type = "bootstrap") %>%
+  calculate(stat = "prop")
+
+ci_eng_16 <- boot_eng_16 %>%
+  get_confidence_interval(level = 0.95)
+
+boot_eng_16 %>%
+  visualize(fill = IMSCOL["green", "full"]) +
+  shade_confidence_interval(ci_eng_16,
+                            color = IMSCOL["green", "f10"],
+                            fill = IMSCOL["green", "f12"],
+                            alpha = 0.4)
+```
+
+Spanish 4 items:
+
+```{r}
+set.seed(74)
+boot_sp_4 <- redundant %>%
+  filter(language == "Spanish", items == 4) %>%
+  specify(response = adjective, success = "redundant") %>%
+  generate(1000, type = "bootstrap") %>%
+  calculate(stat = "prop")
+
+ci_sp_4 <- boot_sp_4 %>%
+  get_confidence_interval(level = 0.95)
+
+boot_sp_4 %>%
+  visualize(fill = IMSCOL["green", "full"]) +
+  shade_confidence_interval(ci_sp_4,
+                            color = IMSCOL["green", "f10"],
+                            fill = IMSCOL["green", "f12"],
+                            alpha = 0.4)
+```
+
+Spanish 16 items
+
+```{r}
+set.seed(74)
+boot_sp_16 <- redundant %>%
+  filter(language == "Spanish", items == 16) %>%
+  specify(response = adjective, success = "redundant") %>%
+  generate(1000, type = "bootstrap") %>%
+  calculate(stat = "prop")
+
+ci_sp_16 <- boot_sp_16 %>%
+  get_confidence_interval(level = 0.95)
+
+boot_sp_16 %>%
+  visualize(fill = IMSCOL["green", "full"]) +
+  shade_confidence_interval(ci_sp_16,
+                            color = IMSCOL["green", "f10"],
+                            fill = IMSCOL["green", "f12"],
+                            alpha = 0.4)
+```
+
+### Two sample proportion test
+
+Comparing across languages:
+
+```{r}
+set.seed(74)
+null_4 <- redundant %>%
+  filter(items == 4) %>%
+  specify(response = adjective, explanatory = language,
+          success = "redundant") %>%
+  hypothesize(null = "independence") %>%
+  generate(1000, type = "permute") %>%
+  calculate(stat = "diff in props", order = c("English", "Spanish"))
+
+obs_stat_4 <- redundant %>%
+  filter(items == 4) %>%
+  specify(response = adjective, explanatory = language,
+          success = "redundant") %>%
+  calculate(stat = "diff in props", order = c("English", "Spanish"))
+
+null_4 %>%
+  get_p_value(obs_stat = obs_stat_4, direction = "two_sided")
+
+null_4 %>%
+  visualise(fill = IMSCOL["green", "full"]) +
+  shade_p_value(obs_stat_4, direction = "two_sided")
+```
+
+```{r}
+set.seed(74)
+null_16 <- redundant %>%
+  filter(items == 16) %>%
+  specify(response = adjective, explanatory = language,
+          success = "redundant") %>%
+  hypothesize(null = "independence") %>%
+  generate(1000, type = "permute") %>%
+  calculate(stat = "diff in props", order = c("English", "Spanish"))
+
+obs_stat_16 <- redundant %>%
+  filter(items == 16) %>%
+  specify(response = adjective, explanatory = language,
+          success = "redundant") %>%
+  calculate(stat = "diff in props", order = c("English", "Spanish"))
+
+null_16 %>%
+  get_p_value(obs_stat = obs_stat_16, direction = "two_sided")
+
+null_16 %>%
+  visualise(fill = IMSCOL["green", "full"]) +
+  shade_p_value(obs_stat_16, direction = "two_sided")
+```
+
+Comparing within languages
+
+```{r}
+set.seed(74)
+null_eng <- redundant %>%
+  filter(language == "English") %>%
+  specify(response = adjective, explanatory = items,
+          success = "redundant") %>%
+  hypothesize(null = "independence") %>%
+  generate(1000, type = "permute") %>%
+  calculate(stat = "diff in props", order = c("4", "16"))
+
+obs_stat_eng <- redundant %>%
+  filter(language == "English") %>%
+  specify(response = adjective, explanatory = items,
+          success = "redundant") %>%
+  calculate(stat = "diff in props", order = c("4", "16"))
+
+null_eng %>%
+  get_p_value(obs_stat = obs_stat_eng, direction = "two_sided")
+
+null_eng %>%
+  visualise() +
+  shade_p_value(obs_stat_eng, direction = "two_sided")
+```
+
+```{r}
+set.seed(74)
+null_sp <- redundant %>%
+  filter(language == "Spanish") %>%
+  specify(response = adjective, explanatory = items,
+          success = "redundant") %>%
+  hypothesize(null = "independence") %>%
+  generate(1000, type = "permute") %>%
+  calculate(stat = "diff in props", order = c("4", "16"))
+
+obs_stat_sp <- redundant %>%
+  filter(language == "Spanish") %>%
+  specify(response = adjective, explanatory = items,
+          success = "redundant") %>%
+  calculate(stat = "diff in props", order = c("4", "16"))
+
+null_sp %>%
+  get_p_value(obs_stat = obs_stat_sp, direction = "two_sided")
+
+null_sp %>%
+  visualise(fill = IMSCOL["green", "full"]) +
+  shade_p_value(obs_stat_sp, direction = "two_sided")
+```
 
 ## Interactive R tutorials {#inference-tutorials}
 
