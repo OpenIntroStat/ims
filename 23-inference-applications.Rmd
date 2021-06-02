@@ -215,7 +215,7 @@ Your answers to the above questions might be different if you're answering in a 
 For example, in Spanish, the adjective comes after the noun (e.g., "el triángulo azul") therefore the incremental value of the additional adjective might be different for the top image.
 
 Researchers studying frequent use of redundant adjectives (e.g., referring to a single triangle as "the blue triangle") and incrementality of language processing designed an experiment where they showed the following two images to 22 native English speakers (undergraduates from University College London) and 22 native Spanish speakers (undergraduates from the Universidad de las Islas Baleares).
-They found that in both languages, the participants used more redundant color adjectives in denser displays where it would be more efficient.
+They found that in both languages, the subjects used more redundant color adjectives in denser displays where it would be more efficient.
 [@rubio-fernandez2021]
 
 ```{r fig.cap = "Images used in one of the experiments described in [@rubio-fernandez2021]."}
@@ -242,26 +242,39 @@ redundant_individual <- read_csv("data/ENGLISH-SPANISH PRODUCTION.csv") %>%
 redundant <- redundant_individual %>%
   group_by(language, subject, items) %>%
   summarise(
-    total = n(),
-    redundant_perc = sum(adjective == "redundant") * 100 / total,
+    n_questions = n(),
+    redundant_perc = sum(adjective == "redundant") * 100 / n_questions,
     .groups = "drop"
     )
 ```
 
-The dataset has `r nrow(redundant)` rows, which amounts to
+Table \@ref(tab:redundant-data) shows the top six rows of the data.
+The full dataset has `r nrow(redundant)` rows.
+Remember that there are a total of 44 subjects in the study (22 English and 22 Spanish speakers).
+There are two rows in the dataset for each of the subjects: one representing data from when they were shown an image with 4 items on it and the other with 16 items on it.
+Each subject was asked 10 questions for each type of image (with a different layout of items on the image for each question).
+The variable of interest to us is `redundant_perc`, which gives the percentage of questions the subject used a redundant adjective to identify "the blue triangle".
 
-```{r}
-redundant
+```{r redundant-data}
+redundant %>%
+  slice_head(n = 6) %>%
+  kbl(linesep = "", booktabs = TRUE, 
+      caption = "Top six rows of the data collected in the study.",
+      align = "lrrrr") %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position"), 
+                full_width = FALSE) %>%
+  column_spec(1:5, width = "5em")
 ```
 
 ### Exploratory analysis
 
-In one of the images shown to the participants, there are 4 items, and in the other, there are 16 items.
+In one of the images shown to the subjects, there are 4 items, and in the other, there are 16 items.
 In each of the images the circled item is the only triangle, therefore referring to it as "the blue triangle" or as "el triángulo azul" is considered redundant.
-If the participant's response was "the triangle" this was recorded as not having used a redundant adjective.
+If the subject's response was "the triangle" this was recorded as not having used a redundant adjective.
 If the response was "the blue triangle", this was recorded as having used a redundant adjective.
 Figure \@ref(fig:reduntant-bar) shows the results of the experiment.
-We can see that English speakers are more likely than Spanish speakers to use redundant adjectives, and also that in both languages, participants are more likely to use a redundant adjective when there are more items in the image (i.e. in a denser display).
+We can see that English speakers are more likely than Spanish speakers to use redundant adjectives, and also that in both languages, subjects are more likely to use a redundant adjective when there are more items in the image (i.e. in a denser display).
 
 ```{r reduntant-bar, fig.cap = "Results of redundant adjective usage experiment from [@rubio-fernandez2021]. English speakers are more likely than Spanish speakers to use redundant adjectives, regardless of number of items in image. For both images, respondents are more likely to use a redundant adjective when there are more items in the image."}
 redundant_summary <- redundant %>%
@@ -302,196 +315,219 @@ xbar_eng_4 <- redundant_summary %>%
   round(2)
 ```
 
-In this experiment, `r phat_eng_4`% of subjects who responded in English used a redundant adjective (i.e. said "the blue triangle") when presented with an image with 4 items in it.
-Using this subset of the data, we can construct a confidence interval for the proportion of English speakers who use redundant color adjectives when describing items in an image that is not very dense.
+In this experiment, the average percentage of redundant adjective usage among subjects who responded in English when presented with an image with 4 items in it is `r xbar_eng_4`.
+Using this subset of the data, we can construct a confidence interval for the true mean redundant adjective usage of English speakers who use redundant color adjectives when describing items in an image that is not very dense.
 
-One way of doing this
-
-Simulation bootstrap for English four item:
-
-```{r}
+```{r boot-eng-4-construct}
 set.seed(74)
 boot_eng_4 <- redundant %>%
   filter(language == "English", items == 4) %>%
-  specify(response = adjective, success = "redundant") %>%
+  specify(response = redundant_perc) %>%
   generate(1000, type = "bootstrap") %>%
-  calculate(stat = "prop")
+  calculate(stat = "mean")
 
 ci_eng_4 <- boot_eng_4 %>%
   get_confidence_interval(level = 0.95)
 
+ci_eng_4_lower <- as.numeric(ci_eng_4)[1]
+ci_eng_4_upper <- as.numeric(ci_eng_4)[2]
+```
+
+Using a computational method, we can construct the interval via bootstrapping.
+Figure \@ref(fig:boot-eng-4-viz) shows the distribution of 1,000 bootstrapped means from this sample.
+The 95% confidence interval (that is calculated by taking the 2.5th and 97.5th percentile of the bootstrap distribution is `r ci_eng_4_lower`% to `r ci_eng_4_upper`%. Note that this interval for the true population parameter is only valid if we can assume that the sample of English speakers are representative of the population of all English speakers.
+
+```{r boot-eng-4-viz, fig.cap = "Distribution of 1,000 bootstrapped means of redundant adjective usage percentage among English speakers who were shown four items in images. Overlaid on the distribution is the 95% bootstrap percentile interval that ranges from 19.1% to 56.4%."}
 boot_eng_4 %>%
-  visualize(fill = IMSCOL["green", "full"]) +
-  shade_confidence_interval(ci_eng_4,
-                            color = IMSCOL["green", "f10"],
-                            fill = IMSCOL["green", "f12"],
-                            alpha = 0.4)
+  ggplot(aes(x = stat)) +
+  geom_histogram(binwidth = 5, fill = IMSCOL["green", "full"]) +
+  annotate("line", 
+           x = c(ci_eng_4_lower, ci_eng_4_lower),
+           y = c(0, 250), 
+           color = IMSCOL["green", "f2"], size = 1) +
+  annotate("line", 
+         x = c(ci_eng_4_upper, ci_eng_4_upper),
+         y = c(0, 250), 
+         color = IMSCOL["green", "f2"], size = 1) +
+  annotate("rect",
+           xmin = ci_eng_4_lower, xmax = ci_eng_4_upper,
+           ymin = 0, ymax = 250,
+           alpha = 0.3, fill = IMSCOL["green", "full"]) +
+  labs(
+    x = "Mean redundant adjective usage percentage",
+    y = "Count",
+    title = "1,000 bootstrap means"
+  ) +
+  scale_x_continuous(labels = label_percent(scale = 1))
 ```
 
-Simulation bootstrap for English 16 item:
+Using a similar technique, we can also construct confidence intervals for the true mean redundant adjective usage percentage for English speakers who are shown dense (16 item) displays and for Spanish speakers with both types (4 and 16 items) displays.
+However these confidence intervals are not very meaningful to interpret as the "true mean redundant adjective usage percentage" is quite an abstract concept.
+Instead, we might be more interested in comparative questions such as "How does redundant adjective usage differ between dense and sparse displays among English speakers and among Spanish speakers?" or "How does redundant adjective usage differ between English speakers and Spanish speakers?" To answer either of these questions we need to conduct two sample inference.
 
-```{r}
-set.seed(74)
-boot_eng_16 <- redundant %>%
-  filter(language == "English", items == 16) %>%
-  specify(response = adjective, success = "redundant") %>%
-  generate(1000, type = "bootstrap") %>%
-  calculate(stat = "prop")
+### Two sample mean test
 
-ci_eng_16 <- boot_eng_16 %>%
-  get_confidence_interval(level = 0.95)
+Let's start with the following question: "Do the data provide convincing evidence of a difference in mean redundant adjective usage percentages between sparse (4 item) and dense (16 item) displays for English speakers?"
 
-boot_eng_16 %>%
-  visualize(fill = IMSCOL["green", "full"]) +
-  shade_confidence_interval(ci_eng_16,
-                            color = IMSCOL["green", "f10"],
-                            fill = IMSCOL["green", "f12"],
-                            alpha = 0.4)
-```
+We can answer this question using a hypothesis test with the following hypotheses:
 
-Spanish 4 items:
+$$H_0: \mu_{4} = \mu_{16}$$
 
-```{r}
-set.seed(74)
-boot_sp_4 <- redundant %>%
-  filter(language == "Spanish", items == 4) %>%
-  specify(response = adjective, success = "redundant") %>%
-  generate(1000, type = "bootstrap") %>%
-  calculate(stat = "prop")
+$$H_A: \mu_{4} \ne \mu_{16}$$
 
-ci_sp_4 <- boot_sp_4 %>%
-  get_confidence_interval(level = 0.95)
+To answer this question using a computational method, we can use a randomization test where we permute the data under the assumption that the null hypothesis is true (no difference in mean redundant adjective usage percentages across different displays for English speakers).
 
-boot_sp_4 %>%
-  visualize(fill = IMSCOL["green", "full"]) +
-  shade_confidence_interval(ci_sp_4,
-                            color = IMSCOL["green", "f10"],
-                            fill = IMSCOL["green", "f12"],
-                            alpha = 0.4)
-```
+Figure \@ref(fig:eng-viz) shows the distribution of 1,000 differences in means from randomized samples.
+Note that the distribution is centered at 0, since the two averages being equal implies that the difference between them is 0, i.e. $\mu_{4} = \mu_{16}$ implies $\mu_{4} - \mu_{16} = 0.$
 
-Spanish 16 items
-
-```{r}
-set.seed(74)
-boot_sp_16 <- redundant %>%
-  filter(language == "Spanish", items == 16) %>%
-  specify(response = adjective, success = "redundant") %>%
-  generate(1000, type = "bootstrap") %>%
-  calculate(stat = "prop")
-
-ci_sp_16 <- boot_sp_16 %>%
-  get_confidence_interval(level = 0.95)
-
-boot_sp_16 %>%
-  visualize(fill = IMSCOL["green", "full"]) +
-  shade_confidence_interval(ci_sp_16,
-                            color = IMSCOL["green", "f10"],
-                            fill = IMSCOL["green", "f12"],
-                            alpha = 0.4)
-```
-
-### Two sample proportion test
-
-Comparing across languages:
-
-```{r}
-set.seed(74)
-null_4 <- redundant %>%
-  filter(items == 4) %>%
-  specify(response = adjective, explanatory = language,
-          success = "redundant") %>%
-  hypothesize(null = "independence") %>%
-  generate(1000, type = "permute") %>%
-  calculate(stat = "diff in props", order = c("English", "Spanish"))
-
-obs_stat_4 <- redundant %>%
-  filter(items == 4) %>%
-  specify(response = adjective, explanatory = language,
-          success = "redundant") %>%
-  calculate(stat = "diff in props", order = c("English", "Spanish"))
-
-null_4 %>%
-  get_p_value(obs_stat = obs_stat_4, direction = "two_sided")
-
-null_4 %>%
-  visualise(fill = IMSCOL["green", "full"]) +
-  shade_p_value(obs_stat_4, direction = "two_sided")
-```
-
-```{r}
-set.seed(74)
-null_16 <- redundant %>%
-  filter(items == 16) %>%
-  specify(response = adjective, explanatory = language,
-          success = "redundant") %>%
-  hypothesize(null = "independence") %>%
-  generate(1000, type = "permute") %>%
-  calculate(stat = "diff in props", order = c("English", "Spanish"))
-
-obs_stat_16 <- redundant %>%
-  filter(items == 16) %>%
-  specify(response = adjective, explanatory = language,
-          success = "redundant") %>%
-  calculate(stat = "diff in props", order = c("English", "Spanish"))
-
-null_16 %>%
-  get_p_value(obs_stat = obs_stat_16, direction = "two_sided")
-
-null_16 %>%
-  visualise(fill = IMSCOL["green", "full"]) +
-  shade_p_value(obs_stat_16, direction = "two_sided")
-```
-
-Comparing within languages
-
-```{r}
+```{r eng-viz, fig.cap = "Distribution of 1,000 differences in randomized means of redundant adjective usage percentage among English speakers who were shown images with 4 and 16 items. Overlaid on the distribution is the observed difference in the sample (solid line) as well as the difference in the other direction (dashed line), which is far out in the tail, yielding a p-value that is approximately 0."}
 set.seed(74)
 null_eng <- redundant %>%
   filter(language == "English") %>%
-  specify(response = adjective, explanatory = items,
-          success = "redundant") %>%
+  specify(response = redundant_perc, explanatory = items) %>%
   hypothesize(null = "independence") %>%
   generate(1000, type = "permute") %>%
-  calculate(stat = "diff in props", order = c("4", "16"))
+  calculate(stat = "diff in means", order = c("4", "16"))
 
 obs_stat_eng <- redundant %>%
   filter(language == "English") %>%
-  specify(response = adjective, explanatory = items,
-          success = "redundant") %>%
-  calculate(stat = "diff in props", order = c("4", "16"))
+  specify(response = redundant_perc, explanatory = items) %>%
+  calculate(stat = "diff in means", order = c("4", "16")) %>%
+  as.numeric()
 
 null_eng %>%
-  get_p_value(obs_stat = obs_stat_eng, direction = "two_sided")
-
-null_eng %>%
-  visualise() +
-  shade_p_value(obs_stat_eng, direction = "two_sided")
+  ggplot(aes(x = stat)) +
+  geom_histogram(binwidth = 5, fill = IMSCOL["green", "full"]) +
+  annotate(
+    "line", 
+    x = c(obs_stat_eng, obs_stat_eng),
+    y = c(0, 200), 
+    color = IMSCOL["red", "full"], size = 1
+    ) +
+  annotate(
+    "line", 
+    x = c(obs_stat_eng, obs_stat_eng),
+    y = c(0, 200), 
+    color = IMSCOL["red", "full"], size = 1,
+    linetype = "dashed"
+    ) +
+  labs(
+    x = "Diffence in mean redundant adjective usage percentages\n(4 items - 16 items)",
+    y = "Count",
+    title = "1,000 differences in randomized means"
+  ) +
+  scale_x_continuous(labels = label_percent(scale = 1))
 ```
+
+With such a small p-value, we reject the null hypothesis and conclude that the data provide convincing evidence of a difference in mean redundant adjective usage percentages across different displays for English speakers.
+
+And finally, let's consider the question "How does redundant adjective usage differ between English speakers and Spanish speakers?" Since the same subjects were shown the two types of displays, we can't combine data from the two display types together while maintaining independence of observations.
+Therefore, to answer this question we will need to conduct two hypothesis tests, one for sparse displays and the other for dense displays.
+In each of the tests, the hypotheses are as follows:
+
+$$H_0: \mu_{English} = \mu_{Spanish}$$
+
+$$H_A: \mu_{English} \ne \mu_{Spanish}$$
 
 ```{r}
+# 4 item
 set.seed(74)
-null_sp <- redundant %>%
-  filter(language == "Spanish") %>%
-  specify(response = adjective, explanatory = items,
-          success = "redundant") %>%
+null_4 <- redundant %>%
+  filter(items == 4) %>%
+  specify(response = redundant_perc, explanatory = language) %>%
   hypothesize(null = "independence") %>%
   generate(1000, type = "permute") %>%
-  calculate(stat = "diff in props", order = c("4", "16"))
+  calculate(stat = "diff in means", order = c("English", "Spanish"))
 
-obs_stat_sp <- redundant %>%
-  filter(language == "Spanish") %>%
-  specify(response = adjective, explanatory = items,
-          success = "redundant") %>%
-  calculate(stat = "diff in props", order = c("4", "16"))
+obs_stat_4 <- redundant %>%
+  filter(items == 4) %>%
+  specify(response = redundant_perc, explanatory = language) %>%
+  calculate(stat = "diff in means", order = c("English", "Spanish")) %>%
+  as.numeric()
 
-null_sp %>%
-  get_p_value(obs_stat = obs_stat_sp, direction = "two_sided")
+pval_4 <- null_4 %>%
+  get_p_value(obs_stat = obs_stat_4, direction = "both") %>%
+  as.numeric()
 
-null_sp %>%
-  visualise(fill = IMSCOL["green", "full"]) +
-  shade_p_value(obs_stat_sp, direction = "two_sided")
+# 16 item
+set.seed(74)
+null_16 <- redundant %>%
+  filter(items == 16) %>%
+  specify(response = redundant_perc, explanatory = language) %>%
+  hypothesize(null = "independence") %>%
+  generate(1000, type = "permute") %>%
+  calculate(stat = "diff in means", order = c("English", "Spanish"))
+
+obs_stat_16 <- redundant %>%
+  filter(items == 16) %>%
+  specify(response = redundant_perc, explanatory = language) %>%
+  calculate(stat = "diff in means", order = c("English", "Spanish")) %>%
+  as.numeric()
+
+pval_16 <- null_16 %>%
+  get_p_value(obs_stat = obs_stat_16, direction = "both") %>%
+  as.numeric()
 ```
+
+Figure \@ref(fig:compare-lang-viz) shows the null distributions for each of these hypothesis tests.
+The p-value for the 4 item display comparison is very small (`r pval_4`) while the p-value for the 16 item display is much larger (`r pval_16`).
+
+```{r compare-lang-viz, fig.cap = "Distributions of 1,000 differences in randomized means of redundant adjective usage percentage between English and Spanish speakers. Plot A shows the differences in 4 item displays and Plot B shows the differences in 16 item displays. In each plot, the observed differences in the sample (solid line) as well as the differences in the other direction (dashed line) are overlaid.", fig.asp = 1}
+p_4 <- null_4 %>%
+  ggplot(aes(x = stat)) +
+  geom_histogram(binwidth = 5, fill = IMSCOL["green", "full"]) +
+  annotate(
+    "line", 
+    x = c(obs_stat_4, obs_stat_4),
+    y = c(0, 300), 
+    color = IMSCOL["red", "full"], size = 1
+    ) +
+  annotate(
+    "line", 
+    x = -1 *c(obs_stat_4, obs_stat_4),
+    y = c(0, 300), 
+    color = IMSCOL["red", "full"], size = 1,
+    linetype = "dashed"
+    ) +
+  labs(
+    x = "Diffence in mean redundant adjective usage percentages\n(English - Spanish)",
+    y = "Count",
+    title = "4 item display"
+  ) +
+  scale_x_continuous(labels = label_percent(scale = 1))
+
+p_16 <- null_16 %>%
+  ggplot(aes(x = stat)) +
+  geom_histogram(binwidth = 5, fill = IMSCOL["green", "full"]) +
+  annotate(
+    "line", 
+    x = c(obs_stat_16, obs_stat_16),
+    y = c(0, 200), 
+    color = IMSCOL["red", "full"], size = 1
+    ) +
+  annotate(
+    "line", 
+    x = -1 *c(obs_stat_16, obs_stat_16),
+    y = c(0, 200), 
+    color = IMSCOL["red", "full"], size = 1,
+    linetype = "dashed"
+    ) +
+  labs(
+    x = "Diffence in mean redundant adjective usage percentages\n(English - Spanish)",
+    y = "Count",
+    title = "16 item display"
+  ) +
+  scale_x_continuous(labels = label_percent(scale = 1))
+
+p_4 / p_16 +
+  plot_annotation(
+    title = "1,000 differences in randomized means",
+    tag_levels = "A"
+    )
+```
+
+Based on these, we can conclude that the data provide convincing evidence of a difference in mean redundant adjective usage percentages between languages in 4 item displays but not in 16 item displays.
+This suggests that language patterns around redundant adjective usage might be more similar for denser displays than sparser displays.
 
 ## Interactive R tutorials {#inference-tutorials}
 
