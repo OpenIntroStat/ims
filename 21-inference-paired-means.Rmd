@@ -391,8 +391,7 @@ Our conclusion is that the extra amount of average tire tread in Smooth Turn is 
 include_graphics("images/pairrandfull.png")
 ```
 
-```{r pairRandomiz, fig.cap = "Histogram of 1000 average differences with tire brand randomly assigned across the two tread measurements (in cm) per pair."}
-
+```{r pairRandomiz, fig.cap = "Histogram of 1,000 mean differences with tire brand randomly assigned across the two tread measurements (in cm) per pair."}
 set.seed(474756)
 tires_shuffled <- tires %>%
   specify(response = tread, explanatory = brand) %>%
@@ -403,9 +402,9 @@ tires_shuffled <- tires %>%
 ggplot(tires_shuffled, aes(x = stat)) +
   geom_histogram(binwidth = 0.0002) +
   labs(
-    x = "Average difference in tire wear, across randomly assigned groups",
-    title = "Average difference in wear of tire tread (in inches) after \n1,000 miles, brand randomly assigned",
-    y = NULL
+    x = "Mean of randomized differences of tire wear\n(Quick Spin - Smooth Turn)",
+    title = "1,000 means of randomized differences",
+    y = "Count"
   ) +
   geom_vline(xintercept = mean(brandA) - mean(brandB),
              color = IMSCOL["red", "full"])
@@ -499,28 +498,34 @@ boot_diff %>%
   infer::visualize(bins = 20) +
   infer::shade_confidence_interval(ci_perc_diff,
     color = IMSCOL["blue", "full"],
-    fill = NULL, size = 0.5
+    fill = NULL, size = 1, linetype = "dashed"
   ) +
   infer::shade_confidence_interval(ci_se_diff,
     color = IMSCOL["red", "full"],
-    fill = NULL, size = 0.5
+    fill = NULL, size = 1, linetype = "dotted"
   ) +
-  geom_vline(xintercept = diff_price$stat) +
-  geom_line(aes(y = replicate, x = stat, color = "a"), alpha = 0) + # bogus code
-  geom_line(aes(y = replicate, x = stat, color = "b"), alpha = 0) + # bogus code
-  geom_line(aes(y = replicate, x = stat, color = "c"), alpha = 0) + # bogus code
+  geom_vline(xintercept = diff_price$stat, size = 1) +
+  geom_line(aes(y = replicate, x = stat, color = "a", linetype = "a"), alpha = 0, size = 1) + # bogus code
+  geom_line(aes(y = replicate, x = stat, color = "b", linetype = "b"), alpha = 0, size = 1) + # bogus code
+  geom_line(aes(y = replicate, x = stat, color = "c", linetype = "c"), alpha = 0) + # bogus code
   ylim(c(0, 200)) +
   guides(color = guide_legend(override.aes = list(alpha = 1))) +
   scale_color_manual(
-    name = "CI type",
+    name = NULL,
     values = c("a" = IMSCOL["blue", "full"], "b" = IMSCOL["red", "full"], "c" = IMSCOL["black", "full"]),
-    labels = c("Percentile", "SE", "Observed\nstatistic"),
+    labels = c("Percentile\ninterval\n", "SE\ninterval\n", "Observed\nstatistic"),
     guide = "legend"
   ) +
+  scale_linetype_manual(
+    name = NULL,
+    values = c("a" = "dashed", "b" = "dotted", "c" = "solid"),
+    labels = c("Percentile\ninterval\n", "SE\ninterval\n", "Observed\nstatistic"),
+    guide = "legend"    
+  ) +
   labs(
-    title = "Bootstrap distribution for mean difference",
-    y = "Count",
-    x = "Bootstrap statistics"
+    x = "Mean of bootstrapped differences of tire wear\n(Quick Spin - Smooth Turn)",
+    title = "1,000 means of bootstrapped differences",
+    y = "Count"
   ) +
   theme(
     legend.position = c(0.925, 0.8),
@@ -528,7 +533,7 @@ boot_diff %>%
   )
 ```
 
-(ref:pairboot-cap) Bootstrap distribution for the average difference in new book price at the UCLA bookstore versus Amazon. 99% confidence intervals are superimposed using blue (bootstrap percentile interval) and red (bootstrap SE interval) lines.
+(ref:pairboot-cap) Bootstrap distribution for the average difference in new book price at the UCLA bookstore versus Amazon. 99% confidence intervals are superimposed using blue dashed (bootstrap percentile interval) and red dotted (bootstrap SE interval) lines.
 
 ## Mathematical model for the mean paired difference {#mathpaired}
 
