@@ -1,3 +1,9 @@
+1. **Fill in the blank.**
+When doing an ANOVA, you observe large differences in means between groups. Within the ANOVA framework, this would most likely be interpreted as evidence strongly favoring the hypothesis.
+
+1. **Which test?**
+We would like to test if students who are in the social sciences, natural sciences, arts and humanities, and other fields spend the same amount of time, on average, studying for a course. What type of test should we use? Explain your reasoning.
+
 1. **Cuckoo bird egg lengths, randomize once.**
 Cuckoo birds lay their eggs in other birds' nests, making them known as brood parasites.  One question relates to whether the size of the cuckoo egg differs depending on the species of the host bird.^[The [`Cuckoo`](https://rdrr.io/cran/Stat2Data/man/Cuckoo.html) data used in this exercise can be found in the [**Stat2Data**](https://cran.r-project.org/web/packages/Stat2Data/index.html) R package.] [@Latter:1902]
 
@@ -6,6 +12,7 @@ Cuckoo birds lay their eggs in other birds' nests, making them known as brood pa
     ```{r fig.asp = 1}
     library(tidyverse)
     library(Stat2Data)
+    library(openintro)
     library(infer)
     library(patchwork)
     
@@ -49,6 +56,7 @@ Cuckoo birds lay their eggs in other birds' nests, making them known as brood pa
     library(tidyverse)
     library(Stat2Data)
     library(infer)
+    library(openintro)
     
     data(Cuckoo)
     
@@ -73,6 +81,259 @@ Cuckoo birds lay their eggs in other birds' nests, making them known as brood pa
     ```
 
     Using the randomization distribution of the F statistic (host species randomized to egg length), conduct a hypothesis test to evaluate if there is a difference, in the population, between the average egg lengths for different host bird species. Make sure to state your hypotheses clearly and interpret your results in context of the data.
+
+1. **Chicken diet and weight, many groups.**
+An experiment was conducted to measure and compare the effectiveness of various feed supplements on the growth rate of chickens. 
+Newly hatched chicks were randomly allocated into six groups, and each group was given a different feed supplement. 
+The ANOVA output below can be used to test for differences between the average weights of chicks on different diets.[@data:chickwts]
+
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(kableExtra)
+    library(broom)
+    
+    lm(weight ~ feed, data = chickwts) %>%
+      anova() %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "", booktabs = TRUE,
+          digits = 4, align = "lrrrrr", format.args = list(big.mark = ",")) %>% 
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position")) %>%
+      column_spec(1, width = "5em", monospace = TRUE) %>%
+      column_spec(2:6, width = "5em")
+    ```
+
+    Conduct a hypothesis test to determine if these data provide convincing evidence that the average weight of chicks varies across some (or all) groups. Make sure to check relevant conditions. Figures and summary statistics are shown below.
+    
+    ```{r}
+    ggplot(chickwts, aes(x = feed, y = weight)) +
+      geom_boxplot() +
+      labs(x = NULL, y = "Weight (in grams)")
+    
+    chickwts %>%
+      group_by(feed) %>%
+      summarise(
+        mean = format(mean(weight), digits = 2, nsmall = 2),
+        sd   = format(sd(weight), digits = 2, nsmall = 2),
+        n    = n()
+      ) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE, align = "lccc", 
+          col.names = c("Feed type", "Mean", "SD", "n")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE)
+    ```
+
+1. **Teaching descriptive statistics.**
+A study compared five different methods for teaching descriptive statistics. The five methods were traditional lecture and discussion, programmed textbook instruction, programmed text with lectures, computer instruction, and computer instruction with lectures. 45 students were randomly assigned, 9 to each method. After completing the course, students took a 1-hour exam.
+
+    a.  What are the hypotheses for evaluating if the average test scores are different for the different teaching methods?
+
+    b.  What are the degrees of freedom associated with the $F$-test for evaluating these hypotheses?
+
+    c.  Suppose the p-value for this test is 0.0168. What is the conclusion?
+
+1. **Coffee, depression, and physical activity.**
+Caffeine is the world's most widely used stimulant, with approximately 80% consumed in the form of coffee.
+Participants in a study investigating the relationship between coffee consumption and exercise were asked to report the number of hours they spent per week on moderate (e.g., brisk walking) and vigorous (e.g., strenuous sports and jogging) exercise.
+Based on these data the researchers estimated the total hours of metabolic equivalent tasks (MET) per week, a value always greater than 0.
+The table below gives summary statistics of MET for women in this study based on the amount of coffee consumed. [@Lucas:2011]
+    
+    ```{r}
+    library(tidyverse)
+    library(kableExtra)
+
+    tribble(
+      ~` `, ~`1 cup / week or fewer`, ~`2-6 cups / week`, ~`1 cups / day`, ~`2-3 cups / day`, ~`4 cups / day or more`,
+      "Mean",    18.7, 19.6,  19.3,  18.9, 17.5,
+      "SD",      21.1, 25.5,  22.5,  22.0, 22.0,
+      "n",      12215, 6617, 17234, 12290, 2383
+    ) %>%
+      kbl(linesep = "", booktabs = TRUE, align = "lrrrrrr", format.args = list(big.mark = ",")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "hold_position"), 
+                    full_width = FALSE) %>%
+      column_spec(1:6, width = "3em") %>%
+      add_header_above(c(" " = 1, "Caffeinated coffee consumption" = 5))
+    ```
+
+    a. Write the hypotheses for evaluating if the average physical activity level varies among the different levels of coffee consumption.
+
+    b. Check conditions and describe any assumptions you must make to proceed with the test.
+
+    c. Below is the output associated with this test. What is the conclusion of the test?
+
+    ```{r}
+    tribble(
+      ~` `,         ~`df`, ~`sumsq`, ~`meansq`, ~`statistic`, ~`p.value`,
+      "cofee",          4,    10508,      2627,          5.2,     0.0003,
+      "Residuals",  50734, 25564819,       504,           NA,         NA,
+      "Total",      50738, 25575327,        NA,           NA,         NA  
+    ) %>%
+      kbl(linesep = "", booktabs = TRUE, align = "lrrrrrr", 
+          format.args = list(big.mark = ",")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "hold_position"), 
+                    full_width = FALSE) %>%
+      column_spec(1:6, width = "5em")
+    ```
+
+1. **Student performance across discussion sections.**
+A professor who teaches a large introductory statistics class (197 students) with eight discussion sections would like to test if student performance differs by discussion section, where each discussion section has a different teaching assistant. The summary table below shows the average final exam score for each discussion section as well as the standard deviation of scores and the number of students in each section.
+
+    ```{r}
+    library(tidyverse)
+    library(kableExtra)
+
+    tribble(
+      ~` `,   ~`Sec 1`, ~`Sec 2`, ~`Sec 3`, ~`Sec 4`, ~`Sec 5`, ~`Sec 6`, ~`Sec 7`, ~`Sec 8`,
+      "Mean",    92.94,    91.11,    91.80,    92.45,    89.30,    88.30,    90.12,    93.35,
+      "SD",       4.21,     5.58,     3.43,     5.92,     9.32,     7.27,     6.93,     4.57,
+      "n",          33,       19,       10,       29,       33,       10,       32,       31
+    ) %>%
+      kbl(linesep = "", booktabs = TRUE) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "hold_position"), 
+                    full_width = FALSE) %>%
+      column_spec(1:9, width = "4em")
+    ```
+
+    The ANOVA output below can be used to test for differences between the average scores from the different discussion sections.
+    
+        ```{r}
+    tribble(
+      ~` `,         ~`df`,  ~`sumsq`, ~`meansq`, ~`statistic`, ~`p.value`,
+      "section",        7,    525.01,     75.00,         1.87,     0.0767,
+      "Residuals",    189,   7584.11,     40.13,           NA,         NA,
+      "Total",        196,   8109.12,        NA,           NA,         NA  
+    ) %>%
+      kbl(linesep = "", booktabs = TRUE, align = "lrrrrrr", 
+          format.args = list(big.mark = ",")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "hold_position"), 
+                    full_width = FALSE) %>%
+      column_spec(1:6, width = "5em")
+    ```
+
+    Conduct a hypothesis test to determine if these data provide convincing evidence that the average score varies across some (or all) groups. Check conditions and describe any assumptions you must make to proceed with the test.
+
+1. **GPA and major.**
+Undergraduate students taking an introductory statistics course at Duke University conducted a survey about GPA and major. 
+The side-by-side box plots show the distribution of GPA among three groups of majors. Also provided is the ANOVA output.
+
+    ```{r}
+    library(tidyverse)
+    library(kableExtra)
+    library(openintro)
+    library(ggridges)
+    
+    survey_raw <- read_csv("data/survey.csv") 
+    
+    survey <- survey_raw %>%
+      drop_na() %>%
+      filter(gpa <= 4) %>%
+      mutate(major = str_to_title(major))
+    
+    ggplot(survey, aes(x = gpa, y = major, color = major, fill = major)) +
+      geom_density_ridges(alpha = 0.5, show.legend = FALSE) +
+      scale_fill_openintro("three") +
+      scale_color_openintro("three") +
+      labs(x = "GPA", y = "Major")
+    
+    lm(gpa ~ major, data = survey) %>%
+      anova() %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "", booktabs = TRUE,
+          digits = 2, format.args = list(big.mark = ",")) %>% 
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position")) %>%
+      column_spec(1, width = "4em", monospace = TRUE) %>%
+      column_spec(2:6, width = "4em")
+    ```
+
+    a.  Write the hypotheses for testing for a difference between average GPA across majors.
+
+    b.  What is the conclusion of the hypothesis test?
+
+    c.  How many students answered these questions on the survey, i.e. what is the sample size?
+
+1. **Work hours and education.**
+The General Social Survey collects data on demographics, education, and work, among many other characteristics of US residents. [@data:gss] Using ANOVA, we can consider educational attainment levels for all 1,172 respondents at once. Below are the distributions of hours worked by educational attainment and relevant summary statistics that will be helpful in carrying out this analysis.
+
+    ```{r out.width = "100%"}
+    gss2010_hrs_degree  <- gss2010 %>%
+      drop_na(hrs1, degree) %>%
+      mutate(
+        degree = str_to_title(degree),
+        degree = fct_relevel(degree, "Lt High School", "High School",
+                             "Junior College", "Bachelor", "Graduate")
+      )
+    
+    gss2010_hrs_degree %>%
+      group_by(degree) %>%
+      summarise(
+        mean = mean(hrs1),
+        sd   = sd(hrs1),
+        n    = n()
+      ) %>%
+      kbl(linesep = "\\addlinespace", booktabs = TRUE,
+          col.names = c("Educational attainment", "Mean", "SD", "n")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                    latex_options = c("striped", "HOLD_position"),
+                    full_width = FALSE) %>%
+      column_spec(1, width = "12em") %>%
+      column_spec(2:4, width = "5em")
+    
+    ggplot(gss2010_hrs_degree, aes(x = degree, y = hrs1)) +
+      geom_boxplot() +
+      labs(x = NULL, y = "Hours worked per week")
+    ```
+
+    a. Write hypotheses for evaluating whether the average number of hours worked varies across the five groups.
+
+    b. Check conditions and describe any assumptions you must make to proceed with the test.
+
+    c. Below isthe output associated with this test. What is the conclusion of the test?
+
+    ```{r}
+    lm(hrs1 ~ degree, data = gss2010_hrs_degree) %>%
+      anova() %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "", booktabs = TRUE,
+          digits = 2, format.args = list(big.mark = ",")) %>% 
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position")) %>%
+      column_spec(1, width = "8em", monospace = TRUE) %>%
+      column_spec(2:6, width = "5em")
+    ```
+
+1. **True / False: ANOVA, I.**
+Determine if the following statements are true or false in ANOVA, and explain your reasoning for statements you identify as false.
+
+    a. As the number of groups increases, the modified significance level for pairwise tests increases as well.
+
+    b. As the total sample size increases, the degrees of freedom for the residuals increases as well.
+
+    c. The constant variance condition can be somewhat relaxed when the sample sizes are relatively consistent across groups.
+
+    d. The independence assumption can be relaxed when the total sample size is large.
+
+1. **True / False: ANOVA, II.**
+Determine if the following statements are true or false, and explain your reasoning for statements you identify as false.
+
+    If the null hypothesis that the means of four groups are all the same is rejected using ANOVA at a 5% significance level, then...
+
+    a. we can then conclude that all the means are different from one another.
+
+    b. the standardized variability between groups is higher than the standardized variability within groups.
+
+    c. the pairwise analysis will identify at least one pair of means that are significantly different.
+
+    d. the appropriate $\alpha$ to be used in pairwise comparisons is 0.05 / 4 = 0.0125 since there are four groups.
 
 1. **Matching observed data with randomized F statistics.**
 Consider the following two datasets. The response variable is the `score` and the explanatory variable is whether the individual is in one of four groups.
@@ -141,3 +402,54 @@ Consider the following two datasets. The response variable is the `score` and th
     a. Does the randomization distribution on the left correspond to Dataset A or B?  Explain.
 
     b. Does the randomization distribution on the right correspond to Dataset A or B?  Explain.
+
+1. **Child care hours.**
+The China Health and Nutrition Survey aims to examine the effects of the health, nutrition, and family planning policies and programs implemented by national and local governments. [@data:china] It, for example, collects information on number of hours Chinese parents spend taking care of their children under age 6. The side-by-side box plots below show the distribution of this variable by educational attainment of the parent. Also provided below is the ANOVA output for comparing average hours across educational attainment categories.
+
+    ```{r}
+    library(openintro)
+    library(tidyverse)
+    library(kableExtra)
+    
+    china <- openintro::china %>%
+      filter(
+        !is.na(gender),
+        !is.na(child_care),
+        !is.na(china$edu),
+        child_care != -99,
+        edu != 9
+      ) %>%
+      mutate(
+        edu = case_when(
+          edu == 1 ~ "Primary school",
+          edu == 2 ~ "Lower middle school",
+          edu == 3 ~ "Upper middle school",
+          edu == 4 ~ "Technical or vocational",
+          edu == 5 ~ "College"
+        ),
+        edu = fct_relevel(edu, "Primary school", "Lower middle school", 
+                         "Upper middle school", "Technical or vocational",
+                         "College")
+      )
+    
+    ggplot(china, aes(x = child_care, y = edu, color = edu, fill = edu)) +
+      geom_density_ridges(alpha = 0.5, show.legend = FALSE) +
+      scale_fill_openintro("five") +
+      scale_color_openintro("five") +
+      labs(x = "Child care hours", y = NULL)
+      
+    lm(child_care ~ edu, data = china) %>%
+      anova() %>%
+      tidy() %>%
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+      kbl(linesep = "", booktabs = TRUE,
+          digits = 2, format.args = list(big.mark = ",")) %>% 
+      kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position")) %>%
+      column_spec(1, width = "4em", monospace = TRUE) %>%
+      column_spec(2:6, width = "4em")
+    ```
+
+    a. Write the hypotheses for testing for a difference between the average number of hours spent on child care across educational attainment levels.
+
+    b. What is the conclusion of the hypothesis test?
