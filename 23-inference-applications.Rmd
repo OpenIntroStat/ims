@@ -6,7 +6,7 @@ source("_common.R")
 
 ## Recap: Computational methods {#comp-methods-summary}
 
-The computational methods presented in this text are used in two settings.
+The computational methods we have presented are used in two settings.
 First, in many real life applications (as in those covered here), the mathematical model and computational model give identical conclusions.
 When there are no differences in conclusions, the advantage of the computational method is that it gives the analyst a good sense for the logic of the statistical inference process.
 Second, when there is a difference in the conclusions (seen primarily in methods beyond the scope of this text), it is often the case that the computational method relies on fewer technical conditions and is therefore more appropriate to use.
@@ -222,7 +222,7 @@ They found that in both languages, the subjects used more redundant color adject
 knitr::include_graphics("images/redundant-adjectives-blue-triangle.png")
 ```
 
-In this case study we will examine data from this study, which the authors have made available on Open Science Framework at [osf.io/9hw68](https://osf.io/9hw68/).
+In this case study we will examine data from redundant adjective study, which the authors have made available on Open Science Framework at [osf.io/9hw68](https://osf.io/9hw68/).
 
 ```{r}
 # analysis based on 
@@ -271,8 +271,8 @@ redundant %>%
 
 In one of the images shown to the subjects, there are 4 items, and in the other, there are 16 items.
 In each of the images the circled item is the only triangle, therefore referring to it as "the blue triangle" or as "el triángulo azul" is considered redundant.
-If the subject's response was "the triangle" this was recorded as not having used a redundant adjective.
-If the response was "the blue triangle", this was recorded as having used a redundant adjective.
+If the subject's response was "the triangle", they were recorded to have not used a redundant adjective.
+If the response was "the blue triangle", they were recorded to have used a redundant adjective.
 Figure \@ref(fig:reduntant-bar) shows the results of the experiment.
 We can see that English speakers are more likely than Spanish speakers to use redundant adjectives, and also that in both languages, subjects are more likely to use a redundant adjective when there are more items in the image (i.e. in a denser display).
 
@@ -306,7 +306,7 @@ redundant_summary %>%
   column_spec(1, width = "10em")
 ```
 
-### Confidence interval for a mean
+### Confidence interval for a single mean
 
 ```{r}
 xbar_eng_4 <- redundant_summary %>%
@@ -316,7 +316,7 @@ xbar_eng_4 <- redundant_summary %>%
 ```
 
 In this experiment, the average percentage of redundant adjective usage among subjects who responded in English when presented with an image with 4 items in it is `r xbar_eng_4`.
-Using this subset of the data, we can construct a confidence interval for the true mean redundant adjective usage of English speakers who use redundant color adjectives when describing items in an image that is not very dense.
+Along with the sample average as a point estimate, however, we can construct a confidence interval for the true mean redundant adjective usage of English speakers who use redundant color adjectives when describing items in an image that is not very dense.
 
 ```{r boot-eng-4-construct}
 set.seed(74)
@@ -335,7 +335,8 @@ ci_eng_4_upper <- as.numeric(ci_eng_4)[2]
 
 Using a computational method, we can construct the interval via bootstrapping.
 Figure \@ref(fig:boot-eng-4-viz) shows the distribution of 1,000 bootstrapped means from this sample.
-The 95% confidence interval (that is calculated by taking the 2.5th and 97.5th percentile of the bootstrap distribution is `r ci_eng_4_lower`% to `r ci_eng_4_upper`%. Note that this interval for the true population parameter is only valid if we can assume that the sample of English speakers are representative of the population of all English speakers.
+The 95% confidence interval (that is calculated by taking the 2.5th and 97.5th percentile of the bootstrap distribution is `r round(ci_eng_4_lower,1)`% to `r round(ci_eng_4_upper,1)`%.
+Note that this interval for the true population parameter is only valid if we can assume that the sample of English speakers are representative of the population of all English speakers.
 
 ```{r boot-eng-4-viz, fig.cap = "Distribution of 1,000 bootstrapped means of redundant adjective usage percentage among English speakers who were shown four items in images. Overlaid on the distribution is the 95% bootstrap percentile interval that ranges from 19.1% to 56.4%."}
 boot_eng_4 %>%
@@ -362,37 +363,68 @@ boot_eng_4 %>%
 ```
 
 Using a similar technique, we can also construct confidence intervals for the true mean redundant adjective usage percentage for English speakers who are shown dense (16 item) displays and for Spanish speakers with both types (4 and 16 items) displays.
-However these confidence intervals are not very meaningful to interpret as the "true mean redundant adjective usage percentage" is quite an abstract concept.
-Instead, we might be more interested in comparative questions such as "How does redundant adjective usage differ between dense and sparse displays among English speakers and among Spanish speakers?" or "How does redundant adjective usage differ between English speakers and Spanish speakers?" To answer either of these questions we need to conduct two sample inference.
+However these confidence intervals are not very meaningful to compare to one another as the interpretation of the "true mean redundant adjective usage percentage" is quite an abstract concept.
+Instead, we might be more interested in comparative questions such as "Does redundant adjective usage differ between dense and sparse displays among English speakers and among Spanish speakers?" or "Does redundant adjective usage differ between English speakers and Spanish speakers?" To answer either of these questions we need to conduct a hypothesis test.
 
-### Two sample mean test
+### Paired mean test
 
-Let's start with the following question: "Do the data provide convincing evidence of a difference in mean redundant adjective usage percentages between sparse (4 item) and dense (16 item) displays for English speakers?"
+```{r}
+redundant_paired <- redundant %>%
+  filter(language == "English") %>%
+  select(-language, -n_questions) %>%
+  pivot_wider(id_cols = subject, names_from = items, names_prefix = "redundant_perc_",
+              values_from = redundant_perc) %>%
+  mutate(diff_redundant_perc = redundant_perc_16 - redundant_perc_4)
 
-We can answer this question using a hypothesis test with the following hypotheses:
+redundant_paired_mean <- redundant_paired %>%
+  summarize(mean(diff_redundant_perc)) %>%
+  pull() %>%
+  round(2)
+```
 
-$$H_0: \mu_{4} = \mu_{16}$$
+Let's start with the following question: "Do the data provide convincing evidence of a difference in mean redundant adjective usage percentages between sparse (4 item) and dense (16 item) displays for English speakers?" Note that the English speaking participants were each evaluated on both the 4 item and the 16 item displays.
+Therefore, the variable of interest is the difference in redundant percentage.
+The statistic of interest will be the average of the differences, here $\bar{x}_{diff} =$ `r redundant_paired_mean`.
 
-$$H_A: \mu_{4} \ne \mu_{16}$$
+Data from the first six English speaking participants are seen in Table \@ref(tab:redundant-data-paired).
+Although the redundancy percentages seem higher in the 16 item task, a hypothesis test will tell us whether the differences observed in the data could be due to natural variability.
 
-To answer this question using a computational method, we can use a randomization test where we permute the data under the assumption that the null hypothesis is true (no difference in mean redundant adjective usage percentages across different displays for English speakers).
+```{r redundant-data-paired}
+redundant_paired %>%
+  slice_head(n = 6) %>%
+  kbl(linesep = "", booktabs = TRUE, 
+      caption = "Six English participants with redundancy difference.",
+      align = "lrrrr") %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), 
+                latex_options = c("striped", "hold_position"), 
+                full_width = FALSE) %>%
+  column_spec(1:4, width = "5em")
+```
 
-Figure \@ref(fig:eng-viz) shows the distribution of 1,000 differences in means from randomized samples.
-Note that the distribution is centered at 0, since the two averages being equal implies that the difference between them is 0, i.e. $\mu_{4} = \mu_{16}$ implies $\mu_{4} - \mu_{16} = 0.$
+We can answer the research question using a hypothesis test with the following hypotheses:
 
-```{r eng-viz, fig.cap = "Distribution of 1,000 differences in randomized means of redundant adjective usage percentage among English speakers who were shown images with 4 and 16 items. Overlaid on the distribution is the observed difference in the sample (solid line) as well as the difference in the other direction (dashed line), which is far out in the tail, yielding a p-value that is approximately 0."}
+$$H_0: \mu_{diff} = 0$$
+
+$$H_A: \mu_{diff} \ne 0$$
+
+where $\mu_{diff}$ is the true difference in redundancy percentages when comparing a 16 item display with a 4 item display.
+Recall that the computational method used to assess a hypothesis pertaining to the true average of a paired difference shuffles the observed percentage across the two groups (4 item vs 16 item) but **within** a single participant.
+The shuffling process allows for repeated calculations of potential sample differences under the condition that the null hypothesis is true.
+
+Figure \@ref(fig:eng-viz) shows the distribution of 1,000 mean differences from redundancy percentages permuted across the two conditions.
+Note that the distribution is centered at 0, since the structure of randomly assigning redundancy percentages to each item display will balance the data out such that the average of any differences will be zero.
+
+```{r eng-viz, fig.cap = "Distribution of 1,000 mean differences of redundant adjective usage percentage among English speakers who were shown images with 4 and 16 items. Overlaid on the distribution is the observed average difference in the sample (solid line) as well as the difference in the other direction (dashed line), which is far out in the tail, yielding a p-value that is approximately 0."}
 set.seed(74)
-null_eng <- redundant %>%
-  filter(language == "English") %>%
-  specify(response = redundant_perc, explanatory = items) %>%
-  hypothesize(null = "independence") %>%
-  generate(1000, type = "permute") %>%
-  calculate(stat = "diff in means", order = c("4", "16"))
+null_eng <- redundant_paired %>%
+  specify(response = diff_redundant_perc) %>%
+  hypothesize(null = "point", mu = 0) %>%
+  generate(1000, type = "bootstrap") %>%
+  calculate(stat = "mean")
 
-obs_stat_eng <- redundant %>%
-  filter(language == "English") %>%
-  specify(response = redundant_perc, explanatory = items) %>%
-  calculate(stat = "diff in means", order = c("4", "16")) %>%
+obs_stat_eng <- redundant_paired %>%
+  specify(response = diff_redundant_perc) %>%
+  calculate(stat = "mean") %>%
   as.numeric()
 
 null_eng %>%
@@ -406,28 +438,33 @@ null_eng %>%
     ) +
   annotate(
     "line", 
-    x = c(obs_stat_eng, obs_stat_eng),
+    x = c(-obs_stat_eng, -obs_stat_eng),
     y = c(0, 200), 
     color = IMSCOL["red", "full"], size = 1,
     linetype = "dashed"
     ) +
   labs(
-    x = "Diffence in mean redundant adjective usage percentages\n(4 items - 16 items)",
+    x = "Mean difference in redundant adjective usage percentages\n(16 items - 4 items)",
     y = "Count",
-    title = "1,000 differences in randomized means"
+    title = "1,000 randomized mean difference"
   ) +
   scale_x_continuous(labels = label_percent(scale = 1))
 ```
 
 With such a small p-value, we reject the null hypothesis and conclude that the data provide convincing evidence of a difference in mean redundant adjective usage percentages across different displays for English speakers.
 
-And finally, let's consider the question "How does redundant adjective usage differ between English speakers and Spanish speakers?" Since the same subjects were shown the two types of displays, we can't combine data from the two display types together while maintaining independence of observations.
-Therefore, to answer this question we will need to conduct two hypothesis tests, one for sparse displays and the other for dense displays.
+### Two independent means test
+
+Finally, let's consider the question "How does redundant adjective usage differ between English speakers and Spanish speakers?" The English speakers are independent from the Spanish speakers, but since the same subjects were shown the two types of displays, we can't combine data from the two display types (4 objects and 16 objects) together while maintaining independence of observations.
+Therefore, to answer questions about language differences, we will need to conduct two hypothesis tests, one for sparse displays and the other for dense displays.
 In each of the tests, the hypotheses are as follows:
 
 $$H_0: \mu_{English} = \mu_{Spanish}$$
 
 $$H_A: \mu_{English} \ne \mu_{Spanish}$$
+
+Here, the randomization process is slightly different than the paired setting (because the English and Spanish speakers do not have a natural pairing across the two groups).
+To answer the research question using a computational method, we can use a randomization test where we permute the data across all participants under the assumption that the null hypothesis is true (no difference in mean redundant adjective usage percentages across English vs Spanish speakers).
 
 ```{r}
 # 4 item
@@ -526,8 +563,8 @@ p_4 / p_16 +
     )
 ```
 
-Based on these, we can conclude that the data provide convincing evidence of a difference in mean redundant adjective usage percentages between languages in 4 item displays but not in 16 item displays.
-This suggests that language patterns around redundant adjective usage might be more similar for denser displays than sparser displays.
+Based on the p-values (a measure of deviation from the null claim), we can conclude that the data provide convincing evidence of a difference in mean redundant adjective usage percentages between languages in 4 item displays (small p-value) but not in 16 item displays (not small p-value).
+The results suggests that language patterns around redundant adjective usage might be more similar for denser displays than sparser displays.
 
 ## Interactive R tutorials {#inference-tutorials}
 
