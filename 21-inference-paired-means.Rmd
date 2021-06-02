@@ -394,10 +394,13 @@ include_graphics("images/pairrandfull.png")
 ```{r pairRandomiz, fig.cap = "Histogram of 1,000 mean differences with tire brand randomly assigned across the two tread measurements (in cm) per pair."}
 set.seed(474756)
 tires_shuffled <- tires %>%
-  specify(response = tread, explanatory = brand) %>%
-  hypothesize(null = "independence") %>%
-  generate(reps = 1000, type = "permute") %>%
-  calculate(stat = "diff in means", order = c("Quick Spin", "Smooth Turn"))
+  pivot_wider(id_cols = car, names_from = brand, names_prefix = "brand_",
+              values_from = tread) %>%
+  mutate(diff_tread = `brand_Quick Spin` - `brand_Smooth Turn`) %>%
+  specify(response = diff_tread) %>%
+  hypothesize(null = "point", mu = 0) %>%
+  generate(1000, type = "bootstrap") %>%
+  calculate(stat = "mean")
 
 ggplot(tires_shuffled, aes(x = stat)) +
   geom_histogram(binwidth = 0.0002) +
@@ -523,7 +526,7 @@ boot_diff %>%
     guide = "legend"    
   ) +
   labs(
-    x = "Mean of bootstrapped differences of tire wear\n(Quick Spin - Smooth Turn)",
+    x = "Mean of bootstrapped differences of price\n(UCLA - Amazon)",
     title = "1,000 means of bootstrapped differences",
     y = "Count"
   ) +
