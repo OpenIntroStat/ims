@@ -1,20 +1,28 @@
-1.  **Antibiotic use in children.** 
-The bar plot and the pie chart below show the distribution of pre-existing medical conditions of children involved in a study on the optimal duration of antibiotic use in treatment of tracheitis, which is an upper respiratory infection.^[The [`antibiotics`](http://openintrostat.github.io/openintro/reference/antibiotics.html) data used in this exercise can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.]
+1.  **Antibiotic use in children.** The bar plot and the pie chart below show the distribution of pre-existing medical conditions of children involved in a study on the optimal duration of antibiotic use in treatment of tracheitis, which is an upper respiratory infection.^[The [`antibiotics`](http://openintrostat.github.io/openintro/reference/antibiotics.html) data used in this exercise can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.]
 
-    ```{r out.width = "50%", echo=FALSE}
+    ```{r out.width = "100%", echo=FALSE}
     library(openintro)
     library(tidyverse)
+    library(patchwork)
     
-    ggplot(antibiotics, aes(y = fct_rev(fct_infreq(condition)))) +
-      geom_bar() +
-      labs(x = "", y = "Condition")
+    antibiotics <- openintro::antibiotics %>%
+      mutate(condition = fct_rev(fct_infreq(condition)))
     
-    antibiotics %>%
+    p_1 <- ggplot(antibiotics, 
+                  aes(y = condition, fill = condition)) +
+      geom_bar(show.legend = FALSE) +
+      labs(x =NULL, y = "Condition") +
+      scale_fill_openintro()
+    
+    p_2 <- antibiotics %>%
       count(condition) %>%
       ggplot(aes(x = "", y = n, fill = condition)) +
-      geom_bar(width = 1, stat = "identity") +
+      geom_bar(width = 1, stat = "identity", color = "white") +
       coord_polar("y", start = 0) +
-      labs(x = "", y = "")
+      labs(x = NULL, y = NULL, fill = "Condition") +
+      scale_fill_openintro(guide = guide_legend(reverse = TRUE))
+    
+    p_1 + p_2
     ```
 
     a.  What features are apparent in the bar plot but not in the pie chart?
@@ -147,3 +155,96 @@ The survey also collected information on the political party affiliation of the 
     a. Based on the stacked bar plot shown above, do views on raising taxes and political affiliation appear to be associated? Explain your reasoning.
 
     b. Conjecture other possible variables that might explain the potential association between these two variables.
+
+1. **Heart transplant data display.**
+The Stanford University Heart Transplant Study was conducted to determine whether an experimental heart transplant program increased lifespan. Each patient entering the program was officially designated a heart transplant candidate, meaning that he was gravely ill and might benefit from a new heart. Patients were randomly assigned into treatment and control groups. Patients in the treatment group received a transplant, and those in the control group did not. The visualization below displays two different versions of the data.^[The [`heart_transplant`](http://openintrostat.github.io/openintro/reference/heart_transplant.html) data used in this exercise can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.] [@Turnbull+Brown+Hu:1974]
+
+    ```{r fig.asp = 0.45}
+    library(openintro)
+    library(tidyverse)
+    library(patchwork)
+    
+    p1 <- heart_transplant %>%
+      mutate(
+        survived = as.character(survived),
+        survived = if_else(survived == "dead", "deceased", survived)
+        ) %>%
+      ggplot(aes(y = transplant, fill = survived)) +
+      geom_bar() +
+      labs(x = "Count", y = "Group", fill = "Outcome") +
+      scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"]))
+    
+    p2 <-     heart_transplant %>%
+      mutate(
+        survived = as.character(survived),
+        survived = if_else(survived == "dead", "deceased", survived)
+        ) %>%
+      ggplot(aes(y = transplant, fill = survived)) +
+      geom_bar(position = "fill") +
+      labs(x = "Proportion", y = NULL, fill = "Outcome") +
+      scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"]))
+    
+    p1 + p2 +plot_layout(guides = "collect")
+    ```
+
+    a. Provide one aspect of the two group comparison that is easier to see from the stacked bar plot (left)?
+     
+    b. Provide one aspect of the two group comparison that is easeir to see from the standardized bar plot (right)?
+     
+    c. For the Heart Transplant Study which of those aspects would be more important to display?  That is, which bar plot would be better as a data visualization?
+     
+     
+
+1. **Shipping holiday gifts data display.**
+A local news survey asked 500 randomly sampled Los Angeles residents which shipping carrier they prefer to use for shipping holiday gifts. 
+The table below shows the distribution of responses by age group as well as the expected counts for each cell (shown in italics).
+
+    ```{r}
+    library(tidyverse)
+    library(openintro)
+    library(patchwork)
+    
+    p1 <- tribble(
+      ~shipping_method,   ~`18_34`,  ~`35_54`,  ~`55plus`,
+      "USPS",                   72,     97,        76,
+      "UPS",                    52,        76,      34, 
+      "FedEx",                  31,        24,         9,        
+      "Something else",          7,         6,         3,   
+      "Not sure",                3,         6,          4
+    ) %>%
+      pivot_longer(cols = 2:4, names_to = "age", values_to = "count") %>%
+      mutate(shipping_method = fct_relevel(shipping_method, "Not sure", "Something else", "FedEx", "UPS", "USPS")) %>%
+      mutate(age = fct_relevel(age, "55plus", "35_54", "18_34")) %>%
+      ggplot(aes(y = shipping_method, x = count, fill = age)) +
+      geom_bar(stat = "identity", position = "fill") +
+      labs(x = "Proportion", y = "Group", fill = "Age") +
+      scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"], IMSCOL["pink", "full"]),
+                        guide = guide_legend(reverse = TRUE)) 
+
+    p2 <- tribble(
+      ~shipping_method,   ~`18_34`,  ~`35_54`,  ~`55plus`,
+      "USPS",                   72,     97,        76,
+      "UPS",                    52,        76,      34, 
+      "FedEx",                  31,        24,         9,        
+      "Something else",          7,         6,         3,   
+      "Not sure",                3,         6,          4
+    ) %>%
+      pivot_longer(cols = 2:4, names_to = "age", values_to = "count") %>%
+      mutate(shipping_method = fct_relevel(shipping_method, "Not sure", "Something else", "FedEx", "UPS", "USPS")) %>%
+      mutate(age = fct_relevel(age, "55plus", "35_54", "18_34")) %>%
+      ggplot(aes(fill = shipping_method, x = count, y = age)) +
+      geom_bar(stat = "identity", position = "fill") +
+      labs(x = "Proportion", y = "Group", fill = "Shipping method") +
+      scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"], IMSCOL["pink", "full"], IMSCOL["yellow", "full"], IMSCOL["green", "full"]), guide = guide_legend(reverse = TRUE))
+        
+    p1 / p2    
+    ```
+    
+    
+    a. Which graph (top or bottom) would you use to understand the shipping choices of people of different ages?
+    
+    b. Which graph (top or bottom) would you use to understand the age distribution across different types of shipping choices?
+    
+    c. A new shipping company would like to market to people over the age of 55.  Who will be their biggest competitor?
+    
+    d. FedEx would like to reach out to grow their market share so as to balance the age demographics of FedEx users.  To what age group should FedEx market?
