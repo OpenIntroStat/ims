@@ -36,13 +36,14 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   message = FALSE,
   warning = FALSE,
-  #cache = TRUE,
+  cache = TRUE, # only uncomment for quick testing!
   echo = FALSE, # hide code unless otherwise noted in chunk options
   fig.align = "center",
   fig.width = 6,
   fig.asp = 0.618,  # 1 / phi
   fig.show = "hold",
-  dpi = 300
+  dpi = 300,
+  fig.pos = "h"
 )
 
 if (knitr::is_html_output()) {
