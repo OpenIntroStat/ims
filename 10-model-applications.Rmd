@@ -13,12 +13,13 @@ You'll quickly note that the prices seem a bit arbitrary -- the homeowners get t
 
 In this case study we'll formalize the process of figuring out how much to list a house for by using data on current home sales In November of 2020, information on `r nrow(duke_forest)` houses in the Duke Forest neighborhood of Durham, NC were scraped from [Zillow](https://www.zillow.com).
 The homes were all recently sold at the time of data collection, and the goal of the project was to build a model for predicting the sale price based on a particular home's characteristics.
+The first four homes are shown in Table \@ref(tab:duke-data-frame), and descriptions for each variable are shown in Table \@ref(tab:duke-variables).
 
 ::: {.data data-latex=""}
 The [`duke_forest`](http://openintrostat.github.io/openintro/reference/duke_forest.html) data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
 :::
 
-The first four homes are shown in Table \@ref(tab:duke-data-frame), and descriptions for each variable are shown in Table \@ref(tab:duke-variables).
+\vspace{-4mm}
 
 ```{r duke-data-frame}
 duke_forest %>%
@@ -33,6 +34,8 @@ duke_forest %>%
     latex_options = c("striped", "hold_position")
   )
 ```
+
+\vspace{-4mm}
 
 ```{r duke-variables}
 duke_forest_var_def <- tribble(
@@ -58,6 +61,8 @@ duke_forest_var_def %>%
   column_spec(2, width = "25em")
 ```
 
+\clearpage
+
 ### Correlating with `price`
 
 As mentioned, the goal of the data collection was to build a model for the sale price of homes.
@@ -72,7 +77,8 @@ pr_bed <- ggplot(duke_forest, aes(x = bed, y = price)) +
     x = "Number of bedrooms",
     y = "Sale price (USD)"
   ) +  
-  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~"))) +
+  scale_y_continuous(labels = label_dollar(scale = 1/1000, suffix = "K"))
 
 
 pr_bath <- ggplot(duke_forest, aes(x = bath, y = price)) +
@@ -81,7 +87,8 @@ pr_bath <- ggplot(duke_forest, aes(x = bath, y = price)) +
     x = "Number of bathrooms",
     y = "Sale price (USD)"
   ) +
-  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~"))) +
+  scale_y_continuous(labels = label_dollar(scale = 1/1000, suffix = "K"))
 
 pr_area <- ggplot(duke_forest, aes(x = area, y = price)) +
   geom_point(alpha = 0.8) +
@@ -89,7 +96,8 @@ pr_area <- ggplot(duke_forest, aes(x = area, y = price)) +
     x = "Area of home (in square feet)",
     y = "Sale price (USD)"
   ) + 
-  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~"))) +
+  scale_y_continuous(labels = label_dollar(scale = 1/1000, suffix = "K"))
 
 pr_year <- ggplot(duke_forest, aes(x = year_built, y = price)) +
   geom_point(alpha = 0.8) +
@@ -97,7 +105,8 @@ pr_year <- ggplot(duke_forest, aes(x = year_built, y = price)) +
     x = "Year built",
     y = "Sale price (USD)"
   ) +
-  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~"))) +
+  scale_y_continuous(labels = label_dollar(scale = 1/1000, suffix = "K"))
 
 pr_cool <- ggplot(duke_forest, aes(x = cooling, y = price)) +
   geom_point(alpha = 0.8) +
@@ -105,7 +114,8 @@ pr_cool <- ggplot(duke_forest, aes(x = cooling, y = price)) +
     x = "Cooling type",
     y = "Sale price (USD)"
   ) +
-  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~"))) +
+  scale_y_continuous(labels = label_dollar(scale = 1/1000, suffix = "K"))
 
 pr_lot <- ggplot(duke_forest, aes(x = lot, y = price)) +
   geom_point(alpha = 0.8) +
@@ -113,7 +123,8 @@ pr_lot <- ggplot(duke_forest, aes(x = lot, y = price)) +
     x = "Area of property (in acres)",
     y = "Sale price (USD)"
   ) + 
-  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~")))
+  stat_cor(aes(label = paste("r", ..r.., sep = "~`=`~"))) +
+  scale_y_continuous(labels = label_dollar(scale = 1/1000, suffix = "K"))
 
 pr_bed + pr_bath + pr_area + pr_year + pr_cool + pr_lot +
   plot_layout(ncol = 2) 
@@ -167,7 +178,7 @@ m_small_w_rsq %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position")) %>%
   column_spec(1, width = "20em") %>%
-  column_spec(1, monospace = ifelse(as.numeric(rownames(m_small_w_rsq)) < 11, TRUE, FALSE)) %>%
+  column_spec(1, monospace = ifelse(as.numeric(rownames(m_small_w_rsq)) < 3, TRUE, FALSE)) %>%
   column_spec(2:5, width = "5em") %>%
   pack_rows("", 3,4) %>%
   add_indent(3:4) %>%
@@ -189,7 +200,7 @@ Using the output in Table \@ref(tab:price-slr), write out the model for predicti
 The residuals from the linear model can be to assess whether or not a linear model is appropriate.
 Figure \@ref(fig:price-resid-slr) plots the residuals $e_i = y_i - \hat{y}_i$ on the $y$-axis and the fitted (or predicted) values $\hat{y}_i$ on the $x$-axis.
 
-```{r price-resid-slr, fig.cap = "Residuals versus predicted values for the model predicting sale price from area of home."}
+```{r price-resid-slr, fig.cap = "Residuals versus predicted values for the model predicting sale price from area of home.", out.width = "70%"}
 duke_forest %>%
   lm(price ~ area, data = .) %>%
   augment() %>%
@@ -238,7 +249,7 @@ m_full_w_rsq %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position")) %>%
   column_spec(1, width = "20em") %>%
-  column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_w_rsq)) < 11, TRUE, FALSE)) %>%
+  column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_w_rsq)) < 8, TRUE, FALSE)) %>%
   column_spec(2:5, width = "5em") %>%
   pack_rows("", 8, 9) %>%
   add_indent(8:9) %>%
@@ -326,6 +337,8 @@ m_lot_r_sq_adj <- update(m_full_no_bed, . ~ . - lot, data = duke_forest) %>% gla
 None of these models lead to an improvement in adjusted $R^2$, so we do not eliminate any of the remaining predictors.
 :::
 
+\clearpage
+
 That is, after backward elimination, we are left with the model that keeps all predictors except `bed`, which we can summarize using the coefficients from Table \@ref(tab:price-full-except-bed).
 
 ```{r price-full-except-bed}
@@ -345,12 +358,14 @@ m_full_no_bed_w_rsq %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "HOLD_position")) %>%
   column_spec(1, width = "20em") %>%
-  column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_no_bed_w_rsq)) < 11, TRUE, FALSE)) %>%
+  column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_no_bed_w_rsq)) < 7, TRUE, FALSE)) %>%
   column_spec(2:5, width = "5em") %>%
   pack_rows("", 7,8) %>%
   add_indent(7:8) %>%
   row_spec(7:8, italic = TRUE)
 ```
+
+\vspace{-4mm}
 
 Then, the linear model for predicting sale price based on this model is as follows:
 
@@ -371,10 +386,11 @@ How do the residuals in Figure \@ref(fig:price-resid-mlr-nobed) compare to the r
 The residuals, for the most part, are randomly scattered around 0.
 However there is one extreme outlier with a residual of -\$750,000, a house whose actual sale price is a lot lower than its predicted price.
 Also, we observe again that the residuals are quite large for expensive homes.
-Once again, the large residuals indicate potential outliers or increasing variability.
 :::
 
-```{r price-resid-mlr-nobed, fig.cap = "Residuals versus predicted values for the model predicting sale price from all predictors except for number of bedrooms."}
+\vspace{-4mm}
+
+```{r price-resid-mlr-nobed, fig.cap = "Residuals versus predicted values for the model predicting sale price from all predictors except for number of bedrooms.", out.width = "70%"}
 m_full_no_bed %>%
   augment() %>%
   ggplot(aes(x = .fitted, y = .resid)) +
@@ -418,50 +434,81 @@ What if you learned that the house was in California?[^model-applications-7]
     Note that the large residuals (except a few homes) in Figure \@ref(fig:price-resid-mlr-nobed) are closer to \$250,000 (about half as big).
     After we learn that the house is in California, we realize that the model shouldn't be applied to the new home at all!
     The original data are from Durham, NC, and models based on the Durham, NC data should be used only to explore patterns in prices for homes in Durham, NC.
+    
+\clearpage
 
 ## Interactive R tutorials {#model-tutorials}
-
-::: {.todo}
-Update tutorial links
-:::
 
 Navigate the concepts you've learned in this chapter in R using the following self-paced tutorials.
 All you need is your browser to get started!
 
 ::: {.alltutorials data-latex=""}
-[Tutorial 3: Introduction to linear models](https://openintrostat.github.io/ims-tutorials/03-introduction-to-linear-models/)
+[Tutorial 3: Regression modeling](https://openintrostat.github.io/ims-tutorials/03-model/)\
+```{asis, echo = knitr::is_latex_output()}
+https://openintrostat.github.io/ims-tutorials/03-model
+```
 :::
 
 ::: {.singletutorial data-latex=""}
-[Tutorial 3 - Lesson 1: Visualizing two variables](https://openintro.shinyapps.io/ims-03-introduction-to-linear-models-01/)
+[Tutorial 3 - Lesson 1: Visualizing two variables](https://openintro.shinyapps.io/ims-03-model-01/)\
+```{asis, echo = knitr::is_latex_output()}
+https://openintro.shinyapps.io/ims-03-model-01
+```
 :::
 
 ::: {.singletutorial data-latex=""}
-[Tutorial 2 - Lesson 2: Correlation](https://openintro.shinyapps.io/ims-03-introduction-to-linear-models-02/)
+[Tutorial 3 - Lesson 2: Correlation](https://openintro.shinyapps.io/ims-03-model-02/)\
+```{asis, echo = knitr::is_latex_output()}
+https://openintro.shinyapps.io/ims-03-model-02
+```
 :::
 
 ::: {.singletutorial data-latex=""}
-[Tutorial 2 - Lesson 3: Simple linear regression](https://openintro.shinyapps.io/ims-03-introduction-to-linear-models-03/)
+[Tutorial 3 - Lesson 3: Simple linear regression](https://openintro.shinyapps.io/ims-03-model-03/)\
+```{asis, echo = knitr::is_latex_output()}
+https://openintro.shinyapps.io/ims-03-model-03
+```
 :::
 
 ::: {.singletutorial data-latex=""}
-[Tutorial 2 - Lesson 4: Interpreting regression models](https://openintro.shinyapps.io/ims-03-introduction-to-linear-models-04/)
+[Tutorial 3 - Lesson 4: Interpreting regression models](https://openintro.shinyapps.io/ims-03-model-04/)\
+```{asis, echo = knitr::is_latex_output()}
+https://openintro.shinyapps.io/ims-03-model-04
+```
 :::
 
 ::: {.singletutorial data-latex=""}
-[Tutorial 2 - Lesson 5: Model fit](https://openintro.shinyapps.io/ims-03-introduction-to-linear-models-05/)
+[Tutorial 3 - Lesson 5: Model fit](https://openintro.shinyapps.io/ims-03-model-05/)\
+```{asis, echo = knitr::is_latex_output()}
+https://openintro.shinyapps.io/ims-03-model-05
+```
 :::
 
-You can also access the full list of tutorials supporting this book [here](https://openintrostat.github.io/ims-tutorials/).
+```{asis, echo = knitr::is_latex_output()}
+You can also access the full list of tutorials supporting this book at\
+[https://openintrostat.github.io/ims-tutorials](https://openintrostat.github.io/ims-tutorials).
+```
+
+```{asis, echo = knitr::is_html_output()}
+You can also access the full list of tutorials supporting this book [here](https://openintrostat.github.io/ims-tutorials).
+```
 
 ## R labs {#model-labs}
 
-Further apply the concepts you've learned in this chapter in R with computational labs that walk you through a data analysis case study.
+Further apply the concepts you've learned in this part in R with computational labs that walk you through a data analysis case study.
 
 ::: {.singlelab data-latex=""}
-[Introduction to linear regression - Human Freedom Index](http://openintrostat.github.io/oilabs-tidy/08_simple_regression/simple_regression.html)
+[Intro to data - Human Freedom Index](https://www.openintro.org/go?id=ims-r-lab-model)\
+```{asis, echo = knitr::is_latex_output()}
+https://www.openintro.org/go?id=ims-r-lab-model
+```
 :::
 
-::: {.alllabs data-latex=""}
-[Full list of labs supporting OpenIntro::Introduction to Modern Statistics](http://openintrostat.github.io/oilabs-tidy/)
-:::
+```{asis, echo = knitr::is_latex_output()}
+You can also access the full list of labs supporting this book at\
+[https://www.openintro.org/go?id=ims-r-labs](https://www.openintro.org/go?id=ims-r-labs).
+```
+
+```{asis, echo = knitr::is_html_output()}
+You can also access the full list of labs supporting this book [here](https://www.openintro.org/go?id=ims-r-labs).
+```
