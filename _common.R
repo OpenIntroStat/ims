@@ -36,7 +36,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   message = FALSE,
   warning = FALSE,
-  cache = TRUE, # only uncomment for quick testing!
+  cache = FALSE, # only use TRUE for quick testing!
   echo = FALSE, # hide code unless otherwise noted in chunk options
   fig.align = "center",
   fig.width = 6,
