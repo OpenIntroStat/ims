@@ -41,15 +41,15 @@ loans <- loans_full_schema %>%
     verified_income = droplevels(verified_income)
     ) %>%
   rename(credit_checks = inquiries_last_12m) %>%
-  select(interest_rate, verified_income, debt_to_income, credit_util, bankruptcy, term, credit_checks, issue_month) 
+  select(interest_rate, verified_income, debt_to_income, credit_util, bankruptcy, term, credit_checks, issue_month)
 
 loans %>%
   slice_head(n = 6) %>%
-  kbl(linesep = "", booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE,
       caption = caption_helper("First six rows of the `loans` dataset."),
       align = "rlrrrr") %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "scale_down", "hold_position"), 
+  kable_styling(bootstrap_options = c("striped", "condensed"),
+                latex_options = c("striped", "scale_down", "hold_position"),
                 full_width = FALSE)
 ```
 
@@ -62,15 +62,15 @@ loans_var_def <- tribble(
   "credit_util",     "Of all the credit available to the borrower, what fraction are they utilizing. For example, the credit utilization on a credit card would be the card's balance divided by the card's credit limit.",
   "bankruptcy",      "An indicator variable for whether the borrower has a past bankruptcy in their record. This variable takes a value of `1` if the answer is *yes* and `0` if the answer is *no*.",
   "term",            "The length of the loan, in months.",
-  "issue_month",     "The month and year the loan was issued, which for these loans is always during the first quarter of 2018.", 
+  "issue_month",     "The month and year the loan was issued, which for these loans is always during the first quarter of 2018.",
   "credit_checks",   "Number of credit checks in the last 12 months. For example, when filing an application for a credit card, it is common for the company receiving the application to run a credit check.",
 )
 
 loans_var_def %>%
-  kbl(linesep = "", booktabs = TRUE, 
-      caption = caption_helper("Variables and their descriptions for the `loans` dataset."), 
+  kbl(linesep = "", booktabs = TRUE,
+      caption = caption_helper("Variables and their descriptions for the `loans` dataset."),
       col.names = c("Variable", "Description")) %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
+  kable_styling(bootstrap_options = c("striped", "condensed"),
                 latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
   column_spec(1, monospace = TRUE) %>%
   column_spec(2, width = "30em")
@@ -78,7 +78,7 @@ loans_var_def %>%
 
 ## Indicator and categorical predictors {#ind-and-cat-predictors}
 
-Let's start by fitting a linear regression model for interest rate with a single predictor indicating whether a person has a bankruptcy in their record:
+Let us start by fitting a linear regression model for interest rate with a single predictor indicating whether a person has a bankruptcy in their record:
 
 $$\widehat{\texttt{interest_rate}} = 12.34 + 0.74 \times \texttt{bankruptcy}$$
 
@@ -90,10 +90,10 @@ m_bankruptcy <- lm(interest_rate ~ bankruptcy, data = loans)
 m_bankruptcy %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(linesep = "", booktabs = TRUE, 
-      caption = caption_helper("Summary of a linear model for predicting `interest_rate` based on whether the borrower has a bankruptcy in their record. Degrees of freedom for this model is 9998."), 
+  kbl(linesep = "", booktabs = TRUE,
+      caption = caption_helper("Summary of a linear model for predicting `interest_rate` based on whether the borrower has a bankruptcy in their record. Degrees of freedom for this model is 9998."),
       digits = 2, align = "lrrrr") %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
+  kable_styling(bootstrap_options = c("striped", "condensed"),
                 latex_options = c("striped", "hold_position")) %>%
   column_spec(1, width = "17em", monospace = TRUE) %>%
   column_spec(2:5, width = "5em")
@@ -126,10 +126,10 @@ m_verified_income <- lm(interest_rate ~ verified_income, data = loans)
 m_verified_income %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(linesep = "", booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE,
       caption = caption_helper("Summary of a linear model for predicting `interest_rate` based on whether the borrower’s income source and amount has been verified. This predictor has three levels, which results in 2 rows in the regression output."),
       digits = 2, align = "lrrrr") %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
+  kable_styling(bootstrap_options = c("striped", "condensed"),
                 latex_options = c("striped", "hold_position")) %>%
   column_spec(1, width = "17em", monospace = TRUE) %>%
   column_spec(2:5, width = "5em")
@@ -156,7 +156,7 @@ Likewise, $\texttt{verified_income}_{\texttt{Verified}}$ would take a value of 1
 :::
 
 The notation $\texttt{variable}_{\texttt{level}}$ may feel a bit confusing.
-Let's figure out how to use the equation for each level of the `verified_income` variable.
+Let us figure out how to use the equation for each level of the `verified_income` variable.
 
 ::: {.workedexample data-latex=""}
 Using the model for predicting interest rate from income verification type, compute the average interest rate for borrowers whose income source and amount are both *unverified*.
@@ -205,7 +205,7 @@ Interpret the coefficients from the model above.[^model-mlr-2]
 
 The higher interest rate for borrowers who have verified their income source or amount is surprising.
 Intuitively, we would think that a loan would look *less* risky if the borrower's income has been verified.
-However, note that the situation may be more complex, and there may be confounding variables that we didn't account for.
+However, note that the situation may be more complex, and there may be confounding variables that we did not account for.
 For example, perhaps lenders require borrowers with poor credit to verify their income.
 That is, verifying income in our dataset might be a signal of some concerns about the borrower rather than a reassurance that the borrower will pay back the loan.
 For this reason, the borrower could be deemed higher risk, resulting in a higher interest rate.
@@ -265,10 +265,10 @@ m_full <- lm(interest_rate ~ ., data = loans)
 m_full %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
-  kbl(linesep = "", booktabs = TRUE, 
-      caption = "Output for the regression model, where interest rate is the outcome and the variables listed are the predictors. Degrees of freedom for this model is 9990.", 
+  kbl(linesep = "", booktabs = TRUE,
+      caption = "Output for the regression model, where interest rate is the outcome and the variables listed are the predictors. Degrees of freedom for this model is 9990.",
       digits = 2, align = "lrrrr") %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
+  kable_styling(bootstrap_options = c("striped", "condensed"),
                 latex_options = c("striped", "hold_position")) %>%
   column_spec(1, width = "17em", monospace = TRUE) %>%
   column_spec(2:5, width = "5em")
@@ -422,7 +422,7 @@ Use $n$, $k$, and the variances from the earlier Guided Practice to calculate $
     While the difference is very small, it will be important when we fine tune the model in the next section.
 
 ::: {.guidedpractice data-latex=""}
-Suppose you added another predictor to the model, but the variance of the errors $Var(e_i)$ didn't go down.
+Suppose you added another predictor to the model, but the variance of the errors $Var(e_i)$ did not go down.
 What would happen to the $R^2$?
 What would happen to the adjusted $R^2$?[^model-mlr-9]
 :::
@@ -430,21 +430,21 @@ What would happen to the adjusted $R^2$?[^model-mlr-9]
 [^model-mlr-9]: The unadjusted $R^2$ would stay the same and the adjusted $R^2$ would go down.
 
 Adjusted $R^2$ could also have been used in Chapter \@ref(model-slr) where we introduced regression models with a single predictor.
-However, when there is only $k = 1$ predictors, adjusted $R^2$ is very close to regular $R^2$, so this nuance isn't typically important when the model has only one predictor.
+However, when there is only $k = 1$ predictors, adjusted $R^2$ is very close to regular $R^2$, so this nuance is not typically important when the model has only one predictor.
 
 ## Model selection {#model-selection}
 
 The best model is not always the most complicated.
 Sometimes including variables that are not evidently important can actually reduce the accuracy of predictions.
 In this section, we discuss model selection strategies, which will help us eliminate variables from the model that are found to be less important.
-It's common (and hip, at least in the statistical world) to refer to models that have undergone such variable pruning as **parsimonious**.
+It is common (and hip, at least in the statistical world) to refer to models that have undergone such variable pruning as **parsimonious**.
 
 ```{r include=FALSE}
 terms_chp_8 <- c(terms_chp_8, "parsimonious")
 ```
 
 In practice, the model that includes all available predictors is often referred to as the **full model**.
-The full model may not be the best model, and if it isn't, we want to identify a smaller model that is preferable.
+The full model may not be the best model, and if it is not, we want to identify a smaller model that is preferable.
 
 ```{r include=FALSE}
 terms_chp_8 <- c(terms_chp_8, "full model")
@@ -474,7 +474,7 @@ When using adjusted $R^2$ as the decision criterion, we seek to eliminate or add
 
 Adjusted $R^2$ describes the strength of a model fit, and it is a useful tool for evaluating which predictors are adding value to the model, where *adding value* means they are (likely) improving the accuracy in predicting future outcomes.
 
-Let's consider two models, which are shown in Table \@ref(tab:loans-full-for-model-selection) and Table \@ref(tab:loans-full-except-issue-month).
+Let us consider two models, which are shown in Table \@ref(tab:loans-full-for-model-selection) and Table \@ref(tab:loans-full-except-issue-month).
 The first table summarizes the full model since it includes all predictors, while the second does not include the `issue_month` variable.
 
 ```{r loans-full-for-model-selection}
@@ -490,10 +490,10 @@ m_full_w_rsq <- m_full %>%
   add_row(term = glue("df = {m_full_df_residual}"))
 
 m_full_w_rsq %>%
-  kbl(linesep = "", booktabs = TRUE, 
-      caption = "The fit for the full regression model, including the adjusted $R^2$.", 
+  kbl(linesep = "", booktabs = TRUE,
+      caption = "The fit for the full regression model, including the adjusted $R^2$.",
       digits = 2, align = "lrrrr")  %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
+  kable_styling(bootstrap_options = c("striped", "condensed"),
                 latex_options = c("striped", "hold_position")) %>%
   column_spec(1, width = "17em") %>%
   column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_w_rsq)) < 11, TRUE, FALSE)) %>%
@@ -518,10 +518,10 @@ m_full_minus_issue_month_w_rsq <- m_full_minus_issue_month %>%
   add_row(term = glue("df = {m_full_minus_issue_month_df_residual}"))
 
 m_full_minus_issue_month_w_rsq %>%
-  kbl(linesep = "", booktabs = TRUE, 
+  kbl(linesep = "", booktabs = TRUE,
       caption = "The fit for the regression model after dropping issue month, including the adjusted $R^2$.",
       digits = 2, align = "lrrrr")  %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
+  kable_styling(bootstrap_options = c("striped", "condensed"),
                 latex_options = c("striped", "hold_position")) %>%
   column_spec(1, width = "17em") %>%
   column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_minus_issue_month_w_rsq)) < 9, TRUE, FALSE)) %>%
@@ -668,7 +668,7 @@ We hope you walk away from this exploration understanding how stepwise selection
 ### Other model selection strategies
 
 Stepwise selection using adjusted $R^2$ as the decision criteria is one of many commonly used model selection strategies.
-Stepwise selection can also be carried out with decision criteria other than adjusted $R^2$, such as p-values, which you'll learn about in Chapters \@ref(inf-model-slr) onwards, or AIC (Akaike information criterion) or BIC (Bayesian information criterion), which you might learn about in more advanced courses.
+Stepwise selection can also be carried out with decision criteria other than adjusted $R^2$, such as p-values, which you will learn about in Chapters \@ref(inf-model-slr) onwards, or AIC (Akaike information criterion) or BIC (Bayesian information criterion), which you might learn about in more advanced courses.
 
 Alternatively, one could choose to include or exclude variables from a model based on expert opinion or due to research focus.
 In fact, many statisticians discourage the use of stepwise regression alone for model selection and advocate, instead, for a more thoughtful approach that carefully considers the research focus and features of the data.

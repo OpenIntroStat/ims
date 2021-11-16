@@ -5,7 +5,7 @@ When doing an ANOVA, you observe large differences in means between groups. With
 We would like to test if students who are in the social sciences, natural sciences, arts and humanities, and other fields spend the same amount of time, on average, studying for a course. What type of test should we use? Explain your reasoning.
 
 1. **Cuckoo bird egg lengths, randomize once.**
-Cuckoo birds lay their eggs in other birds' nests, making them known as brood parasites.  One question relates to whether the size of the cuckoo egg differs depending on the species of the host bird.^[The [`Cuckoo`](https://rdrr.io/cran/Stat2Data/man/Cuckoo.html) data used in this exercise can be found in the [**Stat2Data**](https://cran.r-project.org/web/packages/Stat2Data/index.html) R package.] [@Latter:1902]
+Cuckoo birds lay their eggs in other birds' nests, making them known as brood parasites. One question relates to whether the size of the cuckoo egg differs depending on the species of the host bird.^[The [`Cuckoo`](https://rdrr.io/cran/Stat2Data/man/Cuckoo.html) data used in this exercise can be found in the [**Stat2Data**](https://cran.r-project.org/web/packages/Stat2Data/index.html) R package.] [@Latter:1902]
 
     Consider the following plots, one represents the original data, the second represents data where the host species has been randomly assigned to the egg length.
 
@@ -15,9 +15,9 @@ Cuckoo birds lay their eggs in other birds' nests, making them known as brood pa
     library(openintro)
     library(infer)
     library(patchwork)
-    
+
     data(Cuckoo)
-    
+
     p_orig <- ggplot(Cuckoo, aes(y = Bird, x = Length)) +
       geom_boxplot(size = 1) +
       labs(
@@ -31,50 +31,50 @@ Cuckoo birds lay their eggs in other birds' nests, making them known as brood pa
       specify(Length ~ Bird) %>%
       hypothesize(null = "independence") %>%
       generate(1, type = "permute") %>%
-      ggplot(aes(y = Bird, x = Length)) + 
+      ggplot(aes(y = Bird, x = Length)) +
       geom_boxplot(color = IMSCOL["green", "full"], size = 1) +
       labs(
         y = "Host bird species",
         x = "Cuckoo egg length",
         title = "Host species randomized to egg length"
       )
-    
+
     p_orig /
       p_rand
     ```
 
-    a.  Consider the average length of the eggs for each species. Is the average length for the original data: more variable, less variable, or about the same as the randomized species?  Describe what you see in the plots.
+    a. Consider the average length of the eggs for each species. Is the average length for the original data: more variable, less variable, or about the same as the randomized species?  Describe what you see in the plots.
 
-    b.  Consider the standard deviation of the lengths of the eggs within each species. Is the within species standard deviation of the length for the original data: bigger, smaller, or about the same as the randomized species?
+    b. Consider the standard deviation of the lengths of the eggs within each species. Is the within species standard deviation of the length for the original data: bigger, smaller, or about the same as the randomized species?
 
-    c.  Recall that the F statistic's numerator measures how much the groups vary (MSG) with the denominator measuring how much the within species values vary (MSE), which of the plots above would have a larger F statistic, the original data or the randomized data?  Explain.
+    c. Recall that the F statistic's numerator measures how much the groups vary (MSG) with the denominator measuring how much the within species values vary (MSE), which of the plots above would have a larger F statistic, the original data or the randomized data?  Explain.
 
 1. **Cuckoo bird egg lengths, randomization test.**
-Cuckoo birds lay their eggs in other birds' nests, making them known as brood parasites.  One question relates to whether the size of the cuckoo egg differs depending on the species of the host bird.^[The data [`Cuckoo`](https://rdrr.io/cran/Stat2Data/man/Cuckoo.html) used in this exercise can be found in the [**Stat2Data**](https://cran.r-project.org/web/packages/Stat2Data/index.html) R package.] [@Latter:1902]
+Cuckoo birds lay their eggs in other birds' nests, making them known as brood parasites. One question relates to whether the size of the cuckoo egg differs depending on the species of the host bird.^[The data [`Cuckoo`](https://rdrr.io/cran/Stat2Data/man/Cuckoo.html) used in this exercise can be found in the [**Stat2Data**](https://cran.r-project.org/web/packages/Stat2Data/index.html) R package.] [@Latter:1902]
 
     ```{r}
     library(tidyverse)
     library(Stat2Data)
     library(infer)
     library(openintro)
-    
+
     data(Cuckoo)
-    
+
     F_obs <- Cuckoo %>%
       specify(Length ~ Bird) %>%
       calculate(stat = "F") %>% pull()
-    
+
     set.seed(4747)
     Cuckoo %>%
       specify(Length ~ Bird) %>%
       hypothesize(null = "independence") %>%
       generate(1000, type = "permute") %>%
       calculate(stat = "F") %>%
-      ggplot(aes(x = stat)) + 
+      ggplot(aes(x = stat)) +
       geom_histogram(fill = IMSCOL["green", "full"]) +
       geom_vline(xintercept = F_obs, color = IMSCOL["red", "full"], size = 1) +
       labs(
-        x = "F statistic for randomized egg lengths", 
+        x = "F statistic for randomized egg lengths",
         y = "Count",
         title = "1,000 randomized F statistics"
         )
@@ -83,15 +83,15 @@ Cuckoo birds lay their eggs in other birds' nests, making them known as brood pa
     Using the randomization distribution of the F statistic (host species randomized to egg length), conduct a hypothesis test to evaluate if there is a difference, in the population, between the average egg lengths for different host bird species. Make sure to state your hypotheses clearly and interpret your results in context of the data.
 
 1. **Chicken diet and weight, many groups.**
-An experiment was conducted to measure and compare the effectiveness of various feed supplements on the growth rate of chickens. 
+An experiment was conducted to measure and compare the effectiveness of various feed supplements on the growth rate of chickens.
 Newly hatched chicks were randomly allocated into six groups, and each group was given a different feed supplement.
 Sample statistics and a visualization of the observed data are shown below. [@data:chickwts]
-    
+
     ```{r out.width = "70%"}
     ggplot(chickwts, aes(x = feed, y = weight)) +
       geom_boxplot() +
       labs(x = NULL, y = "Weight (in grams)")
-    
+
     chickwts %>%
       group_by(feed) %>%
       summarise(
@@ -99,17 +99,17 @@ Sample statistics and a visualization of the observed data are shown below. [@da
         sd   = format(sd(weight), digits = 2, nsmall = 2),
         n    = n()
       ) %>%
-      kbl(linesep = "", booktabs = TRUE, align = "lccc", 
+      kbl(linesep = "", booktabs = TRUE, align = "lccc",
           col.names = c("Feed type", "Mean", "SD", "n")) %>%
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
+      kable_styling(bootstrap_options = c("striped", "condensed"),
                     latex_options = "HOLD_position",
                     full_width = FALSE)
     ```
-    
+
     ```{asis, echo = knitr::is_latex_output()}
     *See next page for the rest of the exercise.*
     ```
-    
+
     \clearpage
 
     The ANOVA output below can be used to test for differences between the average weights of chicks on different diets. Conduct a hypothesis test to determine if these data provide convincing evidence that the average weight of chicks varies across some (or all) groups. Make sure to check relevant conditions.
@@ -119,14 +119,14 @@ Sample statistics and a visualization of the observed data are shown below. [@da
     library(tidyverse)
     library(kableExtra)
     library(broom)
-    
+
     lm(weight ~ feed, data = chickwts) %>%
       anova() %>%
       tidy() %>%
       mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
       kbl(linesep = "", booktabs = TRUE,
-          digits = 4, align = "lrrrrr", format.args = list(big.mark = ",")) %>% 
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
+          digits = 4, align = "lrrrrr", format.args = list(big.mark = ",")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"),
                 latex_options = "HOLD_position") %>%
       column_spec(1, width = "5em", monospace = TRUE) %>%
       column_spec(2:6, width = "5em")
@@ -135,18 +135,18 @@ Sample statistics and a visualization of the observed data are shown below. [@da
 1. **Teaching descriptive statistics.**
 A study compared five different methods for teaching descriptive statistics. The five methods were traditional lecture and discussion, programmed textbook instruction, programmed text with lectures, computer instruction, and computer instruction with lectures. 45 students were randomly assigned, 9 to each method. After completing the course, students took a 1-hour exam.
 
-    a.  What are the hypotheses for evaluating if the average test scores are different for the different teaching methods?
+    a. What are the hypotheses for evaluating if the average test scores are different for the different teaching methods?
 
-    b.  What are the degrees of freedom associated with the $F$-test for evaluating these hypotheses?
+    b. What are the degrees of freedom associated with the $F$-test for evaluating these hypotheses?
 
-    c.  Suppose the p-value for this test is 0.0168. What is the conclusion?
+    c. Suppose the p-value for this test is 0.0168. What is the conclusion?
 
 1. **Coffee, depression, and physical activity.**
 Caffeine is the world's most widely used stimulant, with approximately 80% consumed in the form of coffee.
 Participants in a study investigating the relationship between coffee consumption and exercise were asked to report the number of hours they spent per week on moderate (e.g., brisk walking) and vigorous (e.g., strenuous sports and jogging) exercise.
 Based on these data the researchers estimated the total hours of metabolic equivalent tasks (MET) per week, a value always greater than 0.
 The table below gives summary statistics of MET for women in this study based on the amount of coffee consumed. [@Lucas:2011]
-    
+
     ```{r}
     library(tidyverse)
     library(kableExtra)
@@ -158,8 +158,8 @@ The table below gives summary statistics of MET for women in this study based on
       "n",      12215, 6617, 17234, 12290, 2383
     ) %>%
       kbl(linesep = "", booktabs = TRUE, align = "lrrrrrr", format.args = list(big.mark = ",")) %>%
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
-                    latex_options = "HOLD_position", 
+      kable_styling(bootstrap_options = c("striped", "condensed"),
+                    latex_options = "HOLD_position",
                     full_width = FALSE) %>%
       column_spec(1:6, width = "3em") %>%
       add_header_above(c(" " = 1, "Caffeinated coffee consumption" = 5))
@@ -176,16 +176,16 @@ The table below gives summary statistics of MET for women in this study based on
       ~` `,         ~`df`, ~`sumsq`, ~`meansq`, ~`statistic`, ~`p.value`,
       "cofee",          4,    10508,      2627,          5.2,     0.0003,
       "Residuals",  50734, 25564819,       504,           NA,         NA,
-      "Total",      50738, 25575327,        NA,           NA,         NA  
+      "Total",      50738, 25575327,        NA,           NA,         NA
     ) %>%
-      kbl(linesep = "", booktabs = TRUE, align = "lrrrrrr", 
+      kbl(linesep = "", booktabs = TRUE, align = "lrrrrrr",
           format.args = list(big.mark = ",")) %>%
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
-                    latex_options = "HOLD_position", 
+      kable_styling(bootstrap_options = c("striped", "condensed"),
+                    latex_options = "HOLD_position",
                     full_width = FALSE) %>%
       column_spec(1:6, width = "5em")
     ```
-    
+
     \clearpage
 
 1. **Student performance across discussion sections.**
@@ -202,25 +202,25 @@ A professor who teaches a large introductory statistics class (197 students) wit
       "n",          33,       19,       10,       29,       33,       10,       32,       31
     ) %>%
       kbl(linesep = "", booktabs = TRUE) %>%
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
-                    latex_options = "HOLD_position", 
+      kable_styling(bootstrap_options = c("striped", "condensed"),
+                    latex_options = "HOLD_position",
                     full_width = FALSE) %>%
       column_spec(1:9, width = "4em")
     ```
 
     The ANOVA output below can be used to test for differences between the average scores from the different discussion sections.
-    
+
     ```{r}
     tribble(
       ~` `,         ~`df`,  ~`sumsq`, ~`meansq`, ~`statistic`, ~`p.value`,
       "section",        7,    525.01,     75.00,         1.87,     0.0767,
       "Residuals",    189,   7584.11,     40.13,           NA,         NA,
-      "Total",        196,   8109.12,        NA,           NA,         NA  
+      "Total",        196,   8109.12,        NA,           NA,         NA
     ) %>%
-      kbl(linesep = "", booktabs = TRUE, align = "lrrrrrr", 
+      kbl(linesep = "", booktabs = TRUE, align = "lrrrrrr",
           format.args = list(big.mark = ",")) %>%
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
-                    latex_options = "HOLD_position", 
+      kable_styling(bootstrap_options = c("striped", "condensed"),
+                    latex_options = "HOLD_position",
                     full_width = FALSE) %>%
       column_spec(1:6, width = "5em")
     ```
@@ -228,7 +228,7 @@ A professor who teaches a large introductory statistics class (197 students) wit
     Conduct a hypothesis test to determine if these data provide convincing evidence that the average score varies across some (or all) groups. Check conditions and describe any assumptions you must make to proceed with the test.
 
 1. **GPA and major.**
-Undergraduate students taking an introductory statistics course at Duke University conducted a survey about GPA and major. 
+Undergraduate students taking an introductory statistics course at Duke University conducted a survey about GPA and major.
 The side-by-side box plots show the distribution of GPA among three groups of majors. Also provided is the ANOVA output.
 
     ```{r}
@@ -236,38 +236,38 @@ The side-by-side box plots show the distribution of GPA among three groups of ma
     library(kableExtra)
     library(openintro)
     library(ggridges)
-    
-    survey_raw <- read_csv("data/survey.csv") 
-    
+
+    survey_raw <- read_csv("data/survey.csv")
+
     survey <- survey_raw %>%
       drop_na() %>%
       filter(gpa <= 4) %>%
       mutate(major = str_to_title(major))
-    
+
     ggplot(survey, aes(x = gpa, y = major, color = major, fill = major)) +
       geom_density_ridges(alpha = 0.5, show.legend = FALSE) +
       scale_fill_openintro("three") +
       scale_color_openintro("three") +
       labs(x = "GPA", y = "Major")
-    
+
     lm(gpa ~ major, data = survey) %>%
       anova() %>%
       tidy() %>%
       mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
       kbl(linesep = "", booktabs = TRUE,
-          digits = 2, format.args = list(big.mark = ",")) %>% 
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
+          digits = 2, format.args = list(big.mark = ",")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"),
                 latex_options = "HOLD_position") %>%
       column_spec(1, width = "4em", monospace = TRUE) %>%
       column_spec(2:6, width = "4em")
     ```
 
-    a.  Write the hypotheses for testing for a difference between average GPA across majors.
+    a. Write the hypotheses for testing for a difference between average GPA across majors.
 
-    b.  What is the conclusion of the hypothesis test?
+    b. What is the conclusion of the hypothesis test?
 
-    c.  How many students answered these questions on the survey, i.e. what is the sample size?
-    
+    c. How many students answered these questions on the survey, i.e. what is the sample size?
+
     \clearpage
 
 1. **Work hours and education.**
@@ -281,7 +281,7 @@ The General Social Survey collects data on demographics, education, and work, am
         degree = fct_relevel(degree, "Lt High School", "High School",
                              "Junior College", "Bachelor", "Graduate")
       )
-    
+
     gss2010_hrs_degree %>%
       group_by(degree) %>%
       summarise(
@@ -291,12 +291,12 @@ The General Social Survey collects data on demographics, education, and work, am
       ) %>%
       kbl(linesep = "", booktabs = TRUE,
           col.names = c("Educational attainment", "Mean", "SD", "n")) %>%
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
+      kable_styling(bootstrap_options = c("striped", "condensed"),
                     latex_options = "HOLD_position",
                     full_width = FALSE) %>%
       column_spec(1, width = "12em") %>%
       column_spec(2:4, width = "5em")
-    
+
     ggplot(gss2010_hrs_degree, aes(x = degree, y = hrs1)) +
       geom_boxplot() +
       labs(x = NULL, y = "Hours worked per week")
@@ -314,13 +314,13 @@ The General Social Survey collects data on demographics, education, and work, am
       tidy() %>%
       mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
       kbl(linesep = "", booktabs = TRUE,
-          digits = 2, format.args = list(big.mark = ",")) %>% 
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
+          digits = 2, format.args = list(big.mark = ",")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"),
                 latex_options = "HOLD_position") %>%
       column_spec(1, width = "8em", monospace = TRUE) %>%
       column_spec(2:6, width = "5em")
     ```
-    
+
     \clearpage
 
 1. **True / False: ANOVA, I.**
@@ -355,7 +355,7 @@ Consider the following two datasets. The response variable is the `score` and th
     library(infer)
     library(patchwork)
     set.seed(470)
-    
+
     data_A <- tibble(
       group = rep(c("Group 1", "Group 2", "Group 3", "Group 4"), each = 25),
       score = c(rnorm(25, 10, 5), rnorm(25, 5, 5), rnorm(25, 8, 5), rnorm(25, 2, 5))
@@ -366,7 +366,7 @@ Consider the following two datasets. The response variable is the `score` and th
       calculate(stat = "F") %>% pull()
 
     p_A <- data_A %>%
-      ggplot(aes(x = group, y = score)) + 
+      ggplot(aes(x = group, y = score)) +
       geom_boxplot() +
       labs(y = "Score", title = "Dataset A")
 
@@ -375,7 +375,7 @@ Consider the following two datasets. The response variable is the `score` and th
       hypothesize(null = "independence") %>%
       generate(1000, type = "permute") %>%
       calculate(stat = "F") %>%
-      ggplot(aes(x = stat)) + 
+      ggplot(aes(x = stat)) +
       geom_histogram(fill = IMSCOL["green", "full"]) +
       geom_vline(xintercept = F_A, color = IMSCOL["red", "full"]) +
       labs(x = "F statistic", y = "Count", title = "Right randomization")
@@ -384,14 +384,14 @@ Consider the following two datasets. The response variable is the `score` and th
       group = rep(c("Group 1", "Group 2", "Group 3", "Group 4"), each = 25),
       score = c(rnorm(25, 10, 20), rnorm(25, 5, 20), rnorm(25, 8, 20), rnorm(25, 2, 20))
       )
-    
+
     F_B <- data_B %>%
       specify(score ~ group) %>%
-      calculate(stat = "F") %>% 
+      calculate(stat = "F") %>%
       pull()
-    
+
     p_B <- data_B %>%
-      ggplot() + 
+      ggplot() +
       geom_boxplot(aes(x = group, y = score)) +
       labs(y = "Score", title = "Dataset B")
 
@@ -400,21 +400,21 @@ Consider the following two datasets. The response variable is the `score` and th
       hypothesize(null = "independence") %>%
       generate(1000, type = "permute") %>%
       calculate(stat = "F") %>%
-      ggplot(aes(x = stat)) + 
+      ggplot(aes(x = stat)) +
       geom_histogram(fill = IMSCOL["green", "full"]) +
       geom_vline(xintercept = F_B, color = IMSCOL["red", "full"], size = 1) +
       labs(x = "F statistic", y = "Count", title = "Left randomization")
 
-    p_A + p_B + rand_B + rand_A + 
-      plot_layout(widths = c(2, 2)) 
+    p_A + p_B + rand_B + rand_A +
+      plot_layout(widths = c(2, 2))
     ```
 
-    The randomizations (randomly assigning group to the score, calculating a randomization F statistic) were done 1000 times for each of Dataset A and B.  The red line on each plot indicates the observed F statistic for the original (unrandomized) data.
+    The randomizations (randomly assigning group to the score, calculating a randomization F statistic) were done 1000 times for each of Dataset A and B. The red line on each plot indicates the observed F statistic for the original (unrandomized) data.
 
     a. Does the randomization distribution on the left correspond to Dataset A or B?  Explain.
 
     b. Does the randomization distribution on the right correspond to Dataset A or B?  Explain.
-    
+
     \clearpage
 
 1. **Child care hours.**
@@ -424,7 +424,7 @@ The China Health and Nutrition Survey aims to examine the effects of the health,
     library(openintro)
     library(tidyverse)
     library(kableExtra)
-    
+
     china <- openintro::china %>%
       filter(
         !is.na(gender),
@@ -441,24 +441,24 @@ The China Health and Nutrition Survey aims to examine the effects of the health,
           edu == 4 ~ "Technical or vocational",
           edu == 5 ~ "College"
         ),
-        edu = fct_relevel(edu, "Primary school", "Lower middle school", 
+        edu = fct_relevel(edu, "Primary school", "Lower middle school",
                          "Upper middle school", "Technical or vocational",
                          "College")
       )
-    
+
     ggplot(china, aes(x = child_care, y = edu, color = edu, fill = edu)) +
       geom_density_ridges(alpha = 0.5, show.legend = FALSE) +
       scale_fill_openintro("five") +
       scale_color_openintro("five") +
       labs(x = "Child care hours", y = NULL)
-      
+
     lm(child_care ~ edu, data = china) %>%
       anova() %>%
       tidy() %>%
       mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
       kbl(linesep = "", booktabs = TRUE,
-          digits = 2, format.args = list(big.mark = ",")) %>% 
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
+          digits = 2, format.args = list(big.mark = ",")) %>%
+      kable_styling(bootstrap_options = c("striped", "condensed"),
                 latex_options = "HOLD_position") %>%
       column_spec(1, width = "4em", monospace = TRUE) %>%
       column_spec(2:6, width = "4em")
