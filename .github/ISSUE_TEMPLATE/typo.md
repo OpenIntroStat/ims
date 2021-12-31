@@ -13,8 +13,6 @@ Note that this project is released with a [Contributor Code of Conduct](https://
 Thank you so much for your comments!
 -->
 
----
-
 - Chapter number: ___
 
 - Section number: ___
