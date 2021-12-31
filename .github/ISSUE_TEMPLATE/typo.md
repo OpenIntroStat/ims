@@ -1,7 +1,7 @@
 ---
 name: Typo
 about: Report a typo
-title: Typo: Chp [___], Sec [___], [__short description of typo__]
+title: Typo- Chp [___], Sec [___], [__short description of typo__]
 assignees: mine-cetinkaya-rundel
 ---
 
