@@ -45,7 +45,7 @@ duke_forest_var_def <- tribble(
   "bath", "Number of bathrooms",
   "area", "Area of home, in square feet",
   "year_built", "Year the home was built",
-  "cooling", "Cooling system: central or other",
+  "cooling", "Cooling system: central or other (other is baseline)",
   "lot", "Area of the entire property, in acres"
 )
 
@@ -197,7 +197,7 @@ Using the output in Table \@ref(tab:price-slr), write out the model for predicti
 
 [^model-applications-3]: $\widehat{\texttt{price}} = 116,652 + 159 \times \texttt{area}$
 
-The residuals from the linear model can be to assess whether a linear model is appropriate.
+The residuals from the linear model can be used to assess whether a linear model is appropriate.
 Figure \@ref(fig:price-resid-slr) plots the residuals $e_i = y_i - \hat{y}_i$ on the $y$-axis and the fitted (or predicted) values $\hat{y}_i$ on the $x$-axis.
 
 ```{r price-resid-slr, fig.cap = "Residuals versus predicted values for the model predicting sale price from area of home.", out.width = "70%"}
@@ -263,7 +263,7 @@ Using Table \@ref(tab:price-mlr), write out the linear model of price on the six
 
 $$
 \begin{aligned}
-\widehat{\texttt{price}} &= -2,826,650 \\
+\widehat{\texttt{price}} &= -2,910,715 \\
 &+ 102 \times \texttt{area} - 13,692 \times \texttt{bed} \\
 &+ 41,076 \times \texttt{bath} + 1,459 \times \texttt{year_built}\\
 &+ 84,065 \times \texttt{cooling}_{\texttt{central}} + 356,141 \times \texttt{lot}
@@ -306,12 +306,12 @@ To check, we fit models that each drop a different predictor, and we record the 
 -   Excluding `lot`: `r m_lot_r_sq_adj`
 
 The model without `bed` has the highest adjusted $R^2$ of `r m_bed_r_sq_adj`, higher than the adjusted $R^2$ for the full model.
-Because eliminating `bed` leads to a model with a higher adjusted $R^2$, we drop `bed` from the model.
+Because eliminating `bed` leads to a model with a higher adjusted $R^2$ than the full model, we drop `bed` from the model.
 
 It might seem counter-intuitive to exclude information on number of bedrooms from the model.
 After all, we would expect homes with more bedrooms to cost more, and we can see a clear relationship between number of bedrooms and sale price in Figure \@ref(fig:single-scatter).
 However, note that `area` is still in the model, and it's quite likely that the area of the home and the number of bedrooms are highly associated.
-Therefore, the model already has information on "how much space is available in the house" with the inclusion of `area` alone.
+Therefore, the model already has information on "how much space is available in the house" with the inclusion of `area`.
 
 Since we eliminated a predictor from the model in the first step, we see whether we should eliminate any additional predictors.
 Our baseline adjusted $R^2$ is now `r m_bed_r_sq_adj`.
@@ -371,7 +371,7 @@ Then, the linear model for predicting sale price based on this model is as follo
 
 $$ 
 \begin{aligned}
-\widehat{\texttt{price}} &= -2,868,784 + 99 \times \texttt{area}\\ 
+\widehat{\texttt{price}} &= -2,952,641 + 99 \times \texttt{area}\\ 
 &+ 36,228 \times \texttt{bath} + 1,466 \times \texttt{year_built}\\
 &+ 83,856 \times \texttt{cooling}_{\texttt{central}} + 357,119 \times \texttt{lot}
 \end{aligned}
@@ -405,6 +405,11 @@ m_full_no_bed %>%
 ```
 
 ```{r}
+# note:  none of this code is used because the two GPs are now
+# hard coded.  the coefficients didn't have sig fig, so the 
+# predictions with rounded coefficients were too different from
+# the predicted value that came from predict()
+
 new_house <- tibble(
  area = 1803,
  bath = 2.5,
@@ -423,14 +428,14 @@ Consider a house with 1,803 square feet, 2.5 bathrooms, 0.145 acres, built in 19
 What is the predicted price of the home?[^model-applications-6]
 :::
 
-[^model-applications-6]: $\widehat{\texttt{price}} = -2,868,784 + 99 \times 1803\\ + 36,228 \times 2.5 + 1,466 \times 1941\\ + 83,856 \times 1 + 357,119 \times 0.145\\ = \$`r format(new_house_pred, big.mark = ",")`.$
+[^model-applications-6]: $\widehat{\texttt{price}} = -2,952,641 + 99 \times 1803\\ + 36,228 \times 2.5 + 1,466 \times 1941\\ + 83,856 \times 1 + 357,119 \times 0.145\\ = \$297,570.$
 
 ::: {.guidedpractice data-latex=""}
-If you later learned that the house (with a predicted price of \$`r format(new_house_pred, big.mark = ",")`) had recently sold for \$`r format(new_house_obs, big.mark = ",")`, would you think the model was terrible?
+If you later learned that the house (with a predicted price of \$297,570) had recently sold for \$804,133, would you think the model was terrible?
 What if you learned that the house was in California?[^model-applications-7]
 :::
 
-[^model-applications-7]: A residual of \$`r format(new_house_resid, big.mark = ",")` is reasonably big.
+[^model-applications-7]: A residual of \$506,563 is reasonably big.
     Note that the large residuals (except a few homes) in Figure \@ref(fig:price-resid-mlr-nobed) are closer to \$250,000 (about half as big).
     After we learn that the house is in California, we realize that the model shouldn't be applied to the new home at all!
     The original data are from Durham, NC, and models based on the Durham, NC data should be used only to explore patterns in prices for homes in Durham, NC.
