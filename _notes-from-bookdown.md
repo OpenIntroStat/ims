@@ -1,11 +1,4 @@
-bookdown::bs4_book:
-  css: css/ims-style.css
-  theme:
-    primary: "#569BBD"
-  repo: https://github.com/OpenIntroStat/ims/tree/ims1
-  includes:
-    in_header: js/mathjax-popover.html
-  dev: "ragg_png"
+# from _output.yml ------------------------------
 
 bookdown::gitbook:
   css: css/ims-style.css
@@ -28,3 +21,16 @@ bookdown::pdf_book:
   template: latex/default.latex
   pandoc_args: --top-level-division=chapter
   dev: "ragg_png"
+
+# from index.Rmd --------------------------------
+---
+twitter-handle: OpenIntroOrg
+link-citations: yes
+bibliography: [book.bib, packages.bib, eoce.bib]
+biblio-style: apalike
+always_allow_html: true
+documentclass: book
+classoption: 
+  - 10pt
+  - openany
+---
