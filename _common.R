@@ -30,6 +30,9 @@ suppressMessages(library(ggrepel))
 suppressMessages(library(ggpubr))
 suppressMessages(library(unvotes))
 suppressMessages(library(ukbabynames))
+suppressMessages(library(Stat2Data))
+suppressMessages(library(GGally))
+suppressMessages(library(mosaicData))
 
 # knitr chunk options ----------------------------------------------------------
 
