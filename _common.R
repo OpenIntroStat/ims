@@ -15,6 +15,7 @@ suppressMessages(library(janitor))
 suppressMessages(library(knitr))
 suppressMessages(library(kableExtra))
 suppressMessages(library(maps))
+suppressMessages(library(measurements))
 suppressMessages(library(openintro))
 suppressMessages(library(patchwork))
 suppressMessages(library(quantreg))
@@ -27,6 +28,8 @@ suppressMessages(library(survival))
 suppressMessages(library(waffle))
 suppressMessages(library(ggrepel))
 suppressMessages(library(ggpubr))
+suppressMessages(library(unvotes))
+suppressMessages(library(ukbabynames))
 
 # knitr chunk options ----------------------------------------------------------
 
