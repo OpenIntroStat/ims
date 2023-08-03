@@ -30,15 +30,15 @@ Perhaps unsurprisingly, "password" tops the list, followed by "123456".
 #| tbl-cap: Top ten rows of the `passwords` dataset.
 # https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-14/passwords.csv
 passwords <- readr::read_csv("data/passwords.csv")
-passwords <- passwords %>%
-  select(-font_size, -rank_alt)  %>%
-  filter(!is.na(category)) %>%
+passwords <- passwords |>
+  select(-font_size, -rank_alt) |>
+  filter(!is.na(category)) |>
   mutate(time_unit = fct_relevel(time_unit, "seconds", "minutes", "hours", "days", "weeks", "months", "years"))
 
-passwords %>%
-  slice_head(n = 10) %>%
+passwords |>
+  slice_head(n = 10) |>
   kbl(linesep = "", booktabs = TRUE,
-      row.names = FALSE) %>%
+      row.names = FALSE) |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"))
 ```
@@ -50,9 +50,9 @@ It can often be helpful to look at the last few rows of the data as well to get 
 ```{r}
 #| label: tbl-passwords-df-tail
 #| tbl-cap: Bottom ten rows of the `passwords` dataset.
-passwords %>%
-  slice_tail(n = 10) %>%
-  kbl(linesep = "", booktabs = TRUE, row.names = FALSE) %>%
+passwords |>
+  slice_tail(n = 10) |>
+  kbl(linesep = "", booktabs = TRUE, row.names = FALSE) |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"))  
 ```
@@ -90,12 +90,12 @@ passwords_var_def <- tribble(
   "strength",  "Strength of password, relative only to passwords in this dataset. Lower values indicate weaker passwords."
 )
 
-passwords_var_def %>%
+passwords_var_def |>
   kbl(linesep = "", booktabs = TRUE, 
-      col.names = c("Variable", "Description")) %>%
+      col.names = c("Variable", "Description")) |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
-  column_spec(1, monospace = TRUE) %>%
+                latex_options = c("striped", "hold_position"), full_width = TRUE) |>
+  column_spec(1, monospace = TRUE) |>
   column_spec(2, width = "30em")
 ```
 
@@ -133,9 +133,9 @@ Each of these visualizations is a bar plot, which you will learn more about in C
 #|   online guessing.
 #| fig-asp: 1.0
 #| out.width: 100%
-p_category <- passwords %>%
-  count(category, sort = TRUE) %>%
-  mutate(category = fct_reorder(category, n)) %>%
+p_category <- passwords |>
+  count(category, sort = TRUE) |>
+  mutate(category = fct_reorder(category, n)) |>
   ggplot(aes(y = category, x = n, fill = fct_rev(category))) +
   geom_col(show.legend = FALSE) +
   scale_fill_openintro() +
@@ -146,8 +146,8 @@ p_category <- passwords %>%
     ) +
   theme(plot.title.position = "plot")
 
-p_time_unit <- passwords %>%
-  count(time_unit) %>%
+p_time_unit <- passwords |>
+  count(time_unit) |>
   ggplot(aes(y = time_unit, x = n)) +
   geom_col(show.legend = FALSE) +
   labs(
@@ -158,7 +158,7 @@ p_time_unit <- passwords %>%
     ) +
   theme(plot.title.position = "plot")
 
-p_strength <- passwords %>%
+p_strength <- passwords |>
   ggplot(aes(y = strength)) +
   geom_histogram(binwidth = 1, show.legend = FALSE) +
   scale_y_continuous(breaks = seq(0, 50, 5), trans = "reverse") +
@@ -191,14 +191,14 @@ And there are 65 passwords that take years to break, ranging from 2.56 years to 
 #| tbl-cap: Minimum and maximum amount of time it takes to crack a password by 
 #|   online guessing as well as the number of observations that fall into each 
 #|   time unit category.
-passwords %>%
-  group_by(time_unit) %>%
+passwords |>
+  group_by(time_unit) |>
   summarise(
     n   = n(),
     min = min(value),
     max = max(value)
-  ) %>%
-  kbl(linesep = "", booktabs = TRUE) %>%
+  ) |>
+  kbl(linesep = "", booktabs = TRUE) |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"))
 ```
@@ -209,9 +209,9 @@ Even though passwords that take a large number of years to crack can seem like g
 #| label: tbl-passwords-long-crack
 #| tbl-cap: Passwords that take the longest amount of time to crack by online 
 #|   guessing.
-passwords %>% 
-  filter(value == 92.27) %>%
-  kbl(linesep = "", booktabs = TRUE, row.names = FALSE) %>%
+passwords |> 
+  filter(value == 92.27) |>
+  kbl(linesep = "", booktabs = TRUE, row.names = FALSE) |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"))  
 ```
@@ -244,8 +244,8 @@ And if you already do, it's time to go change it!
 #| fig-cap: Rank vs. strength of 500 most common passwords by category.
 #| fig-asp: 1.2
 #| out.width: 100%
-passwords %>%
-  mutate(category = fct_relevel(category, "name", "cool-macho", "simple-alphanumeric", "fluffy", "sport", "nerdy-pop", "animal", "password-related", "rebellious-rude", "food")) %>%
+passwords |>
+  mutate(category = fct_relevel(category, "name", "cool-macho", "simple-alphanumeric", "fluffy", "sport", "nerdy-pop", "animal", "password-related", "rebellious-rude", "food")) |>
   ggplot(aes(x = strength, y = rank, color = category)) +
   geom_text(aes(label = password, size = strength), 
             check_overlap = TRUE, show.legend = FALSE) +

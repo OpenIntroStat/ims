@@ -199,12 +199,12 @@ drug_asthma <- tribble(
   "Total asthma attacks", 200, 300
 )
 
-drug_asthma %>%
+drug_asthma |>
   kbl(linesep = "", booktabs = TRUE, 
-      col.names = c("", "New drug", "Standard drug"), align = "lcc") %>%
+      col.names = c("", "New drug", "Standard drug"), align = "lcc") |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  column_spec(1, width = "12em") %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) |>
+  column_spec(1, width = "12em") |>
   column_spec(2:3, width = "8em")
 ```
 
@@ -269,10 +269,10 @@ terms_chp_5 <- c(terms_chp_5, "histogram")
 
 ```{r}
 #| label: tbl-binnedIntRateAmountTable
-loan50 %>%
-  mutate(interest_rate_cat = cut(interest_rate, breaks = seq(5, 27.5, 2.5))) %>%
-  count(interest_rate_cat, name = "Count") %>%
-  separate(interest_rate_cat, into = c("lower", "upper"), sep = ",") %>%
+loan50 |>
+  mutate(interest_rate_cat = cut(interest_rate, breaks = seq(5, 27.5, 2.5))) |>
+  count(interest_rate_cat, name = "Count") |>
+  separate(interest_rate_cat, into = c("lower", "upper"), sep = ",") |>
   mutate(
     lower = str_remove(lower, "\\("),
     upper = str_remove(upper, "]"),
@@ -280,13 +280,13 @@ loan50 %>%
     upper = paste0(upper, "%"),
     lower = str_c("(", lower),
     upper = str_c(upper, "]")
-  ) %>%
-  unite("Interest rate", lower:upper, sep = " - ") %>%
+  ) |>
+  unite("Interest rate", lower:upper, sep = " - ") |>
   kbl(linesep = "", booktabs = TRUE, align = "lr", 
-      caption = "Counts for the binned interest rate data.") %>%
+      caption = "Counts for the binned interest rate data.") |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"),
-                full_width = FALSE) %>%
+                full_width = FALSE) |>
   column_spec(1:2, width = "9em")
 ```
 
@@ -699,12 +699,12 @@ matrix(
   ),
   byrow = TRUE,
   ncol = 10
-) %>%
-  data.frame(row.names = c("1", "10", "20", "30", "40")) %>%
+) |>
+  data.frame(row.names = c("1", "10", "20", "30", "40")) |>
   kbl(linesep = "", booktabs = TRUE, 
     col.names = as.character(1:10),
     caption = caption_helper("Interest rates from the `loan50` dataset, arranged in ascending order.")
-  ) %>%
+  ) |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position")) 
 ```
@@ -795,21 +795,21 @@ The three conjectured scenarios are plotted alongside the original data in @fig-
 #| fig-cap: Dot plots of the original interest rate data and two modified datasets.
 #| fig.width: 8.0
 #| fig-asp: 1.2
-loan50_original <- loan50 %>% 
-  select(interest_rate) %>% 
+loan50_original <- loan50 |> 
+  select(interest_rate) |> 
   mutate(
     mark = if_else(interest_rate == 26.30, TRUE, FALSE)
     )
 
-loan50_15 <- loan50 %>% 
-  select(interest_rate) %>% 
+loan50_15 <- loan50 |> 
+  select(interest_rate) |> 
   mutate(
     mark = if_else(interest_rate == 26.30, TRUE, FALSE),
     interest_rate = if_else(interest_rate == 26.30, 15, interest_rate)
     )
 
-loan50_35 <- loan50 %>% 
-  select(interest_rate) %>% 
+loan50_35 <- loan50 |> 
+  select(interest_rate) |> 
   mutate(
     mark = if_else(interest_rate == 26.30, TRUE, FALSE),
     interest_rate = if_else(interest_rate == 26.30, 35, interest_rate)
@@ -872,23 +872,23 @@ p_original /
 #|   change as the value of an extereme observation from the original interest 
 #|   data changes.
 loan50_robust_check <- bind_rows(
-  loan50_original %>% mutate(Scenario = "Original data"),
-  loan50_15 %>% mutate(Scenario = "Move 26.3% to 15%"),
-  loan50_35 %>% mutate(Scenario = "Move 26.3% to 35%")
-) %>%
+  loan50_original |> mutate(Scenario = "Original data"),
+  loan50_15 |> mutate(Scenario = "Move 26.3% to 15%"),
+  loan50_35 |> mutate(Scenario = "Move 26.3% to 35%")
+) |>
   mutate(Scenario = fct_relevel(Scenario, "Original data", "Move 26.3% to 15%", "Move 26.3% to 35%"))
 
-loan50_robust_check %>%
-  group_by(Scenario) %>%
+loan50_robust_check |>
+  group_by(Scenario) |>
   summarise(
     Median = median(interest_rate),
     IQR = IQR(interest_rate),
     Mean = mean(interest_rate), 
     SD = sd(interest_rate)
-    ) %>%
-  kbl(linesep = "", booktabs = TRUE, align = "lcccc") %>%
+    ) |>
+  kbl(linesep = "", booktabs = TRUE, align = "lcccc") |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) %>%
+                latex_options = c("striped", "hold_position")) |>
   add_header_above(c(" " = 1, "Robust" = 2, "Not robust" = 2))
 ```
 
@@ -1070,13 +1070,13 @@ What interesting features are evident in the median household income intensity m
 
 ```{r}
 #| label: county-map-prep
-dfips <- maps::county.fips %>%
-  as_tibble() %>% 
+dfips <- maps::county.fips |>
+  as_tibble() |> 
   extract(polyname, c("region", "subregion"), "^([^,]+),([^,]+)$")
 
-map_county <- map_data("county") %>%
-  as_tibble() %>%
-  left_join(dfips) %>%
+map_county <- map_data("county") |>
+  as_tibble() |>
+  left_join(dfips) |>
   mutate(fips = case_when(
     subregion == "okaloosa"  & region == "florida"        ~ 12091L,
     subregion == "st martin" & region == "louisiana"      ~ 22099L,
@@ -1090,10 +1090,10 @@ map_county <- map_data("county") %>%
     TRUE ~ fips
   ))
 
-county_for_map <- county_complete %>%
+county_for_map <- county_complete |>
   select(fips, name, state, poverty_2017, unemployment_rate_2017, homeownership_2010, median_household_income_2017)
 
-map_county <- map_county %>%
+map_county <- map_county |>
   left_join(county_for_map, by = "fips")
 ```
 
