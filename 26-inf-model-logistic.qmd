@@ -1,6 +1,7 @@
 # Inference for logistic regression {#inf-model-logistic}
 
-```{r, include = FALSE}
+```{r}
+#| include: false
 source("_common.R")
 ```
 
@@ -9,7 +10,8 @@ Combining ideas from Chapter \@ref(model-logistic) on logistic regression, Chapt
 Additionally, we use cross-validation as a method for independent assessment of the logistic regression model.
 :::
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_27 <- c("inference on logistic regression")
 ```
 
@@ -24,7 +26,8 @@ Which of the variables describing each email are important for predicting the st
 The [`email`](http://openintrostat.github.io/openintro/reference/email.html) data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
 :::
 
-```{r resume-variables}
+```{r}
+#| label: resume-variables
 email_variables <- tribble(
   ~variable, ~description,
   "spam", "Indicator for whether the email was spam.",
@@ -69,7 +72,8 @@ There are two key conditions for fitting a logistic regression model:
 2.  Each predictor $x_i$ is linearly related to logit$(p_i)$ if all other predictors are held constant.
 :::
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_27 <- c(terms_chp_27, "technical conditions")
 ```
 
@@ -79,7 +83,12 @@ The second condition of the logistic regression model is not easily checked with
 Luckily, we have `r nrow(email)` emails in the dataset!
 Let's first visualize these data by plotting the true classification of the emails against the model's fitted probabilities, as shown in Figure \@ref(fig:spam-predict).
 
-```{r spam-predict, fig.cap = "The predicted probability that each of the 3921 emails that are spam. Points have been jittered so that those with nearly identical values aren’t plotted exactly on top of one another.", fig.asp = 0.4}
+```{r}
+#| label: spam-predict
+#| fig.cap: The predicted probability that each of the 3921 emails that are spam. Points
+#|   have been jittered so that those with nearly identical values aren’t plotted exactly
+#|   on top of one another.
+#| fig.asp: 0.4
 spam_fit <- logistic_reg() %>%
   set_engine("glm") %>%
   fit(spam ~ to_multiple + cc + dollar + urgent_subj, data = email, family = "binomial")
@@ -108,7 +117,11 @@ If the model does a good job describing the data, the plotted points should fall
 We can use the confidence intervals to roughly gauge whether anything might be amiss.
 Such a plot is shown in Figure \@ref(fig:logisticModelBucketDiag).
 
-```{r logisticModelBucketDiag, fig.cap = "(ref:logisticModelBucketDiag-cap)", out.width = "90%", fig.asp = 0.7}
+```{r}
+#| label: logisticModelBucketDiag
+#| fig.cap: (ref:logisticModelBucketDiag-cap)
+#| out.width: 90%
+#| fig.asp: 0.7
 par_og <- par(no.readonly = TRUE) # save original par
 par(mar = c(5.1, 7, 0, 0))
 
@@ -226,7 +239,8 @@ $$
 \end{aligned}
 $$
 
-```{r emaillogmodel}
+```{r}
+#| label: emaillogmodel
 glm(spam ~ to_multiple + cc + dollar + urgent_subj, data = email, family = "binomial") %>% 
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
@@ -243,7 +257,8 @@ Not only does Table \@ref(tab:emaillogmodel) provide the estimates for the coeff
 
 As in Section \@ref(inf-model-mlr), with **multiple predictors**, each hypothesis test (for each of the explanatory variables) is conditioned on each of the other variables remaining in the model.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_27 <- c(terms_chp_27, "multiple predictors")
 ```
 
@@ -281,13 +296,15 @@ Using cross-validation, we can build $k$ different models which are used to pred
 The smaller model uses only the `to_multiple` variable, see the complete dataset (not cross-validated) model output in Table \@ref(tab:emaillogmodel1).
 The logistic regression model can be written as (where $\hat{p}$ is the estimated probability of being a spam email message):
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_27 <- c(terms_chp_27, "cross-validation")
 ```
 
 $$\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -2.12 + -1.81 \times \texttt{to_multiple}$$
 
-```{r emaillogmodel1}
+```{r}
+#| label: emaillogmodel1
 glm(spam ~ to_multiple, data = email, family = "binomial") %>% 
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
@@ -303,11 +320,25 @@ glm(spam ~ to_multiple, data = email, family = "binomial") %>%
 For each cross-validated model, the coefficients change slightly, and the model is used to make independent predictions on the holdout sample.
 The model from the first cross-validation sample is given in Table \@ref(fig:emailCV1) and can be compared to the coefficients in Table \@ref(tab:emaillogmodel1).
 
-```{r emailCV1, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset with a single predictor variable. Predictions are made on the remaining 1/4 of the observations. Note that the predictions are independent of the estimated model coefficients, and the prediction error rate is quite high.", out.width="100%", fig.alt = "The left panel shows the logistic model predicting the probability of an email being spam as a function of whether the email was sent to multiple individuals; the model was built using the red, green, and yellow triangular sections of the observed data. The right panel shows a confusion matrix of the predicted spam label crossed with the observed spam label for the set of observations in the blue triangular section of the observed data. Of the 83 spam emails, 80 were correctly classified as spam. Of the 897 non-spam emails, 143 were correctly classified as not spam."}
+```{r}
+#| label: emailCV1
+#| fig.cap: The coefficients are estimated using the least squares model on 3/4 of the
+#|   dataset with a single predictor variable. Predictions are made on the remaining
+#|   1/4 of the observations. Note that the predictions are independent of the estimated
+#|   model coefficients, and the prediction error rate is quite high.
+#| out.width: 100%
+#| fig.alt: The left panel shows the logistic model predicting the probability of an
+#|   email being spam as a function of whether the email was sent to multiple individuals;
+#|   the model was built using the red, green, and yellow triangular sections of the
+#|   observed data. The right panel shows a confusion matrix of the predicted spam label
+#|   crossed with the observed spam label for the set of observations in the blue triangular
+#|   section of the observed data. Of the 83 spam emails, 80 were correctly classified
+#|   as spam. Of the 897 non-spam emails, 143 were correctly classified as not spam.
 include_graphics("images/emailCV1.png")
 ```
 
-```{r echo = FALSE}
+```{r}
+#| echo: false
 set.seed(470)
 data(email)
 emailfolds <- caret::createFolds(email$spam, k = 4)
@@ -340,7 +371,8 @@ logCV1 <- data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfold
 #  mutate(estimate = round(estimate,2))
 ```
 
-```{r email-spam}
+```{r}
+#| label: email-spam
 logCV1 %>%
   group_by(fold) %>%
   summarize(
@@ -375,7 +407,8 @@ $$
 \end{aligned}
 $$
 
-```{r emaillogmodel2}
+```{r}
+#| label: emaillogmodel2
 glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email, family = "binomial") %>% 
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
@@ -388,7 +421,23 @@ glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + num
   column_spec(2:5, width = "5em")
 ```
 
-```{r emailCV2, fig.cap = "The coefficients are estimated using the least squares model on 3/4 of the dataset with the seven specified predictor variables. Predictions are made on the remaining 1/4 of the observations. Note that the predictions are independent of the estimated model coefficients. The predictions are now much better for both the  and the non-spam emails (than they were with a single predictor variable).", out.width="100%", fig.alt = "The left panel shows the logistic model predicting the probability of an email being spam as a function of the email being sent to multiple recipients, number of attachments, using the word winner, format of HTML, RE in the subject line, number of exclamation points in the message, and the existence of a number in the email; the model was built using the red, green, and yellow triangular sections of the observed data. The right panel shows a confusion matrix of the predicted spam label crossed with the observed spam label for the set of observations in the blue triangular section of the observed data. Of the 97 spam emails, 73 were correctly classified as spam. Of the 883 non-spam emails, 688 were correctly classified as not spam."}
+```{r}
+#| label: emailCV2
+#| fig.cap: The coefficients are estimated using the least squares model on 3/4 of the
+#|   dataset with the seven specified predictor variables. Predictions are made on the
+#|   remaining 1/4 of the observations. Note that the predictions are independent of
+#|   the estimated model coefficients. The predictions are now much better for both the  and
+#|   the non-spam emails (than they were with a single predictor variable).
+#| out.width: 100%
+#| fig.alt: The left panel shows the logistic model predicting the probability of an
+#|   email being spam as a function of the email being sent to multiple recipients, number
+#|   of attachments, using the word winner, format of HTML, RE in the subject line, number
+#|   of exclamation points in the message, and the existence of a number in the email;
+#|   the model was built using the red, green, and yellow triangular sections of the
+#|   observed data. The right panel shows a confusion matrix of the predicted spam label
+#|   crossed with the observed spam label for the set of observations in the blue triangular
+#|   section of the observed data. Of the 97 spam emails, 73 were correctly classified
+#|   as spam. Of the 883 non-spam emails, 688 were correctly classified as not spam.
 include_graphics("images/emailCV2.png")
 ```
 
@@ -423,7 +472,8 @@ logCV2 <- data.frame(
   mutate(predspam = ifelse(predicted <= 0.1, 0, 1))
 ```
 
-```{r email-spam2}
+```{r}
+#| label: email-spam2
 logCV2 %>%
   group_by(fold) %>%
   summarize(

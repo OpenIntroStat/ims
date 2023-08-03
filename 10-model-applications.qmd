@@ -1,6 +1,7 @@
 # Applications: Model {#model-application}
 
-```{r, include = FALSE}
+```{r}
+#| include: false
 source("_common.R")
 library(ggpubr)
 ```
@@ -21,7 +22,8 @@ The [`duke_forest`](http://openintrostat.github.io/openintro/reference/duke_fore
 
 \vspace{-4mm}
 
-```{r duke-data-frame}
+```{r}
+#| label: duke-data-frame
 duke_forest %>%
   select(price, bed, bath, area, year_built, cooling, lot) %>%
   slice_head(n = 4) %>%
@@ -37,7 +39,8 @@ duke_forest %>%
 
 \vspace{-4mm}
 
-```{r duke-variables}
+```{r}
+#| label: duke-variables
 duke_forest_var_def <- tribble(
   ~variable, ~description,
   "price", "Sale price, in USD",
@@ -70,7 +73,13 @@ While using multiple predictor variables is likely preferable to using only one 
 Figure \@ref(fig:single-scatter) shows scatterplots describing price as a function of each of the predictor variables.
 All of the variables seem to be positively associated with price (higher values of the variable are matched with higher price values).
 
-```{r single-scatter, out.width = "100%", fig.asp = 1, fig.cap = "Scatter plots describing six different predictor variables' relationship with the price of a home.", fig.width=8}
+```{r}
+#| label: single-scatter
+#| out.width: 100%
+#| fig.asp: 1.0
+#| fig.cap: Scatter plots describing six different predictor variables' relationship
+#|   with the price of a home.
+#| fig.width: 8.0
 pr_bed <- ggplot(duke_forest, aes(x = bed, y = price)) +
   geom_point(alpha = 0.8) +
     labs(
@@ -158,7 +167,8 @@ However, recall that the correlation coefficient is very sensitive to outliers, 
 A linear model was fit to predict `price` from `area`.
 The resulting model information is given in Table \@ref(tab:price-slr).
 
-```{r price-slr}
+```{r}
+#| label: price-slr
 m_small <- duke_forest %>%
   lm(price ~ area, data = .) 
 
@@ -200,7 +210,11 @@ Using the output in Table \@ref(tab:price-slr), write out the model for predicti
 The residuals from the linear model can be used to assess whether a linear model is appropriate.
 Figure \@ref(fig:price-resid-slr) plots the residuals $e_i = y_i - \hat{y}_i$ on the $y$-axis and the fitted (or predicted) values $\hat{y}_i$ on the $x$-axis.
 
-```{r price-resid-slr, fig.cap = "Residuals versus predicted values for the model predicting sale price from area of home.", out.width = "70%"}
+```{r}
+#| label: price-resid-slr
+#| fig.cap: Residuals versus predicted values for the model predicting sale price from
+#|   area of home.
+#| out.width: 70%
 duke_forest %>%
   lm(price ~ area, data = .) %>%
   augment() %>%
@@ -229,7 +243,8 @@ What aspect(s) of the residual plot seem concerning when fitting a linear model?
 It seems as though the predictions of home price might be more accurate if more than one predictor variable was used in the linear model.
 Table \@ref(tab:price-mlr) displays the output from a linear model of `price` regressed on `area`, `bed`, `bath`, `year_built`, `cooling`, and `lot`.
 
-```{r price-mlr}
+```{r}
+#| label: price-mlr
 m_full <- duke_forest %>%
   lm(price ~ area + bed + bath + year_built + cooling + lot, data = .) 
 
@@ -280,7 +295,8 @@ The value of the estimated coefficient on $\texttt{cooling}_{\texttt{central}}$ 
 A friend suggests that maybe you do not need all six variables to have a good model for `price`.
 You consider taking a variable out, but you aren't sure which one to remove.
 
-```{r backward-step-1}
+```{r}
+#| label: backward-step-1
 m_area_r_sq_adj <- update(m_full, . ~ . - area, data = duke_forest) %>% glance() %>% pull(adj.r.squared) %>% round(4)
 m_bed_r_sq_adj <- update(m_full, . ~ . - bed, data = duke_forest) %>% glance() %>% pull(adj.r.squared) %>% round(4)
 m_bath_r_sq_adj <- update(m_full, . ~ . - bath, data = duke_forest) %>% glance() %>% pull(adj.r.squared) %>% round(4)
@@ -317,7 +333,8 @@ Since we eliminated a predictor from the model in the first step, we see whether
 Our baseline adjusted $R^2$ is now `r m_bed_r_sq_adj`.
 We fit another set of new models, which consider eliminating each of the remaining predictors in addition to `bed`:
 
-```{r backward-step-2}
+```{r}
+#| label: backward-step-2
 m_full_no_bed <- duke_forest %>%
   lm(price ~ area + bath + year_built + cooling + lot, data = .) 
 
@@ -341,7 +358,8 @@ None of these models lead to an improvement in adjusted $R^2$, so we do not elim
 
 That is, after backward elimination, we are left with the model that keeps all predictors except `bed`, which we can summarize using the coefficients from Table \@ref(tab:price-full-except-bed).
 
-```{r price-full-except-bed}
+```{r}
+#| label: price-full-except-bed
 m_full_no_bed_r_sq_adj <-  glance(m_full_no_bed)$adj.r.squared %>% round(4)
 m_full_no_bed_df_residual <-  glance(m_full_no_bed)$df.residual %>% round(4)
 
@@ -390,7 +408,11 @@ Also, we observe again that the residuals are quite large for expensive homes.
 
 \vspace{-4mm}
 
-```{r price-resid-mlr-nobed, fig.cap = "Residuals versus predicted values for the model predicting sale price from all predictors except for number of bedrooms.", out.width = "70%"}
+```{r}
+#| label: price-resid-mlr-nobed
+#| fig.cap: Residuals versus predicted values for the model predicting sale price from
+#|   all predictors except for number of bedrooms.
+#| out.width: 70%
 m_full_no_bed %>%
   augment() %>%
   ggplot(aes(x = .fitted, y = .resid)) +

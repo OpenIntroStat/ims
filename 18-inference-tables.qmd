@@ -1,6 +1,7 @@
 # Inference for two-way tables {#inference-tables}
 
-```{r, include = FALSE}
+```{r}
+#| include: false
 source("_common.R")
 ```
 
@@ -38,7 +39,8 @@ The question is the treatment given to the sellers, and the response is whether 
 The results are shown in Table \@ref(tab:ipod-ask-data-summary), and the data suggest that asking the, *What problems does it have?*, was the most effective at getting the seller to disclose the past freezing issues.
 However, you should also be asking yourself: could we see these results due to chance alone if there really is no difference in the question asked, or is this in fact evidence that some questions are more effective for getting at the truth?
 
-```{r ask-data-prep}
+```{r}
+#| label: ask-data-prep
 ask <- ask %>%
   mutate(
     response = if_else(response == "disclose", "Disclose problem", "Hide problem"),
@@ -51,7 +53,8 @@ ask <- ask %>%
   )
 ```
 
-```{r ipod-ask-data-summary}
+```{r}
+#| label: ipod-ask-data-summary
 ask %>%
   count(question_class, response) %>%
   pivot_wider(names_from = response, values_from = n) %>%
@@ -71,7 +74,8 @@ The [`ask`](http://openintrostat.github.io/openintro/reference/ask.html) data ca
 The hypothesis test for the iPod experiment is really about assessing whether there is convincing evidence that there was a difference in the success rates that each question had on getting the participant to disclose the problem with the iPod.
 In other words, the goal is to check whether the buyer's question was independent of whether the seller disclosed a problem.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_18 <- c("independence")
 ```
 
@@ -98,7 +102,8 @@ If the questions were actually equally effective, meaning about 27.85% of respon
 We can compute the expected number of sellers who we would expect to disclose or hide the freezing issue for all groups, if the questions had no impact on what they disclosed, using the same strategies employed in the previous Example and Guided Practice to compute expected counts.
 These expected counts were used to construct Table \@ref(tab:ipod-ask-data-summary-expected), which is the same as Table \@ref(tab:ipod-ask-data-summary), except now the expected counts have been added in parentheses.
 
-```{r ipod-ask-data-summary-expected}
+```{r}
+#| label: ipod-ask-data-summary-expected
 ask_chi_sq <- chisq.test(ask$response, ask$question_class)
 
 ask_chi_sq_obs <- ask_chi_sq$observed %>% 
@@ -178,7 +183,8 @@ To calculate the expected count for the $i^{th}$ row and $j^{th}$ column, comput
 $$\text{Expected Count}_{\text{row }i,\text{ col }j} = \frac{(\text{row $i$ total}) \times (\text{column $j$ total})}{\text{table total}}$$
 :::
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_18 <- c(terms_chp_18, "expected counts")
 ```
 
@@ -218,7 +224,8 @@ The same idea of shuffling the data under the null hypothesis can be used in the
 Assuming that the individuals would disclose or hide the problems **regardless** of the question they are given (i.e., that the null hypothesis is true), we can randomize the data by reassigning the 61 disclosed problems and 158 hidden problems to the three groups at random.
 Table \@ref(tab:ipod-ask-data-summary-rand) shows a possible randomization of the observed data under the condition that the null hypothesis is true (in contrast to the original observed data in Table \@ref(tab:ipod-ask-data-summary)).
 
-```{r ipod-ask-data-summary-rand}
+```{r}
+#| label: ipod-ask-data-summary-rand
 set.seed(4747)
 
 # randomize
@@ -261,7 +268,8 @@ Adding the computed value for each cell gives the chi-squared test statistic $X^
 
 $$X^2 = 3.7 + 1.4 + \dots + 0.211 = 8$$
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_18 <- c(terms_chp_18, "chi-squared statistic")
 ```
 
@@ -277,7 +285,13 @@ We use the causal language of "changed" because the study was an experiment.
 Note that with a chi-squared test, we only know that the two variables (`question_class` and `response`) are related (i.e., not independent).
 We are not able to claim which type of question causes which type of response.
 
-```{r ipodRandDotPlot, fig.cap="A histogram of chi-squared statisics from 1,000 simulations produced under the null hypothesis, $H_0,$ where the question is independent of the response. The observed statistic of 40.13 is marked by the red line. None of the 1,000 simulations had a chi-squared value of at least 40.13. In fact, none of the simulated chi-squared statistics came anywhere close to the observed statistic!"}
+```{r}
+#| label: ipodRandDotPlot
+#| fig.cap: A histogram of chi-squared statisics from 1,000 simulations produced under
+#|   the null hypothesis, $H_0,$ where the question is independent of the response. The
+#|   observed statistic of 40.13 is marked by the red line. None of the 1,000 simulations
+#|   had a chi-squared value of at least 40.13. In fact, none of the simulated chi-squared
+#|   statistics came anywhere close to the observed statistic!
 set.seed(4747)
 
 ask_rand_obs <- ask %>%
@@ -311,7 +325,11 @@ The important specification to make in describing the chi-squared distribution i
 The degrees of freedom change the shape of the chi-squared distribution to fit the problem at hand.
 Figure \@ref(fig:chisqDistDF) visualizes different chi-squared distributions corresponding to different degrees of freedom.
 
-```{r chisqDistDF, fig.cap = "The chi-squared distribution for differing degrees of freedom. The larger the degrees of freedom, the longer the right tail extends. The smaller the degrees of freedom, the more peaked the mode on the left becomes."}
+```{r}
+#| label: chisqDistDF
+#| fig.cap: The chi-squared distribution for differing degrees of freedom. The larger
+#|   the degrees of freedom, the longer the right tail extends. The smaller the degrees
+#|   of freedom, the more peaked the mode on the left becomes.
 
 x <- c(0, seq(0.0000001, 40, 0.05))
 DF <- c(2.0000001, 4, 9)
@@ -350,7 +368,8 @@ As it turns out, the chi-squared test statistic follows a Chi-squared distributi
 For two way tables, the degrees of freedom is equal to: $df = \text{(number of rows minus 1)}\times \text{(number of columns minus 1)}$.
 In our example, the degrees of freedom parameter is $df = (2-1)\times (3-1) = 2$.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_18 <- c(terms_chp_18, "Chi-squared distribution")
 ```
 
@@ -382,7 +401,10 @@ Using this information, we can compute the p-value for the test, which is depict
 When applying the chi-squared test to a two-way table, we use $df = (R-1)\times (C-1)$ where $R$ is the number of rows in the table and $C$ is the number of columns.
 :::
 
-```{r iPodChiSqTail, fig.cap = "Visualization of the p-value for $X^2 = 40.13$ when $df = 2.$", fig.asp = 0.5}
+```{r}
+#| label: iPodChiSqTail
+#| fig.cap: Visualization of the p-value for $X^2 = 40.13$ when $df = 2.$
+#| fig.asp: 0.5
 x <- 40.13
 ChiSquareTail(
   x, 2,
@@ -397,7 +419,8 @@ The software R can be used to find the p-value with the function `pchisq()`.
 Just like `pnorm()`, `pchisq()` always gives the area to the left of the cutoff value.
 Because, in this example, the p-value is represented by the area to the right of 40.13, we subtract the output of `pchisq()` from 1.
 
-```{r echo = TRUE}
+```{r}
+#| echo: true
 1 - pchisq(40.13, df = 2)
 ```
 
@@ -424,7 +447,8 @@ What are appropriate hypotheses for this test?
 -   $H_A:$ There is some difference in effectiveness between the three treatments, e.g., perhaps the `rosi` treatment performed better than `lifestyle`.
 :::
 
-```{r diabetes2ExpMetRosiLifestyleSummary}
+```{r}
+#| label: diabetes2ExpMetRosiLifestyleSummary
 diabetes2 %>%
   count(outcome, treatment) %>%
   pivot_wider(names_from = outcome, values_from = n) %>%

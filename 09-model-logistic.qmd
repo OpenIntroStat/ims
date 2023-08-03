@@ -1,6 +1,7 @@
 # Logistic regression {#model-logistic}
 
-```{r, include = FALSE}
+```{r}
+#| include: false
 source("_common.R")
 ```
 
@@ -13,7 +14,8 @@ Second, we model the parameter of the distribution using a collection of predict
 Ultimately, the application of a GLM will feel very similar to multiple regression, even if some of the details are different.
 :::
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_09 <- c("logistic regression", "generalized linear model")
 ```
 
@@ -37,7 +39,8 @@ While no name would definitively be inferred as pertaining to a Black individual
 You can find the full set of names that did pass the survey test and were ultimately used in the study in Table \@ref(tab:resume-names).
 For example, Lakisha was a name that their survey indicated would be interpreted as a Black woman, while Greg was a name that would generally be interpreted to be associated with a White male.
 
-```{r resume-names}
+```{r}
+#| label: resume-names
 resume_names_full <- resume %>% 
   select(firstname, race, gender) %>% 
   distinct(firstname, .keep_all = TRUE) %>% 
@@ -79,7 +82,8 @@ resume_names_1 %>%
   column_spec(7, border_left = T)
 ```
 
-```{r resume-data-prep}
+```{r}
+#| label: resume-data-prep
 resume <- resume %>%
   rename(sex = gender) %>%
   mutate(
@@ -100,7 +104,8 @@ The response variable of interest is whether there was a callback from the emplo
 Race and sex are protected classes in the United States, meaning they are not legally permitted factors for hiring or employment decisions.
 The full set of attributes considered is provided in Table \@ref(tab:resume-variables).
 
-```{r resume-variables}
+```{r}
+#| label: resume-variables
 resume_variables <- tribble(
   ~variable,           ~description,
   "received_callback", "Specifies whether the employer called the applicant following submission of the application for the job.",
@@ -141,7 +146,8 @@ The outcome variable for a GLM is denoted by $Y_i$, where the index $i$ is used 
 In the resume application, $Y_i$ will be used to represent whether resume $i$ received a callback ($Y_i=1$) or not ($Y_i=0$).
 :::
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_09 <- c(terms_chp_09, "probability of an event")
 ```
 
@@ -154,7 +160,8 @@ $$
 We want to choose a **transformation** in the equation that makes practical and mathematical sense.
 For example, we want a transformation that makes the range of possibilities on the left hand side of the equation equal to the range of possibilities for the right hand side; if there was no transformation for this equation, the left hand side could only take values between 0 and 1, but the right hand side could take values outside of this range.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_09 <- c(terms_chp_09, "transformation")
 ```
 
@@ -167,7 +174,8 @@ $$
 The logit transformation is shown in Figure \@ref(fig:logit-transformation).
 Below, we rewrite the equation relating $Y_i$ to its predictors using the logit transformation of $p_i$:
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_09 <- c(terms_chp_09, "logit transformation")
 ```
 
@@ -175,7 +183,10 @@ $$
 \log_{e}\left( \frac{p_i}{1-p_i} \right) = b_0 + b_1 x_{1,i} + b_2 x_{2,i} + \cdots + b_k x_{k,i}
 $$
 
-```{r logit-transformation, fig.cap = "Values of $p_i$ against values of $logit(p_i)$.", out.width = "100%"}
+```{r}
+#| label: logit-transformation
+#| fig.cap: Values of $p_i$ against values of $logit(p_i)$.
+#| out.width: 100%
 logit_df_line <- tibble(
   p  = seq(0.0001, 0.9999, 0.0002),
   lp = log(p / (1 - p))
@@ -262,7 +273,8 @@ While knowing whether a resume listed honors provides some signal when predictin
 We used statistical software to fit the logistic regression model with all 8 predictors described in Table \@ref(tab:resume-variables).
 Like multiple regression, the result may be presented in a summary table, which is shown in Table \@ref(tab:resume-full-fit).
 
-```{r resume-full-fit}
+```{r}
+#| label: resume-full-fit
 resume_full_fit <- logistic_reg() %>%
   set_engine("glm") %>%
   fit(received_callback ~ job_city + college_degree + years_experience + honors + military + has_email_address + race + sex, data = resume, family = "binomial")
@@ -291,11 +303,13 @@ It is important to note that AIC provides information about the quality of a mod
 We will look for models with a lower AIC using a backward elimination strategy.
 After using this criteria, the variable `college_degree` is eliminated, giving the smaller model summarized in Table \@ref(tab:resume-fit), which is what we'll rely on for the remainder of this section.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_09 <- c(terms_chp_09, "Akaike information criterion")
 ```
 
-```{r resume-fit}
+```{r}
+#| label: resume-fit
 resume_fit <- logistic_reg() %>%
   set_engine("glm") %>%
   fit(received_callback ~ job_city + years_experience + honors + military + has_email_address + race + sex, data = resume, family = "binomial")

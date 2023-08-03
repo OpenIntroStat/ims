@@ -1,6 +1,7 @@
 # Applications: Data {#data-applications}
 
-```{r, include = FALSE}
+```{r}
+#| include: false
 source("_common.R")
 ```
 
@@ -24,7 +25,8 @@ The [`passwords`](https://github.com/rfordatascience/tidytuesday/blob/master/dat
 Table \@ref(tab:passwords-df-head) shows the first ten rows from the dataset, which are the ten most common passwords.
 Perhaps unsurprisingly, "password" tops the list, followed by "123456".
 
-```{r passwords-df-head}
+```{r}
+#| label: passwords-df-head
 # https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-14/passwords.csv
 passwords <- readr::read_csv("data/passwords.csv")
 passwords <- passwords %>%
@@ -44,7 +46,8 @@ When you encounter a new dataset, taking a peek at the first few rows as we did 
 It can often be helpful to look at the last few rows of the data as well to get a sense of the size of the data as well as potentially discover any characteristics that may not be apparent in the top few rows.
 Table \@ref(tab:passwords-df-tail) shows the bottom ten rows of the passwords dataset, which reveals that we are looking at a dataset of 500 passwords.
 
-```{r passwords-df-tail}
+```{r}
+#| label: passwords-df-tail
 passwords %>%
   slice_tail(n = 10) %>%
   kbl(linesep = "", booktabs = TRUE, caption = caption_helper("Bottom ten rows of the `passwords` dataset."),
@@ -72,7 +75,8 @@ What does each row and each column represent?[^03-data-applications-2]
 Once you've identified the rows and columns, it's useful to review the data dictionary to learn about what each column in the dataset represents.
 This is provided in Table \@ref(tab:passwords-var-def).
 
-```{r passwords-var-def}
+```{r}
+#| label: passwords-var-def
 passwords_var_def <- tribble(
   ~variable,   ~description,
   "rank",      "Popularity in the database of released passwords.",
@@ -119,7 +123,11 @@ The most common password category is name (e.g. michael, jennifer, jordan, etc.)
 Many passwords can be cracked in the matter of days by online cracking with some taking as little as seconds and some as long as years to break.
 Each of these visualizations is a bar plot, which you will learn more about in Chapter \@ref(explore-categorical).
 
-```{r passwords-cat, fig.cap = "(ref:passwords-cat-cap)", out.width = "100%", fig.asp = 1}
+```{r}
+#| label: passwords-cat
+#| fig.cap: (ref:passwords-cat-cap)
+#| out.width: 100%
+#| fig.asp: 1.0
 p_category <- passwords %>%
   count(category, sort = TRUE) %>%
   mutate(category = fct_reorder(category, n)) %>%
@@ -175,7 +183,8 @@ Table \@ref(tab:passwords-online-crack-summary) shows the minimum and maximum am
 For example, there are 11 passwords in the dataset that can be broken in a matter of seconds, and each of them take 11.11 seconds to break, since the minimum and the maximum of observations in this group are exactly equal to this value.
 And there are 65 passwords that take years to break, ranging from 2.56 years to 92.27 years.
 
-```{r passwords-online-crack-summary}
+```{r}
+#| label: passwords-online-crack-summary
 passwords %>%
   group_by(time_unit) %>%
   summarise(
@@ -190,7 +199,8 @@ passwords %>%
 
 Even though passwords that take a large number of years to crack can seem like good options (see Table \@ref(tab:passwords-long-crack) for a list of them), now that you've seen them here (and the fact that they are in a dataset of 500 most common passwords), you should not use them as secure passwords!
 
-```{r passwords-long-crack}
+```{r}
+#| label: passwords-long-crack
 passwords %>% 
   filter(value == 92.27) %>%
   kbl(linesep = "", booktabs = TRUE, caption = "Passwords that take the longest amount of time to crack by online guessing.",
@@ -204,7 +214,9 @@ passwords %>%
 The last numerical variable in the dataset is `offline_crack_sec`.
 Figure \@ref(fig:password-offline-crack-hist) shows the distribution of this variable, which reveals that all of these passwords can be cracked offline in under 30 seconds, with a large number of them being crackable in just a few seconds.
 
-```{r password-offline-crack-hist, fig.cap = "Histogram of the length of time it takes to crack passwords offline."}
+```{r}
+#| label: password-offline-crack-hist
+#| fig.cap: Histogram of the length of time it takes to crack passwords offline.
 ggplot(passwords, aes(x = offline_crack_sec)) +
   geom_histogram(binwidth = 1) +
   labs(
@@ -220,7 +232,11 @@ The stronger the password, the larger text it's represented with on the plot.
 While this visualization reveals some passwords that are less common, and stronger than others, we should reiterate that you should not use any of these passwords.
 And if you already do, it's time to go change it!
 
-```{r password-strength-rank-category, fig.cap = "Rank vs. strength of 500 most common passwords by category.", out.width = "100%", fig.asp = 1.2}
+```{r}
+#| label: password-strength-rank-category
+#| fig.cap: Rank vs. strength of 500 most common passwords by category.
+#| out.width: 100%
+#| fig.asp: 1.2
 passwords %>%
   mutate(category = fct_relevel(category, "name", "cool-macho", "simple-alphanumeric", "fluffy", "sport", "nerdy-pop", "animal", "password-related", "rebellious-rude", "food")) %>%
   ggplot(aes(x = strength, y = rank, color = category)) +

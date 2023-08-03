@@ -1,6 +1,7 @@
 # Inference for comparing two independent means {#inference-two-means}
 
-```{r, include = FALSE}
+```{r}
+#| include: false
 source("_common.R")
 ```
 
@@ -10,7 +11,8 @@ We now extend the methods from Chapter \@ref(inference-one-mean) to apply confid
 In our investigations, we'll identify a reasonable point estimate of $\mu_1 - \mu_2$ based on the sample, and you may have already guessed its form: $\bar{x}_1 - \bar{x}_2.$ \index{point estimate!difference of means} Then we'll look at the inferential analysis in three different ways: using a randomization test, applying bootstrapping for interval estimates, and, if we verify that the point estimate can be modeled using a normal distribution, we compute the estimate's standard error and apply the mathematical framework.
 :::
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_20 <- c("point estimate")
 ```
 
@@ -38,7 +40,8 @@ The [`classdata`](http://openintrostat.github.io/openintro/reference/classdata.h
 
 Summary statistics for how students performed on these two exams are shown in Table \@ref(tab:summaryStatsForTwoVersionsOfExams) and plotted in Figure \@ref(fig:boxplotTwoVersionsOfExams).
 
-```{r summaryStatsForTwoVersionsOfExams}
+```{r}
+#| label: summaryStatsForTwoVersionsOfExams
 classdata <- classdata %>% 
   filter(lecture %in% c("a", "b")) %>%
   mutate(
@@ -63,7 +66,9 @@ classdata %>%
   column_spec(1:5, width = "5em")
 ```
 
-```{r boxplotTwoVersionsOfExams, fig.cap = "Exam scores for students given one of three different exams."}
+```{r}
+#| label: boxplotTwoVersionsOfExams
+#| fig.cap: Exam scores for students given one of three different exams.
 ggplot(classdata, aes(x = exam, y = m1, color = exam)) +
   geom_boxplot(show.legend = FALSE) +
   geom_jitter(width = 0.1) +
@@ -102,14 +107,32 @@ It shouldn't matter whether they were given exam A or exam B.
 By reallocating which student got which exam, we are able to understand how the difference in average exam scores changes due only to natural variability.
 There is only one iteration of the randomization process in Figure \@ref(fig:rand2means), leading to one simulated difference in average scores.
 
-```{r rand2means, fig.cap = "The version of the test (A or B) is randomly allocated to the test scores, under the null assumption that the tests are equally difficult.", warning = FALSE,  out.width="75%", fig.alt = "Four panels representing four different orientations of a toy dataset of 9 exam scores.  The first panel provides the observed data; 4 of the exams were version A and the average score was 77.25; 5 of the exams were version B and the average score was 75.8, a difference of 1.45.  The second panel shows the shuffled reassignment of the exam versions (4 of the scores are randomly reassigned to A, 5 of the scores are randomly reassigned to B).  The third panel shows which score is connected with which new reassigned version of the exam.  And the fourth panel sorts the exams so that version A exams are together and version B exams are together.  In the randomly reassigned versions, the average score for version A is 74.25 and the average score for version B is 78.2, a difference of -3.95."}
+```{r}
+#| label: rand2means
+#| fig.cap: The version of the test (A or B) is randomly allocated to the test scores,
+#|   under the null assumption that the tests are equally difficult.
+#| warning: false
+#| out.width: 75%
+#| fig.alt: Four panels representing four different orientations of a toy dataset of
+#|   9 exam scores.  The first panel provides the observed data; 4 of the exams were
+#|   version A and the average score was 77.25; 5 of the exams were version B and the
+#|   average score was 75.8, a difference of 1.45.  The second panel shows the shuffled
+#|   reassignment of the exam versions (4 of the scores are randomly reassigned to A,
+#|   5 of the scores are randomly reassigned to B).  The third panel shows which score
+#|   is connected with which new reassigned version of the exam.  And the fourth panel
+#|   sorts the exams so that version A exams are together and version B exams are together.  In
+#|   the randomly reassigned versions, the average score for version A is 74.25 and the
+#|   average score for version B is 78.2, a difference of -3.95.
 include_graphics("images/rand2means.png")
 ```
 
 Building on Figure \@ref(fig:rand2means), Figure \@ref(fig:randexams) shows the values of the simulated statistics $\bar{x}_{1, sim} - \bar{x}_{2, sim}$ over 1,000 random simulations.
 We see that, just by chance, the difference in scores can range anywhere from -10 points to +10 points.
 
-```{r randexams, fig.cap = "Histogram of differences in means, calculated from 1,000 different randomizations of the exam types."}
+```{r}
+#| label: randexams
+#| fig.cap: Histogram of differences in means, calculated from 1,000 different randomizations
+#|   of the exam types.
 set.seed(47)
 classdata %>% 
   specify(m1 ~ exam) %>%
@@ -129,7 +152,11 @@ classdata %>%
 The goal of the randomization test is to assess the observed data, here the statistic of interest is $\bar{x}_A - \bar{x}_B=3.1.$ The randomization distribution allows us to identify whether a difference of 3.1 points is more than one would expect by natural variability of the scores if the two tests were equally difficult.
 By plotting the value of 3.1 on Figure \@ref(fig:randexamspval), we can measure how different or similar 3.1 is to the randomized differences which were generated under the null hypothesis.
 
-```{r randexamspval, fig.cap = "Histogram of differences in means, calculated from 1,000 different randomizations of the exam types.  The observed difference of 3.1 points is plotted as a vertical line, and the area more extreme than 3.1 is shaded to represent the p-value."}
+```{r}
+#| label: randexamspval
+#| fig.cap: Histogram of differences in means, calculated from 1,000 different randomizations
+#|   of the exam types.  The observed difference of 3.1 points is plotted as a vertical
+#|   line, and the area more extreme than 3.1 is shaded to represent the p-value.
 stat_2means <- classdata %>% 
   specify(m1 ~ exam) %>%
   calculate(stat = "diff in means", order = c("A", "B"))
@@ -162,7 +189,9 @@ Previously, we specified that we would use $\alpha = 0.01.$ Since the p-value is
 That is, the data do not convincingly show that one exam version is more difficult than the other, and the teacher should not be convinced that they should add points to the Version B exam scores.
 :::
 
-```{r echo = FALSE, eval=FALSE}
+```{r}
+#| echo: false
+#| eval: false
 set.seed(47)
 classdata %>%
   specify(m1 ~ exam) %>%
@@ -191,11 +220,25 @@ The analysis proceeds as in the one sample case, but now the (single) statistic 
 That is, a bootstrap resample is done on each of the groups separately, but the results are combined to have a single bootstrapped difference in means.
 Repetition will produce $k$ bootstrapped differences in means, and the histogram will describe the natural sampling variability associated with the difference in means.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_20 <- c(terms_chp_20, "difference in means")
 ```
 
-```{r bootmeans2means, fig.cap = "For the two group comparison, the bootstrap resampling is done separately on each group, but the statistic is calculated as a difference.  The set of k differences is then analyzed as the statistic of interest with conclusions drawn on the parameter of interest.", warning = FALSE,  out.width="75%", fig.alt = "Samples are shown as separately coming from two independent, large, unknown populations.  Direcly from each of the two observed samples, bootstrap resamples can be taken (with replacement).  Bootstrap resample 1 from sample 1 is compared to bootstrap resample 1 from sample 2 by comparing the difference in bootstrapped averages.  A histogram of differences in bootstrapped averages displays the differences ranging from roughly -20000 dollars to +10000 dollars."}
+```{r}
+#| label: bootmeans2means
+#| fig.cap: For the two group comparison, the bootstrap resampling is done separately
+#|   on each group, but the statistic is calculated as a difference.  The set of k differences
+#|   is then analyzed as the statistic of interest with conclusions drawn on the parameter
+#|   of interest.
+#| warning: false
+#| out.width: 75%
+#| fig.alt: Samples are shown as separately coming from two independent, large, unknown
+#|   populations.  Direcly from each of the two observed samples, bootstrap resamples
+#|   can be taken (with replacement).  Bootstrap resample 1 from sample 1 is compared
+#|   to bootstrap resample 1 from sample 2 by comparing the difference in bootstrapped
+#|   averages.  A histogram of differences in bootstrapped averages displays the differences
+#|   ranging from roughly -20000 dollars to +10000 dollars.
 include_graphics("images/bootmeans2means.png")
 ```
 
@@ -212,7 +255,8 @@ Our goal will be to identify a 95% confidence interval for the effect of ESCs on
 The [`stem_cell`](http://openintrostat.github.io/openintro/reference/stem_cell.html) data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
 :::
 
-```{r statsSheepEscStudy}
+```{r}
+#| label: statsSheepEscStudy
 stem_cell <- openintro::stem_cell %>%
   mutate(
     trmt = if_else(trmt == "ctrl", "Control", "ESC"),
@@ -247,7 +291,13 @@ The entire process is repeated multiple times to produce a bootstrap distributio
 
 Figure \@ref(fig:bootexamsci) displays the variability of the differences in means with the 90% percentile and SE CIs super imposed.
 
-```{r bootexamsci, fig.cap = "Histogram of differences in means after 1,000 bootstrap samples from each of the two groups. The observed difference is plotted as a black vertical line at 7.83. The blue dashed and red dotted lines provide the bootstrap percentile and boostrap SE confidence intervals, respectively, for the difference in true population means."}
+```{r}
+#| label: bootexamsci
+#| fig.cap: Histogram of differences in means after 1,000 bootstrap samples from each
+#|   of the two groups. The observed difference is plotted as a black vertical line at
+#|   7.83. The blue dashed and red dotted lines provide the bootstrap percentile and
+#|   boostrap SE confidence intervals, respectively, for the difference in true population
+#|   means.
 set.seed(470)
 
 boot_2mean <- stem_cell %>%
@@ -330,7 +380,8 @@ Four cases from this dataset are represented in Table \@ref(tab:babySmokeDF).
 We are particularly interested in two variables: `weight` and `smoke`.
 The `weight` variable represents the weights of the newborns and the `smoke` variable describes which mothers smoked during pregnancy.
 
-```{r babySmokeDF}
+```{r}
+#| label: babySmokeDF
 births14 %>% 
   select(-premie, -mature, -lowbirthweight, -whitemom, -marital) %>%
   head(4) %>%
@@ -357,7 +408,8 @@ The null hypothesis represents the case of no difference between the groups.
 Table \@ref(tab:births14-summary-stats) displays sample statistics from the data.
 We can see that the average birth weight of babies born to smoker moms is lower than those born to nonsmoker moms.
 
-```{r births14-summary-stats}
+```{r}
+#| label: births14-summary-stats
 births14_nona <- births14 %>%
   filter(
     !is.na(habit), !is.na(weight)
@@ -400,7 +452,11 @@ We check the two conditions necessary to model the difference in sample means us
 
 Since both conditions are satisfied, the difference in sample means may be modeled using a $t$-distribution.
 
-```{r babySmokePlotOfTwoGroupsToExamineSkew, fig.cap="The top panel represents birth weights for infants whose mothers smoked during pregnancy. The bottom panel represents the birth weights for infants whose mothers who did not smoke during pregnancy."}
+```{r}
+#| label: babySmokePlotOfTwoGroupsToExamineSkew
+#| fig.cap: The top panel represents birth weights for infants whose mothers smoked during
+#|   pregnancy. The bottom panel represents the birth weights for infants whose mothers
+#|   who did not smoke during pregnancy.
 births14_nona %>%
   mutate(habit = fct_rev(if_else(habit == "smoker", "Mothers who smoked", "Mothers who did not smoke"))) %>%
   ggplot(aes(x = weight)) +
@@ -434,7 +490,8 @@ Conditions:
 -   Large samples and no extreme outliers.
 :::
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_20 <- c(terms_chp_20, "T score", "t-test")
 ```
 
@@ -480,7 +537,8 @@ As with hypothesis testing, for the question of whether we can model the differe
 Like the 2-proportion cases, we will require a more robust version of independence so we are confident the two groups are also independent.
 Secondly, we also check for normality in each group separately, which in practice is a check for outliers.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_20 <- c(terms_chp_20, "t-CI")
 ```
 
@@ -510,7 +568,8 @@ The margin of error for $\bar{x}_1 - \bar{x}_2$ can be directly obtained from $S
 The margin of error is $t^\star_{df} \times \sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}$ where $t^\star_{df}$ is calculated from a specified percentile on the t-distribution with *df* degrees of freedom.
 :::
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_20 <- c(terms_chp_20, "SE difference in means")
 ```
 
@@ -532,7 +591,11 @@ Figure \@ref(fig:stem-cell-histograms) does not reveal any clear outliers in eit
 With both conditions met, we can use the $t$-distribution to model the difference of sample means.
 :::
 
-```{r stem-cell-histograms, fig.cap = "Histograms for the difference in heart pumping function after a heart attack for both the treatment group (ESC, which received an the embryonic stem cell treatment) and the control group (which did not receive the treatment)."}
+```{r}
+#| label: stem-cell-histograms
+#| fig.cap: Histograms for the difference in heart pumping function after a heart attack
+#|   for both the treatment group (ESC, which received an the embryonic stem cell treatment)
+#|   and the control group (which did not receive the treatment).
 stem_cell %>%
   ggplot(aes(x = change)) +
   geom_histogram(binwidth = 2.5) +

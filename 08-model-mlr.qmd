@@ -1,6 +1,7 @@
 # Linear regression with multiple predictors {#model-mlr}
 
-```{r, include = FALSE}
+```{r}
+#| include: false
 source("_common.R")
 ```
 
@@ -33,7 +34,8 @@ Based on the data in this dataset we have created two new variables: `credit_uti
 We will refer to this modified dataset as `loans`.
 :::
 
-```{r loans-data-matrix}
+```{r}
+#| label: loans-data-matrix
 loans <- loans_full_schema %>%
   mutate(
     credit_util = total_credit_utilized / total_credit_limit,
@@ -53,7 +55,8 @@ loans %>%
                 full_width = FALSE)
 ```
 
-```{r loans-variables}
+```{r}
+#| label: loans-variables
 loans_var_def <- tribble(
   ~variable,         ~description,
   "interest_rate",   "Interest rate on the loan, in an annual percentage.",
@@ -84,7 +87,8 @@ $$\widehat{\texttt{interest_rate}} = 12.34 + 0.74 \times \texttt{bankruptcy}$$
 
 Results of this model are shown in Table \@ref(tab:int-rate-bankruptcy).
 
-```{r int-rate-bankruptcy}
+```{r}
+#| label: int-rate-bankruptcy
 m_bankruptcy <- lm(interest_rate ~ bankruptcy, data = loans)
 
 m_bankruptcy %>%
@@ -116,11 +120,13 @@ Each row represents the relative difference for each level of `verified_income`.
 However, we are missing one of the levels: `Not Verified`.
 The missing level is called the **reference level** and it represents the default level that other levels are measured against.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_8 <- c("reference level")
 ```
 
-```{r int-rate-ver-income}
+```{r}
+#| label: int-rate-ver-income
 m_verified_income <- lm(interest_rate ~ verified_income, data = loans)
 
 m_verified_income %>%
@@ -225,7 +231,8 @@ For example, we might like to use the full context of borrowers to predict the i
 This is the strategy used in **multiple regression**.
 While we remain cautious about making any causal interpretations using multiple regression on observational data, such models are a common first step in gaining insights or providing some evidence of a causal connection.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_8 <- c(terms_chp_8, "multiple regression")
 ```
 
@@ -259,7 +266,8 @@ We will discuss inference based on linear models in Chapter \@ref(inf-model-mlr)
 We typically use a computer to minimize the sum of squares and compute point estimates, as shown in the sample output in Table \@ref(tab:loans-full).
 Using this output, we identify $b_i,$ just as we did in the one-predictor case.
 
-```{r loans-full}
+```{r}
+#| label: loans-full
 m_full <- lm(interest_rate ~ ., data = loans)
 
 m_full %>%
@@ -347,7 +355,8 @@ The previous example describes a common issue in multiple regression: correlatio
 We say the two predictor variables are collinear (pronounced as *co-linear*) when they are correlated, and this **multicollinearity** complicates model estimation.
 While it is impossible to prevent multicollinearity from arising in observational data, experiments are usually designed to prevent predictors from being multicollinear.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_8 <- c(terms_chp_8, "multicollinearity")
 ```
 
@@ -401,7 +410,8 @@ where $n$ is the number of observations used to fit the model and $k$ is the num
 Remember that a categorical predictor with $p$ levels will contribute $p - 1$ to the number of variables in the model.
 :::
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_8 <- c(terms_chp_8, "adjusted R-squared")
 ```
 
@@ -409,7 +419,8 @@ Because $k$ is never negative, the adjusted $R^2$ will be smaller -- often times
 The reasoning behind the adjusted $R^2$ lies in the **degrees of freedom** associated with each variance, which is equal to $n - k - 1$ in the multiple regression context.
 If we were to make predictions for *new data* using our current model, we would find that the unadjusted $R^2$ would tend to be slightly overly optimistic, while the adjusted $R^2$ formula helps correct this bias.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_8 <- c(terms_chp_8, "degrees of freedom")
 ```
 
@@ -439,14 +450,16 @@ Sometimes including variables that are not evidently important can actually redu
 In this section, we discuss model selection strategies, which will help us eliminate variables from the model that are found to be less important.
 It's common (and hip, at least in the statistical world) to refer to models that have undergone such variable pruning as **parsimonious**.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_8 <- c(terms_chp_8, "parsimonious")
 ```
 
 In practice, the model that includes all available predictors is often referred to as the **full model**.
 The full model may not be the best model, and if it isn't, we want to identify a smaller model that is preferable.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_8 <- c(terms_chp_8, "full model")
 ```
 
@@ -455,7 +468,8 @@ terms_chp_8 <- c(terms_chp_8, "full model")
 Two common strategies for adding or removing variables in a multiple regression model are called backward elimination and forward selection.
 These techniques are often referred to as **stepwise selection** strategies, because they add or delete one variable at a time as they "step" through the candidate predictors.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_8 <- c(terms_chp_8, "stepwise selection")
 ```
 
@@ -464,7 +478,8 @@ terms_chp_8 <- c(terms_chp_8, "stepwise selection")
 **Forward selection** is the reverse of the backward elimination technique.
 Instead, of eliminating variables one-at-a-time, we add variables one-at-a-time until we cannot find any variables that improve the model any further.
 
-```{r include=FALSE}
+```{r}
+#| include: false
 terms_chp_8 <- c(terms_chp_8, "backward elimination", "forward selection")
 ```
 
@@ -477,7 +492,8 @@ Adjusted $R^2$ describes the strength of a model fit, and it is a useful tool fo
 Let's consider two models, which are shown in Table \@ref(tab:loans-full-for-model-selection) and Table \@ref(tab:loans-full-except-issue-month).
 The first table summarizes the full model since it includes all predictors, while the second does not include the `issue_month` variable.
 
-```{r loans-full-for-model-selection}
+```{r}
+#| label: loans-full-for-model-selection
 options(digits = 6) # to get more digits
 m_full_r_sq_adj <- glance(m_full)$adj.r.squared %>% round(4)
 options(digits = 3) # to get back to default set in _common.R
@@ -503,7 +519,8 @@ m_full_w_rsq %>%
   row_spec(11:12, italic = TRUE)
 ```
 
-```{r loans-full-except-issue-month}
+```{r}
+#| label: loans-full-except-issue-month
 m_full_minus_issue_month <- lm(interest_rate ~ . - issue_month, data = loans)
 
 options(digits = 6) # to get more digits
