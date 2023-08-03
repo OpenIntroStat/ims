@@ -1,5 +1,13 @@
 # Introduction to Modern Statistics
 
+## Where is IMS 2?
+
+<https://openintro-ims2.netlify.app/>
+
+## Where did IMS 1 go?
+
+<https://openintro-ims.netlify.app/>
+
 ## Where did Introduction to Statistics with Randomization and Simulation go?
 
 As we're working on the 2nd edition of this book, we realized that we weren't too enamoured by the name, and decided to rename the book to "Introduction to Modern Statistics" to better reflect the content covered in the book, which features simulation-based inference but also many non-inference topics!
