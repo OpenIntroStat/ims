@@ -1,77 +1,46 @@
 on:
   push:
-    branches:
-      - main
+    branches: main
   pull_request:
-    branches:
-      - main
+    branches: main
+  # to be able to trigger a manual build
+  workflow_dispatch:
+  schedule:
+    # run every day at 11 PM
+    - cron: '0 23 * * *'
 
-name: Build book
+name: Render and deploy Book to Netlify
 
 env:
   isExtPR: ${{ github.event.pull_request.head.repo.fork == true }}
 
 jobs:
-  build:
-    runs-on: macOS-latest
+  build-deploy:
+    runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-      - name: Setup R
-        uses: r-lib/actions/setup-r@v2-branch
-        
-      - name: Install imagemagick
-        run: |
-          brew install imagemagick@6
-
-      - name: Setup pandoc
-        uses: r-lib/actions/setup-pandoc@v2-branch
+      - name: Install Quarto
+        uses: quarto-dev/quarto-actions/install-quarto@v1
         with:
-          pandoc-version: '2.11.2'
-          
-      - name: Get R version
-        id: get-r-version
-        run: |
-          echo "::set-output name=version::$(Rscript -e 'cat(as.character(getRversion()))')"
-        shell: bash
+          # To install LaTeX to build PDF book
+          tinytex: true
+          # uncomment below and fill to pin a version
+          # version: 0.9.105
 
-      - name: Cache R packages
-        uses: actions/cache@v2
+      - uses: r-lib/actions/setup-r@v2
         with:
-          path: ${{ env.R_LIBS_USER }}
-          key: ${{ runner.os }}-${{ steps.get-r-version.outputs.version }}-3-
+          use-public-rspm: true
 
-      - name: Install pak
+      - uses: r-lib/actions/setup-r-dependencies@v2
+
+      - name: Render book to all format
+        # Add any command line argument needed
         run: |
-          install.packages("pak", repos = "https://r-lib.github.io/p/pak/dev/")
-        shell: Rscript {0}
+          quarto render
 
-      - name: Install system dependencies
-        run: brew install harfbuzz fribidi
-
-      - name: Install dependencies
-        run: |
-          pak::local_install_dev_deps()
-        shell: Rscript {0}
-
-      - name: Cache bookdown results
-        uses: actions/cache@v2
-        with:
-          path: _bookdown_files
-          key: bookdown-3-${{ hashFiles('**/*Rmd') }}
-          restore-keys: bookdown-3-
-
-      - name: Build site
-        run: |
-          # Allows [implcit heading links] to work; will need to convert
-          # to explicit before switching to visual editor
-          options(bookdown.render.file_scope = FALSE)
-          bookdown::render_book("index.Rmd")
-        shell: Rscript {0}
-        
       - name: Deploy to Netlify
         if: contains(env.isExtPR, 'false')
         id: netlify-deploy
