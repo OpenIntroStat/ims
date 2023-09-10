@@ -46,7 +46,7 @@ suppressMessages(library(mosaicData))
 #  #echo = FALSE, # hide code unless otherwise noted in chunk options
 #  #fig.align = "center",
 #  #fig.width = 6,
-#  #fig.asp = 0.618,  # 1 / phi
+#  #fig-asp = 0.618,  # 1 / phi
 #  #fig.show = "hold",
 #  #dpi = 300,
 #  #fig.pos = "h"
