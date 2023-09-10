@@ -36,21 +36,21 @@ suppressMessages(library(mosaicData))
 
 # knitr chunk options ----------------------------------------------------------
 
-knitr::opts_chunk$set(
-  #eval = FALSE,
-  comment = "#>",
-  collapse = TRUE,
-  message = FALSE,
-  warning = FALSE,
-  cache = FALSE, # only use TRUE for quick testing!
-  echo = FALSE, # hide code unless otherwise noted in chunk options
-  fig.align = "center",
-  fig.width = 6,
-  fig.asp = 0.618,  # 1 / phi
-  fig.show = "hold",
-  dpi = 300,
-  fig.pos = "h"
-)
+#knitr::opts_chunk$set(
+#  #eval = FALSE,
+#  #comment = "#>",
+#  #collapse = TRUE,
+#  #message = FALSE,
+#  #warning = FALSE,
+#  #cache = FALSE, # only use TRUE for quick testing!
+#  #echo = FALSE, # hide code unless otherwise noted in chunk options
+#  #fig.align = "center",
+#  #fig.width = 6,
+#  #fig.asp = 0.618,  # 1 / phi
+#  #fig.show = "hold",
+#  #dpi = 300,
+#  #fig.pos = "h"
+#)
 
 if (knitr::is_html_output()) {
   knitr::opts_chunk$set(out.width = "90%")
