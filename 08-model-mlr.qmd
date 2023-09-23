@@ -173,7 +173,9 @@ Using the model for predicting interest rate from income verification type, comp
 
 When `verified_income` takes a value of `Not Verified`, then both indicator functions in the equation for the linear model are set to 0:
 
-$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times 0 + 3.25 \times 0 = 11.10$$
+$$
+\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times 0 + 3.25 \times 0 = 11.10
+$$
 
 The average interest rate for these borrowers is 11.1%.
 Because the level does not have its own coefficient and it is the reference value, the indicators for the other levels for this variable all drop out.
@@ -186,7 +188,9 @@ Using the model for predicting interest rate from income verification type, comp
 
 When `verified_income` takes a value of `Source Verified`, then the corresponding variable takes a value of 1 while the other is 0:
 
-$$\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 12.52$$
+$$
+\widehat{\texttt{interest_rate}} = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 12.52
+$$
 
 The average interest rate for these borrowers is 12.52%.
 :::
@@ -240,7 +244,8 @@ terms_chp_8 <- c(terms_chp_8, "multiple regression")
 
 We want to construct a model that accounts not only for any past bankruptcy or whether the borrower had their income source or amount verified, but simultaneously accounts for all the variables in the `loans` dataset: `verified_income`, `debt_to_income`, `credit_util`, `bankruptcy`, `term`, `issue_month`, and `credit_checks`.
 
-$$\begin{aligned}
+$$
+\begin{align*}
 \widehat{\texttt{interest_rate}} &= b_0 \\
 &+ b_1 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
 &+ b_2 \times \texttt{verified_income}_{\texttt{Verified}} \\
@@ -251,14 +256,17 @@ $$\begin{aligned}
 &+ b_9 \times \texttt{credit_checks} \\
 &+ b_7 \times \texttt{issue_month}_{\texttt{Jan-2018}} \\
 &+ b_8 \times \texttt{issue_month}_{\texttt{Mar-2018}}
-\end{aligned}$$
+\end{align*}
+$$
 
 This equation represents a holistic approach for modeling all of the variables simultaneously.
 Notice that there are two coefficients for `verified_income` and two coefficients for `issue_month`, since both are 3-level categorical variables.
 
 We calculate $b_0$, $b_1$, $b_2$, $\cdots$, $b_9$ the same way as we did in the case of a model with a single predictor -- we select values that minimize the sum of the squared residuals:
 
-$$SSE = e_1^2 + e_2^2 + \dots + e_{10000}^2 = \sum_{i=1}^{10000} e_i^2 = \sum_{i=1}^{10000} \left(y_i - \hat{y}_i\right)^2$$
+$$
+SSE = e_1^2 + e_2^2 + \dots + e_{10000}^2 = \sum_{i=1}^{10000} e_i^2 = \sum_{i=1}^{10000} \left(y_i - \hat{y}_i\right)^2
+$$
 
 where $y_i$ and $\hat{y}_i$ represent the observed interest rates and their estimated values according to the model, respectively.
 10,000 residuals are calculated, one for each observation.
@@ -290,7 +298,9 @@ m_full %>%
 A multiple regression model is a linear model with many predictors.
 In general, we write the model as
 
-$$\hat{y} = b_0 + b_1 x_1 + b_2 x_2 + \cdots + b_k x_k$$
+$$
+\hat{y} = b_0 + b_1 x_1 + b_2 x_2 + \cdots + b_k x_k
+$$
 
 when there are $k$ predictors.
 We always calculate $b_i$ using statistical software.
@@ -305,7 +315,7 @@ How many predictors are there in this model?
 The fitted model for the interest rate is given by:
 
 $$
-\begin{aligned}
+\begin{align*}
 \widehat{\texttt{interest_rate}} &= 1.89 \\
 &+ 1.00 \times \texttt{verified_income}_{\texttt{Source Verified}} \\
 &+ 2.56 \times \texttt{verified_income}_{\texttt{Verified}} \\
@@ -316,7 +326,7 @@ $$
 &+ 0.23 \times \texttt{credit_checks} \\
 &+ 0.05 \times \texttt{issue_month}_{\texttt{Jan-2018}} \\
 &- 0.04 \times \texttt{issue_month}_{\texttt{Mar-2018}}
-\end{aligned}
+\end{align*}
 $$
 
 If we count up the number of predictor coefficients, we get the *effective* number of predictors in the model; there are nine of those.
@@ -375,10 +385,13 @@ Is there any value gained by making this interpretation?[^08-model-mlr-6]
 
 ## Adjusted R-squared
 
-We first used $R^2$ in Section \@ref(r-squared) to determine the amount of variability in the response that was explained by the model: $$
+We first used $R^2$ in Section \@ref(r-squared) to determine the amount of variability in the response that was explained by the model: 
+
+$$
 R^2 = 1 - \frac{\text{variability in residuals}}{\text{variability in the outcome}}
     = 1 - \frac{Var(e_i)}{Var(y_i)}
-$$where $e_i$ represents the residuals of the model and $y_i$ the outcomes.
+$$
+where $e_i$ represents the residuals of the model and $y_i$ the outcomes.
 This equation remains valid in the multiple regression framework, but a small enhancement can make it even more informative when comparing models.
 
 ::: {.guidedpractice data-latex=""}
@@ -399,13 +412,13 @@ To get a better estimate, we use the adjusted $R^2$.
 The **adjusted R-squared** is computed as
 
 $$
-\begin{aligned}
+\begin{align*}
   R_{adj}^{2}
     &= 1 - \frac{s_{\text{residuals}}^2 / (n-k-1)}
         {s_{\text{outcome}}^2 / (n-1)} \\
     &= 1 - \frac{s_{\text{residuals}}^2}{s_{\text{outcome}}^2}
         \times \frac{n-1}{n-k-1}
-\end{aligned}
+\end{align*}
 $$
 
 where $n$ is the number of observations used to fit the model and $k$ is the number of predictor variables in the model.
@@ -597,7 +610,7 @@ None of these models lead to an improvement in adjusted $R^2$, so we do not elim
 That is, after backward elimination, we are left with the model that keeps all predictors except `issue_month`, which we can summarize using the coefficients from Table \@ref(tab:loans-full-except-issue-month).
 
 $$
-\begin{aligned}
+\begin{align*}
 \widehat{\texttt{interest_rate}} &= 1.90 \\
 &+ 1.00 \times \texttt{verified_income}_\texttt{Source only} \\
 &+ 2.56 \times \texttt{verified_income}_\texttt{Verified} \\
@@ -606,7 +619,7 @@ $$
 &+ 0.39 \times \texttt{bankruptcy} \\
 &+ 0.15 \times \texttt{term} \\
 &+ 0.23 \times \texttt{credit_check}
-\end{aligned}
+\end{align*}
 $$
 :::
 
