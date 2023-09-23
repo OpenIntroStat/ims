@@ -38,19 +38,19 @@ We will refer to this modified dataset as `loans`.
 #| label: tbl-loans-data-matrix
 #| tbl-cap: First six rows of the `loans` dataset.
 
-loans <- loans_full_schema %>%
+loans <- loans_full_schema |>
   mutate(
     credit_util = total_credit_utilized / total_credit_limit,
     bankruptcy  = as.factor(if_else(public_record_bankrupt == 0, 0, 1)),
     verified_income = droplevels(verified_income)
-    ) %>%
-  rename(credit_checks = inquiries_last_12m) %>%
+    ) |>
+  rename(credit_checks = inquiries_last_12m) |>
   select(interest_rate, verified_income, debt_to_income, credit_util, bankruptcy, term, credit_checks, issue_month) 
 
-loans %>%
-  slice_head(n = 6) %>%
+loans |>
+  slice_head(n = 6) |>
   kbl(linesep = "", booktabs = TRUE, 
-      align = "rlrrrr") %>%
+      align = "rlrrrr") |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "scale_down", "hold_position"), 
                 full_width = FALSE)
@@ -72,12 +72,12 @@ loans_var_def <- tribble(
   "credit_checks",   "Number of credit checks in the last 12 months. For example, when filing an application for a credit card, it is common for the company receiving the application to run a credit check.",
 )
 
-loans_var_def %>%
+loans_var_def |>
   kbl(linesep = "", booktabs = TRUE, 
-      col.names = c("Variable", "Description")) %>%
+      col.names = c("Variable", "Description")) |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
-  column_spec(1, monospace = TRUE) %>%
+                latex_options = c("striped", "hold_position"), full_width = TRUE) |>
+  column_spec(1, monospace = TRUE) |>
   column_spec(2, width = "30em")
 ```
 
@@ -100,14 +100,14 @@ Results of this model are shown in @tbl-int-rate-bankruptcy.
 
 m_bankruptcy <- lm(interest_rate ~ bankruptcy, data = loans)
 
-m_bankruptcy %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+m_bankruptcy |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
   kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr") %>%
+      digits = 2, align = "lrrrr") |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "17em", monospace = TRUE) %>%
+                latex_options = c("striped", "hold_position")) |>
+  column_spec(1, width = "17em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -143,14 +143,14 @@ terms_chp_8 <- c("reference level")
 
 m_verified_income <- lm(interest_rate ~ verified_income, data = loans)
 
-m_verified_income %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+m_verified_income |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
   kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr") %>%
+      digits = 2, align = "lrrrr") |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "17em", monospace = TRUE) %>%
+                latex_options = c("striped", "hold_position")) |>
+  column_spec(1, width = "17em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -296,14 +296,14 @@ Using this output, we identify $b_i,$ just as we did in the one-predictor case.
 
 m_full <- lm(interest_rate ~ ., data = loans)
 
-m_full %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
+m_full |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) |>
   kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr") %>%
+      digits = 2, align = "lrrrr") |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "17em", monospace = TRUE) %>%
+                latex_options = c("striped", "hold_position")) |>
+  column_spec(1, width = "17em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -400,13 +400,12 @@ Is there any value gained by making this interpretation?[^08-model-mlr-6]
 
 ## Adjusted R-squared
 
-We first used $R^2$ in @sec-r-squared to determine the amount of variability in the response that was explained by the model: 
+We first used $R^2$ in @sec-r-squared to determine the amount of variability in the response that was explained by the model:
 
 $$
 R^2 = 1 - \frac{\text{variability in residuals}}{\text{variability in the outcome}}
     = 1 - \frac{Var(e_i)}{Var(y_i)}
-$$
-where $e_i$ represents the residuals of the model and $y_i$ the outcomes.
+$$ where $e_i$ represents the residuals of the model and $y_i$ the outcomes.
 This equation remains valid in the multiple regression framework, but a small enhancement can make it even more informative when comparing models.
 
 ::: {.guidedpractice data-latex=""}
@@ -529,26 +528,26 @@ The first table summarizes the full model since it includes all predictors, whil
 #|   adjusted $R^2$.
 
 options(digits = 6) # to get more digits
-m_full_r_sq_adj <- glance(m_full)$adj.r.squared %>% round(4)
+m_full_r_sq_adj <- glance(m_full)$adj.r.squared |> round(4)
 options(digits = 3) # to get back to default set in _common.R
 m_full_df_residual <- glance(m_full)$df.residual
 
-m_full_w_rsq <- m_full %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
-  add_row(term = glue("Adjusted R-sq = {m_full_r_sq_adj}")) %>%
+m_full_w_rsq <- m_full |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) |>
+  add_row(term = glue("Adjusted R-sq = {m_full_r_sq_adj}")) |>
   add_row(term = glue("df = {m_full_df_residual}"))
 
-m_full_w_rsq %>%
+m_full_w_rsq |>
   kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr")  %>%
+      digits = 2, align = "lrrrr")  |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "17em") %>%
-  column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_w_rsq)) < 11, TRUE, FALSE)) %>%
-  column_spec(2:5, width = "5em") %>%
-  pack_rows("", 11, 12) %>%
-  add_indent(11:12) %>%
+                latex_options = c("striped", "hold_position")) |>
+  column_spec(1, width = "17em") |>
+  column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_w_rsq)) < 11, TRUE, FALSE)) |>
+  column_spec(2:5, width = "5em") |>
+  pack_rows("", 11, 12) |>
+  add_indent(11:12) |>
   row_spec(11:12, italic = TRUE)
 ```
 
@@ -561,26 +560,26 @@ m_full_w_rsq %>%
 m_full_minus_issue_month <- lm(interest_rate ~ . - issue_month, data = loans)
 
 options(digits = 6) # to get more digits
-m_full_minus_issue_month_r_sq_adj <- glance(m_full_minus_issue_month)$adj.r.squared %>% round(4)
+m_full_minus_issue_month_r_sq_adj <- glance(m_full_minus_issue_month)$adj.r.squared |> round(4)
 options(digits = 3) # to get back to default set in _common.R
 m_full_minus_issue_month_df_residual <- glance(m_full_minus_issue_month)$df.residual
 
-m_full_minus_issue_month_w_rsq <- m_full_minus_issue_month %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
-  add_row(term = glue("Adjusted R-sq = {m_full_minus_issue_month_r_sq_adj}")) %>%
+m_full_minus_issue_month_w_rsq <- m_full_minus_issue_month |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) |>
+  add_row(term = glue("Adjusted R-sq = {m_full_minus_issue_month_r_sq_adj}")) |>
   add_row(term = glue("df = {m_full_minus_issue_month_df_residual}"))
 
-m_full_minus_issue_month_w_rsq %>%
+m_full_minus_issue_month_w_rsq |>
   kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr")  %>%
+      digits = 2, align = "lrrrr")  |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "17em") %>%
-  column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_minus_issue_month_w_rsq)) < 9, TRUE, FALSE)) %>%
-  column_spec(2:5, width = "5em") %>%
-  pack_rows("", 9, 10) %>%
-  add_indent(9:10) %>%
+                latex_options = c("striped", "hold_position")) |>
+  column_spec(1, width = "17em") |>
+  column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_minus_issue_month_w_rsq)) < 9, TRUE, FALSE)) |>
+  column_spec(2:5, width = "5em") |>
+  pack_rows("", 9, 10) |>
+  add_indent(9:10) |>
   row_spec(9:10, italic = TRUE)
 ```
 
