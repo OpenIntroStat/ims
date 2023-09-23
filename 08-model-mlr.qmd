@@ -23,7 +23,7 @@ Does it matter if their income has been verified?
 Multiple regression will help us answer these and other questions.
 
 The dataset includes results from 10,000 loans, and we'll be looking at a subset of the available variables, some of which will be new from those we saw in earlier chapters.
-The first six observations in the dataset are shown in Table \@ref(tab:loans-data-matrix), and descriptions for each variable are shown in Table \@ref(tab:loans-variables).
+The first six observations in the dataset are shown in @tbl-loans-data-matrix, and descriptions for each variable are shown in @tbl-loans-variables.
 Notice that the past bankruptcy variable (`bankruptcy`) is an indicator variable, where it takes the value 1 if the borrower had a past bankruptcy in their record and 0 if not.
 Using an indicator variable in place of a category name allows for these variables to be directly used in regression.
 Two of the other variables are categorical (`verified_income` and `issue_month`), each of which can take one of a few different non-numerical values; we'll discuss how these are handled in the model in Section \@ref(ind-and-cat-predictors).
@@ -35,7 +35,9 @@ We will refer to this modified dataset as `loans`.
 :::
 
 ```{r}
-#| label: loans-data-matrix
+#| label: tbl-loans-data-matrix
+#| tbl-cap: First six rows of the `loans` dataset.
+
 loans <- loans_full_schema %>%
   mutate(
     credit_util = total_credit_utilized / total_credit_limit,
@@ -48,7 +50,6 @@ loans <- loans_full_schema %>%
 loans %>%
   slice_head(n = 6) %>%
   kbl(linesep = "", booktabs = TRUE, 
-      caption = caption_helper("First six rows of the `loans` dataset."),
       align = "rlrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "scale_down", "hold_position"), 
@@ -56,7 +57,9 @@ loans %>%
 ```
 
 ```{r}
-#| label: loans-variables
+#| label: tbl-loans-variables
+#| tbl-cap: Variables and their descriptions for the `loans` dataset.
+
 loans_var_def <- tribble(
   ~variable,         ~description,
   "interest_rate",   "Interest rate on the loan, in an annual percentage.",
@@ -71,7 +74,6 @@ loans_var_def <- tribble(
 
 loans_var_def %>%
   kbl(linesep = "", booktabs = TRUE, 
-      caption = caption_helper("Variables and their descriptions for the `loans` dataset."), 
       col.names = c("Variable", "Description")) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
@@ -87,17 +89,21 @@ $$
 \widehat{\texttt{interest\_rate}} = 12.34 + 0.74 \times \texttt{bankruptcy}
 $$
 
-Results of this model are shown in Table \@ref(tab:int-rate-bankruptcy).
+Results of this model are shown in @tbl-int-rate-bankruptcy.
 
 ```{r}
-#| label: int-rate-bankruptcy
+#| label: tbl-int-rate-bankruptcy
+#| tbl-cap: |
+#|   Summary of a linear model for predicting `interest_rate` 
+#|   based on whether the borrower has a bankruptcy in their 
+#|   record. Degrees of freedom for this model is 9998.
+
 m_bankruptcy <- lm(interest_rate ~ bankruptcy, data = loans)
 
 m_bankruptcy %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
   kbl(linesep = "", booktabs = TRUE, 
-      caption = caption_helper("Summary of a linear model for predicting `interest_rate` based on whether the borrower has a bankruptcy in their record. Degrees of freedom for this model is 9998."), 
       digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position")) %>%
@@ -116,7 +122,7 @@ A slope of 0.74 means that the model predicts a 0.74% higher interest rate for t
 :::
 
 Suppose we had fit a model using a 3-level categorical variable, such as `verified_income`.
-The output from software is shown in Table \@ref(tab:int-rate-ver-income).
+The output from software is shown in @tbl-int-rate-ver-income.
 This regression output provides multiple rows for the variable.
 Each row represents the relative difference for each level of `verified_income`.
 However, we are missing one of the levels: `Not Verified`.
@@ -128,14 +134,19 @@ terms_chp_8 <- c("reference level")
 ```
 
 ```{r}
-#| label: int-rate-ver-income
+#| label: tbl-int-rate-ver-income
+#| tbl-cap: |
+#|   Summary of a linear model for predicting `interest_rate` based 
+#|   on whether the borrower’s income source and amount has been 
+#|   verified. This predictor has three levels, which results in 2 
+#|   rows in the regression output.
+
 m_verified_income <- lm(interest_rate ~ verified_income, data = loans)
 
 m_verified_income %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
   kbl(linesep = "", booktabs = TRUE, 
-      caption = caption_helper("Summary of a linear model for predicting `interest_rate` based on whether the borrower’s income source and amount has been verified. This predictor has three levels, which results in 2 rows in the regression output."),
       digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position")) %>%
@@ -273,18 +284,22 @@ where $y_i$ and $\hat{y}_i$ represent the observed interest rates and their esti
 Note that these values are sample statistics and in the case where the observed data is a random sample from a target population that we are interested in making inferences about, they are estimates of the population parameters $\beta_0$, $\beta_1$, $\beta_2$, $\cdots$, $\beta_9$.
 We will discuss inference based on linear models in Chapter \@ref(inf-model-mlr), for now we will focus on calculating sample statistics $b_i$.
 
-We typically use a computer to minimize the sum of squares and compute point estimates, as shown in the sample output in Table \@ref(tab:loans-full).
+We typically use a computer to minimize the sum of squares and compute point estimates, as shown in the sample output in @tbl-loans-full.
 Using this output, we identify $b_i,$ just as we did in the one-predictor case.
 
 ```{r}
-#| label: loans-full
+#| label: tbl-loans-full
+#| tbl-cap: |
+#|   Output for the regression model, where interest rate is the 
+#|   outcome and the variables listed are the predictors. Degrees 
+#|   of freedom for this model is 9990.
+
 m_full <- lm(interest_rate ~ ., data = loans)
 
 m_full %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) %>%
   kbl(linesep = "", booktabs = TRUE, 
-      caption = "Output for the regression model, where interest rate is the outcome and the variables listed are the predictors. Degrees of freedom for this model is 9990.", 
       digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position")) %>%
@@ -307,7 +322,7 @@ We always calculate $b_i$ using statistical software.
 :::
 
 ::: {.workedexample data-latex=""}
-Write out the regression model using the regression output from Table \@ref(tab:loans-full).
+Write out the regression model using the regression output from @tbl-loans-full.
 How many predictors are there in this model?
 
 ------------------------------------------------------------------------
@@ -342,7 +357,7 @@ Interpret the coefficient of the variable `credit_checks`.[^08-model-mlr-4]
 [^08-model-mlr-4]: All else held constant, for each additional inquiry into the applicant's credit during the last 12 months, we would expect the interest rate for the loan to be higher, on average, by 0.23 points.
 
 ::: {.guidedpractice data-latex=""}
-Compute the residual of the first observation in Table \@ref(tab:loans-data-matrix) using the full model.[^08-model-mlr-5]
+Compute the residual of the first observation in @tbl-loans-data-matrix using the full model.[^08-model-mlr-5]
 :::
 
 [^08-model-mlr-5]: To compute the residual, we first need the predicted value, which we compute by plugging values into the equation from earlier.
@@ -504,11 +519,15 @@ When using adjusted $R^2$ as the decision criterion, we seek to eliminate or add
 
 Adjusted $R^2$ describes the strength of a model fit, and it is a useful tool for evaluating which predictors are adding value to the model, where *adding value* means they are (likely) improving the accuracy in predicting future outcomes.
 
-Let's consider two models, which are shown in Table \@ref(tab:loans-full-for-model-selection) and Table \@ref(tab:loans-full-except-issue-month).
+Let's consider two models, which are shown in @tbl-loans-full-for-model-selection and @tbl-loans-full-except-issue-month.
 The first table summarizes the full model since it includes all predictors, while the second does not include the `issue_month` variable.
 
 ```{r}
-#| label: loans-full-for-model-selection
+#| label: tbl-loans-full-for-model-selection
+#| tbl-cap: |
+#|   The fit for the full regression model, including the 
+#|   adjusted $R^2$.
+
 options(digits = 6) # to get more digits
 m_full_r_sq_adj <- glance(m_full)$adj.r.squared %>% round(4)
 options(digits = 3) # to get back to default set in _common.R
@@ -522,7 +541,6 @@ m_full_w_rsq <- m_full %>%
 
 m_full_w_rsq %>%
   kbl(linesep = "", booktabs = TRUE, 
-      caption = "The fit for the full regression model, including the adjusted $R^2$.", 
       digits = 2, align = "lrrrr")  %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position")) %>%
@@ -535,7 +553,11 @@ m_full_w_rsq %>%
 ```
 
 ```{r}
-#| label: loans-full-except-issue-month
+#| label: tbl-loans-full-except-issue-month
+#| tbl-cap: |
+#|   The fit for the regression model after dropping issue month, 
+#|   including the adjusted $R^2$.
+
 m_full_minus_issue_month <- lm(interest_rate ~ . - issue_month, data = loans)
 
 options(digits = 6) # to get more digits
@@ -551,7 +573,6 @@ m_full_minus_issue_month_w_rsq <- m_full_minus_issue_month %>%
 
 m_full_minus_issue_month_w_rsq %>%
   kbl(linesep = "", booktabs = TRUE, 
-      caption = "The fit for the regression model after dropping issue month, including the adjusted $R^2$.",
       digits = 2, align = "lrrrr")  %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position")) %>%
@@ -576,7 +597,7 @@ Will the model without `issue_month` be better than the model with `issue_month`
 We cannot know for sure, but based on the adjusted $R^2$, this is our best assessment.
 
 ::: {.workedexample data-latex=""}
-Results corresponding to the full model for the `loans` data are shown in Table \@ref(tab:loans-full-for-model-selection).
+Results corresponding to the full model for the `loans` data are shown in @tbl-loans-full-for-model-selection.
 How should we proceed under the backward elimination strategy?
 
 ------------------------------------------------------------------------
@@ -607,7 +628,7 @@ We now fit new models, which consider eliminating each of the remaining predicto
 -   Excluding `issue_month` and `credit_checks`: 0.24801
 
 None of these models lead to an improvement in adjusted $R^2$, so we do not eliminate any of the remaining predictors.
-That is, after backward elimination, we are left with the model that keeps all predictors except `issue_month`, which we can summarize using the coefficients from Table \@ref(tab:loans-full-except-issue-month).
+That is, after backward elimination, we are left with the model that keeps all predictors except `issue_month`, which we can summarize using the coefficients from @tbl-loans-full-except-issue-month.
 
 $$
 \begin{aligned}
