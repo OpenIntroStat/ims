@@ -15,6 +15,20 @@ Model building is an extensive topic, and we scratch the surface here by definin
 Multiple regression extends single predictor variable regression to the case that still has one response but many predictors (denoted $x_1$, $x_2$, $x_3$, ...).
 The method is motivated by scenarios where many variables may be simultaneously connected to an output.
 
+```{r}
+#| label: loans-prep
+#| include: false
+
+loans <- loans_full_schema |>
+  mutate(
+    credit_util = total_credit_utilized / total_credit_limit,
+    bankruptcy  = as.factor(if_else(public_record_bankrupt == 0, 0, 1)),
+    verified_income = droplevels(verified_income)
+    ) |>
+  rename(credit_checks = inquiries_last_12m) |>
+  select(interest_rate, verified_income, debt_to_income, credit_util, bankruptcy, term, credit_checks, issue_month)
+```
+
 We will consider data about loans from the peer-to-peer lender, Lending Club, which is a dataset we first encountered in [Chapter -@sec-data-hello].
 The loan data includes terms of the loan as well as information about the borrower.
 The outcome variable we would like to better understand is the interest rate assigned to the loan.
@@ -22,8 +36,16 @@ For instance, all other characteristics held constant, does it matter how much d
 Does it matter if their income has been verified?
 Multiple regression will help us answer these and other questions.
 
-The dataset includes results from 10,000 loans, and we'll be looking at a subset of the available variables, some of which will be new from those we saw in earlier chapters.
-The first six observations in the dataset are shown in @tbl-loans-data-matrix, and descriptions for each variable are shown in @tbl-loans-variables.
+```{r}
+#| label: loans-n-rows-to-show
+#| include: false
+
+n_rows_to_show <- 6
+n_rows_to_show_string <- six
+```
+
+The dataset includes information on `r nrow(loans)` loans, and we'll be looking at a subset of the available variables, some of which will be new from those we saw in earlier chapters.
+The first `r n_rows_to_show_string` observations in the dataset are shown in @tbl-loans-data-matrix, and descriptions for each variable are shown in @tbl-loans-variables.
 Notice that the past bankruptcy variable (`bankruptcy`) is an indicator variable, where it takes the value 1 if the borrower had a past bankruptcy in their record and 0 if not.
 Using an indicator variable in place of a category name allows for these variables to be directly used in regression.
 Two of the other variables are categorical (`verified_income` and `issue_month`), each of which can take one of a few different non-numerical values; we'll discuss how these are handled in the model in @sec-ind-and-cat-predictors.
@@ -38,22 +60,18 @@ We will refer to this modified dataset as `loans`.
 #| label: tbl-loans-data-matrix
 #| tbl-cap: First six rows of the `loans` dataset.
 
-loans <- loans_full_schema |>
-  mutate(
-    credit_util = total_credit_utilized / total_credit_limit,
-    bankruptcy  = as.factor(if_else(public_record_bankrupt == 0, 0, 1)),
-    verified_income = droplevels(verified_income)
-    ) |>
-  rename(credit_checks = inquiries_last_12m) |>
-  select(interest_rate, verified_income, debt_to_income, credit_util, bankruptcy, term, credit_checks, issue_month) 
-
 loans |>
-  slice_head(n = 6) |>
-  kbl(linesep = "", booktabs = TRUE, 
-      align = "rlrrrr") |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "scale_down", "hold_position"), 
-                full_width = FALSE)
+  slice_head(n = n_rows_to_show) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    align = "rlrrrr"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "scale_down", "hold_position"),
+    full_width = FALSE
+  )
+
 ```
 
 ```{r}
@@ -73,10 +91,14 @@ loans_var_def <- tribble(
 )
 
 loans_var_def |>
-  kbl(linesep = "", booktabs = TRUE, 
-      col.names = c("Variable", "Description")) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = TRUE) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("Variable", "Description")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = TRUE
+  ) |>
   column_spec(1, monospace = TRUE) |>
   column_spec(2, width = "30em")
 ```
@@ -103,10 +125,14 @@ m_bankruptcy <- lm(interest_rate ~ bankruptcy, data = loans)
 m_bankruptcy |>
   tidy() |>
   mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
-  kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr") |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    digits = 2, align = "lrrrr"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position")
+  ) |>
   column_spec(1, width = "17em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
@@ -146,10 +172,14 @@ m_verified_income <- lm(interest_rate ~ verified_income, data = loans)
 m_verified_income |>
   tidy() |>
   mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
-  kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr") |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    digits = 2, align = "lrrrr"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position")
+  ) |>
   column_spec(1, width = "17em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
@@ -250,6 +280,7 @@ While we remain cautious about making any causal interpretations using multiple 
 
 ```{r}
 #| include: false
+
 terms_chp_8 <- c(terms_chp_8, "multiple regression")
 ```
 
@@ -539,10 +570,14 @@ m_full_w_rsq <- m_full |>
   add_row(term = glue("df = {m_full_df_residual}"))
 
 m_full_w_rsq |>
-  kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr")  |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    digits = 2, align = "lrrrr"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position")
+  ) |>
   column_spec(1, width = "17em") |>
   column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_w_rsq)) < 11, TRUE, FALSE)) |>
   column_spec(2:5, width = "5em") |>
@@ -571,10 +606,14 @@ m_full_minus_issue_month_w_rsq <- m_full_minus_issue_month |>
   add_row(term = glue("df = {m_full_minus_issue_month_df_residual}"))
 
 m_full_minus_issue_month_w_rsq |>
-  kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr")  |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    digits = 2, align = "lrrrr"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position")
+  ) |>
   column_spec(1, width = "17em") |>
   column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_minus_issue_month_w_rsq)) < 9, TRUE, FALSE)) |>
   column_spec(2:5, width = "5em") |>
