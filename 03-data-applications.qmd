@@ -48,6 +48,7 @@ It can often be helpful to look at the first few rows of the data as well to get
 ```{r}
 #| label: tbl-paralympic-df-head
 #| tbl-cap: First ten rows of the `paralympic_1500` dataset.
+
 paralympic_1500 |>
   slice_head(n = 10) |>
   kbl(linesep = "", booktabs = TRUE, row.names = FALSE) |>
@@ -77,6 +78,7 @@ The data dictionary is provided in @tbl-paralympic-var-def.
 ```{r}
 #| label: tbl-paralympic-var-def
 #| tbl-cap: Variables and their descriptions for the `paralympic_1500` dataset.
+
 paralympic_var_def <- tribble(
   ~variable,   ~description,
   "year", "Year the Games took place.", 
@@ -125,12 +127,22 @@ Both of the visualizations are bar plots, which you will learn more about in @se
 
 ```{r}
 #| label: fig-paralympic-cat
-#| fig-cap: Distributions of categorical variables in the `paralympic_1500` dataset. 
-#|   Plot A shows the distribution of the country of origin of the athlete; Plot B
-#|   shows the distribution of the country in which the Games gook place.
-#| fig-alt: Two separate bar plots.  The left panel shows a bar plot counting the number of gold medal athletes from each country.  Great Britain has had 8 top finishers, Kenya has had 7 top finishers, and Tunisia and Algeria have both had 5.  The right panel shows a bar plot counting the number of games which have happened in each country.  The USA has hosted 4 games, the UK has hosted 3 games, and each of Japan, Greece, Germany, France, and Australia have hosted the games twice.
-#| fig-asp: 1.4
+#| fig-cap: |
+#|   Distributions of categorical variables in the `paralympic_1500` dataset. 
+#|   Plot A shows the distribution of the country of origin of the athlete; 
+#|   Plot B shows the distribution of the country in which the Games gook place.
+#| fig-alt: |
+#|   Two separate bar plots.  The left panel shows a bar plot counting the number 
+#|   of gold medal athletes from each country.  Great Britain has had 8 top 
+#|   finishers, Kenya has had 7 top finishers, and Tunisia and Algeria have both 
+#|   had 5.  The right panel shows a bar plot counting the number of games which 
+#|   have happened in each country.  The USA has hosted 4 games, the UK has hosted 
+#|   3 games, and each of Japan, Greece, Germany, France, and Australia have hosted 
+#|   the games twice.
+#| fig-asp: 1.1
 #| out-width: 100%
+#| fig-width: 10
+
 p_country_games <- paralympic_1500 |>
   group_by(country_of_games, year) |>
   sample_n(size = 1) |>
@@ -186,8 +198,10 @@ The maximum race time, therefore, should be taken into context in terms of the y
 
 ```{r}
 #| label: tbl-paralympic-summary
-#| tbl-cap: Mean, minimum, and maximum of the gold medal times for the 1500m race
+#| tbl-cap: |
+#|   Mean, minimum, and maximum of the gold medal times for the 1500m race
 #|   broken down by division and type of race.
+
 paralympic_1500 |>
   group_by(division, type) |>
   summarise(
@@ -200,8 +214,7 @@ paralympic_1500 |>
                 latex_options = c("striped", "hold_position"))
 ```
 
-
-### Fun fact {-}
+### Fun fact {.unnumbered}
 
 Sometimes playing around with the dataset will uncover interesting elements about the context in which the data were collected.
 A scatterplot of the Men's 1500m broken down by race type shows that, in each given year, the Olympic runner is substantially faster than the Paralympic runners, with one exception.
@@ -210,17 +223,24 @@ In fact, some internet sleuthing tells you that the **top four** T13 finishers a
 
 ```{r}
 #| label: fig-paralympic-rio
-#| fig-cap: 1500m race time for Men's Olympic and Paralympic athletes. Dashed grey line represents the Rio games in 2016.
-#| fig-alt: A scatterplot with year on the x-axis and gold medal 1500m time on the y-axis. The points are colored by which group the athlete is in - T11, T12, T13, or Olympic. A vertical line at 2016 show that in the Rio games the T13 gold medal athlete was faster than the Olympic gold medal athlete.
-#| fig-asp: 1.2
+#| fig-cap: |
+#|   1500m race time for Men's Olympic and Paralympic athletes. Dashed grey line 
+#|   represents the Rio games in 2016.
+#| fig-alt: |
+#|   A scatterplot with year on the x-axis and gold medal 1500m time on the y-axis. 
+#|   The points are colored by which group the athlete is in - T11, T12, T13, or 
+#|   Olympic. A vertical line at 2016 show that in the Rio games the T13 gold medal 
+#|   athlete was faster than the Olympic gold medal athlete.
+#| fig-asp: 0.618
 #| out-width: 100%
+#| fig-width: 8
 
 paralympic_1500 |>
   filter(division == "Men") |>
   filter(year > 1950) |>
   ggplot(aes(x = year, y = time_min, group = type, color = type)) + 
-  geom_point() + 
   geom_vline(xintercept = 2016, color = "darkgrey", lty = 2) + 
+  geom_point() + 
   scale_color_openintro() +
   labs(
     x = "Year",
@@ -228,9 +248,13 @@ paralympic_1500 |>
     color = "Race type",
     title = "1500m race time, in minutes"
   ) +
-  theme(plot.title.position = "plot")
+  theme(
+    legend.position = c(0.1, 0.75),
+    legend.background = element_rect(fill = "white", color = "gray", linewidth = 0.1)
+  )
 ```
 
+ULL
 
 So far we examined aspects of some of the individual variables, and we have broken down the 1500m race times in terms of division and race type.
 You might have already wondered how the race times vary across year.
@@ -242,29 +266,33 @@ Simpson's paradox \index{Simpson's paradox} is a description of three (or more) 
 The paradox happens when a third variable reverses the relationship between the first two variables.
 
 Let's start by considering how the 1500m gold medal race times have changed over year.
-@fig-paralympic-ungrouped shows a scatterplot describing 1500m race times and year for Men's Olympic and Paralympic (T11) athletes with a line of best fit (to the entire dataset) superimposed (see @sec-model-slr where we will present fitting a line to a scatterplot). 
+@fig-paralympic-ungrouped shows a scatterplot describing 1500m race times and year for Men's Olympic and Paralympic (T11) athletes with a line of best fit (to the entire dataset) superimposed (see @sec-model-slr where we will present fitting a line to a scatterplot).
 Notice that the line of best fit shows a **positive** relationship between race time and year.
 That is, for later years, the predicted gold medal time is higher than in earlier years.
 
 ```{r}
 #| label: fig-paralympic-ungrouped
-#| fig-cap: 1500m race time for Men's Olympic and Paralympic (T11) athletes.  The line represents a line of best fit to the entire dataset.
-#| fig-alt: A scatterplot with year on the x-axis and gold medal 1500m time on the y-axis. A line of best fit is drawn over the points.
-#| fig-asp: 1.2
+#| fig-cap: |
+#|   1500m race time for Men's Olympic and Paralympic (T11) athletes.  The line represents 
+#|   a line of best fit to the entire dataset.
+#| fig-alt: |
+#|   A scatterplot with year on the x-axis and gold medal 1500m time on the y-axis. A line 
+#|   of best fit is drawn over the points.
+#| fig-asp: 0.618
 #| out-width: 100%
+#| fig-width: 8
 
 paralympic_1500 |>
   filter(division == "Men", type == "Olympic" | type == "T11") |>
   filter(year > 1950) |>
   ggplot(aes(x = year, y = time_min)) + 
-  geom_point() + 
   geom_smooth(method = "lm", se = FALSE) +
+  geom_point() + 
   labs(
     x = "Year",
     y = NULL,
     title = "1500m race time, in minutes"
-  ) +
-  theme(plot.title.position = "plot")
+  )
 ```
 
 Of course, both your eye and your intuition are likely telling you that it wouldn't make any sense to try to model all of the athletes together.
@@ -274,10 +302,16 @@ Notice that within each type of race, the relationship between 1500m race time a
 
 ```{r}
 #| label: fig-paralympic-grouped
-#| fig-cap: 1500m race time for Men's Olympic and Paralympic (T11) athletes.  The best fit line is now fit separately to the Olympic and Paralympic athletes.
-#| fig-alt: A scatterplot with year on the x-axis and gold medal 1500m time on the y-axis. The points are colored by the type of athlete - T11 or Olympic. Lines of best fit are drawn separately for the two groups (T11 and Olympic).
-#| fig-asp: 1.2
+#| fig-cap: |
+#|   1500m race time for Men's Olympic and Paralympic (T11) athletes.  The best fit 
+#|   line is now fit separately to the Olympic and Paralympic athletes.
+#| fig-alt: |
+#|   A scatterplot with year on the x-axis and gold medal 1500m time on the y-axis. 
+#|   The points are colored by the type of athlete - T11 or Olympic. Lines of best fit 
+#|   are drawn separately for the two groups (T11 and Olympic).
+#| fig-asp: 0.618
 #| out-width: 100%
+#| fig-width: 8
 
 paralympic_1500 |>
   filter(division == "Men", type == "Olympic" | type == "T11") |>
@@ -292,7 +326,10 @@ paralympic_1500 |>
     color = "Race type",
     title = "1500m race time, in minutes"
   ) +
-  theme(plot.title.position = "plot")
+  theme(
+    legend.position = c(0.1, 0.8),
+    legend.background = element_rect(fill = "white", color = "gray", linewidth = 0.1)
+  )
 ```
 
 ::: {.important data-latex=""}
@@ -326,7 +363,6 @@ It's okay if your answer is "I'm not sure", we simply want to get your explorato
 1.  Has there every been a year when a visually impaired paralympic gold medal athlete beat the Olympic gold medal athlete?
 2.  When comparing the paralympic and Olympic 1500m gold medal athletes, does Simpson's paradox hold in the Women's division?
 3.  Is there a biological boundary which establishes a time under which no human could run 1500m?
-
 
 ## Interactive R tutorials {#data-tutorials}
 
