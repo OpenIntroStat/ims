@@ -42,10 +42,10 @@ We would probably observe a small difference due to *chance*.
 :::
 
 ::: {.guidedpractice data-latex=""}
-If we do not think the side of the room a person sits on in class is related to whether they prefer to read books on screen, what assumption are we making about the relationship between these two variables?[^11-foundations-randomization-1]
+If we do not think the side of the room a person sits on in class is related to whether they prefer to read books on screen, what assumption are we making about the relationship between these two variables?[^1]
 :::
 
-[^11-foundations-randomization-1]: We would be assuming that these two variables are **independent**\index{independent}.
+[^1]: We would be assuming that these two variables are **independent**\index{independent}.
 
 ```{r}
 #| include: false
@@ -57,7 +57,7 @@ Throughout this chapter, and those that follow, we provide three different appro
 Using the methods provided in this chapter, we will be able to draw conclusions beyond the dataset at hand to research questions about larger populations that the samples come from.
 
 The first type of variability we will explore comes from experiments where the explanatory variable (or treatment) is randomly assigned to the observational units.
-As you learned in Chapter \@ref(data-hello), a randomized experiment can be used to assess whether one variable (the explanatory variable) causes changes in a second variable (the response variable).
+As you learned in [Chapter -@sec-data-hello], a randomized experiment can be used to assess whether one variable (the explanatory variable) causes changes in a second variable (the response variable).
 Every dataset has some variability in it, so to decide whether the variability in the data is due to (1) the causal mechanism (the randomized explanatory variable in the experiment) or instead (2) natural variability inherent to the data, we set up a sham randomized experiment as a comparison.
 That is, we assume that each observational unit would have gotten the exact same response value regardless of the treatment level.
 By reassigning the treatments many many times, we can compare the actual experiment to the sham experiment.
@@ -69,7 +69,7 @@ Using a few different case studies, let's look more carefully at this idea of a 
 terms_chp_11 <- c(terms_chp_11, "randomization test")
 ```
 
-## Sex discrimination case study {#caseStudySexDiscrimination}
+## Sex discrimination case study {#sec-caseStudySexDiscrimination}
 
 We consider a study investigating sex discrimination in the 1970s, which is set in the context of personnel decisions within a bank.
 The research question we hope to answer is, "Are individuals who identify as female discriminated against in promotion decisions made by their managers who identify as male?" [@Rosen:1974]
@@ -90,26 +90,26 @@ These files were randomly assigned to the bank managers.
 
 ::: {.guidedpractice data-latex=""}
 Is this an observational study or an experiment?
-How does the type of study impact what can be inferred from the results?[^11-foundations-randomization-2]
+How does the type of study impact what can be inferred from the results?[^2]
 :::
 
-[^11-foundations-randomization-2]: The study is an experiment, as subjects were randomly assigned a "male" file or a "female" file (remember, all the files were actually identical in content).
+[^2]: The study is an experiment, as subjects were randomly assigned a "male" file or a "female" file (remember, all the files were actually identical in content).
     Since this is an experiment, the results can be used to evaluate a causal relationship between the sex of a candidate and the promotion decision.
 
 ```{r}
 #| label: sex-discrimination-obs-p
-sex_discrimination_props <- sex_discrimination %>% 
-  rename(sex = sex) %>% 
-  count(sex, decision) %>%
-  group_by(sex) %>%
+sex_discrimination_props <- sex_discrimination |> 
+  rename(sex = sex) |> 
+  count(sex, decision) |>
+  group_by(sex) |>
   mutate(p = n / sum(n))
 
-p_male <- sex_discrimination_props %>%
-  filter(sex == "male", decision == "promoted") %>%
+p_male <- sex_discrimination_props |>
+  filter(sex == "male", decision == "promoted") |>
   pull(p)
 
-p_female <- sex_discrimination_props %>%
-  filter(sex == "female", decision == "promoted") %>%
+p_female <- sex_discrimination_props |>
+  filter(sex == "female", decision == "promoted") |>
   pull(p)
 
 p_diff <- p_male - p_female
@@ -120,34 +120,39 @@ perc_diff   <- label_percent(accuracy = 0.1)(p_diff)
 ```
 
 For each supervisor both the sex associated with the assigned file and the promotion decision were recorded.
-Using the results of the study summarized in Table \@ref(tab:sex-discrimination-obs), we would like to evaluate if individuals who identify as female are unfairly discriminated against in promotion decisions.
+Using the results of the study summarized in @tbl-sex-discrimination-obs, we would like to evaluate if individuals who identify as female are unfairly discriminated against in promotion decisions.
 In this study, a smaller proportion of female identifying applications were promoted than males (`r p_female` versus `r p_male`), but it is unclear whether the difference provides *convincing evidence* that individuals who identify as female are unfairly discriminated against.
 
 ```{r}
-#| label: sex-discrimination-obs
-sex_discrimination %>% 
-  count(decision, sex) %>% 
-  pivot_wider(names_from = decision, values_from = n) %>%
-  adorn_totals(where = c("col", "row")) %>% 
-  kbl(linesep = "", booktabs = TRUE, caption = "Summary results for the sex discrimination study.") %>%
+#| label: tbl-sex-discrimination-obs
+#| tbl-cap: |
+#|   Summary results for the sex discrimination study.
+
+sex_discrimination |> 
+  count(decision, sex) |> 
+  pivot_wider(names_from = decision, values_from = n) |>
+  adorn_totals(where = c("col", "row")) |> 
+  kbl(linesep = "", booktabs = TRUE) |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  add_header_above(c(" " = 1, "decision" = 2, " " = 1)) %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) |>
+  add_header_above(c(" " = 1, "decision" = 2, " " = 1)) |>
   column_spec(1:4, width = "7em")
 ```
 
-The data are visualized in Figure \@ref(fig:sex-rand-obs) as a set of cards.
+The data are visualized in @fig-sex-rand-obs as a set of cards.
 Note that each card denotes a personnel file (an observation from our dataset) and the colors indicate the decision: red for promoted and white for not promoted.
 Additionally, the observations are broken up into groups of male and female identifying groups.
 
 ```{r}
-#| label: sex-rand-obs
-#| out.width: 40%
-#| fig.cap: The sex discrimination study can be thought of as 48 red and white cards.
-#| fig.alt: 48 cards are laid out; 24 indicating male files, 24 indicated female files.  Of
-#|   the 24 male files 3 of the cards are colored white, and 21 of the cards are colored
-#|   red. Of the female files, 10 of the cards are colored white, and 14 of the cards
-#|   are colored red.
+#| label: fig-sex-rand-obs
+#| fig-cap: The sex discrimination study can be thought of as 48 red and white cards.
+#| fig-alt: |
+#|   48 cards are laid out; 24 indicating male files, 24 indicated female files.  
+#|   Of the 24 male files 3 of the cards are colored white, and 21 of the cards 
+#|   are colored red. Of the female files, 10 of the cards are colored white, 
+#|   and 14 of the cards are colored red.
+#| out-width: 40%
+
 knitr::include_graphics("images/sex-rand-01-obs.png")
 ```
 
@@ -163,7 +168,7 @@ Since we wouldn't expect the sample proportions to be *exactly* equal, even if t
 :::
 
 The previous example is a reminder that the observed outcomes in the sample may not perfectly reflect the true relationships between variables in the underlying population.
-Table \@ref(tab:sex-discrimination-obs) shows there were 7 fewer promotions for female identifying personnel than for the male personnel, a difference in promotion rates of `r perc_diff` $\left( \frac{21}{24} - \frac{14}{24} = 0.292 \right).$ This observed difference is what we call a **point estimate**\index{point estimate} of the true difference.
+@tbl-sex-discrimination-obs shows there were 7 fewer promotions for female identifying personnel than for the male personnel, a difference in promotion rates of `r perc_diff` $\left( \frac{21}{24} - \frac{14}{24} = 0.292 \right).$ This observed difference is what we call a **point estimate**\index{point estimate} of the true difference.
 The point estimate of the difference in promotion rate is large, but the sample size for the study is small, making it unclear if this observed difference represents discrimination or whether it is simply due to chance when there is no discrimination occurring.
 Chance can be thought of as the claim due to natural variability; discrimination can be thought of as the claim the researchers set out to demonstrate.
 We label these two competing claims, $H_0$ and $H_A:$
@@ -217,12 +222,12 @@ If data and the null claim seem to be at odds with one another, and the data see
 
 ### Variability of the statistic
 
-Table \@ref(tab:sex-discrimination-obs) shows that 35 bank supervisors recommended promotion and 13 did not.
+@tbl-sex-discrimination-obs shows that 35 bank supervisors recommended promotion and 13 did not.
 Now, suppose the bankers' decisions were independent of the sex of the candidate.
 Then, if we conducted the experiment again with a different random assignment of sex to the files, differences in promotion rates would be based only on random fluctuation in promotion decisions.
-We can actually perform this **randomization**, which simulates what would have happened if the bankers' decisions had been independent of `sex` but we had distributed the file sexes differently.[^11-foundations-randomization-3]
+We can actually perform this **randomization**, which simulates what would have happened if the bankers' decisions had been independent of `sex` but we had distributed the file sexes differently.[^3]
 
-[^11-foundations-randomization-3]: The test procedure we employ in this section is sometimes referred to as a **randomization test**.
+[^3]: The test procedure we employ in this section is sometimes referred to as a **randomization test**.
     If the explanatory variable had not been randomly assigned, as in an observational study, the procedure would be referred to as a **permutation test**.
     Permutation tests are used for observational studies, where the explanatory variable was not randomly assigned.\index{permutation test}.
 
@@ -235,15 +240,18 @@ In the **simulation**\index{simulation}, we thoroughly shuffle the 48 personnel 
 Note that by keeping 35 promoted and 13 not promoted, we are assuming that 35 of the bank managers would have promoted the individual whose content is contained in the file **independent** of the sex indicated on their file.
 We will deal 24 files into the first stack, which will represent the 24 "female" files.
 The second stack will also have 24 files, and it will represent the 24 "male" files.
-Figure \@ref(fig:sex-rand-shuffle-1) highlights both the shuffle and the reallocation to the sham sex groups.
+@fig-sex-rand-shuffle-1 highlights both the shuffle and the reallocation to the sham sex groups.
 
 ```{r}
-#| label: sex-rand-shuffle-1
-#| out.width: 80%
-#| fig.cap: The sex discrimination data is shuffled and reallocated to new groups of
+#| label: fig-sex-rand-shuffle-1
+#| fig-cap: |
+#|   The sex discrimination data is shuffled and reallocated to new groups of
 #|   male and female files.
-#| fig.alt: The 48 red and white cards which denote the original data are shuffled and
+#| fig-alt: |
+#|   The 48 red and white cards which denote the original data are shuffled and
 #|   reassigned, 24 to each group indicating 24 male files and 24 female files.
+#| out.width: 80%
+
 knitr::include_graphics("images/sex-rand-02-shuffle-1.png")
 ```
 
@@ -255,40 +263,44 @@ terms_chp_11 <- c(terms_chp_11, "simulation")
 ```
 
 Since the randomization of files in this simulation is independent of the promotion decisions, any difference in promotion rates is due to chance.
-Table \@ref(tab:sex-discrimination-rand-1) show the results of one such simulation.
+@tbl-sex-discrimination-rand-1 show the results of one such simulation.
 
 ```{r}
-#| label: sex-discrimination-rand-1
+#| label: tbl-sex-discrimination-rand-1
+#| tbl-cap: |
+#|   Simulation results, where the difference in promotion rates between male 
+#|   and female is purely due to random chance.
+
 sex_discrimination_rand_1 <- tibble(
   sex   = c(rep("male", 24), rep("female", 24)),
   decision = c(rep("promoted", 18), rep("not promoted", 6),
                rep("promoted", 17), rep("not promoted", 7))
-) %>%
+) |>
   mutate(
     sex   = fct_relevel(sex, "male", "female"),
     decision = fct_relevel(decision, "promoted", "not promoted")
   )
   
-sex_discrimination_rand_1 %>% 
-  count(decision, sex) %>% 
-  pivot_wider(names_from = decision, values_from = n) %>%
-  adorn_totals(where = c("col", "row")) %>% 
-  kbl(linesep = "", booktabs = TRUE, caption = "Simulation results, where the difference in promotion rates between male and female is purely due to random chance.") %>%
+sex_discrimination_rand_1 |> 
+  count(decision, sex) |> 
+  pivot_wider(names_from = decision, values_from = n) |>
+  adorn_totals(where = c("col", "row")) |> 
+  kbl(linesep = "", booktabs = TRUE) |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  add_header_above(c(" " = 1, "decision" = 2, " " = 1)) %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) |>
+  add_header_above(c(" " = 1, "decision" = 2, " " = 1)) |>
   column_spec(1:4, width = "7em")
 ```
 
 ::: {.guidedpractice data-latex=""}
-What is the difference in promotion rates between the two simulated groups in Table \@ref(tab:sex-discrimination-rand-1) ?
-How does this compare to the observed difference 29.2% from the actual study?[^11-foundations-randomization-4]
+What is the difference in promotion rates between the two simulated groups in @tbl-sex-discrimination-rand-1 ?
+How does this compare to the observed difference 29.2% from the actual study?[^4]
 :::
 
-[^11-foundations-randomization-4]: $18/24 - 17/24=0.042$ or about 4.2% in favor of the male personnel.
+[^4]: $18/24 - 17/24=0.042$ or about 4.2% in favor of the male personnel.
     This difference due to chance is much smaller than the difference observed in the actual groups.
 
-Figure \@ref(fig:sex-rand-shuffle-1-sort) shows that the difference in promotion rates is much larger in the original data than it is in the simulated groups (0.292 \> 0.042).
+@fig-sex-rand-shuffle-1-sort shows that the difference in promotion rates is much larger in the original data than it is in the simulated groups (0.292 \> 0.042).
 The quantity of interest throughout this case study has been the difference in promotion rates.
 We call the summary value the **statistic** of interest (or often the **test statistic**).
 When we encounter different data structures, the statistic is likely to change (e.g., we might calculate an average instead of a proportion), but we will always want to understand how the statistic varies from sample to sample.
@@ -299,18 +311,21 @@ terms_chp_11 <- c(terms_chp_11, "statistic", "test statistic")
 ```
 
 ```{r}
-#| label: sex-rand-shuffle-1-sort
-#| out.width: 100%
-#| fig.cap: We summarize the randomized data to produce one estimate of the difference
+#| label: fig-sex-rand-shuffle-1-sort
+#| out-width: 100%
+#| fig-cap: |
+#|   We summarize the randomized data to produce one estimate of the difference
 #|   in proportions given no sex discrimination. Note that the sort step is only used
 #|   to make it easier to visually calculate the simulated sample proportions.
-#| fig.alt: The 48 red and white cards are show in three panels.  The first panel represents
+#| fig-alt: |
+#|   The 48 red and white cards are show in three panels.  The first panel represents
 #|   the original data and original allocation of the male and female files (in the original
 #|   data there are 3 white cards in the male group and 10 white cards in the female
 #|   group).  The second panel represents the shuffled red and white cards that are randomly
 #|   assigned as male and female files.  The third panel has the cards sorted according
 #|   to the random assignment of female or male.  In the third panel there are 6 white
 #|   cards in the male group and 7 white cards in the female group.
+
 knitr::include_graphics("images/sex-rand-03-shuffle-1-sort.png")
 ```
 
@@ -321,19 +336,25 @@ While in this first simulation, we physically dealt out files, it is much more e
 Repeating the simulation on a computer, we get another difference due to chance under the same assumption: -0.042.
 And another: 0.208.
 And so on until we repeat the simulation enough times that we have a good idea of the shape of the *distribution of differences* under the null hypothesis.
-Figure \@ref(fig:sex-rand-dot-plot) shows a plot of the differences found from 100 simulations, where each dot represents a simulated difference between the proportions of male and female files recommended for promotion.
+@fig-sex-rand-dot-plot shows a plot of the differences found from 100 simulations, where each dot represents a simulated difference between the proportions of male and female files recommended for promotion.
 
 ```{r}
-#| label: sex-rand-dot-plot
-#| fig.cap: (ref:sex-rand-dot-plot-cap)
-#| out.width: 100%
+#| label: fig-sex-rand-dot-plot
+#| fig-cap: |
+#|    A stacked dot plot of differences from 100 simulations produced under 
+#|    the null hypothesis, $H_0,$ where the simulated sex and decision are 
+#|    independent. Two of the 100 simulations had a difference of at least 
+#|    29.2%, the difference observed in the study, and are shown as solid 
+#|    blue dots.
+#| out-width: 100%
+
 set.seed(37)
-sex_discrimination %>%
-  specify(decision ~ sex, success = "promoted") %>%
-  hypothesize(null = "independence") %>%
-  generate(reps = 100, type = "permute") %>%
-  calculate(stat = "diff in props", order = c("male", "female")) %>%
-  mutate(stat = round(stat, 3)) %>%
+sex_discrimination |>
+  specify(decision ~ sex, success = "promoted") |>
+  hypothesize(null = "independence") |>
+  generate(reps = 100, type = "permute") |>
+  calculate(stat = "diff in props", order = c("male", "female")) |>
+  mutate(stat = round(stat, 3)) |>
   ggplot(aes(x = stat)) +
   geom_dotplot(binwidth = 0.01) +
   gghighlight(stat >= 0.292) +
@@ -347,19 +368,17 @@ sex_discrimination %>%
   )
 ```
 
-(ref:sex-rand-dot-plot-cap) A stacked dot plot of differences from 100 simulations produced under the null hypothesis, $H_0,$ where the simulated sex and decision are independent. Two of the 100 simulations had a difference of at least 29.2%, the difference observed in the study, and are shown as solid blue dots.
-
 Note that the distribution of these simulated differences in proportions is centered around 0.
 Under the null hypothesis our simulations made no distinction between male and female personnel files.
 Thus, a center of 0 makes sense: we should expect differences from chance alone to fall around zero with some random fluctuation for each simulation.
 
 ::: {.workedexample data-latex=""}
-How often would you observe a difference of at least `r perc_diff` (`r p_diff`) according to Figure \@ref(fig:sex-rand-dot-plot)?
+How often would you observe a difference of at least `r perc_diff` (`r p_diff`) according to @fig-sex-rand-dot-plot?
 Often, sometimes, rarely, or never?
 
 ------------------------------------------------------------------------
 
-It appears that a difference of at least `r perc_diff` under the null hypothesis would only happen about 2% of the time according to Figure \@ref(fig:sex-rand-dot-plot).
+It appears that a difference of at least `r perc_diff` under the null hypothesis would only happen about 2% of the time according to @fig-sex-rand-dot-plot.
 Such a low probability indicates that observing such a large difference from chance alone is rare.
 :::
 
@@ -369,11 +388,11 @@ The difference of 29.2% is a rare event if there really is no impact from listin
 
 -   If $H_A,$ the **Alternative hypothesis** is true: Sex has an effect on promotion decision, and what we observed was actually due to equally qualified female candidates being discriminated against in promotion decisions, which explains the large difference of 29.2%.
 
-When we conduct formal studies, we reject a null position (the idea that the data are a result of chance only) if the data strongly conflict with that null position.[^11-foundations-randomization-5]
+When we conduct formal studies, we reject a null position (the idea that the data are a result of chance only) if the data strongly conflict with that null position.[^5]
 In our analysis, we determined that there was only a $\approx$ 2% probability of obtaining a sample where $\geq$ 29.2% more male candidates than female candidates get promoted under the null hypothesis, so we conclude that the data provide strong evidence of sex discrimination against female candidates by the male supervisors.
 In this case, we reject the null hypothesis in favor of the alternative.
 
-[^11-foundations-randomization-5]: This reasoning does not generally extend to anecdotal observations.
+[^5]: This reasoning does not generally extend to anecdotal observations.
     Each of us observes incredibly rare events every day, events we could not possibly hope to predict.
     However, in the non-rigorous setting of anecdotal evidence, almost anything may appear to be a rare event, so the idea of looking for rare events in day-to-day activities is treacherous.
     For example, we might look at the lottery: there was only a 1 in 176 million chance that the Mega Millions numbers for the largest jackpot in history (October 23, 2018) would be (5, 28, 62, 65, 70) with a Mega ball of (5), but nonetheless those numbers came up!
@@ -392,7 +411,7 @@ Before getting into the nuances of hypothesis testing, let's work through anothe
 terms_chp_11 <- c(terms_chp_11, "statistical inference")
 ```
 
-## Opportunity cost case study {#caseStudyOpportunityCost}
+## Opportunity cost case study {#sec-caseStudyOpportunityCost}
 
 How rational and consistent is the behavior of the typical American college student?
 In this section, we'll explore whether college student consumers always consider the following: money not spent now can be spent later.
@@ -411,9 +430,9 @@ In this section, we'll explore an experiment conducted by researchers that inves
 
 One-hundred and fifty students were recruited for the study, and each was given the following statement:
 
-> *Imagine that you have been saving some extra money on the side to make some purchases, and on your most recent visit to the video store you come across a special sale on a new video. This video is one with your favorite actor or actress, and your favorite type of movie (such as a comedy, drama, thriller, etc.). This particular video that you are considering is one you have been thinking about buying for a long time. It is available for a special sale price of \$14.99. What would you do in this situation? Please circle one of the options below.*[^11-foundations-randomization-6]
+> *Imagine that you have been saving some extra money on the side to make some purchases, and on your most recent visit to the video store you come across a special sale on a new video. This video is one with your favorite actor or actress, and your favorite type of movie (such as a comedy, drama, thriller, etc.). This particular video that you are considering is one you have been thinking about buying for a long time. It is available for a special sale price of \$14.99. What would you do in this situation? Please circle one of the options below.*[^6]
 
-[^11-foundations-randomization-6]: This context might feel strange if physical video stores predate you.
+[^6]: This context might feel strange if physical video stores predate you.
     If you're curious about what those were like, look up "Blockbuster".
 
 Half of the 150 students were randomized into a control group and were given the following two options:
@@ -429,33 +448,36 @@ The remaining 75 students were placed in the treatment group, and they saw a sli
 > (B) Not buy this entertaining video. Keep the \$14.99 for other purchases.
 
 Would the extra statement reminding students of an obvious fact impact the purchasing decision?
-Table \@ref(tab:opportunity-cost-obs) summarizes the study results.
+@tbl-opportunity-cost-obs summarizes the study results.
 
 ::: {.data data-latex=""}
 The [`opportunity_cost`](http://openintrostat.github.io/openintro/reference/opportunity_cost.html) data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
 :::
 
 ```{r}
-#| label: opportunity-cost-obs
-opportunity_cost %>% 
-  count(group, decision) %>% 
-  pivot_wider(names_from = decision, values_from = n) %>%
-  adorn_totals(where = c("col", "row")) %>% 
-  kbl(linesep = "", booktabs = TRUE, caption = "Summary results of the opportunity cost study.") %>%
+#| label: tbl-opportunity-cost-obs
+#| tbl-cap: Summary results of the opportunity cost study.
+
+opportunity_cost |> 
+  count(group, decision) |> 
+  pivot_wider(names_from = decision, values_from = n) |>
+  adorn_totals(where = c("col", "row")) |> 
+  kbl(linesep = "", booktabs = TRUE) |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  add_header_above(c(" " = 1, "decision" = 2, " " = 1)) %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) |>
+  add_header_above(c(" " = 1, "decision" = 2, " " = 1)) |>
   column_spec(1:4, width = "7em")
 ```
 
 It might be a little easier to review the results using a visualization.
-Figure \@ref(fig:opportunity-cost-obs-bar) shows that a higher proportion of students in the treatment group chose not to buy the video compared to those in the control group.
+@fig-opportunity-cost-obs-bar shows that a higher proportion of students in the treatment group chose not to buy the video compared to those in the control group.
 
 ```{r}
-#| label: opportunity-cost-obs-bar
-#| fig.cap: Stacked bar plot of results of the opportunity cost study.
-#| out.width: 100%
+#| label: fig-opportunity-cost-obs-bar
+#| fig-cap: Stacked bar plot of results of the opportunity cost study.
+#| out-width: 100%
 #| fig-asp: 0.3
+
 ggplot(opportunity_cost, aes(y = fct_rev(group), fill = fct_rev(decision))) +
   geom_bar(position = "fill") +
   scale_fill_openintro("two") +
@@ -467,29 +489,34 @@ ggplot(opportunity_cost, aes(y = fct_rev(group), fill = fct_rev(decision))) +
     )
 ```
 
-Another useful way to review the results from Table \@ref(tab:opportunity-cost-obs) is using row proportions, specifically considering the proportion of participants in each group who said they would buy or not buy the video.
-These summaries are given in Table \@ref(tab:opportunity-cost-obs-row-prop).
+Another useful way to review the results from @tbl-opportunity-cost-obs is using row proportions, specifically considering the proportion of participants in each group who said they would buy or not buy the video.
+These summaries are given in @tbl-opportunity-cost-obs-row-prop.
 
 ```{r}
-#| label: opportunity-cost-obs-row-prop
-opportunity_cost %>% 
-  count(group, decision) %>% 
-  pivot_wider(names_from = decision, values_from = n) %>%
-  adorn_percentages(denominator = "row") %>%
-  adorn_totals(where = "col") %>%
-  kbl(linesep = "", booktabs = TRUE, caption = "The opportunity cost data are summarized using row proportions. Row proportions are particularly useful here since we can view the proportion of *buy* and *not buy* decisions in each group.") %>%
+#| label: tbl-opportunity-cost-obs-row-prop
+#| tbl-cap: |
+#|   The opportunity cost data are summarized using row proportions. Row 
+#|   proportions are particularly useful here since we can view the proportion 
+#|   of *buy* and *not buy* decisions in each group.
+
+opportunity_cost |> 
+  count(group, decision) |> 
+  pivot_wider(names_from = decision, values_from = n) |>
+  adorn_percentages(denominator = "row") |>
+  adorn_totals(where = "col") |>
+  kbl(linesep = "", booktabs = TRUE) |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  add_header_above(c(" " = 1, "decision" = 2, " " = 1))  %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) |>
+  add_header_above(c(" " = 1, "decision" = 2, " " = 1))  |>
   column_spec(1:4, width = "7em")
 ```
 
-We will define a **success**\index{success} in this study as a student who chooses not to buy the video.[^11-foundations-randomization-7]
+We will define a **success**\index{success} in this study as a student who chooses not to buy the video.[^7]
 Then, the value of interest is the change in video purchase rates that results by reminding students that not spending money now means they can spend the money later.
 
-[^11-foundations-randomization-7]: Success is often defined in a study as the outcome of interest, and a "success" may or may not actually be a positive outcome.
+[^7]: Success is often defined in a study as the outcome of interest, and a "success" may or may not actually be a positive outcome.
     For example, researchers working on a study on COVID prevalence might define a "success" in the statistical sense as a patient who has COVID-19.
-    A more complete discussion of the term **success** will be given in Chapter \@ref(inference-one-prop).
+    A more complete discussion of the term **success** will be given in [Chapter -@sec-inference-one-prop].
 
 ```{r}
 #| include: false
@@ -506,7 +533,7 @@ Is this 20% difference between the two groups so prominent that it is unlikely t
 ### Variability of the statistic
 
 The primary goal in this data analysis is to understand what sort of differences we might see if the null hypothesis were true, i.e., the treatment had no effect on students.
-Because this is an experiment, we'll use the same procedure we applied in Section \@ref(caseStudySexDiscrimination): randomization.
+Because this is an experiment, we'll use the same procedure we applied in @sec-caseStudySexDiscrimination: randomization.
 
 Let's think about the data in the context of the hypotheses.
 If the null hypothesis $(H_0)$ was true and the treatment had no impact on student decisions, then the observed difference between the two groups of 20% could be attributed entirely to random chance.
@@ -533,30 +560,35 @@ Since the simulated groups are of equal size, we would expect $53 / 2 = 26.5,$ i
 However, due to random chance, we might also expect to sometimes observe a number a little above or below 26 and 27.
 :::
 
-The results of a single randomization is shown in Table \@ref(tab:opportunity-cost-obs-simulated).
+The results of a single randomization is shown in @tbl-opportunity-cost-obs-simulated.
 
 ```{r}
-#| label: opportunity-cost-obs-simulated
+#| label: tbl-opportunity-cost-obs-simulated
+#| tbl-cap: |
+#|   Summary of student choices against their simulated groups. The group 
+#|   assignment had no connection to the student decisions, so any difference 
+#|   between the two groups is due to chance.
+
 opportunity_cost_rand_1 <- tibble(
   group = c(rep("control", 75), rep("treatment", 75)),
   decision = c(
     rep("buy video", 46), rep("not buy video", 29),
     rep("buy video", 51), rep("not buy video", 24)
   )
-) %>%
+) |>
   mutate(
     group = as.factor(group),
     decision = as.factor(decision)
   )
 
-opportunity_cost_rand_1 %>% 
-  count(group, decision) %>% 
-  pivot_wider(names_from = decision, values_from = n) %>%
-  adorn_totals(where = c("col", "row")) %>% 
-  kbl(linesep = "", booktabs = TRUE, caption = "Summary of student choices against their simulated groups. The group assignment had no connection to the student decisions, so any difference between the two groups is due to chance.") %>%
+opportunity_cost_rand_1 |> 
+  count(group, decision) |> 
+  pivot_wider(names_from = decision, values_from = n) |>
+  adorn_totals(where = c("col", "row")) |> 
+  kbl(linesep = "", booktabs = TRUE) |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  add_header_above(c(" " = 1, "decision" = 2, " " = 1)) %>%
+                latex_options = c("striped", "hold_position"), full_width = FALSE) |>
+  add_header_above(c(" " = 1, "decision" = 2, " " = 1)) |>
   column_spec(1:4, width = "7em")
 ```
 
@@ -569,11 +601,11 @@ Just one simulation will not be enough to get a sense of what sorts of differenc
 ```{r}
 #| label: opportunity-cost-rand-dist
 set.seed(25)
-opportunity_cost_rand_dist <- opportunity_cost %>%
-  specify(decision ~ group, success = "not buy video") %>%
-  hypothesize(null = "independence") %>%
-  generate(reps = 1000, type = "permute") %>%
-  calculate(stat = "diff in props", order = c("treatment", "control")) %>%
+opportunity_cost_rand_dist <- opportunity_cost |>
+  specify(decision ~ group, success = "not buy video") |>
+  hypothesize(null = "independence") |>
+  generate(reps = 1000, type = "permute") |>
+  calculate(stat = "diff in props", order = c("treatment", "control")) |>
   mutate(stat = round(stat, 3))
 ```
 
@@ -585,11 +617,15 @@ And again: `r opportunity_cost_rand_dist$stat[3]`.
 
 We'll do this 1,000 times.
 
-The results are summarized in a dot plot in Figure \@ref(fig:opportunity-cost-rand-dot-plot), where each point represents the difference from one randomization.
+The results are summarized in a dot plot in @fig-opportunity-cost-rand-dot-plot, where each point represents the difference from one randomization.
 
 ```{r}
-#| label: opportunity-cost-rand-dot-plot
-#| fig.cap: (ref:opportunity-cost-rand-dot-plot-cap)
+#| label: fig-opportunity-cost-rand-dot-plot
+#| fig-cap: |
+#|   A stacked dot plot of 1,000 simulated (null) differences produced under 
+#|   the null hypothesis, $H_0.$ Six of the 1,000 simulations had a difference 
+#|   of at least 20%, which was the difference observed in the study.
+
 ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
   geom_dotplot(binwidth = 0.01, dotsize = 0.165) +
   gghighlight(stat >= 0.20) +
@@ -604,15 +640,15 @@ ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
   )
 ```
 
-(ref:opportunity-cost-rand-dot-plot-cap) A stacked dot plot of 1,000 simulated (null) differences produced under the null hypothesis, $H_0.$ Six of the 1,000 simulations had a difference of at least 20% , which was the difference observed in the study.
-
-Since there are so many points and it is difficult to discern one point from the other, it is more convenient to summarize the results in a histogram such as the one in Figure \@ref(fig:opportunity-cost-rand-hist), where the height of each histogram bar represents the number of simulations resulting in an outcome of that magnitude.
+Since there are so many points and it is difficult to discern one point from the other, it is more convenient to summarize the results in a histogram such as the one in @fig-opportunity-cost-rand-hist, where the height of each histogram bar represents the number of simulations resulting in an outcome of that magnitude.
 
 ```{r}
-#| label: opportunity-cost-rand-hist
-#| fig.cap: A histogram of 1,000 chance differences produced under the null hypothesis.
-#|   Histograms like this one are a convenient representation of data or results when
-#|   there are a large number of simulations.
+#| label: fig-opportunity-cost-rand-hist
+#| fig-cap: |
+#|   A histogram of 1,000 chance differences produced under the null hypothesis.
+#|   Histograms like this one are a convenient representation of data or results 
+#|   when there are a large number of simulations.
+
 ggplot(opportunity_cost_rand_dist, aes(x = stat)) +
   geom_histogram(binwidth = 0.04) +
   gghighlight(stat >= 0.20) +
@@ -674,11 +710,11 @@ They are simply not convinced of the alternative, that the person is guilty.
 This is also the case with hypothesis testing: *even if we fail to reject the null hypothesis, we do not accept the null hypothesis as truth*.
 
 Failing to find evidence in favor of the alternative hypothesis is not equivalent to finding evidence that the null hypothesis is true.
-We will see this idea in greater detail in Section \@ref(decerr).
+We will see this idea in greater detail in [Chapter -@sec-decerr].
 
 ### p-value and statistical discernibility
 
-In Section \@ref(caseStudySexDiscrimination) we encountered a study from the 1970's that explored whether there was strong evidence that female candidates were less likely to be promoted than male candidates.
+In @caseStudySexDiscrimination we encountered a study from the 1970's that explored whether there was strong evidence that female candidates were less likely to be promoted than male candidates.
 The research question -- are female candidates discriminated against in promotion decisions?
 -- was framed in the context of hypotheses:
 
@@ -708,7 +744,7 @@ terms_chp_11 <- c(terms_chp_11, "p-value", "test statistic")
 
 ::: {.workedexample data-latex=""}
 In the sex discrimination study, the difference in discrimination rates was our test statistic.
-What was the test statistic in the opportunity cost study covered in Section \@ref(caseStudyOpportunityCost)?
+What was the test statistic in the opportunity cost study covered in @sec-caseStudyOpportunityCost)?
 
 ------------------------------------------------------------------------
 
@@ -717,17 +753,17 @@ In each of these examples, the **point estimate** of the difference in proportio
 :::
 
 When the p-value is small, i.e., less than a previously set threshold, we say the results are **statistically discernible**\index{statistically significant}\index{statistically discernible}.
-This means the data provide such strong evidence against $H_0$ that we reject the null hypothesis in favor of the alternative hypothesis.[^11-foundations-randomization-8]
+This means the data provide such strong evidence against $H_0$ that we reject the null hypothesis in favor of the alternative hypothesis.[^8]
 The threshold is called the **discernibility level**\index{hypothesis testing!discernibility level}\index{significance level}\index{discernibility level} and often represented by $\alpha$ (the Greek letter *alpha*).
-[^11-foundations-randomization-9] The value of $\alpha$ represents how rare an event needs to be in order for the null hypothesis to be rejected
+[^9] The value of $\alpha$ represents how rare an event needs to be in order for the null hypothesis to be rejected
 . Historically, many fields have set $\alpha = 0.05,$ meaning that the results need to occur less than 5% of the time, if the null hypothesis is to be rejected
 . The value of $\alpha$ can vary depending on the the field or the application
 .
 
-[^11-foundations-randomization-8]: Many texts use the phrase "statistically significant" instead of "statistically discernible".
+[^8]: Many texts use the phrase "statistically significant" instead of "statistically discernible".
     We have chosen to use "discernible" to indicate that a precise statistical event has happened, as opposed to a notable effect which may or may not fit the statistical definition of discernible or significant.
 
-[^11-foundations-randomization-9]: Here, too, we have chosen "discernibility level" instead of "significance level" which you will see in some texts.
+[^9]: Here, too, we have chosen "discernibility level" instead of "significance level" which you will see in some texts.
 
 ```{r}
 #| include: false
@@ -747,7 +783,7 @@ We say that the data provide **statistically discernible**\index{hypothesis test
 :::
 
 ::: {.workedexample data-latex=""}
-In the opportunity cost study in Section \@ref(caseStudyOpportunityCost), we analyzed an experiment where study participants had a 20% drop in likelihood of continuing with a video purchase if they were reminded that the money, if not spent on the video, could be used for other purchases in the future.
+In the opportunity cost study in @sec-caseStudyOpportunityCost, we analyzed an experiment where study participants had a 20% drop in likelihood of continuing with a video purchase if they were reminded that the money, if not spent on the video, could be used for other purchases in the future.
 We determined that such a large difference would only occur 6-in-1,000 times if the reminder actually had no influence on student decision-making.
 What is the p-value in this study?
 Would you classify the result as "statistically discernible"?
@@ -770,7 +806,7 @@ We've made a video to help clarify *why 0.05*:
 <https://www.openintro.org/book/stat/why05/>
 
 Sometimes it's also a good idea to deviate from the standard.
-We'll discuss when to choose a threshold different than 0.05 in Section \@ref(decerr).
+We'll discuss when to choose a threshold different than 0.05 in [Chapter -@sec-decerr].
 :::
 
 \clearpage
@@ -779,7 +815,7 @@ We'll discuss when to choose a threshold different than 0.05 in Section \@ref(de
 
 ### Summary
 
-Figure \@ref(fig:fullrand) provides a visual summary of the randomization testing procedure.
+@fig-fullrand provides a visual summary of the randomization testing procedure.
 
 \index{randomization test}
 
@@ -789,18 +825,21 @@ terms_chp_11 <- c(terms_chp_11, "randomization test")
 ```
 
 ```{r}
-#| label: fullrand
-#| out.width: 100%
-#| fig.cap: An example of one simulation of the full randomization procedure from a hypothetical
+#| label: fig-fullrand
+#| out-width: 100%
+#| fig-cap: |
+#|   An example of one simulation of the full randomization procedure from a hypothetical
 #|   dataset as visualized in the first panel.  We repeat the steps hundreds or thousands
 #|   of times.
-#| fig.alt: 48 red and white cards are show in three panels.  The first panel represents
+#| fig-alt: |
+#|   48 red and white cards are show in three panels.  The first panel represents
 #|   original data and original allocation of Group 1 and Group 2 (in the original data
 #|   there are 7 white cards in Group 1 and 10 white cards in Group 2).  The second panel
 #|   represents the shuffled red and white cards that are randomly assigned as Group
 #|   1 and Group 2.  The third panel has the cards sorted according to the random assignment
 #|   of Group 1 and Group 2.  In the third panel there are 8 white cards in the Group
 #|   1 and 9 white cards in Group 2.
+
 knitr::include_graphics("images/fullrand.png")
 ```
 
@@ -812,17 +851,18 @@ We can summarize the randomization test procedure as follows:
 -   **Analyze the data.** Choose an analysis technique appropriate for the data and identify the p-value. So far, we have only seen one analysis technique: randomization. Throughout the rest of this textbook, we'll encounter several new methods suitable for many other contexts.
 -   **Form a conclusion.** Using the p-value from the analysis, determine whether the data provide evidence against the null hypothesis. Also, be sure to write the conclusion in plain language so casual readers can understand the results.
 
-Table \@ref(tab:chp11-summary) is another look at the randomization test summary.
+@tbl-chp11-summary is another look at the randomization test summary.
 
 ```{r}
-#| label: chp11-summary
-inference_method_summary_table %>%
-  filter(question != "What are the technical conditions?") %>%
-  select(question, randomization) %>%
-  kbl(linesep = "\\addlinespace", booktabs = TRUE, caption = "Summary of randomization as an inferential statistical method.", 
-      col.names = c("Question", "Answer")) %>%
+#| label: tbl-chp11-summary
+#| tbl-cap: Summary of randomization as an inferential statistical method.
+
+inference_method_summary_table |>
+  filter(question != "What are the technical conditions?") |>
+  select(question, randomization) |>
+  kbl(linesep = "\\addlinespace", booktabs = TRUE, col.names = c("Question", "Answer")) |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
+                latex_options = c("striped", "hold_position"), full_width = TRUE) |>
   column_spec(1, width = "15em")
 ```
 
