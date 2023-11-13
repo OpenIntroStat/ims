@@ -1,4 +1,4 @@
-# Inference for two-way tables {#inference-tables}
+# Inference for two-way tables {#sec-inference-tables}
 
 ```{r}
 #| include: false
@@ -6,10 +6,10 @@ source("_common.R")
 ```
 
 ::: {.chapterintro data-latex=""}
-In Section \@ref(inference-two-props) our focus was on the difference in proportions, a statistic calculated from finding the success proportions (from the binary response variable) measured across two groups (the binary explanatory variable).
+In [Chapter -@sec-inference-two-props] our focus was on the difference in proportions, a statistic calculated from finding the success proportions (from the binary response variable) measured across two groups (the binary explanatory variable).
 As we will see in the examples below, sometimes the explanatory or response variables have more than two possible options.
 In that setting, a difference across two groups is not sufficient, and the proportion of "success" is not well defined if there are 3 or 4 or more possible response levels.
-The primary way to summarize categorical data where the explanatory and response variables both have 2 or more levels is through a two-way table as in Table \@ref(tab:ipod-ask-data-summary).
+The primary way to summarize categorical data where the explanatory and response variables both have 2 or more levels is through a two-way table as in @tbl-ipod-ask-data-summary.
 
 Note that with two-way tables, there is not an obvious single parameter of interest.
 Instead, research questions usually focus on how the proportions of the response variable changes (or not) across the different levels of the explanatory variable.
@@ -36,12 +36,12 @@ The scripted buyers started with "Okay, I guess I'm supposed to go first. So you
 -   Negative Assumption: What problems does it have?
 
 The question is the treatment given to the sellers, and the response is whether the question prompted them to disclose the freezing issue with the iPod.
-The results are shown in Table \@ref(tab:ipod-ask-data-summary), and the data suggest that asking the, *What problems does it have?*, was the most effective at getting the seller to disclose the past freezing issues.
+The results are shown in @tbl-ipod-ask-data-summary, and the data suggest that asking the, *What problems does it have?*, was the most effective at getting the seller to disclose the past freezing issues.
 However, you should also be asking yourself: could we see these results due to chance alone if there really is no difference in the question asked, or is this in fact evidence that some questions are more effective for getting at the truth?
 
 ```{r}
 #| label: ask-data-prep
-ask <- ask %>%
+ask <- ask |>
   mutate(
     response = if_else(response == "disclose", "Disclose problem", "Hide problem"),
     question_class = case_when(
@@ -54,17 +54,23 @@ ask <- ask %>%
 ```
 
 ```{r}
-#| label: ipod-ask-data-summary
-ask %>%
-  count(question_class, response) %>%
-  pivot_wider(names_from = response, values_from = n) %>%
-  adorn_totals(where = c("row", "col")) %>%
-  kbl(linesep = "", booktabs = TRUE, 
-      caption = "Summary of the iPod study, where a question was posed to the study participant who acted.",
-      col.names = c("Question", "Disclose problem", "Hide problem", "Total")
-    ) %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE)
+#| label: tbl-ipod-ask-data-summary
+#| tbl-cap: |
+#|   Summary of the iPod study, where a question was posed to the study
+#|   participant who acted.
+
+ask |>
+  count(question_class, response) |>
+  pivot_wider(names_from = response, values_from = n) |>
+  adorn_totals(where = c("row", "col")) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("Question", "Disclose problem", "Hide problem", "Total")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  )
 ```
 
 ::: {.data data-latex=""}
@@ -100,52 +106,56 @@ If the questions were actually equally effective, meaning about 27.85% of respon
 [^18-inference-tables-2]: We would expect $(1 - 0.2785) \times 73 = 52.67.$ It is okay that this result, like the result from Example \ref{iPodExComputeExpAA}, is a fraction.
 
 We can compute the expected number of sellers who we would expect to disclose or hide the freezing issue for all groups, if the questions had no impact on what they disclosed, using the same strategies employed in the previous Example and Guided Practice to compute expected counts.
-These expected counts were used to construct Table \@ref(tab:ipod-ask-data-summary-expected), which is the same as Table \@ref(tab:ipod-ask-data-summary), except now the expected counts have been added in parentheses.
+These expected counts were used to construct @tbl-ipod-ask-data-summary-expected, which is the same as @tbl-ipod-ask-data-summary, except now the expected counts have been added in parentheses.
 
 ```{r}
-#| label: ipod-ask-data-summary-expected
+#| label: tbl-ipod-ask-data-summary-expected
+#| tbl-cap: The observed counts and the expected counts for the iPod experiment.
+
 ask_chi_sq <- chisq.test(ask$response, ask$question_class)
 
-ask_chi_sq_obs <- ask_chi_sq$observed %>% 
-  as_tibble() %>% 
+ask_chi_sq_obs <- ask_chi_sq$observed |>
+  as_tibble() |>
   mutate(type = "observed")
 
-ask_chi_sq_exp <- ask_chi_sq$expected %>%
-  as.table() %>%
-  as_tibble() %>% 
+ask_chi_sq_exp <- ask_chi_sq$expected |>
+  as.table() |>
+  as_tibble() |>
   mutate(type = "expected")
 
-ask_chi_sq_tabs <- bind_rows(ask_chi_sq_obs, ask_chi_sq_exp) %>%
+ask_chi_sq_tabs <- bind_rows(ask_chi_sq_obs, ask_chi_sq_exp) |>
   rename_with(.fn = str_remove, .cols = everything(), "ask\\$")
 
-ask_chi_sq_tabs %>%
-  mutate(response_type = paste0(response, "-", type)) %>%
-  select(-response, -type) %>%
-  pivot_wider(names_from = response_type, values_from = n) %>%
+ask_chi_sq_tabs |>
+  mutate(response_type = paste0(response, "-", type)) |>
+  select(-response, -type) |>
+  pivot_wider(names_from = response_type, values_from = n) |>
   relocate(
     question_class,
     contains("Disclose"),
     contains("Hide")
-  ) %>%
-  mutate(across(contains("expected"), ~paste0("(", round(.x, 2), ")"))) %>%
-  rowwise() %>%
-  mutate(Total = sum(c_across(contains("observed")))) %>%
-  adorn_totals(where = "row") %>%
+  ) |>
+  mutate(across(contains("expected"), ~ paste0("(", round(.x, 2), ")"))) |>
+  rowwise() |>
+  mutate(Total = sum(c_across(contains("observed")))) |>
+  adorn_totals(where = "row") |>
   mutate(
     `Disclose problem-expected` = ifelse(`Disclose problem-expected` == "-", NA, `Disclose problem-expected`),
     `Hide problem-expected` = ifelse(`Hide problem-expected` == "-", NA, `Hide problem-expected`)
-  ) %>%
- kbl(linesep = "", booktabs = TRUE, 
-   caption = "The observed counts and the expected counts for the iPod experiment.", 
-   col.names = c("", "", "", "", "", "")
-   ) %>%
-  column_spec(1, width = "15em") %>%
-  column_spec(3, color = IMSCOL["blue", "full"], italic = TRUE) %>%
-  column_spec(5, color = IMSCOL["blue", "full"], italic = TRUE) %>%
-  column_spec(6, width = "5em") %>%
-  add_header_above(c(" ", "Disclose problem" =2, "Hide problem" = 2, "Total")) %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE)
+  ) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("", "", "", "", "", "")
+  ) |>
+  column_spec(1, width = "15em") |>
+  column_spec(3, color = IMSCOL["blue", "full"], italic = TRUE) |>
+  column_spec(5, color = IMSCOL["blue", "full"], italic = TRUE) |>
+  column_spec(6, width = "5em") |>
+  add_header_above(c(" ", "Disclose problem" = 2, "Hide problem" = 2, "Total")) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  )
 ```
 
 The examples and exercises above provided some help in computing expected counts.
@@ -222,26 +232,31 @@ The same idea of shuffling the data under the null hypothesis can be used in the
 ### Variability of the statistic
 
 Assuming that the individuals would disclose or hide the problems **regardless** of the question they are given (i.e., that the null hypothesis is true), we can randomize the data by reassigning the 61 disclosed problems and 158 hidden problems to the three groups at random.
-Table \@ref(tab:ipod-ask-data-summary-rand) shows a possible randomization of the observed data under the condition that the null hypothesis is true (in contrast to the original observed data in Table \@ref(tab:ipod-ask-data-summary)).
+@tbl-ipod-ask-data-summary-rand shows a possible randomization of the observed data under the condition that the null hypothesis is true (in contrast to the original observed data in @tbl-ipod-ask-data-summary).
 
 ```{r}
-#| label: ipod-ask-data-summary-rand
+#| label: tbl-ipod-ask-data-summary-rand
+#| tbl-cap: |
+#|   Summary of the iPod study, where a question was posed to the study 
+#|   participant who acted.
 set.seed(4747)
 
 # randomize
-ask_rand <- ask %>%
+ask_rand <- ask |>
   mutate(question_class = sample(question_class))
 
-ask_rand %>%
-  count(question_class, response) %>%
-  pivot_wider(names_from = response, values_from = n) %>%
-  adorn_totals(where = c("row", "col")) %>%
-  kbl(linesep = "", booktabs = TRUE, 
-      caption = "Summary of the iPod study, where a question was posed to the study participant who acted.",
-      col.names = c("Question", "Disclose problem", "Hide problem", "Total")
-    ) %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE)
+ask_rand |>
+  count(question_class, response) |>
+  pivot_wider(names_from = response, values_from = n) |>
+  adorn_totals(where = c("row", "col")) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("Question", "Disclose problem", "Hide problem", "Total")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  )
 ```
 
 As before, the randomized data is used to find a single value for the test statistic (here a chi-squared statistic).
@@ -277,7 +292,7 @@ terms_chp_18 <- c(terms_chp_18, "chi-squared statistic")
 
 As before, one randomization will not be sufficient for understanding if the observed data are particularly different from the expected chi-squared statistics when $H_0$ is true.
 To investigate whether 40.13 is large enough to indicate the observed and expected counts are substantially different, we need to understand the variability in the values of the chi-squared statistic we would expect to see if the null hypothesis was true.
-Figure \@ref(fig:ipodRandDotPlot) plots 1,000 chi-squared statistics generated under the null hypothesis.
+@fig-ipodRandDotPlot plots 1,000 chi-squared statistics generated under the null hypothesis.
 We can see that the observed value is so far from the null statistics that the simulated p-value is zero.
 That is, the probability of seeing the observed statistic when the null hypothesis is true is virtually zero.
 In this case we can conclude that the decision of whether to disclose the iPod's problem is changed by the question asked.
@@ -286,23 +301,29 @@ Note that with a chi-squared test, we only know that the two variables (`questio
 We are not able to claim which type of question causes which type of response.
 
 ```{r}
-#| label: ipodRandDotPlot
-#| fig.cap: A histogram of chi-squared statisics from 1,000 simulations produced under
+#| label: fig-ipodRandDotPlot
+#| fig-cap: |
+#|   A histogram of chi-squared statisics from 1,000 simulations produced under
 #|   the null hypothesis, $H_0,$ where the question is independent of the response. The
 #|   observed statistic of 40.13 is marked by the red line. None of the 1,000 simulations
 #|   had a chi-squared value of at least 40.13. In fact, none of the simulated chi-squared
 #|   statistics came anywhere close to the observed statistic!
+#| fig-alt: |
+#|   A histogram of chi-squared statisics from 1,000 simulations produced under
+#|   the null hypothesis, $H_0,$ where the question is independent of the response. The
+#|   observed statistic of 40.13 is marked by the red line. None of the 1,000 simulations
+#|   had a chi-squared value of at least 40.13.
 set.seed(4747)
 
-ask_rand_obs <- ask %>%
-  specify(response ~ question_class) %>%
-  calculate(stat = "Chisq") %>% 
+ask_rand_obs <- ask |>
+  specify(response ~ question_class) |>
+  calculate(stat = "Chisq") |>
   pull()
 
-ask_rand_dist <- ask %>%
-  specify(response ~ question_class) %>%
-  hypothesise(null = "independence") %>%
-  generate(reps = 1000, type = "permute") %>%
+ask_rand_dist <- ask |>
+  specify(response ~ question_class) |>
+  hypothesise(null = "independence") |>
+  generate(reps = 1000, type = "permute") |>
   calculate(stat = "Chisq")
 
 ggplot(ask_rand_dist, aes(x = stat)) +
@@ -315,19 +336,24 @@ ggplot(ask_rand_dist, aes(x = stat)) +
   )
 ```
 
-## Mathematical model for test of independence {#mathchisq}
+## Mathematical model for test of independence {#sec-mathchisq}
 
 ### The chi-squared test of independence
 
-Previously, in Section \@ref(math-2prop), we applied the Central Limit Theorem to the sampling variability of $\hat{p}_1 - \hat{p}_2.$ The result was that we could use the normal distribution (e.g., $z^*$ values (see Figure \@ref(fig:choosingZForCI) ) and p-values from $Z$ scores) to complete the mathematical inferential procedure.
+Previously, in @sec-math-2prop, we applied the Central Limit Theorem to the sampling variability of $\hat{p}_1 - \hat{p}_2.$ The result was that we could use the normal distribution (e.g., $z^*$ values (see @fig-choosingZForCI) and p-values from $Z$ scores) to complete the mathematical inferential procedure.
 The chi-squared test statistic has a different mathematical distribution called the Chi-squared distribution.
 The important specification to make in describing the chi-squared distribution is something called degrees of freedom.
 The degrees of freedom change the shape of the chi-squared distribution to fit the problem at hand.
-Figure \@ref(fig:chisqDistDF) visualizes different chi-squared distributions corresponding to different degrees of freedom.
+@fig-chisqDistDF visualizes different chi-squared distributions corresponding to different degrees of freedom.
 
 ```{r}
-#| label: chisqDistDF
-#| fig.cap: The chi-squared distribution for differing degrees of freedom. The larger
+#| label: fig-chisqDistDF
+#| fig-cap: |
+#|   The chi-squared distribution for differing degrees of freedom. The larger
+#|   the degrees of freedom, the longer the right tail extends. The smaller the degrees
+#|   of freedom, the more peaked the mode on the left becomes.
+#| fig-alt: |
+#|   The chi-squared distribution for differing degrees of freedom. The larger
 #|   the degrees of freedom, the longer the right tail extends. The smaller the degrees
 #|   of freedom, the more peaked the mode on the left becomes.
 
@@ -393,7 +419,7 @@ Conditions:
 To bring it back to the example, we can safely assume that the observations are independent, as the question groups were randomly assigned.
 Additionally, there are over 5 expected counts in each cell, so the conditions for using the Chi-square distribution are met.
 If the null hypothesis is true (i.e., the questions had no impact on the sellers in the experiment), then the test statistic $X^2 = 40.13$ is expected to follow a Chi-squared distribution with 2 degrees of freedom.
-Using this information, we can compute the p-value for the test, which is depicted in Figure \@ref(fig:iPodChiSqTail).
+Using this information, we can compute the p-value for the test, which is depicted in @fig-iPodChiSqTail.
 
 ::: {.important data-latex=""}
 **Computing degrees of freedom for a two-way table.**
@@ -402,9 +428,13 @@ When applying the chi-squared test to a two-way table, we use $df = (R-1)\times 
 :::
 
 ```{r}
-#| label: iPodChiSqTail
-#| fig.cap: Visualization of the p-value for $X^2 = 40.13$ when $df = 2.$
+#| label: fig-iPodChiSqTail
+#| fig-cap: Visualization of the p-value for $X^2 = 40.13$ when $df = 2$.
+#| fig-alt: |
+#|   Chi-square distribution with $df = 2$ curve, shaded for p-value for 
+#|   $X^2 = 40.13$. The p-value is so small that it is not visible on the plot.
 #| fig-asp: 0.5
+
 x <- 40.13
 ChiSquareTail(
   x, 2,
@@ -436,7 +466,7 @@ That is, the data provide convincing evidence that the question asked did affect
 :::
 
 ::: {.workedexample data-latex=""}
-Table \@ref(tab:diabetes2ExpMetRosiLifestyleSummary) summarizes the results of an experiment evaluating three treatments for Type 2 Diabetes in patients aged 10-17 who were being treated with metformin.
+@tbl-diabetes2ExpMetRosiLifestyleSummary summarizes the results of an experiment evaluating three treatments for Type 2 Diabetes in patients aged 10-17 who were being treated with metformin.
 The three treatments considered were continued treatment with metformin (`met`), treatment with metformin combined with rosiglitazone (`rosi`), or a `lifestyle` intervention program.
 Each patient had a primary outcome, which was either lacked glycemic control (failure) or did not lack that control (success).
 What are appropriate hypotheses for this test?
@@ -448,17 +478,21 @@ What are appropriate hypotheses for this test?
 :::
 
 ```{r}
-#| label: diabetes2ExpMetRosiLifestyleSummary
-diabetes2 %>%
-  count(outcome, treatment) %>%
-  pivot_wider(names_from = outcome, values_from = n) %>%
-  adorn_totals(where = c("row", "col")) %>%
-  kbl(linesep = "", booktabs = TRUE, 
-    caption = "Results for the Type 2 Diabetes study.", 
+#| label: tbl-diabetes2ExpMetRosiLifestyleSummary
+#| tbl-cap: Results for the Type 2 Diabetes study.
+
+diabetes2 |>
+  count(outcome, treatment) |>
+  pivot_wider(names_from = outcome, values_from = n) |>
+  adorn_totals(where = c("row", "col")) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
     col.names = c("Treatment", "Failure", "Success", "Total")
-    ) %>%
- kable_styling(bootstrap_options = c("striped", "condensed"), 
-               latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  ) |>
   column_spec(1:4, width = "5em")
 ```
 
@@ -482,16 +516,16 @@ Note, when analyzing 2-by-2 contingency tables (that is, when both variables onl
 
 \clearpage
 
-## Chapter review {#chp18-review}
+## Chapter review {#sec-chp18-review}
 
 ### Summary
 
 In this chapter we extended the randomization / bootstrap / mathematical model paradigm to research questions involving categorical variables.
 We continued working with one population proportion as well as the difference in populations proportions, but the test of independence allowed for hypothesis testing on categorical variables with more than two levels.
 We note that the normal model was an excellent mathematical approximation to the sampling distribution of sample proportions (or differences in sample proportions), but that the questions with categorical variables with more than 2 levels required a new mathematical model, the chi-squared distribution.
-As seen in Chapters \@ref(foundations-randomization), \@ref(foundations-bootstrapping) and \@ref(foundations-mathematical), almost all the research questions can be approached using computational methods (e.g., randomization tests or bootstrapping) or using mathematical models.
+As seen in [Chapter -@sec-foundations-randomization], [Chapter -@sec-foundations-bootstrapping] and [Chapter -@sec-foundations-mathematical], almost all the research questions can be approached using computational methods (e.g., randomization tests or bootstrapping) or using mathematical models.
 We continue to emphasize the importance of experimental design in making conclusions about research claims.
-In particular, recall that variability can come from different sources (e.g., random sampling vs. random allocation, see Figure \@ref(fig:randsampValloc)).
+In particular, recall that variability can come from different sources (e.g., random sampling vs. random allocation, see @fig-randsampValloc).
 
 ### Terms
 
@@ -506,7 +540,7 @@ make_terms_table(terms_chp_18)
 
 \clearpage
 
-## Exercises {#chp18-exercises}
+## Exercises {#sec-chp18-exercises}
 
 Answers to odd-numbered exercises can be found in [Appendix -@sec-exercise-solutions-18].
 

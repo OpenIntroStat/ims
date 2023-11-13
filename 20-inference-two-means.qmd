@@ -1,4 +1,4 @@
-# Inference for comparing two independent means {#inference-two-means}
+# Inference for comparing two independent means {#sec-inference-two-means}
 
 ```{r}
 #| include: false
@@ -26,7 +26,7 @@ Then we bootstrap the data (with no imposed null hypothesis) to create a confide
 The inferential tools are applied to three different data contexts: determining whether stem cells can improve heart function, exploring the relationship between pregnant women's smoking habits and birth weights of newborns, and exploring whether there is convincing evidence that one variation of an exam is harder than another variation.
 This section is motivated by questions like "Is there convincing evidence that newborns from mothers who smoke have a different average birth weight than newborns from mothers who do not smoke?"
 
-## Randomization test for the difference in means {#rand2mean}
+## Randomization test for the difference in means {#sec-rand2mean}
 
 An instructor decided to run two slight variations of the same exam.
 Prior to passing out the exams, they shuffled the exams together to ensure each student received a random version.
@@ -38,37 +38,43 @@ The [`classdata`](http://openintrostat.github.io/openintro/reference/classdata.h
 
 ### Observed data
 
-Summary statistics for how students performed on these two exams are shown in Table \@ref(tab:summaryStatsForTwoVersionsOfExams) and plotted in Figure \@ref(fig:boxplotTwoVersionsOfExams).
+Summary statistics for how students performed on these two exams are shown in @tbl-summaryStatsForTwoVersionsOfExams and plotted in @fig-boxplotTwoVersionsOfExams.
 
 ```{r}
-#| label: summaryStatsForTwoVersionsOfExams
-classdata <- classdata %>% 
-  filter(lecture %in% c("a", "b")) %>%
+#| label: tbl-summaryStatsForTwoVersionsOfExams
+#| tbl-cap: Summary statistics of scores for each exam version.
+classdata <- classdata |>
+  filter(lecture %in% c("a", "b")) |>
   mutate(
     lecture = str_to_upper(lecture),
     exam = lecture
-    )
+  )
 
-classdata %>%
-  group_by(exam) %>%
+classdata |>
+  group_by(exam) |>
   summarise(
     n = n(),
     mean = mean(m1),
     sd = sd(m1),
     min = min(m1),
     max = max(m1)
-  ) %>%
-  kbl(linesep = "", booktabs = TRUE, caption = "Summary statistics of scores for each exam version.",
-      col.names = c("Group", "n", "Mean", "SD", "Min", "Max"),
-      align = "ccccc") %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  ) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("Group", "n", "Mean", "SD", "Min", "Max"),
+    align = "ccccc"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  ) |>
   column_spec(1:5, width = "5em")
 ```
 
 ```{r}
-#| label: boxplotTwoVersionsOfExams
-#| fig.cap: Exam scores for students given one of three different exams.
+#| label: fig-boxplotTwoVersionsOfExams
+#| fig-cap: Exam scores for students given one of three different exams.
+#| fig-alt: Boxplot of exam score broken down by version of exam.å
 ggplot(classdata, aes(x = exam, y = m1, color = exam)) +
   geom_boxplot(show.legend = FALSE) +
   geom_jitter(width = 0.1) +
@@ -96,88 +102,100 @@ Are there any concerns about outliers?[^20-inference-two-means-2]
 
 ### Variability of the statistic
 
-In Section \@ref(foundations-randomization), the variability of the statistic (previously: $\hat{p}_1 - \hat{p}_2)$ was visualized after shuffling the observations across the two treatment groups many times.
+In @sec-foundations-randomization, the variability of the statistic (previously: $\hat{p}_1 - \hat{p}_2)$ was visualized after shuffling the observations across the two treatment groups many times.
 The shuffling process implements the null hypothesis model (that there is no effect of the treatment).
 In the exam example, the null hypothesis is that exam A and exam B are equally difficult, so the average scores across the two tests should be the same.
 If the exams were equally difficult, *due to natural variability*, we would sometimes expect students to do slightly better on exam A $(\bar{x}_A > \bar{x}_B)$ and sometimes expect students to do slightly better on exam B $(\bar{x}_B > \bar{x}_A).$ The question at hand is: does $\bar{x}_A - \bar{x}_B=3.1$ indicate that exam A is easier than exam B.
 
-Figure \@ref(fig:rand2means) shows the process of randomizing the exam to the observed exam scores.
+@fig-rand2means shows the process of randomizing the exam to the observed exam scores.
 If the null hypothesis is true, then the score on each exam should represent the true student ability on that material.
 It shouldn't matter whether they were given exam A or exam B.
 By reallocating which student got which exam, we are able to understand how the difference in average exam scores changes due only to natural variability.
-There is only one iteration of the randomization process in Figure \@ref(fig:rand2means), leading to one simulated difference in average scores.
+There is only one iteration of the randomization process in @fig-rand2means, leading to one simulated difference in average scores.
 
 ```{r}
-#| label: rand2means
-#| fig.cap: The version of the test (A or B) is randomly allocated to the test scores,
+#| label: fig-rand2means
+#| fig-cap: |
+#|   The version of the test (A or B) is randomly allocated to the test scores,
 #|   under the null assumption that the tests are equally difficult.
 #| warning: false
-#| out.width: 75%
-#| fig.alt: Four panels representing four different orientations of a toy dataset of
-#|   9 exam scores.  The first panel provides the observed data; 4 of the exams were
+#| out-width: 75%
+#| fig-alt: |
+#|   Four panels representing four different orientations of a toy dataset of
+#|   9 exam scores. The first panel provides the observed data; 4 of the exams were
 #|   version A and the average score was 77.25; 5 of the exams were version B and the
-#|   average score was 75.8, a difference of 1.45.  The second panel shows the shuffled
+#|   average score was 75.8, a difference of 1.45. The second panel shows the shuffled
 #|   reassignment of the exam versions (4 of the scores are randomly reassigned to A,
-#|   5 of the scores are randomly reassigned to B).  The third panel shows which score
-#|   is connected with which new reassigned version of the exam.  And the fourth panel
-#|   sorts the exams so that version A exams are together and version B exams are together.  In
-#|   the randomly reassigned versions, the average score for version A is 74.25 and the
-#|   average score for version B is 78.2, a difference of -3.95.
+#|   5 of the scores are randomly reassigned to B). The third panel shows which score
+#|   is connected with which new reassigned version of the exam. And the fourth panel
+#|   sorts the exams so that version A exams are together and version B exams are
+#|   together. In the randomly reassigned versions, the average score for
+#|   version A is 74.25 and the average score for version B is 78.2, a difference of -3.95.
 include_graphics("images/rand2means.png")
 ```
 
-Building on Figure \@ref(fig:rand2means), Figure \@ref(fig:randexams) shows the values of the simulated statistics $\bar{x}_{1, sim} - \bar{x}_{2, sim}$ over 1,000 random simulations.
+Building on @fig-rand2means, @fig-randexams shows the values of the simulated statistics $\bar{x}_{1, sim} - \bar{x}_{2, sim}$ over 1,000 random simulations.
 We see that, just by chance, the difference in scores can range anywhere from -10 points to +10 points.
 
 ```{r}
-#| label: randexams
-#| fig.cap: Histogram of differences in means, calculated from 1,000 different randomizations
+#| label: fig-randexams
+#| fig-cap: |
+#|   Histogram of differences in means, calculated from 1,000 different randomizations
+#|   of the exam types.
+#| fig-alt: |
+#|   Histogram of differences in means, calculated from 1,000 different randomizations
 #|   of the exam types.
 set.seed(47)
-classdata %>% 
-  specify(m1 ~ exam) %>%
-  hypothesize(null = "independence") %>%
-  generate(reps = 1000, type = "permute") %>%
-  calculate(stat = "diff in means", order = c("A", "B")) %>% 
+classdata |>
+  specify(m1 ~ exam) |>
+  hypothesize(null = "independence") |>
+  generate(reps = 1000, type = "permute") |>
+  calculate(stat = "diff in means", order = c("A", "B")) |>
   visualize() +
   labs(
-    title = "1,000 differences in randomized means", 
-    x = "Difference in randomized means\n(A - B)", 
+    title = "1,000 differences in randomized means",
+    x = "Difference in randomized means\n(A - B)",
     y = "Count"
-    )
+  )
 ```
 
 ### Observed statistic vs. null statistics
 
 The goal of the randomization test is to assess the observed data, here the statistic of interest is $\bar{x}_A - \bar{x}_B=3.1.$ The randomization distribution allows us to identify whether a difference of 3.1 points is more than one would expect by natural variability of the scores if the two tests were equally difficult.
-By plotting the value of 3.1 on Figure \@ref(fig:randexamspval), we can measure how different or similar 3.1 is to the randomized differences which were generated under the null hypothesis.
+By plotting the value of 3.1 on @fig-randexamspval, we can measure how different or similar 3.1 is to the randomized differences which were generated under the null hypothesis.
 
 ```{r}
-#| label: randexamspval
-#| fig.cap: Histogram of differences in means, calculated from 1,000 different randomizations
-#|   of the exam types.  The observed difference of 3.1 points is plotted as a vertical
+#| label: fig-randexamspval
+#| fig-cap: |
+#|   Histogram of differences in means, calculated from 1,000 different randomizations
+#|   of the exam types. The observed difference of 3.1 points is plotted as a vertical
 #|   line, and the area more extreme than 3.1 is shaded to represent the p-value.
-stat_2means <- classdata %>% 
-  specify(m1 ~ exam) %>%
+#| fig-alt: |
+#|   Histogram of differences in means, calculated from 1,000 different randomizations
+#|   of the exam types. The observed difference of 3.1 points is plotted as a vertical
+#|   line, and the area more extreme than 3.1 is shaded to represent the p-value.
+
+stat_2means <- classdata |>
+  specify(m1 ~ exam) |>
   calculate(stat = "diff in means", order = c("A", "B"))
 
 set.seed(47)
-classdata %>%
-  specify(m1 ~ exam) %>%
-  hypothesize(null = "independence") %>%
-  generate(reps = 1000, type = "permute") %>%
-  calculate(stat = "diff in means", order = c("A", "B")) %>%
-  visualize() + 
+classdata |>
+  specify(m1 ~ exam) |>
+  hypothesize(null = "independence") |>
+  generate(reps = 1000, type = "permute") |>
+  calculate(stat = "diff in means", order = c("A", "B")) |>
+  visualize() +
   labs(
-    title = "1,000 differences in randomized means", 
-    x = "Difference in randomized means\n(A - B)", 
+    title = "1,000 differences in randomized means",
+    x = "Difference in randomized means\n(A - B)",
     y = "Count"
-    ) +  
+  ) +
   shade_p_value(obs_stat = stat_2means, direction = "two-sided", color = IMSCOL["red", "full"])
 ```
 
 ::: {.workedexample data-latex=""}
-Approximate the p-value depicted in Figure \@ref(fig:randexamspval), and provide a conclusion in the context of the case study.
+Approximate the p-value depicted in @fig-randexamspval, and provide a conclusion in the context of the case study.
 
 ------------------------------------------------------------------------
 
@@ -193,11 +211,11 @@ That is, the data do not convincingly show that one exam version is more difficu
 #| echo: false
 #| eval: false
 set.seed(47)
-classdata %>%
-  specify(m1 ~ exam) %>%
-  hypothesize(null = "independence") %>%
-  generate(reps = 1000, type = "permute") %>%
-  calculate(stat = "diff in means", order = c("A", "B")) %>%
+classdata |>
+  specify(m1 ~ exam) |>
+  hypothesize(null = "independence") |>
+  generate(reps = 1000, type = "permute") |>
+  calculate(stat = "diff in means", order = c("A", "B")) |>
   get_p_value(obs_stat = stat_2means, direction = "two-sided")
 ```
 
@@ -215,7 +233,7 @@ However, in this case, the teacher and class are probably all relieved that ther
 Before providing a full example working through a bootstrap analysis on actual data, we return to the fictional Awesome Auto example as a way to visualize the two sample bootstrap setting.
 Consider an expanded scenario where the research question centers on comparing the average price of a car at one Awesome Auto franchise (Group 1) to the average price of a car at a different Awesome Auto franchise (Group 2).
 The process of bootstrapping can be applied to *each* Group separately, and the differences of means recalculated each time.
-Figure \@ref(fig:bootmeans2means) visually describes the bootstrap process when interest is in a statistic computed on two separate samples.
+@fig-bootmeans2means visually describes the bootstrap process when interest is in a statistic computed on two separate samples.
 The analysis proceeds as in the one sample case, but now the (single) statistic of interest is the *difference in sample means*.
 That is, a bootstrap resample is done on each of the groups separately, but the results are combined to have a single bootstrapped difference in means.
 Repetition will produce $k$ bootstrapped differences in means, and the histogram will describe the natural sampling variability associated with the difference in means.
@@ -226,28 +244,32 @@ terms_chp_20 <- c(terms_chp_20, "difference in means")
 ```
 
 ```{r}
-#| label: bootmeans2means
-#| fig.cap: For the two group comparison, the bootstrap resampling is done separately
-#|   on each group, but the statistic is calculated as a difference.  The set of k differences
-#|   is then analyzed as the statistic of interest with conclusions drawn on the parameter
-#|   of interest.
+#| label: fig-bootmeans2means
+#| fig-cap: |
+#|   For the two group comparison, the bootstrap resampling is done separately
+#|   on each group, but the statistic is calculated as a difference. The set of
+#|   k differences is then analyzed as the statistic of interest with
+#|   conclusions drawn on the parameter of interest.
 #| warning: false
-#| out.width: 75%
-#| fig.alt: Samples are shown as separately coming from two independent, large, unknown
-#|   populations.  Direcly from each of the two observed samples, bootstrap resamples
-#|   can be taken (with replacement).  Bootstrap resample 1 from sample 1 is compared
-#|   to bootstrap resample 1 from sample 2 by comparing the difference in bootstrapped
-#|   averages.  A histogram of differences in bootstrapped averages displays the differences
-#|   ranging from roughly -20000 dollars to +10000 dollars.
+#| out-width: 75%
+#| fig-alt: |
+#|   Samples are shown as separately coming from two independent, large, unknown
+#|   populations. Direcly from each of the two observed samples, bootstrap
+#|   resamples can be taken (with replacement). Bootstrap resample 1 from sample
+#|   1 is compared to bootstrap resample 1 from sample 2 by comparing the difference
+#|   in bootstrapped averages. A histogram of differences in bootstrapped
+#|   averages displays the differences ranging from roughly -20000 dollars to
+#|   +10000 dollars.
 include_graphics("images/bootmeans2means.png")
 ```
 
+In the following sections, we leave the fictional setting of Awesome Auto and apply the boostrap method to actual datasets investigating whether or not embryonic stem cells help improve heart function and later to investigate characteristics of births. Note that the fictional setting allowed us to visualize the bootstrap method because we had samples of size five. The visualization was important in understanding how the bootstrap method works. However, the bootstrap relies heavily on the sample being an outstanding proxy for the population, and five observations are almost never enough to truly represent the nuances of a full population. To that end, we apply bootstrap methods with much larger sample sizes, as seen in the 1000 random samples provided in the births data.
 ### Observed data
 
 Does treatment using embryonic stem cells (ESCs) help improve heart function following a heart attack?
-Table \@ref(tab:statsSheepEscStudy) contains summary statistics for an experiment to test ESCs in sheep that had a heart attack.
+@tbl-statsSheepEscStudy contains summary statistics for an experiment to test ESCs in sheep that had a heart attack.
 Each of these sheep was randomly assigned to the ESC or control group, and the change in their hearts' pumping capacity was measured in the study.
-[@Menard:2005] Figure \@ref(fig:stem-cell-histograms) provides histograms of the two datasets.
+[@Menard:2005] @fig-stem-cell-histograms provides histograms of the two datasets.
 A positive value corresponds to increased pumping capacity, which generally suggests a stronger recovery.
 Our goal will be to identify a 95% confidence interval for the effect of ESCs on the change in heart pumping capacity relative to the control group.
 
@@ -256,26 +278,32 @@ The [`stem_cell`](http://openintrostat.github.io/openintro/reference/stem_cell.h
 :::
 
 ```{r}
-#| label: statsSheepEscStudy
-stem_cell <- openintro::stem_cell %>%
+#| label: tbl-statsSheepEscStudy
+#| tbl-cap: Summary statistics of the embryonic stem cell study.
+
+stem_cell <- openintro::stem_cell |>
   mutate(
     trmt = if_else(trmt == "ctrl", "Control", "ESC"),
     trmt = fct_relevel(trmt, "ESC", "Control"),
     change = after - before
-    )
+  )
 
-stem_cell %>%
-  group_by(trmt) %>%
+stem_cell |>
+  group_by(trmt) |>
   summarise(
     n = n(),
     mean = mean(change),
     sd = sd(change)
-  ) %>%
-  kbl(linesep = "", booktabs = TRUE, caption = "Summary statistics of the embryonic stem cell study.",
-      col.names = c("Group", "n", "Mean", "SD"),
-      digits = 2, align = "lccc") %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+  ) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("Group", "n", "Mean", "SD"),
+    digits = 2, align = "lccc"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  ) |>
   column_spec(1:4, width = "6em")
 ```
 
@@ -285,39 +313,48 @@ $$\bar{x}_{esc} - \bar{x}_{control}\   =\ 3.50 - (-4.33)\   =\ 7.83$$
 
 ### Variability of the statistic
 
-As we saw in Section \@ref(two-prop-boot-ci), we will use bootstrapping to estimate the variability associated with the difference in sample means when taking repeated samples.
+As we saw in @sec-two-prop-boot-ci, we will use bootstrapping to estimate the variability associated with the difference in sample means when taking repeated samples.
 In a method akin to two proportions, a *separate* sample is taken with replacement from each group (here ESCs and control), the sample means are calculated, and their difference is taken.
 The entire process is repeated multiple times to produce a bootstrap distribution of the difference in sample means (*without* the null hypothesis assumption).
 
-Figure \@ref(fig:bootexamsci) displays the variability of the differences in means with the 90% percentile and SE CIs super imposed.
+@fig-bootexamsci displays the variability of the differences in means with the 90% percentile and SE CIs super imposed.
 
 ```{r}
-#| label: bootexamsci
-#| fig.cap: Histogram of differences in means after 1,000 bootstrap samples from each
+#| label: fig-bootexamsci
+#| fig-cap: |
+#|   Histogram of differences in means after 1,000 bootstrap samples from each
+#|   of the two groups. The observed difference is plotted as a black vertical line at
+#|   7.83. The blue dashed and red dotted lines provide the bootstrap percentile and
+#|   boostrap SE confidence intervals, respectively, for the difference in true population
+#|   means.
+#| fig-alt: |
+#|   Histogram of differences in means after 1,000 bootstrap samples from each
 #|   of the two groups. The observed difference is plotted as a black vertical line at
 #|   7.83. The blue dashed and red dotted lines provide the bootstrap percentile and
 #|   boostrap SE confidence intervals, respectively, for the difference in true population
 #|   means.
 set.seed(470)
 
-boot_2mean <- stem_cell %>%
-  specify(change ~ trmt) %>%
-  generate(reps = 1000, type = "bootstrap") %>%
+boot_2mean <- stem_cell |>
+  specify(change ~ trmt) |>
+  generate(reps = 1000, type = "bootstrap") |>
   calculate(stat = "diff in means", order = c("ESC", "Control"))
 
-stat_2means <- stem_cell %>%
-  specify(change ~ trmt) %>%
+stat_2means <- stem_cell |>
+  specify(change ~ trmt) |>
   calculate(stat = "diff in means", order = c("ESC", "Control"))
 
 
-ci_perc_2mean <- boot_2mean %>%
+ci_perc_2mean <- boot_2mean |>
   get_confidence_interval(level = 0.9, type = "percentile")
 
-ci_se_2mean <- boot_2mean %>%
-  get_confidence_interval(level = 0.9, type = "se",
-                          point_estimate = stat_2means)
+ci_se_2mean <- boot_2mean |>
+  get_confidence_interval(
+    level = 0.9, type = "se",
+    point_estimate = stat_2means
+  )
 
-boot_2mean %>%
+boot_2mean |>
   infer::visualize() +
   infer::shade_confidence_interval(ci_perc_2mean, fill = NULL, size = 1, color = IMSCOL["green", "full"], linetype = "dashed") +
   infer::shade_confidence_interval(ci_se_2mean, fill = NULL, size = 1, color = IMSCOL["red", "full"], linetype = "dotted") +
@@ -325,7 +362,7 @@ boot_2mean %>%
     title = "1,000 differences in bootstrapped means",
     x = "Differencesin bootstrapped means\n(ESC - Control)",
     y = "Count"
-    ) +
+  ) +
   geom_vline(xintercept = stat_2means$stat, size = 1) +
   expand_limits(x = c(0, 15), y = c(0, 200)) +
   geom_line(aes(y = 200, x = stat, color = "a", linetype = "a"), alpha = 0, size = 1) + # bogus code
@@ -337,20 +374,22 @@ boot_2mean %>%
     values = c("a" = IMSCOL["blue", "full"], "b" = IMSCOL["red", "full"], "c" = IMSCOL["black", "full"]),
     labels = c("Percentile\ninterval\n", "SE\ninterval\n", "Observed\nstatistic"),
     guide = "legend"
-    ) +
+  ) +
   scale_linetype_manual(
     name = NULL,
     values = c("a" = "dashed", "b" = "dotted", "c" = "solid"),
     labels = c("Percentile\ninterval\n", "SE\ninterval\n", "Observed\nstatistic"),
-    guide = "legend"    
+    guide = "legend"
   ) +
   theme(
     legend.position = c(0.87, 0.75),
     legend.background = element_rect(fill = "white")
-    )
+  )
 ```
 
-::: {.guidedpractice data-latex=""} Using the histogram of bootstrapped difference in means, estimate the standard error of the differences in sample means, $\bar{x}_{ESC} - \bar{x}_{Control}.$[^20-inference-two-means-3] :::
+::: {.guidedpractice data-latex=""}
+Using the histogram of bootstrapped difference in means, estimate the standard error of the differences in sample means, $\bar{x}_{ESC} - \bar{x}_{Control}.$[^20-inference-two-means-3] 
+:::
 
 [^20-inference-two-means-3]: The point estimate of the population difference ($\bar{x}_{ESC} - \bar{x}_{Control}$) is 7.83.
 
@@ -364,7 +403,7 @@ Because neither of the 90% intervals (either percentile or SE) above overlap zer
 Because the study is a randomized controlled experiment, we can conclude that it is the treatment (ESC) which is causing the change in pumping capacity.
 :::
 
-## Mathematical model for testing the difference in means {#math2samp}
+## Mathematical model for testing the difference in means {#sec-math2samp}
 
 Every year, the US releases to the public a large data set containing information on births recorded in the country.
 This data set has been of interest to medical researchers who are studying the relation between habits and practices of expectant mothers and the birth of their children.
@@ -376,19 +415,25 @@ The [`births14`](http://openintrostat.github.io/openintro/reference/births14.htm
 
 ### Observed data
 
-Four cases from this dataset are represented in Table \@ref(tab:babySmokeDF).
+Four cases from this dataset are represented in @tbl-babySmokeDF.
 We are particularly interested in two variables: `weight` and `smoke`.
 The `weight` variable represents the weights of the newborns and the `smoke` variable describes which mothers smoked during pregnancy.
 
 ```{r}
-#| label: babySmokeDF
-births14 %>% 
-  select(-premie, -mature, -lowbirthweight, -whitemom, -marital) %>%
-  head(4) %>%
-  kbl(linesep = "", booktabs = TRUE, caption = caption_helper("Four cases from the `births14` dataset. The emoty cells indicate missing data."),
-      escape = FALSE, align = "cccclcclll") %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) 
+#| label: tbl-babySmokeDF
+#| tbl-cap: Four cases from the `births14` dataset. The emoty cells indicate missing data.
+
+births14 |>
+  select(-premie, -mature, -lowbirthweight, -whitemom, -marital) |>
+  head(4) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    escape = FALSE, align = "cccclcclll"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position")
+  )
 ```
 
 We would like to know, is there convincing evidence that newborns from mothers who smoke have a different average birth weight than newborns from mothers who do not smoke?
@@ -405,41 +450,50 @@ The null hypothesis represents the case of no difference between the groups.
 -   $H_A:$ There is some difference in average newborn weights from mothers who did and did not smoke $(\mu_{n} - \mu_{s} \neq 0).$
 :::
 
-Table \@ref(tab:births14-summary-stats) displays sample statistics from the data.
+@tbl-births14-summary-stats displays sample statistics from the data.
 We can see that the average birth weight of babies born to smoker moms is lower than those born to nonsmoker moms.
 
 ```{r}
-#| label: births14-summary-stats
-births14_nona <- births14 %>%
+#| label: tbl-births14-summary-stats
+#| tbl-cap: Summary statistics for the `births14` dataset.
+births14_nona <- births14 |>
   filter(
     !is.na(habit), !is.na(weight)
   )
 
-births14_sample_stats <- births14_nona %>%
-  group_by(habit) %>%
+births14_sample_stats <- births14_nona |>
+  group_by(habit) |>
   summarise(
     n = n(),
     Mean = mean(weight),
     SD = sd(weight)
   )
 
-xbar_nonsmoker  <- round(births14_sample_stats %>% filter(habit == "nonsmoker") %>% pull(Mean), 2)
-xbar_smoker     <- round(births14_sample_stats %>% filter(habit == "smoker") %>% pull(Mean), 2)
+xbar_nonsmoker <- round(births14_sample_stats |> filter(habit == "nonsmoker") |> pull(Mean), 2)
+xbar_smoker <- round(births14_sample_stats |> filter(habit == "smoker") |> pull(Mean), 2)
 xbar_difference <- xbar_nonsmoker - xbar_smoker
-sd_nonsmoker    <- round(births14_sample_stats %>% filter(habit == "nonsmoker") %>% pull(SD), 2)
-sd_smoker       <- round(births14_sample_stats %>% filter(habit == "smoker") %>% pull(SD), 2)
-n_nonsmoker     <- births14_sample_stats %>% filter(habit == "nonsmoker") %>% pull(n)
-n_smoker        <- births14_sample_stats %>% filter(habit == "smoker") %>% pull(n)
-se_difference   <- round(sqrt(sd_nonsmoker^2/n_nonsmoker + sd_smoker^2/n_smoker), 2)
-t_difference    <- round(xbar_difference / se_difference, 2)
-df_difference   <- min(n_nonsmoker-1, n_smoker-1)
+sd_nonsmoker <- round(births14_sample_stats |> filter(habit == "nonsmoker") |> pull(SD), 2)
+sd_smoker <- round(births14_sample_stats |> filter(habit == "smoker") |> pull(SD), 2)
+n_nonsmoker <- births14_sample_stats |>
+  filter(habit == "nonsmoker") |>
+  pull(n)
+n_smoker <- births14_sample_stats |>
+  filter(habit == "smoker") |>
+  pull(n)
+se_difference <- round(sqrt(sd_nonsmoker^2 / n_nonsmoker + sd_smoker^2 / n_smoker), 2)
+t_difference <- round(xbar_difference / se_difference, 2)
+df_difference <- min(n_nonsmoker - 1, n_smoker - 1)
 
-births14_sample_stats %>%
-  kbl(linesep = "", booktabs = TRUE, caption = caption_helper("Summary statistics for the `births14` dataset."),
-      col.names = c("Habit", "n", "Mean", "SD"),
-      align = "lccc", digits = 2) %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
+births14_sample_stats |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("Habit", "n", "Mean", "SD"),
+    align = "lccc", digits = 2
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  ) |>
   column_spec(1:4, width = "7em")
 ```
 
@@ -448,17 +502,23 @@ births14_sample_stats %>%
 We check the two conditions necessary to model the difference in sample means using the $t$-distribution.
 
 -   Because the data come from a simple random sample, the observations are independent, both within and between samples.
--   With both groups over 30 observations, we inspect the data in Figure \@ref(fig:babySmokePlotOfTwoGroupsToExamineSkew) for any particularly extreme outliers and find none.
+-   With both groups over 30 observations, we inspect the data in @fig-babySmokePlotOfTwoGroupsToExamineSkew for any particularly extreme outliers and find none.
 
 Since both conditions are satisfied, the difference in sample means may be modeled using a $t$-distribution.
 
 ```{r}
-#| label: babySmokePlotOfTwoGroupsToExamineSkew
-#| fig.cap: The top panel represents birth weights for infants whose mothers smoked during
+#| label: fig-babySmokePlotOfTwoGroupsToExamineSkew
+#| fig-cap: |
+#|   The top panel represents birth weights for infants whose mothers smoked during
 #|   pregnancy. The bottom panel represents the birth weights for infants whose mothers
 #|   who did not smoke during pregnancy.
-births14_nona %>%
-  mutate(habit = fct_rev(if_else(habit == "smoker", "Mothers who smoked", "Mothers who did not smoke"))) %>%
+#| fig-alt: |
+#|   The top panel represents birth weights for infants whose mothers smoked during
+#|   pregnancy. The bottom panel represents the birth weights for infants whose mothers
+#|   who did not smoke during pregnancy.
+
+births14_nona |>
+  mutate(habit = fct_rev(if_else(habit == "smoker", "Mothers who smoked", "Mothers who did not smoke"))) |>
   ggplot(aes(x = weight)) +
   geom_histogram(binwidth = 1) +
   facet_wrap(~habit, ncol = 1, scales = "free_y") +
@@ -467,7 +527,7 @@ births14_nona %>%
 ```
 
 ::: {.guidedpractice data-latex=""}
-The summary statistics in Table \@ref(tab:births14-summary-stats) may be useful for this Guided Practice.
+The summary statistics in @tbl-births14-summary-stats may be useful for this Guided Practice.
 What is the point estimate of the population difference, $\mu_{n} - \mu_{s}$?[^20-inference-two-means-4]
 :::
 
@@ -585,18 +645,24 @@ Can the $t$-distribution be used to make inference using the point estimate, $\b
 First, we check for independence.
 Because the sheep were randomized into the groups, independence within and between groups is satisfied.
 
-Figure \@ref(fig:stem-cell-histograms) does not reveal any clear outliers in either group.
+@fig-stem-cell-histograms does not reveal any clear outliers in either group.
 (The ESC group does look a bit more variable, but this is not the same as having clear outliers.)
 
 With both conditions met, we can use the $t$-distribution to model the difference of sample means.
 :::
 
 ```{r}
-#| label: stem-cell-histograms
-#| fig.cap: Histograms for the difference in heart pumping function after a heart attack
-#|   for both the treatment group (ESC, which received an the embryonic stem cell treatment)
-#|   and the control group (which did not receive the treatment).
-stem_cell %>%
+#| label: fig-stem-cell-histograms
+#| fig-cap: |
+#|   Histograms for the difference in heart pumping function after a heart attack
+#|   for both the treatment group (ESC, which received an the embryonic stem cell
+#|   treatment) and the control group (which did not receive the treatment).
+#| fig-alt: |
+#|   Histograms for the difference in heart pumping function after a heart attack
+#|   for both the treatment group (ESC, which received an the embryonic stem cell
+#|   treatment) and the control group (which did not receive the treatment).
+
+stem_cell |>
   ggplot(aes(x = change)) +
   geom_histogram(binwidth = 2.5) +
   facet_wrap(~trmt, ncol = 1) +
@@ -640,14 +706,14 @@ We are 95% confident that the heart pumping function in sheep that received embr
 
 \clearpage
 
-## Chapter review {#chp20-review}
+## Chapter review {#sec-chp20-review}
 
 ### Summary
 
 In this chapter we extended the single mean inferential methods to questions of differences in means.
 You may have seen parallels from the chapters that extended a single proportion (Chapter \@ref(inference-one-prop)) to differences in proportions (Chapter \@ref(inference-two-props)).
 When considering differences in sample means (indeed, when considering many quantitative statistics), we use the t-distribution to describe the sampling distribution of the T score (the standardized difference in sample means).
-Ideas of confidence level and type of error which might occur from a hypothesis test conclusion are similar to those seen in other chapters (see Section \@ref(decerr)).
+Ideas of confidence level and type of error which might occur from a hypothesis test conclusion are similar to those seen in other chapters (see [Chapter -@sec-foundations-decision-errors]).
 
 ### Terms
 
@@ -662,7 +728,7 @@ make_terms_table(terms_chp_20)
 
 \clearpage
 
-## Exercises {#chp20-exercises}
+## Exercises {#sec-chp20-exercises}
 
 Answers to odd-numbered exercises can be found in [Appendix -@sec-exercise-solutions-20].
 
