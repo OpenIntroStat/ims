@@ -21,6 +21,10 @@ However, because the observational unit is **paired** across the two groups, the
 
 ```{r}
 #| label: tbl-pairedexamples
+#| tbl-cap: |
+#|   Examples of studies where a paired design is used to measure the
+#|   difference in the measurement over two conditions.
+
 paired_study_examples <- tribble(
   ~variable, ~col1, ~col2, ~col3,
   "Car", "Smooth Turn vs Quick Spin", "amount of tire tread after 1,000 miles", "difference in tread",
@@ -28,13 +32,15 @@ paired_study_examples <- tribble(
   "Individual person", "Pre-course vs Post-course", "exam score", "difference in score"
 )
 
-paired_study_examples %>%
-  kbl(linesep = "", booktabs = TRUE, 
-    caption = "Examples of studies where a paired design is used to measure the difference in the measurement over two conditions.",
+paired_study_examples |>
+  kbl(
+    linesep = "", booktabs = TRUE,
     col.names = c("Observational unit", "Comparison groups", "Measurement", "Value of interest")
-  ) %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = TRUE
+  ) |>
   column_spec(1:3, width = "8em")
 ```
 
@@ -44,8 +50,8 @@ paired_study_examples %>%
 Two sets of observations are *paired* if each observation in one set has a special correspondence or connection with exactly one observation in the other dataset.
 :::
 
-It is worth noting that if mathematical modeling is chosen as the analysis tool, paired data inference on the difference in measurements will be identical to the one-sample mathematical techniques described in @sec-inference-one-mean.
-However, recall from @sec-inference-one-mean that with pure one-sample data, the computational tools for hypothesis testing are not easy to implement and were not presented (although the bootstrap was presented as a computational approach for constructing a one sample confidence interval).
+It is worth noting that if mathematical modeling is chosen as the analysis tool, paired data inference on the difference in measurements will be identical to the one-sample mathematical techniques described in [Chapter -@sec-inference-one-mean].
+However, recall from [Chapter -@sec-inference-one-mean] that with pure one-sample data, the computational tools for hypothesis testing are not easy to implement and were not presented (although the bootstrap was presented as a computational approach for constructing a one sample confidence interval).
 With paired data, the randomization test fits nicely with the structure of the experiment and is presented here.
 
 ```{r}
@@ -62,9 +68,10 @@ That is, after 1,000 miles on a car, which brand of tires has more tread, on ave
 
 The observed data represent 25 tread measurements (in cm) taken on 25 tires of Smooth Turn and 25 tires of Quick Spin.
 The study used a total of 25 cars, so on each car, one tire was of Smooth Turn and one was of Quick Spin.
+The mean tread for the Quick Spin tires was 0.308 cm and the mean tread for the Smooth Turn tires was 0.310 cm.
 @fig-tiredata presents the observed data, calculations on tread remaining (in cm).
 
-The Smooth Turn manufacturer looks at the box plot and says:
+The Smooth Turn manufacturer looks at the box plots and says:
 
 > *Clearly the tread on Smooth Turn tires is higher, on average, than the tread on Quick Spin tires after 1,000 miles of driving.*
 
@@ -74,14 +81,16 @@ The Quick Spin manufacturer is skeptical and retorts:
 
 ```{r}
 #| label: fig-tiredata
-#| fig.cap: Boxplots of the tire tread data (in cm) and the brand of tire from which
+#| fig-cap: |
+#|   Boxplots of the tire tread data (in cm) and the brand of tire from which
 #|   the original measurements came.
-#| fig-alt: Boxplots of the amount of tire tread for each of the two
+#| fig-alt: |
+#|   Boxplots of the amount of tire tread for each of the two
 #|   brands of tires with data values superimposed over the boxplots. 
 #|   Each superimposed dot represents a car that drove with both types
-#|  of tires.  A grey line connects each car across the two boxplots
-#|   indicating that Smooth
-#|  Turn has more tire wear than Quick Spin.
+#|   of tires.  A grey line connects each car across the two boxplots
+#|   indicating that Smooth Turn has more tire wear than Quick Spin.
+
 set.seed(47)
 brandA <- rnorm(25, 0.310, 0.003)
 brandB <- rnorm(25, 0.308, 0.003)
@@ -95,30 +104,34 @@ tires <- tibble(
   brand = c(rep("Smooth Turn", 25), rep("Quick Spin", 25))
 )
 
-orig_means <- tires %>%
-  group_by(brand) %>%
-  summarize(mean_tread = round(mean(tread), 4)) %>%
+orig_means <- tires |>
+  group_by(brand) |>
+  summarize(mean_tread = round(mean(tread), 4)) |>
   mutate(
     mean_label = c("bar(x)[QS]", "bar(x)[ST]"),
     mean_label = paste(mean_label, "==", mean_tread)
   )
 
-ggplot(tires, aes(x = brand, y = tread, 
-                  color = brand, shape = brand)) +
-  geom_boxplot(show.legend = FALSE, 
-               outlier.shape = "triangle") +
+ggplot(tires, aes(
+  x = brand, y = tread,
+  color = brand, shape = brand
+)) +
+  geom_boxplot(
+    show.legend = FALSE,
+    outlier.shape = "triangle"
+  ) +
   geom_text(aes(label = car),
     color = "grey",
     hjust = rep(c(-0.15, 1.3), each = 25),
     show.legend = FALSE, size = 4
   ) +
-  geom_line(aes(group = car), color = "grey", size = 0.25) +
+  geom_line(aes(group = car), color = "grey", linewidth = 0.25) +
   geom_point(show.legend = FALSE) +
   geom_text(
-    data = orig_means, 
-    aes(label = mean_label, y = 0.318), 
+    data = orig_means,
+    aes(label = mean_label, y = 0.318),
     parse = TRUE, show.legend = FALSE
-    ) +
+  ) +
   scale_color_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"])) +
   labs(
     x = "Tire brand",
@@ -132,7 +145,7 @@ Fortunately for us, we have an excellent way to simulate the natural variability
 
 ### Variability of the statistic
 
-A randomization test will identify whether the differences seen in the box plot of the original data in Figure @fig-tiredata could have happened just by chance variability.
+A randomization test will identify whether the differences seen in the box plot of the original data in @fig-tiredata could have happened just by chance variability.
 As before, we will simulate the variability in the study under the assumption that the null hypothesis is true.
 In this study, the null hypothesis is that average tire tread wear is the same across Smooth Turn and Quick Spin tires.
 
@@ -150,27 +163,33 @@ In the first randomization, it just so happens that the 4th car's tire brands we
 
 ```{r}
 #| label: fig-tiredata4
-#| fig.cap: 'The 4th car: the tire brand was randomly permuted, and in the randomization
-#|   calculation, the measurements (in cm) ended up in different groups.'
-#| fig-alt: Line plot connecting the tread for the 4th car in the
-#|  dataset.  The first plot is the original data and the second plot is
-#|  the permuted data where the groups happened to get permuted randomly.
+#| fig-cap: |
+#|   "The 4th car: the tire brand was randomly permuted, and in the randomization
+#|   calculation, the measurements (in cm) ended up in different groups."
+#| fig-alt: |
+#|   Line plot connecting the tread for the 4th car in the dataset. The first 
+#|   plot is the original data and the second plot is the permuted data where 
+#|   the groups happened to get permuted randomly.
 
 set.seed(47)
-permdata <- tires %>%
-  group_by(car) %>%
+permdata <- tires |>
+  group_by(car) |>
   mutate(random_brand = sample(brand))
 
-origplot4 <- tires %>%
-  filter(car == "car 4") %>%
-  ggplot(aes(x = brand, y = tread,
-            color = brand, shape = brand)) +
+origplot4 <- tires |>
+  filter(car == "car 4") |>
+  ggplot(aes(
+    x = brand, y = tread,
+    color = brand, shape = brand
+  )) +
   geom_line(aes(group = car), color = "grey") +
   geom_point(size = 3, show.legend = FALSE) +
-  geom_text(aes(label = car), color = "darkgrey", 
-            hjust = rep(c(-0.15, 1.3), each = 1),
-            show.legend = FALSE, size = 6) +
-  ylim(c(miny, maxy)) + 
+  geom_text(aes(label = car),
+    color = "darkgrey",
+    hjust = rep(c(-0.15, 1.3), each = 1),
+    show.legend = FALSE, size = 6
+  ) +
+  ylim(c(miny, maxy)) +
   labs(
     x = "Brand of tire",
     y = NULL,
@@ -179,15 +198,19 @@ origplot4 <- tires %>%
   ) +
   scale_color_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"]))
 
-shuffbrand4 <- permdata %>%
-  filter(car == "car 4") %>%
-  ggplot(aes(x = brand, y = tread, 
-             color = random_brand, shape = random_brand)) +
+shuffbrand4 <- permdata |>
+  filter(car == "car 4") |>
+  ggplot(aes(
+    x = brand, y = tread,
+    color = random_brand, shape = random_brand
+  )) +
   geom_line(aes(group = car), color = "grey") +
   geom_point(size = 3) +
-  geom_text(aes(label = car),color = "darkgrey", 
-            hjust = rep(c(-0.15,1.3), each = 1),
-            show.legend = FALSE, size = 6) +
+  geom_text(aes(label = car),
+    color = "darkgrey",
+    hjust = rep(c(-0.15, 1.3), each = 1),
+    show.legend = FALSE, size = 6
+  ) +
   ylim(c(miny, maxy)) +
   scale_color_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"])) +
   theme_void() +
@@ -207,24 +230,30 @@ origplot4 + shuffbrand4
 ```
 
 ```{r}
-#| label: fig-tiredata5
-#| fig.cap: 'The 5th car: the tire brand was randomly permuted to stay the same! In the
-#|   randomization calculation, the measurements (in cm) ended up in the original groups.'
-#| fig-alt: Line plot connecting the tread for the 5th car in the
-#|  dataset.  The first plot is the original data and the second plot is
-#|  the permuted data where the groups happened to stay connected to the
-#|  original measurements.
+#| label: fIg-tiredata5
+#| fig-cap: |
+#|   "The 5th car: the tire brand was randomly permuted to stay the same! In the
+#|   randomization calculation, the measurements (in cm) ended up in the 
+#|   original groups."
+#| fig-alt: |
+#|   Line plot connecting the tread for the 5th car in the dataset. The first 
+#|   plot is the original data and the second plot is the permuted data where 
+#|   the groups happened to stay connected to the original measurements.
 
-origplot5 <- tires %>%
-  filter(car == "car 5") %>%
-  ggplot(aes(x = brand, y = tread, 
-             color = brand, shape = brand)) +
+origplot5 <- tires |>
+  filter(car == "car 5") |>
+  ggplot(aes(
+    x = brand, y = tread,
+    color = brand, shape = brand
+  )) +
   geom_line(aes(group = car), color = "grey") +
   geom_point(size = 3, show.legend = FALSE) +
-  geom_text(aes(label = car), color = "darkgrey", 
-            hjust = rep(c(-0.15, 1.3), each = 1),
-            show.legend = FALSE, size = 6) +
-  ylim(c(miny, maxy)) + 
+  geom_text(aes(label = car),
+    color = "darkgrey",
+    hjust = rep(c(-0.15, 1.3), each = 1),
+    show.legend = FALSE, size = 6
+  ) +
+  ylim(c(miny, maxy)) +
   labs(
     x = "Brand of tire",
     y = NULL,
@@ -233,15 +262,19 @@ origplot5 <- tires %>%
   ) +
   scale_color_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"]))
 
-shuffbrand5 <- permdata %>%
-  filter(car == "car 5") %>%
-  ggplot(aes(x = brand, y = tread, 
-             color = random_brand, shape = random_brand)) +
+shuffbrand5 <- permdata |>
+  filter(car == "car 5") |>
+  ggplot(aes(
+    x = brand, y = tread,
+    color = random_brand, shape = random_brand
+  )) +
   geom_line(aes(group = car), color = "grey") +
   geom_point(size = 3) +
-  geom_text(aes(label = car),color = "darkgrey", 
-            hjust = rep(c(-0.15, 1.3), each = 1),
-            show.legend = FALSE, size = 6) +
+  geom_text(aes(label = car),
+    color = "darkgrey",
+    hjust = rep(c(-0.15, 1.3), each = 1),
+    show.legend = FALSE, size = 6
+  ) +
   ylim(c(miny, maxy)) +
   scale_color_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"])) +
   theme_void() +
@@ -264,26 +297,30 @@ We can put the shuffled assignments for all the cars into one plot as seen in @f
 
 ```{r}
 #| label: fig-tiredataPerm
-#| fig.cap: 'Tire tread data (in cm) with: the brand of tire from which the original
-#|   measurements came (left) and shuffled brand assignment (right).  As evidenced by
-#|   the colors, some of the cars kept their original tire assignments and some cars
-#|   swapped the tire assignments.'
-#| fig-alt: Line plot connecting the tread for the all of the cars in the
-#|  dataset.  The first plot is the original data and the second plot is
-#|  the permuted data where some of the brands are connect to the
-#|  original tread measurements and some of the brands have been swapped
-#|  across the two tread measurements, within a car.
-#| out.width: 100%
+#| fig-cap: |
+#|   "Tire tread data (in cm) with: the brand of tire from which the original
+#|   measurements came (left) and shuffled brand assignment (right). As 
+#|   evidenced by the colors, some of the cars kept their original tire 
+#|   assignments and some cars swapped the tire assignments."
+#| fig-alt: |
+#|   Line plot connecting the tread for the all of the cars in the
+#|   dataset.  The first plot is the original data and the second plot is
+#|   the permuted data where some of the brands are connect to the
+#|   original tread measurements and some of the brands have been swapped
+#|   across the two tread measurements, within a car.
+#| out-width: 100%
 
-origplot <- tires %>%
+origplot <- tires |>
   ggplot(aes(x = brand, y = tread, 
              color = brand, shape = brand)) +
   geom_line(aes(group = car), color = "grey") +
   geom_point(size = 3, show.legend = FALSE) +
-  geom_text(aes(label = car), color = "grey",
-            hjust = rep(c(-0.15, 1.3), each = nrow(tires)/2),
-            show.legend = FALSE, size = 3) +
-  ylim(c(miny, maxy)) + 
+  geom_text(aes(label = car),
+    color = "grey",
+    hjust = rep(c(-0.15, 1.3), each = nrow(tires) / 2),
+    show.legend = FALSE, size = 3
+  ) +
+  ylim(c(miny, maxy)) +
   labs(
     x = "Brand of tire",
     y = NULL,
@@ -292,15 +329,19 @@ origplot <- tires %>%
   ) +
   scale_color_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"]))
 
-shuffbrand <- permdata %>%
-  ggplot(aes(x = brand, y = tread, 
-             color = random_brand, shape = random_brand)) +
+shuffbrand <- permdata |>
+  ggplot(aes(
+    x = brand, y = tread,
+    color = random_brand, shape = random_brand
+  )) +
   geom_line(aes(group = car), color = "grey") +
   geom_point(size = 3) +
-  geom_text(aes(label = car), color = "grey",
-            hjust = rep(c(-0.15, 1.3), each = nrow(tires)/2),
-            show.legend = FALSE, size = 3) +
-  ylim(c(miny, maxy)) + 
+  geom_text(aes(label = car),
+    color = "grey",
+    hjust = rep(c(-0.15, 1.3), each = nrow(tires) / 2),
+    show.legend = FALSE, size = 3
+  ) +
+  ylim(c(miny, maxy)) +
   scale_color_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"])) +
   theme_void() +
   theme(
@@ -309,7 +350,8 @@ shuffbrand <- permdata %>%
   ) +
   labs(
     title = "Shuffled data",
-    color = NULL, shape = NULL)
+    color = NULL, shape = NULL
+  )
 
 origplot + shuffbrand
 ```
@@ -320,10 +362,12 @@ However, the right image in @fig-tiredataPermSort sorts the randomized groups so
 
 ```{r}
 #| label: fig-tiredataPermSort
-#| fig.cap: Tire tread from (left) randomized brand assignment, (right) sorted by randomized
-#|   brand.
-#| out.width: 100%
-#| fig-alt: Scatterplot of tread on the y axis and tire brand on the
+#| fig-cap: |
+#|   Tire tread from (left) randomized brand assignment, (right) sorted 
+#|   by randomized brand.
+#| out-width: 100%
+#| fig-alt: |
+#|   Scatterplot of tread on the y axis and tire brand on the
 #|   x axis.  The left panel has the observed tread values matched to
 #|   the original tire brand for the x axis location.  The 
 #|   observations are colored based on the permuted tire brand 
@@ -334,16 +378,17 @@ However, the right image in @fig-tiredataPermSort sorts the randomized groups so
 #|   right panel, the two tire brands seem equivalent with respect 
 #|   to tire wear.
 
-
-permed_means <- permdata %>%
-  group_by(random_brand) %>%
-  summarize(mean_tread = round(mean(tread), 4))  %>%
-  mutate(mean_label = c("bar(x)[QSsim1]", "bar(x)[STsim1]")) %>%
+permed_means <- permdata |>
+  group_by(random_brand) |>
+  summarize(mean_tread = round(mean(tread), 4)) |>
+  mutate(mean_label = c("bar(x)[QSsim1]", "bar(x)[STsim1]")) |>
   mutate(mean_label = paste(mean_label, "==", mean_tread))
 
-shuffbrandfull <- permdata %>%
-  ggplot(aes(x = random_brand, y = tread,
-             color = random_brand, shape = random_brand)) +
+shuffbrandfull <- permdata |>
+  ggplot(aes(
+    x = random_brand, y = tread,
+    color = random_brand, shape = random_brand
+  )) +
   geom_text(aes(label = car),
     color = "grey",
     hjust = rep(c(-0.15, 1.3), each = 25),
@@ -352,9 +397,11 @@ shuffbrandfull <- permdata %>%
   geom_line(aes(group = car), color = "grey") +
   ylim(c(miny, maxy)) +
   geom_point(size = 3, show.legend = FALSE) +
-  geom_text(data = permed_means,
-            aes(label = mean_label, y = 0.318), 
-            parse = TRUE, show.legend = FALSE) +
+  geom_text(
+    data = permed_means,
+    aes(label = mean_label, y = 0.318),
+    parse = TRUE, show.legend = FALSE
+  ) +
   labs(
     x = "Randomized brand of tire",
     y = NULL,
@@ -370,7 +417,8 @@ Notice how the two observations from the same car are linked by a grey line; som
 
 ```{r}
 #| label: fig-tiredatarand1
-#| fig.cap: A second randomization where the brand is randomly swapped (or not) across
+#| fig-cap: |
+#|   A second randomization where the brand is randomly swapped (or not) across
 #|   the two tread wear measurements (in cm) from the same car.
 #| fig-alt: Boxplots and scatterplot with tire brand on the x-axis and
 #| treat on the y-axis.  The points are assigned to the x-axis brand 
@@ -379,25 +427,29 @@ Notice how the two observations from the same car are linked by a grey line; som
 #| permuted brands seem equivalent with respect to tire wear.
 
 set.seed(47)
-tires1 <- tires %>%
-  group_by(car) %>%
+tires1 <- tires |>
+  group_by(car) |>
   mutate(random_brand = sample(brand))
 
-permed_means <- tires1 %>%
-  group_by(random_brand) %>%
-  summarize(mean_tread = round(mean(tread), 4)) %>%
-  mutate(mean_label = c("bar(x)[QSsim2]", "bar(x)[STsim2]")) %>%
+permed_means <- tires1 |>
+  group_by(random_brand) |>
+  summarize(mean_tread = round(mean(tread), 4)) |>
+  mutate(mean_label = c("bar(x)[QSsim2]", "bar(x)[STsim2]")) |>
   mutate(mean_label = paste(mean_label, "==", mean_tread))
 
-ggplot(tires1, aes(x = random_brand, y = tread, 
-                   color = random_brand, shape = random_brand)) +
-  geom_boxplot(show.legend = FALSE, color = "black",
-               outlier.shape = "triangle") +
+ggplot(tires1, aes(
+  x = random_brand, y = tread,
+  color = random_brand, shape = random_brand
+)) +
+  geom_boxplot(
+    show.legend = FALSE, color = "black",
+    outlier.shape = "triangle"
+  ) +
   geom_line(aes(group = car), color = "grey") +
   geom_point(size = 2, show.legend = FALSE) +
   geom_text(
     data = permed_means,
-    aes(label = mean_label, y = 0.318), 
+    aes(label = mean_label, y = 0.318),
     parse = TRUE, show.legend = FALSE
   ) +
   scale_color_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"])) +
@@ -412,7 +464,8 @@ Again, the same observations are linked by a grey line, and some of the tread va
 
 ```{r}
 #| label: fig-tiredatarand2
-#| fig.cap: An additional randomization where the brand is randomly swapped (or not)
+#| fig-cap: |
+#|   An additional randomization where the brand is randomly swapped (or not)
 #|   across the two tread wear measurements (in cm) from the same car.
 #| fig-alt: Boxplots and scatterplot with tire brand on the x-axis and
 #| treat on the y-axis.  The points are assigned to the x-axis brand 
@@ -422,25 +475,29 @@ Again, the same observations are linked by a grey line, and some of the tread va
 #| continue to change for each permutation yet the tire tread is
 #| equivalent across the permuted groups.
 set.seed(4747)
-tires2 <- tires %>%
-  group_by(car) %>%
+tires2 <- tires |>
+  group_by(car) |>
   mutate(random_brand = sample(brand))
 
-permed_means <- tires2 %>%
-  group_by(random_brand) %>%
-  summarize(mean_tread = round(mean(tread),4))  %>%
-  mutate(mean_label = c("bar(x)[QSsim3]", "bar(x)[STsim3]")) %>%
+permed_means <- tires2 |>
+  group_by(random_brand) |>
+  summarize(mean_tread = round(mean(tread), 4)) |>
+  mutate(mean_label = c("bar(x)[QSsim3]", "bar(x)[STsim3]")) |>
   mutate(mean_label = paste(mean_label, "==", mean_tread))
 
-ggplot(tires2, aes(x = random_brand, y = tread, 
-                   color = random_brand, shape = random_brand)) +
-  geom_boxplot(show.legend = FALSE, color = "black",
-               outlier.shape = "triangle") +
+ggplot(tires2, aes(
+  x = random_brand, y = tread,
+  color = random_brand, shape = random_brand
+)) +
+  geom_boxplot(
+    show.legend = FALSE, color = "black",
+    outlier.shape = "triangle"
+  ) +
   geom_line(aes(group = car), color = "grey") +
   geom_point(size = 2, show.legend = FALSE) +
   geom_text(
     data = permed_means,
-    aes(label = mean_label, y = 0.318), 
+    aes(label = mean_label, y = 0.318),
     parse = TRUE, show.legend = FALSE
   ) +
   scale_color_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"])) +
@@ -452,7 +509,7 @@ ggplot(tires2, aes(x = random_brand, y = tread,
 
 ### Observed statistic vs. null statistics
 
-By repeating the randomization process, we can create a distribution of the average of the differences in tire treads, as seen in @fig-pairRandomiz.
+By repeating the randomization process, we can create a distribution of the average of the differences in tire treads, as seen in @fig-pair-randomize.
 As expected (because the differences were generated under the null hypothesis), the center of the histogram is zero.
 A line has been drawn at the observed difference which is well outside the majority of the null differences simulated from natural variability by mixing up which the tire received Smooth Turn and which received Quick Spin.
 Because the observed statistic is so far away from the natural variability of the randomized differences, we are convinced that there is a difference between Smooth Turn and Quick Spin.
@@ -469,22 +526,24 @@ include_graphics("images/pairrandfull.png")
 ```
 
 ```{r}
-#| label: fig-pairRandomiz
-#| fig.cap: Histogram of 1,000 mean differences with tire brand randomly assigned across
+#| label: fig-pair-randomize
+#| fig-cap: |
+#|   Histogram of 1,000 mean differences with tire brand randomly assigned across
 #|   the two tread measurements (in cm) per pair.
-#| fig-alt: Histogram of the average difference in tire wear, Quick Spin
-#| minus Smooth Turn over 1000 different permutations.  The histogram is
-#| centered at 0 and spreads to approximately -0.0025 and 0.0025.  A
-#| red line at approximately 0.002 indicates the observed difference in
-#| average trend from the original data.
+#| fig-alt: |
+#|   Histogram of the average difference in tire wear, Quick Spin
+#|   minus Smooth Turn over 1000 different permutations.  The histogram is
+#|   centered at 0 and spreads to approximately -0.0025 and 0.0025.  A
+#|   red line at approximately 0.002 indicates the observed difference in
+#|   average trend from the original data.
 set.seed(474756)
-tires_shuffled <- tires %>%
+tires_shuffled <- tires |>
   pivot_wider(id_cols = car, names_from = brand, names_prefix = "brand_",
-              values_from = tread) %>%
-  mutate(diff_tread = `brand_Quick Spin` - `brand_Smooth Turn`) %>%
-  specify(response = diff_tread) %>%
-  hypothesize(null = "paired independence") %>%
-  generate(1000, type = "permute") %>%
+              values_from = tread) |>
+  mutate(diff_tread = `brand_Quick Spin` - `brand_Smooth Turn`) |>
+  specify(response = diff_tread) |>
+  hypothesize(null = "paired independence") |>
+  generate(1000, type = "permute") |>
   calculate(stat = "mean")
 
 ggplot(tires_shuffled, aes(x = stat)) +
@@ -494,8 +553,10 @@ ggplot(tires_shuffled, aes(x = stat)) +
     title = "1,000 means of randomized differences",
     y = "Count"
   ) +
-  geom_vline(xintercept = mean(brandA) - mean(brandB),
-             color = IMSCOL["red", "full"])
+  geom_vline(
+    xintercept = mean(brandA) - mean(brandB),
+    color = IMSCOL["red", "full"]
+  )
 ```
 
 ## Bootstrap confidence interval for the mean paired difference
@@ -515,22 +576,25 @@ It's been several years, and many stores have adapted to the online market, so w
 
 We sampled 201 UCLA courses.
 Of those, 68 required books could be found on Amazon.
-A portion of the dataset from these courses is shown in @tab-textbooksDF, where prices are in US dollars.
+A portion of the dataset from these courses is shown in @tbl-textbooksDF, where prices are in US dollars.
 
 ::: {.data data-latex=""}
 The [`ucla_textbooks_f18`](http://openintrostat.github.io/openintro/reference/ucla_textbooks_f18.html) data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
 :::
 
 ```{r}
-#| label: tab-textbooksDF
-ucla_textbooks_f18 %>% 
-  select(subject, course_num, bookstore_new, amazon_new) %>%
-  mutate(price_diff = bookstore_new - amazon_new) %>%
-  filter(!is.na(bookstore_new) & !is.na(amazon_new)) %>%
-  head(4) %>%
-  kbl(linesep = "", booktabs = TRUE, caption = caption_helper("Four cases from the `ucla_textbooks_f18` dataset.")) %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) 
+#| label: tbl-textbooksDF
+#| tbl-cap: Four cases from the `ucla_textbooks_f18` dataset.
+ucla_textbooks_f18 |>
+  select(subject, course_num, bookstore_new, amazon_new) |>
+  mutate(price_diff = bookstore_new - amazon_new) |>
+  filter(!is.na(bookstore_new) & !is.na(amazon_new)) |>
+  head(4) |>
+  kbl(linesep = "", booktabs = TRUE) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  )
 ```
 
 \index{paired data}
@@ -564,38 +628,42 @@ That is, the 99% bootstrap SE interval gives potential for UCLA to be lower, on 
 
 ```{r}
 #| label: fig-pairboot
-#| fig.cap: Bootstrap distribution for the average difference in new book
-#| price at the UCLA bookstore versus Amazon. 99% confidence intervals
-#| are superimposed using blue dashed (bootstrap percentile interval) and
-#| red dotted (bootstrap SE interval) lines.
-#| fig-alt: Histogram showing the distribution of the average
-#| bootstrapped difference of price, UCLA minus Amazon.  The center of
-#| the distribution is given at approximately $3.75.  Two bootstrap
-#| intervals are given.  The percentile interval is approximately $0.25
-#| to $8.50.  The SE interval is approximately -$0.50 to $7.75.
+#| fig-cap: |
+#|   Bootstrap distribution for the average difference in new book
+#|   price at the UCLA bookstore versus Amazon. 99% confidence intervals
+#|   are superimposed using blue dashed (bootstrap percentile interval) and
+#|   red dotted (bootstrap SE interval) lines.
+#| fig-alt: |
+#|   Histogram showing the distribution of the average
+#|   bootstrapped difference of price, UCLA minus Amazon.  The center of
+#|   the distribution is given at approximately $3.75.  Two bootstrap
+#|   intervals are given.  The percentile interval is approximately $0.25
+#|   to $8.50.  The SE interval is approximately -$0.50 to $7.75.
 
-diff_price <- ucla_textbooks_f18 %>% 
-  select(subject, course_num, bookstore_new, amazon_new) %>%
-  mutate(price_diff = bookstore_new - amazon_new) %>%
-  filter(!is.na(bookstore_new) & !is.na(amazon_new)) %>%
-  specify(response = price_diff) %>%
+diff_price <- ucla_textbooks_f18 |> 
+  select(subject, course_num, bookstore_new, amazon_new) |>
+  mutate(price_diff = bookstore_new - amazon_new) |>
+  filter(!is.na(bookstore_new) & !is.na(amazon_new)) |>
+  specify(response = price_diff) |>
   calculate(stat = "mean")
 
-boot_diff <- ucla_textbooks_f18 %>% 
-  select(subject, course_num, bookstore_new, amazon_new) %>%
-  mutate(price_diff = bookstore_new - amazon_new) %>%
-  filter(!is.na(bookstore_new) & !is.na(amazon_new)) %>%
-  specify(response = price_diff) %>%
-  generate(reps = 1000, type = "bootstrap") %>%
-  calculate(stat = "mean") 
+boot_diff <- ucla_textbooks_f18 |>
+  select(subject, course_num, bookstore_new, amazon_new) |>
+  mutate(price_diff = bookstore_new - amazon_new) |>
+  filter(!is.na(bookstore_new) & !is.na(amazon_new)) |>
+  specify(response = price_diff) |>
+  generate(reps = 1000, type = "bootstrap") |>
+  calculate(stat = "mean")
 
-ci_perc_diff <- boot_diff %>%
+ci_perc_diff <- boot_diff |>
   get_confidence_interval(level = 0.99, type = "percentile")
 
-ci_se_diff <- boot_diff %>%
-  get_confidence_interval(level = 0.99, type = "se",
-                          point_estimate = diff_price)
-boot_diff %>%
+ci_se_diff <- boot_diff |>
+  get_confidence_interval(
+    level = 0.99, type = "se",
+    point_estimate = diff_price
+  )
+boot_diff |>
   infer::visualize(bins = 20) +
   infer::shade_confidence_interval(ci_perc_diff,
     color = IMSCOL["blue", "full"],
@@ -621,7 +689,7 @@ boot_diff %>%
     name = NULL,
     values = c("a" = "dashed", "b" = "dotted", "c" = "solid"),
     labels = c("Percentile\ninterval\n", "SE\ninterval\n", "Observed\nstatistic"),
-    guide = "legend"    
+    guide = "legend"
   ) +
   labs(
     x = "Mean of bootstrapped differences of price\n(UCLA - Amazon)",
@@ -650,7 +718,7 @@ Here the differences are taken as
 $$\text{UCLA Bookstore price} - \text{Amazon price}$$
 
 It is important that we always subtract using a consistent order; here Amazon prices are always subtracted from UCLA prices.
-The first difference shown in @tab-textbooksDF is computed as $47.97 - 47.45 = 0.52.$ Similarly, the second difference is computed as $14.26 - 13.55 = 0.71,$ and the third is $13.50 - 12.53 = 0.97.$ A histogram of the differences is shown in @fig-diffInTextbookPricesF18.
+The first difference shown in @tbl-textbooksDF is computed as $47.97 - 47.45 = 0.52.$ Similarly, the second difference is computed as $14.26 - 13.55 = 0.71,$ and the third is $13.50 - 12.53 = 0.97.$ A histogram of the differences is shown in @fig-diffInTextbookPricesF18.
 
 ```{r}
 #| label: fig-diffInTextbookPricesF18
@@ -658,9 +726,9 @@ The first difference shown in @tab-textbooksDF is computed as $47.97 - 47.45 = 0
 #| fig-alt: Histogram of the difference in price for each book samples,
 #| UCLA minus Amazon.  The prices range from -$10 to $80 with a strong
 #| right skew.
-ucla_textbooks_f18 <- ucla_textbooks_f18 %>% 
-  select(subject, course_num, bookstore_new, amazon_new) %>%
-  filter(!is.na(bookstore_new), !is.na(amazon_new)) %>%
+ucla_textbooks_f18 <- ucla_textbooks_f18 |> 
+  select(subject, course_num, bookstore_new, amazon_new) |>
+  filter(!is.na(bookstore_new), !is.na(amazon_new)) |>
   mutate(price_diff = bookstore_new - amazon_new)
 
 ggplot(ucla_textbooks_f18, aes(x = price_diff)) +
@@ -675,25 +743,31 @@ ggplot(ucla_textbooks_f18, aes(x = price_diff)) +
 ### Variability of the statistic
 
 To analyze a paired dataset, we simply analyze the differences.
-Table @tab-textbooksSummaryStats provides the data summaries from the textbook data.
+@tbl-textbooksSummaryStats provides the data summaries from the textbook data.
 Note that instead of reporting the prices separately for UCLA and Amazon, the summary statistics are given by the mean of the differences, the standard deviation of the differences, and the total number of pairs (i.e., differences).
-The parameter of interest is also a single value, $\mu_{diff},$ so we can use the same $t$-distribution techniques we applied in Section @sec-one-mean-math directly onto the observed differences.
+The parameter of interest is also a single value, $\mu_{diff},$ so we can use the same $t$-distribution techniques we applied in @sec-one-mean-math directly onto the observed differences.
 
 ```{r}
-#| label: tab-textbooksSummaryStats
-ucla_textbooks_f18 %>%
+#| label: tbl-textbooksSummaryStats
+#| tbl-cap: Summary statistics for the 68 price differences.
+
+ucla_textbooks_f18 |>
   summarise(
     n = n(),
     mean = mean(price_diff),
     sd = sd(price_diff)
-  ) %>%
-  kbl(linesep = "", booktabs = TRUE, caption = "Summary statistics for the 68 price differences.",
-      col.names = c("n", "Mean", "SD"),
-      align = "ccc", digits = 2) %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) %>%
-  column_spec(1, width = "8em") %>%
-  column_spec(2, width = "8em") %>%
+  ) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("n", "Mean", "SD"),
+    align = "ccc", digits = 2
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  ) |>
+  column_spec(1, width = "8em") |>
+  column_spec(2, width = "8em") |>
   column_spec(3, width = "8em")
 ```
 
@@ -759,11 +833,11 @@ The degrees of freedom is $df = 68 - 1 = 67.$ Using statistical software, we fin
 ```{r}
 #| label: fig-textbooksF18HTTails
 #| fig-asp: 0.5
-#| out.width: 60%
-m  <- mean(ucla_textbooks_f18$price_diff)
-s  <- sd(ucla_textbooks_f18$price_diff)
+#| out-width: 60%
+m <- mean(ucla_textbooks_f18$price_diff)
+s <- sd(ucla_textbooks_f18$price_diff)
 se <- s / sqrt(length(ucla_textbooks_f18$price_diff))
-z  <- m / se
+z <- m / se
 
 normTail(
   L = -abs(m),
@@ -835,7 +909,7 @@ terms_chp_21 <- c(terms_chp_21, "paired difference t-test", "paired difference C
 
 \clearpage
 
-## Chapter review {#chp21-review}
+## Chapter review {#sec-chp21-review}
 
 ### Summary
 
@@ -857,7 +931,7 @@ make_terms_table(terms_chp_21)
 
 \clearpage
 
-## Exercises {#chp21-exercises}
+## Exercises {#sec-chp21-exercises}
 
 Answers to odd-numbered exercises can be found in [Appendix -@sec-exercise-solutions-21].
 
