@@ -110,7 +110,7 @@ The full set of attributes considered is provided in @tbl-resume-variables.
 ```{r}
 #| label: tbl-resume-variables
 #| tbl-cap: |
-#|   Descriptions of nine variables from the `resume` data set. Many 
+#|   Descriptions of nine variables from the `resume` dataset. Many 
 #|   of the variables are indicator variables, meaning they take 
 #|   the value 1 if the specified characteristic is present and 
 #|   0 otherwise.
@@ -162,7 +162,7 @@ terms_chp_09 <- c(terms_chp_09, "probability of an event")
 The predictor variables are represented as follows: $x_{1,i}$ is the value of variable 1 for observation $i$, $x_{2,i}$ is the value of variable 2 for observation $i$, and so on.
 
 $$
-transformation(p_i) = b_0 + b_1 x_{1,i} + b_2 x_{2,i} + \cdots + b_k x_{k,i}
+transformation(p_i) = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \cdots + \beta_k x_{k,i}
 $$
 
 We want to choose a **transformation** in the equation that makes practical and mathematical sense.
@@ -188,7 +188,7 @@ terms_chp_09 <- c(terms_chp_09, "logit transformation")
 ```
 
 $$
-\log_{e}\left( \frac{p_i}{1-p_i} \right) = b_0 + b_1 x_{1,i} + b_2 x_{2,i} + \cdots + b_k x_{k,i}
+\log_{e}\left( \frac{p_i}{1-p_i} \right) = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \cdots + \beta_k x_{k,i}
 $$
 
 ```{r}
@@ -249,13 +249,13 @@ To convert from values on the logistic regression scale to the probability scale
 
 $$
 \begin{aligned}
-\log_{e}\left( \frac{p_i}{1-p_i} \right) &= b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i} \\
-\frac{p_i}{1-p_i} &= e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}} \\
-p_i &= \left( 1 - p_i \right) e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}} \\
-p_i &= e^{b_0 + b_1 x_{1,i}  + \cdots + b_k x_{k,i}} - p_i \times e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}} \\
-p_i + p_i \text{ } e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}} &= e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}} \\
-p_i(1 + e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}}) &= e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}} \\
-p_i &= \frac{e^{b_0 + b_1 x_{1,i}  + \cdots + b_k x_{k,i}}}{1 + e^{b_0 + b_1 x_{1,i} + \cdots + b_k x_{k,i}}}
+\log_{e}\left( \frac{p_i}{1-p_i} \right) &= \beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i} \\
+\frac{p_i}{1-p_i} &= e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}} \\
+p_i &= \left( 1 - p_i \right) e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}} \\
+p_i &= e^{\beta_0 + \beta_1 x_{1,i}  + \cdots + \beta_k x_{k,i}} - p_i \times e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}} \\
+p_i + p_i \text{ } e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}} &= e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}} \\
+p_i(1 + e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}}) &= e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}} \\
+p_i &= \frac{e^{\beta_0 + \beta_1 x_{1,i}  + \cdots + \beta_k x_{k,i}}}{1 + e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}}}
 \end{aligned}
 $$
 
@@ -314,7 +314,7 @@ The penalty for added model complexity attempts to strike a balance between unde
 When using AIC for model selection, models with a lower AIC value are considered to be "better." Remember that when using adjusted $R^2$ we select models with higher values instead.
 It is important to note that AIC provides information about the quality of a model relative to other models, but does not provide information about the overall quality of a model.
 
-@tbl-resume-full-fit-aic provides the AIC (and BIC, which is similar to AIC but beyond the scope of this text) and the number of observations used to fit the model.  We also know from @tbl-resume-full-fit that eight variables (with nine coefficients, including the intercept) were fit.
+@tbl-resume-full-fit-aic provides the AIC and the number of observations used to fit the model.  We also know from @tbl-resume-full-fit that eight variables (with nine coefficients, including the intercept) were fit.
 
 ```{r}
 #| label: tbl-resume-full-fit-aic
@@ -328,18 +328,17 @@ resume_full_fit <- logistic_reg() |>
 
 resume_full_fit |>
   glance() |>
-  select(AIC, BIC, nobs) |>
-  dplyr::rename(number_observations = nobs) |>
+  select(AIC, number_observations = nobs) |>
   kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "rrr") |>
+      digits = 2, align = "rr") |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) |>
-  column_spec(1, width = "5em", monospace = TRUE) |>
-  column_spec(2:3, width = "5em")
+                latex_options = c("striped", "hold_position"),
+                full_width = FALSE) |>
+  column_spec(1:2, width = "10em", monospace = TRUE) 
 ```
 
 
-We will look for models with a lower AIC using a backward elimination strategy.  @tbl-resume-fit-aic provides the AIC (and BIC) values for the model with variables as given in @tbl-resume-fit.  Notice that the same number of observations are used, but one fewer variables (`college_degree` is dropped from the model).
+We will look for models with a lower AIC using a backward elimination strategy.  @tbl-resume-fit-aic provides the AIC values for the model with variables as given in @tbl-resume-fit.  Notice that the same number of observations are used, but one fewer variable (`college_degree` is dropped from the model).
 
 ```{r}
 #| label: tbl-resume-fit-aic
@@ -353,14 +352,13 @@ resume_fit <- logistic_reg() |>
 
 resume_fit |>
   glance() |>
-  select(AIC, BIC, nobs) |>
-  dplyr::rename(number_observations = nobs) |>
+  select(AIC,number_observations = nobs) |>
   kbl(linesep = "", booktabs = TRUE, 
       digits = 2, align = "rrr") |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) |>
-  column_spec(1, width = "5em", monospace = TRUE) |>
-  column_spec(2:3, width = "5em")
+                latex_options = c("striped", "hold_position"),
+                full_width = FALSE) |>
+  column_spec(1:2, width = "10em", monospace = TRUE) 
 ```
 
 
@@ -417,7 +415,7 @@ We can start by writing out the equation using the coefficients from the model:
 
 $$
 \begin{aligned}
-&log_e \left(\frac{p}{1 - p}\right) \\
+&log_e \left(\frac{\widehat{p}}{1 - \widehat{p}}\right) \\
 &= - 2.7162 - 0.4364 \times \texttt{job\_city}_{\texttt{Chicago}} \\
 & \quad \quad + 0.0206 \times \texttt{years\_experience} \\
 & \quad \quad + 0.7634 \times \texttt{honors} - 0.3443 \times \texttt{military} + 0.2221 \times \texttt{email} \\
