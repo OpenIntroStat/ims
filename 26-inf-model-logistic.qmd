@@ -81,13 +81,14 @@ The first logistic regression model condition --- independence of the outcomes -
 
 The second condition of the logistic regression model is not easily checked without a fairly sizable amount of data.
 Luckily, we have `r nrow(email)` emails in the dataset!
-Let's first visualize these data by plotting the true classification of the emails against the model's fitted probabilities, as shown in Figure \@ref(fig:spam-predict).
+Let's first visualize these data by plotting the true classification of the emails against the model's fitted probabilities, as shown in @fig-spam-predict.
 
 ```{r}
-#| label: spam-predict
-#| fig.cap: The predicted probability that each of the 3921 emails that are spam. Points
+#| label: fig-spam-predict
+#| fig-cap: The predicted probability that each of the 3921 emails are spam. Points
 #|   have been jittered so that those with nearly identical values aren’t plotted exactly
 #|   on top of one another.
+#| fig-alt: Scatterplot with predicted probability of being spam on the x-axis and original class, either spam or not spam, on the y-axis. We can see that the predictions do not perfectly classify the emails; however, the not spam emails generally have lower prediction probabilities than the spam emails.
 #| fig-asp: 0.4
 spam_fit <- logistic_reg() %>%
   set_engine("glm") %>%
@@ -115,11 +116,12 @@ We can check this for groups of the data by constructing a plot as follows:
 
 If the model does a good job describing the data, the plotted points should fall close to the line $y = x$, since the predicted probabilities should be similar to the observed probabilities.
 We can use the confidence intervals to roughly gauge whether anything might be amiss.
-Such a plot is shown in Figure \@ref(fig:logisticModelBucketDiag).
+Such a plot is shown in @fig-logisticModelBucketDiag.
 
 ```{r}
-#| label: logisticModelBucketDiag
-#| fig.cap: (ref:logisticModelBucketDiag-cap)
+#| label: fig-logisticModelBucketDiag
+#| fig-cap: A reconfiguration of @fig-spam-predict.  Again, the predicted probabilities are on the x-axis and the truth is on the y-axis for each email. After data have been bucketed into predicted probability groups, the proportion of spam emails (i.e., the observed probability) is given by the black circles. The dashed line is within the confidence bound of the 95% confidence intervals for many of the buckets, suggesting the logistic fit is reasonable.
+#| fig-alt: Scatterplot with predicted probability of being spam on the x-axis and original class, either spam or not spam, on the y-axis. Superimposed are the observed probabilities of being spam, calculated by the proportion of spam emails in each bucket of predicted probabilities.  The observed probabilities and predicted probabilities line up reasonably well.
 #| out.width: 90%
 #| fig-asp: 0.7
 par_og <- par(no.readonly = TRUE) # save original par
@@ -210,23 +212,22 @@ text(0.3, 0.15,
 par(par_og) # restore original par
 ```
 
-(ref:logisticModelBucketDiag-cap) The dashed line is within the confidence bound of the 95% confidence intervals of each of the buckets, suggesting the logistic fit is reasonable.
 
-A plot like Figure \@ref(fig:logisticModelBucketDiag) helps to better understand the deviations.
-Additional diagnostics may be created that are similar to those featured in Section \@ref(tech-cond-linmod).
+A plot like @fig-logisticModelBucketDiag helps to better understand the deviations.
+Additional diagnostics may be created that are similar to those featured in @sec-tech-cond-linmod.
 For instance, we could compute residuals as the observed outcome minus the expected outcome ($e_i = Y_i - \hat{p}_i$), and then we could create plots of these residuals against each predictor.
 
 \index{logistic regression}
 
 ## Multiple logistic regression output from software {#sec-inf-log-reg-soft}
 
-As you learned in Chapter \@ref(model-mlr), optimization can be used to find the coefficient estimates for the logistic model.
+As you learned in @sec-model-mlr, optimization can be used to find the coefficient estimates for the logistic model.
 The unknown population model can be written as:
 
 $$
 \begin{aligned}
-\log_e\bigg(\frac{p}{1-p}\bigg) &= \beta_0 + \beta_1 \times \texttt{to_multiple} + \beta_2 \times \texttt{cc} \\
-&+ \beta_3 \times \texttt{dollar} + \beta_4 \times \texttt{urgent_subj}
+\log_e\bigg(\frac{p}{1-p}\bigg) &= \beta_0 + \beta_1 \times \texttt{to\_multiple} + \beta_2 \times \texttt{cc} \\
+&+ \beta_3 \times \texttt{dollar} + \beta_4 \times \texttt{urgent\_subj}
 \end{aligned}
 $$
 
@@ -234,18 +235,18 @@ The estimated equation for the regression model may be written as a model with f
 
 $$
 \begin{aligned}
-\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) &= -2.05 + -1.91 \times \texttt{to_multiple} + 0.02 \times \texttt{cc} \\
-&- 0.07 \times \texttt{dollar} + 2.66 \times \texttt{urgent_subj}
+\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) &= -2.05 + -1.91 \times \texttt{to\_multiple} + 0.02 \times \texttt{cc} \\
+&- 0.07 \times \texttt{dollar} + 2.66 \times \texttt{urgent\_subj}
 \end{aligned}
 $$
 
 ```{r}
-#| label: emaillogmodel
+#| label: tbl-emaillogmodel
+#| tbl-cap: Summary of a logistic model for predicting whether an email is spam based on the variables to_multiple, cc, dollar, and urgent_subj. Each of the variables has its own coefficient estimate and p-value.
 glm(spam ~ to_multiple + cc + dollar + urgent_subj, data = email, family = "binomial") %>% 
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
   kbl(linesep = "", booktabs = TRUE, 
-      caption = caption_helper("Summary of a logistic model for predicting whether an email is spam based on the variables `to_multiple`, `cc`, `dollar`, and `urgent_subj`. Each of the variables has its own coefficient estimate and p-value."), 
       digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position")) %>%
@@ -253,9 +254,9 @@ glm(spam ~ to_multiple + cc + dollar + urgent_subj, data = email, family = "bino
   column_spec(2:5, width = "5em")
 ```
 
-Not only does Table \@ref(tab:emaillogmodel) provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
+Not only does @tbl-emaillogmodel provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
 
-As in Section \@ref(inf-model-mlr), with **multiple predictors**, each hypothesis test (for each of the explanatory variables) is conditioned on each of the other variables remaining in the model.
+As in @sec-inf-model-mlr, with **multiple predictors**, each hypothesis test (for each of the explanatory variables) is conditioned on each of the other variables remaining in the model.
 
 ```{r}
 #| include: false
@@ -264,7 +265,7 @@ terms_chp_27 <- c(terms_chp_27, "multiple predictors")
 
 > if multiple predictors $H_0: \beta_i = 0$ given other variables in the model
 
-Using the example above and focusing on each of the variable p-values (here we won't discuss the p-value associated with the intercept), we can write out the four different hypotheses (associated with the p-value corresponding to each of the coefficients / row in Table \@ref(tab:emaillogmodel)):
+Using the example above and focusing on each of the variable p-values (here we won't discuss the p-value associated with the intercept), we can write out the four different hypotheses (associated with the p-value corresponding to each of the coefficients / row in @tbl-emaillogmodel):
 
 -   $H_0: \beta_1 = 0$ given `cc`, `dollar`, and `urgent_subj` are included in the model
 -   $H_0: \beta_2 = 0$ given `to_multiple`, `dollar`, and `urgent_subj` are included in the model
@@ -277,10 +278,10 @@ The low p-value says that it would be extremely unlikely to observe data that yi
 Note also that the coefficient on `dollar` has a small associated p-value, but the magnitude of the coefficient is also seemingly small (0.07).
 It turns out that in units of standard errors (0.02 here), 0.07 is actually quite far from zero, it's all about context!
 The p-values on the remaining variables are interpreted similarly.
-From the initial output (p-values) in Table \@ref(tab:emaillogmodel), it seems as though `to_multiple`, `dollar`, and `urgent_subj` are important variables for modeling whether an email is `spam`.
+From the initial output (p-values) in @tbl-emaillogmodel, it seems as though `to_multiple`, `dollar`, and `urgent_subj` are important variables for modeling whether an email is `spam`.
 We remind you that although p-values provide some information about the importance of each of the predictors in the model, there are many, arguably more important, aspects to consider when choosing the best model.
 
-As with linear regression (see Section \@ref(inf-mult-reg-collin)), existence of predictors that are correlated with each other can affect both the coefficient estimates and the associated p-values.
+As with linear regression (see @sec-inf-mult-reg-collin), existence of predictors that are correlated with each other can affect both the coefficient estimates and the associated p-values.
 However, investigating multicollinearity in a logistic regression model is saved for a text which provides more detail about logistic regression.
 Next, as a model building alternative (or enhancement) to p-values, we revisit cross-validation within the context of predicting status for each of the individual emails.
 
@@ -293,7 +294,7 @@ Depending on the goal of the research project, you might be inclined to focus on
 Here we present a method for using cross-validation accuracy to determine which variables (if any) should be used in a model which predicts whether an email is spam.
 A full treatment of cross-validation and logistic regression models is beyond the scope of this text.
 Using cross-validation, we can build $k$ different models which are used to predict the observations in each of the $k$ holdout samples.
-The smaller model uses only the `to_multiple` variable, see the complete dataset (not cross-validated) model output in Table \@ref(tab:emaillogmodel1).
+The smaller model uses only the `to_multiple` variable, see the complete dataset (not cross-validated) model output in @tbl-emaillogmodel1.
 The logistic regression model can be written as (where $\hat{p}$ is the estimated probability of being a spam email message):
 
 ```{r}
@@ -304,12 +305,12 @@ terms_chp_27 <- c(terms_chp_27, "cross-validation")
 $$\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -2.12 + -1.81 \times \texttt{to_multiple}$$
 
 ```{r}
-#| label: emaillogmodel1
+#| label: tbl-emaillogmodel1
+#| tbl-cap: Summary of a logistic model for predicting whether an email is spam based on only the predictor variable to_multiple. Each of the variables has its own coefficient estimate and p-value.
 glm(spam ~ to_multiple, data = email, family = "binomial") %>% 
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
   kbl(linesep = "", booktabs = TRUE, 
-      caption = caption_helper("Summary of a logistic model for predicting whether an email is spam based on only the predictor variable `to_multiple`. Each of the variables has its own coefficient estimate and p-value."), 
       digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position")) %>%
@@ -318,11 +319,11 @@ glm(spam ~ to_multiple, data = email, family = "binomial") %>%
 ```
 
 For each cross-validated model, the coefficients change slightly, and the model is used to make independent predictions on the holdout sample.
-The model from the first cross-validation sample is given in Table \@ref(fig:emailCV1) and can be compared to the coefficients in Table \@ref(tab:emaillogmodel1).
+The model from the first cross-validation sample is given in @fig-emailCV1 and can be compared to the coefficients in @tbl-emaillogmodel1.
 
 ```{r}
-#| label: emailCV1
-#| fig.cap: The coefficients are estimated using the least squares model on 3/4 of the
+#| label: fig-emailCV1
+#| fig-cap: The coefficients are estimated using the least squares model on 3/4 of the
 #|   dataset with a single predictor variable. Predictions are made on the remaining
 #|   1/4 of the observations. Note that the predictions are independent of the estimated
 #|   model coefficients, and the prediction error rate is quite high.
@@ -372,7 +373,8 @@ logCV1 <- data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfold
 ```
 
 ```{r}
-#| label: email-spam
+#| label: tbl-email-spam
+#| tbl-cap: One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted. The logistic regression model was fit independently of the removed emails. Only `to_multiple` is used to predict whether the email is spam. Because we used a cutoff designed to identify spam emails, the accuracy of the non-spam email predictions is very low.
 logCV1 %>%
   group_by(fold) %>%
   summarize(
@@ -382,20 +384,19 @@ logCV1 %>%
     spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1)
     ) %>%
   kbl(linesep = "", booktabs = TRUE, 
-      caption = caption_helper("One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted. The logistic regression model was fit independently of the removed emails. Only `to_multiple` is used to predict whether the email is spam. Because we used a cutoff designed to identify spam emails, the accuracy of the non-spam email predictions is very low."), 
       digits = 2) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
 Because the `email` dataset has a ratio of roughly 90% non-spam and 10% spam emails, a model which randomly guessed all non-spam would have an overall accuracy of 90%!
-Clearly, we would like to capture the information with the spam emails, so our interest is in the percent of spam emails which are identified as spam (see Table \@ref(tab:email-spam)).
+Clearly, we would like to capture the information with the spam emails, so our interest is in the percent of spam emails which are identified as spam (see @tbl-email-spam).
 Additionally, in the logistic regression model, we use a 10% cutoff to predict whether the email is spam.
 Fortunately, we have done a great job of predicting !
 However, the trade-off was that most of the non-spam emails are now predicted to be which is not acceptable for a prediction algorithm.
 Adding more variables to the model may help with both the spam and non-spam predictions.
 
-The larger model uses `to_multiple`, `attach`, `winner`, `format`, `re_subj`, `exclaim_mess`, and `number` as the set of seven predictor variables, see the complete dataset (not cross-validated) model output in Table \@ref(tab:emaillogmodel2).
+The larger model uses `to_multiple`, `attach`, `winner`, `format`, `re_subj`, `exclaim_mess`, and `number` as the set of seven predictor variables, see the complete dataset (not cross-validated) model output in @tbl-emaillogmodel2.
 The logistic regression model can be written as (where $\hat{p}$ is the estimated probability of being a spam email message):
 
 $$
@@ -408,12 +409,12 @@ $$
 $$
 
 ```{r}
-#| label: emaillogmodel2
+#| label: tbl-emaillogmodel2
+#| tbl-cap: Summary of a logistic model for predicting whether an email is spam based on only the predictor variable `to_multiple`. Each of the variables has its own coefficient estimate and p-value.
 glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email, family = "binomial") %>% 
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
   kbl(linesep = "", booktabs = TRUE, 
-      caption = caption_helper("Summary of a logistic model for predicting whether an email is spam based on only the predictor variable `to_multiple`. Each of the variables has its own coefficient estimate and p-value."), 
       digits = 2, align = "lrrrr") %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position")) %>%
@@ -423,7 +424,7 @@ glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + num
 
 ```{r}
 #| label: emailCV2
-#| fig.cap: The coefficients are estimated using the least squares model on 3/4 of the
+#| fig-cap: The coefficients are estimated using the least squares model on 3/4 of the
 #|   dataset with the seven specified predictor variables. Predictions are made on the
 #|   remaining 1/4 of the observations. Note that the predictions are independent of
 #|   the estimated model coefficients. The predictions are now much better for both the  and
@@ -473,7 +474,8 @@ logCV2 <- data.frame(
 ```
 
 ```{r}
-#| label: email-spam2
+#| label: tbl-email-spam2
+#| tbl-cap: One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted. The logistic regression model was fit independently of the removed emails. Now, the variables to_multiple, attach, winner, format, re_subj, exclaim_mess, and number are used to predict whether the email is spam.
 logCV2 %>%
   group_by(fold) %>%
   summarize(
@@ -483,13 +485,12 @@ logCV2 %>%
     spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1)
     ) %>%
   kbl(linesep = "", booktabs = TRUE, 
-      caption = caption_helper("One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted. The logistic regression model was fit independently of the removed emails. Now, the variables `to_multiple`, `attach`, `winner`, `format`, `re_subj`, `exclaim_mess`, and `number` are used to predict whether the email is spam."), 
       digits = 2) %>%
   kable_styling(bootstrap_options = c("striped", "condensed"), 
                 latex_options = c("striped", "hold_position"), full_width = FALSE)
 ```
 
-Somewhat expected, the larger model (see Table \@ref(tab:email-spam2)) was able to capture more nuance in the emails which lead to better predictions.
+Somewhat expected, the larger model (see @tbl-email-spam2) was able to capture more nuance in the emails which lead to better predictions.
 However, it is not true that adding variables will always lead to better predictions, as correlated or noise variables may dampen the signal from those variables which truly predict the status.
 We encourage you to learn more about multiple variable models and cross-validation in your future exploration of statistical topics.
 
@@ -502,9 +503,9 @@ We encourage you to learn more about multiple variable models and cross-validati
 Throughout the text, we have presented a modern view to introduction to statistics.
 Early we presented graphical techniques which communicated relationships across multiple variables.
 We also used modeling to formalize the relationships.
-In Chapter \@ref(inf-model-logistic) we considered inferential claims on models which include many variables used to predict the probability of the outcome being a success.
+In @sec-inf-model-logistic we considered inferential claims on models which include many variables used to predict the probability of the outcome being a success.
 We continue to emphasize the importance of experimental design in making conclusions about research claims.
-In particular, recall that variability can come from different sources (e.g., random sampling vs. random allocation, see Figure \@ref(fig:randsampValloc)).
+In particular, recall that variability can come from different sources (e.g., random sampling vs. random allocation, see @fig-randsampValloc).
 
 As you might guess, this text has only scratched the surface of the world of statistical analyses that can be applied to different datasets.
 In particular, to do justice to the topic, the linear models and generalized linear models we have introduced can each be covered with their own course or book.
