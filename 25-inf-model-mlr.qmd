@@ -34,19 +34,23 @@ We will refer to this modified dataset as `loans`.
 :::
 
 Now, our goal is to create a model where `interest_rate` can be predicted using the variables `debt_to_income`, `term`, and `credit_checks`.
-As you learned in Chapter \@ref(model-mlr), least squares can be used to find the coefficient estimates for the linear model.
+As you learned in @sec-model-mlr, least squares can be used to find the coefficient estimates for the linear model.
 The unknown population model can be written as:
 
 $$
 \begin{aligned}
-E[\texttt{interest_rate}] = \beta_0 &+ \beta_1\times \texttt{debt_to_income} \\
+E[\texttt{interest\_rate}] = \beta_0 &+ \beta_1\times \texttt{debt\_to\_income} \\
 &+ \beta_2 \times \texttt{term}\\
-&+ \beta_3 \times \texttt{credit_checks}\\
+&+ \beta_3 \times \texttt{credit\_checks}\\
 \end{aligned}
 $$
 
 ```{r}
-#| label: loansmodel
+#| label: tbl-loansmodel
+#| tbl-cap: 'Summary of a linear model for predicting interest 
+#|    rate based on `debt_to_income`, `term`, and 
+#|    `credit_checks`. Each of the variables has its 
+#|    own coefficient estimate as well as a p-value.'
 loans <- loans_full_schema %>%
   mutate(
     credit_util = total_credit_utilized / total_credit_limit,
@@ -62,7 +66,6 @@ lm(interest_rate ~ debt_to_income + term + credit_checks, data = loans) %>%
   mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
   kbl(
     linesep = "", booktabs = TRUE,
-    caption = caption_helper("Summary of a linear model for predicting interest rate based on `debt_to_income`, `term`, and `credit_checks`. Each of the variables has its own coefficient estimate as well as a p-value."),
     digits = 2, align = "lrrrr"
   ) %>%
   kable_styling(
@@ -77,13 +80,13 @@ The estimated equation for the regression model may be written as a model with t
 
 $$
 \begin{aligned}
-\widehat{\texttt{interest_rate}} = 4.31 &+ 0.041 \times \texttt{debt_to_income} \\
+\widehat{\texttt{interest\_rate}} = 4.31 &+ 0.041 \times \texttt{debt\_to\_income} \\
 &+ 0.16 \times \texttt{term} \\
-&+ 0.25 \times \texttt{credit_checks}
+&+ 0.25 \times \texttt{credit\_checks}
 \end{aligned}
 $$
 
-Not only does Table \@ref(tab:loansmodel) provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which are the focus of this chapter.
+Not only does @tbl-loansmodel provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which is the focus of this chapter.
 
 In @sec-inf-model-slr, you learned that the hypothesis test for a linear model with **one predictor**[^25-inf-model-mlr-1] can be written as:
 
@@ -131,31 +134,35 @@ Our discussion will focus on interpreting coefficients (and their signs) in rela
 Consider an example where we would like to predict how much money is in a coin dish based only on the number of coins in the dish.
 We ask 26 students to tell us about their individual coin dishes, collecting data on the total dollar amount, the total number of coins, and the total number of low coins.[^25-inf-model-mlr-2]
 The number of low coins is the number of coins minus the number of quarters (a quarter is the largest commonly used US coin, at US\$0.25).
-Figure \@ref(fig:money) illustrates a sample of U.S. coins, their total worth (`total_amount`), the total `number of coins`, and the `number of low coins`.
+@fig-money illustrates a sample of U.S. coins, their total worth (`total_amount`), the total `number_of_coins`, and the `number_of_low_coins`.
 
 [^25-inf-model-mlr-2]: In all honesty, this particular dataset is fabricated, and the original idea for the problem comes from Jeff Witmer at Oberlin College.
 
 ```{r}
-#| label: money
-#| fig.cap: (ref:money-cap)
+#| label: fig-money
+#| fig-cap: A sample of coins with 16 total coins, 10 low coins, and a net worth of \$1.90.
 #| fig.width: 10.0
-#| fig.alt: Graphic of five pennies, three nickles, two dimes, and six quarters. A summary
+#| fig-alt: Graphic of five pennies, three nickles, two dimes, and six quarters. A summary
 #|   table indicates that there are 16 total coins, 10 of which are considered low coins.  The
 #|   total amount of money is one dollar and ninety cents.
 include_graphics("images/money.png")
 ```
 
-(ref:money-cap) A sample of coins with 16 total coins, 10 low coins, and a net worth of \$1.90.
 
-The collected data is given in Figure \@ref(fig:coinfig) and shows that the `total_amount` of money is more highly correlated with the total `number of coins` than it is with the `number of low coins`.
-We also note that the total `number of coins` and the `number of low coins` are positively correlated.
+
+The collected data is given in @fig-coinfig and shows that the `total_amount` of money is more highly correlated with the total `number_of_coins` than it is with the `number_of_low_coins`.
+We also note that the total `number_of_coins` and the `number_of_low_coins` are positively correlated.
 
 ```{r}
-#| label: coinfig
-#| fig.cap: Plot describing the total amount of money (USD) as a function of the number
+#| label: fig-coinfig
+#| fig-cap: Plot describing the total amount of money (USD) as a function of the number
 #|   of coins and the number of low coins. As you might expect, the total amount of money
 #|   is more highly postively correlated with the total number of coins than with the
 #|   number of low coins.
+#| fig-alt: Two scatterplots, both with total amount of money on the y-axis.  The left
+#|   plot has total number of coins on the x-axis. The right plot has number of
+#|   low coins on the x-axis.  Both plots show positive correlation, but the total 
+#|   number of coins plot is more strongly correlated than the number of low coins plot.
 # Data are simulated
 money <- tibble(
   number_of_coins = c(9, 10, 3, 5, 10, 37, 28, 9, 11, 4, 6, 17, 15, 7, 9, 1, 5, 9, 36, 30, 47, 13, 5, 7, 18, 16),
@@ -174,20 +181,21 @@ p2 <- ggplot(money, aes(y = total_amount, x = number_of_low_coins)) +
 p1 + p2
 ```
 
-Using the total `number of coins` as the predictor variable, Table \@ref(tab:coinhigh) provides the least squares estimate of the coefficient is 0.13.
+Using the total `number_of_coins` as the predictor variable, @tbl-coinhigh provides the least squares estimate of the coefficient is 0.13.
 For every additional coin in the dish, we would predict that the student had US\$0.13 more.
-The $b_1 = 0.13$ coefficient has a small p-value associated with it, suggesting we would not have seen data like this if `number of coins` and `total_amount` of money were not linearly related.
+The $b_1 = 0.13$ coefficient has a small p-value associated with it, suggesting we would not have seen data like this if `number_of_coins` and `total_amount` of money were not linearly related.
 
-$$\widehat{\texttt{total_amount}} = 0.55 + 0.13 \times \texttt{number_of_coins}$$
+$$\widehat{\texttt{total\_amount}} = 0.55 + 0.13 \times \texttt{number\_of\_coins}$$
 
 ```{r}
-#| label: coinhigh
+#| label: tbl-coinhigh
+#| tbl-cap: 'Linear model output predicting the total amount 
+#|    of money based on the total number of coins.'
 lm(total_amount ~ number_of_coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
   kbl(
     linesep = "", booktabs = TRUE,
-    caption = "Linear model output predicting the total amount of money based on the total number of coins.",
     digits = 2
   ) %>%
   kable_styling(
@@ -198,20 +206,21 @@ lm(total_amount ~ number_of_coins, data = money) %>%
   column_spec(2:5, width = "5em")
 ```
 
-Using the `number of low coins` as the predictor variable, Table \@ref(tab:coinlow) provides the least squares estimate of the coefficient is 0.02.
+Using the `number_of_low_coins` as the predictor variable, @tbl-coinlow provides the least squares estimate of the coefficient is 0.02.
 For every additional low coin in the dish, we would predict that the student had US\$0.02 more.
-The $b_1 = 0.02$ coefficient has a large p-value associated with it, suggesting we could easily have seen data like ours even if the `number of low coins` and `total_amount` of money are not at all linearly related.
+The $b_1 = 0.02$ coefficient has a large p-value associated with it, suggesting we could easily have seen data like ours even if the `number_of_low_coins` and `total_amount` of money are not at all linearly related.
 
-$$\widehat{\texttt{total_amount}} = 2.28 + 0.02 \times \texttt{number_of_low_coins}$$
+$$\widehat{\texttt{total\_amount}} = 2.28 + 0.02 \times \texttt{number\_of\_low\_coins}$$
 
 ```{r}
-#| label: coinlow
+#| label: tbl-coinlow
+#| tbl-cap: 'Linear model output predicting the total amount 
+#|    of money based on the number of low coins.'
 lm(total_amount ~ number_of_low_coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
   kbl(
     linesep = "", booktabs = TRUE,
-    caption = "Linear model output predicting the total amount of money based on the number of low coins.",
     digits = 2, align = "lrrrr"
   ) %>%
   kable_styling(
@@ -258,29 +267,37 @@ knitr::include_graphics("images/totalsame.png")
 ```
 :::
 
-Using both the total `number of coins` and the `number of low coins` as predictor variables, Table \@ref(tab:coinhighlow) provides the least squares estimates of both coefficients as 0.21 and -0.16.
+Using both the total `number_of_coins` and the `number_of_low_coins` as predictor variables, @tbl-coinhighlow provides the least squares estimates of both coefficients as 0.21 and -0.16.
 Now, with two variables in the model, the interpretation is more nuanced.
 
--   The coefficient indicates a change in one variable while keeping the other variable constant.\
-    For every additional coin in the dish **while** the `number of low coins` stays constant, we would predict that the student had US\$0.21 more. Re-considering the phrase "every additional coin in the dish **while** the number of low coins stays constant" makes us realize that each increase is a single additional quarter (larger samples sizes would have led to a $b_1$ coefficient closer to 0.25 because of the deterministic relationship described here).\
--   For every additional low coin in the dish **while** the total `number of coins` stays constant, we would predict that the student had US\$0.16 less. Re-considering the phrase "every additional low coin in the dish **while** the number of total coins stays constant" makes us realize that a quarter is being swapped out for a penny, nickel, or dime.
+-   A coefficient interpretation always indicates a change in one variable while keeping the other variable(s) constant.\
+    For every additional coin in the dish **while** the `number_of_low_coins` stays constant, we would predict that the student had US\$0.21 more. Re-considering the phrase "every additional coin in the dish **while** the number of low coins stays constant" makes us realize that each increase is a single additional quarter (larger samples sizes would have led to a $b_1$ coefficient closer to 0.25 because of the deterministic relationship described here).\
+-   For every additional low coin in the dish **while** the total `number_of_coins` stays constant, we would predict that the student had US\$0.16 less. Re-considering the phrase "every additional low coin in the dish **while** the number of total coins stays constant" makes us realize that a quarter is being swapped out for a penny, nickel, or dime.
 
 \clearpage
 
-Considering the coefficients across Tables \@ref(tab:coinhigh), \@ref(tab:coinlow), and \@ref(tab:coinhighlow) within the context and knowledge we have of US coins allows us to understand the correlation between variables and why the signs of the coefficients would change depending on the model.
-Note also, however, that the p-value for the `number of low coins` coefficient changed from Table \@ref(tab:coinlow) to Table \@ref(tab:coinhighlow).
-It makes sense that the variable describing the `number of low coins` provides more information about the `total_amount` of money when it is part of a model which also includes the total `number of coins` than it does when it is used as a single variable in a simple linear regression model.
+Considering the coefficients across @tbl-coinhigh, @tbl-coinlow, and @tbl-coinhighlow within the context and knowledge we have of US coins allows us to understand the correlation between variables and why the signs of the coefficients would change depending on the model.
+Note also, however, that the p-value for the `number_of_low_coins` coefficient changed from @tbl-coinlow to @tbl-coinhighlow.
+It makes sense that the variable describing the `number_of_low_coins` provides more information about the `total_amount` of money when it is part of a model which also includes the total `number_of_coins` than it does when it is used as a single variable in a simple linear regression model.
 
-$$\widehat{\texttt{total_amount}} = 0.80 + 0.21 \times \texttt{number_of_coins} - 0.16 \times \texttt{number of low coins}$$
+
+$$
+\begin{aligned}
+\widehat{\texttt{total\_amount}} = 0.80 &+ 0.21 \times \texttt{number\_of\_coins} \\
+&- 0.16 \times \texttt{number\_of\_low\_coins}
+\end{aligned}
+$$
 
 ```{r}
-#| label: coinhighlow
+#| label: tbl-coinhighlow
+#| tbl-cap: 'Linear model output predicting the total amount 
+#|    of money based on both the total number of coins and 
+#|    the number of low coins.'
 lm(total_amount ~ number_of_coins + number_of_low_coins, data = money) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
   kbl(
     linesep = "", booktabs = TRUE,
-    caption = "Linear model output predicting the total amount of money based on both the total number of coins and the number of low coins.",
     digits = 2, align = "lrrrr"
   ) %>%
   kable_styling(
@@ -291,7 +308,7 @@ lm(total_amount ~ number_of_coins + number_of_low_coins, data = money) %>%
   column_spec(2:5, width = "5em")
 ```
 
-When working with multiple regression models, interpreting the model coefficient is not always as straightforward as it was with the coin example.
+When working with multiple regression models, interpreting the model coefficients is not always as straightforward as it was with the coin example.
 However, we encourage you to always think carefully about the variables in the model, consider how they might be correlated among themselves, and work through different models to see how using different sets of variables might produce different relationships for predicting the response variable of interest.
 
 ::: {.important data-latex=""}
@@ -309,7 +326,7 @@ terms_chp_25 <- c(terms_chp_25, "multicollinearity")
 Although diving into the details are beyond the scope of this text, we will provide one more reflection about multicollinearity.
 If the predictor variables have some degree of correlation, it can be quite difficult to interpret the value of the coefficient or evaluate whether the variable is a statistically discernible predictor of the outcome.
 However, even a model that suffers from high multicollinearity will likely lead to unbiased predictions of the response variable.
-So if the task at hand is only to do prediction, multicollinearity is likely to not cause you substantial problems.
+So if the task at hand is only to do prediction (and not to interpret coefficients), multicollinearity is likely to not cause you substantial problems.
 
 ```{=html}
 <!--
@@ -322,7 +339,7 @@ Things I didn't talk about but could:
 ```
 ## Cross-validation for prediction error {#sec-inf-mult-reg-cv}
 
-In Section \@ref(inf-mult-reg-soft), p-values were calculated on each of the model coefficients.
+In @sec-inf-mult-reg-soft, p-values were calculated on each of the model coefficients.
 The p-value gives a sense of which variables are important to the model; however, a more extensive treatment of variable selection is warranted in a follow-up course or textbook.
 Here, we use cross-validation prediction error to focus on which variable(s) are important for predicting the response variable of interest.
 In general, linear models are also used to make predictions of individual observations.
@@ -332,15 +349,15 @@ We continue to encourage you to take up further study on the topic of cross-vali
 Cross-validation is a computational technique which removes some observations before a model is run, then assesses the model accuracy on the held-out sample.
 By removing some observations, we provide ourselves with an independent evaluation of the model (that is, the removed observations do not contribute to finding the parameters which minimize the least squares equation).
 Cross-validation can be used in many different ways (as an independent assessment), and here we will just scratch the surface with respect to one way the technique can be used to compare models.
-See Figure \@ref(fig:cv) for a visual representation of the cross-validation process.
+See @fig-cv for a visual representation of the cross-validation process.
 
 ```{r}
-#| label: cv
-#| fig.cap: The dataset is broken into k folds (here k = 4).  One at a time, a model
+#| label: fig-cv
+#| fig-cap: The dataset is broken into k folds (here k = 4).  One at a time, a model
 #|   is built using k-1 of the folds, and predictions are calculated on the single held
 #|   out sample which will be completely independent of the model estimation.
 #| fig.width: 10.0
-#| fig.alt: A square represents the original observed data which has been partitioned
+#| fig-alt: A square represents the original observed data which has been partitioned
 #|   into four triangular segments.  From the original partition, four different settings
 #|   are considered. The first setting is such that the red, green, and yellow triangular
 #|   representations of the data are used to build the model; the blue triangular representation
@@ -380,7 +397,7 @@ The predicted error (also previously called the **residual**) is the difference 
 $$\text{prediction error}_i = e_i = y_i - \hat{y}_i$$
 :::
 
-The presentation below (see the comparison of Figures \@ref(fig:peng-mass1) and \@ref(fig:peng-mass2)) shows that the model with more variables predicts `body_mass_g` with much smaller errors (predicted minus actual body mass) than the model which uses only `bill_length_g`.
+The presentation below (see the comparison of @fig-peng-mass1 and @fig-peng-mass2) shows that the model with more variables predicts `body_mass_g` with much smaller errors (predicted minus actual body mass) than the model which uses only `bill_length_g`.
 We have deliberately used a model that intuitively makes sense (the more body measurements, the more predictable mass is).
 However, in many settings, it is not obvious which variables or which models contribute most to accurate predictions.
 Cross-validation is one way to get accurate independent predictions with which to compare different models.
@@ -390,9 +407,9 @@ Cross-validation is one way to get accurate independent predictions with which t
 The question we will seek to answer is whether the predictions of `body_mass_g` are substantially better when `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` are used in the model, as compared with a model on `bill_length_mm` only.
 
 We refer to the model given with only `bill_lengh_mm` as the **smaller** model.
-It is seen in Table \@ref(tab:peng-lm-bill) with coefficient estimates of the parameters as well as standard errors and p-values.
+It is seen in @tbl-peng-lm-bill with coefficient estimates of the parameters as well as standard errors and p-values.
 We refer to the model given with `bill_lengh_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` as the **larger** model.
-It is seen in Table \@ref(tab:peng-lm-all) with coefficient estimates of the parameters as well as standard errors and p-values.
+It is seen in @tbl-peng-lm-all with coefficient estimates of the parameters as well as standard errors and p-values.
 Given what we know about high correlations between body measurements, it is somewhat unsurprising that all of the variables have low p-values, suggesting that each variable is a statistically discernible predictor of `body_mass_g`, given all other variables in the model.
 However, in this section, we will go beyond the use of p-values to consider independent predictions of `body_mass_g` as a way to compare the smaller and larger models.
 
@@ -400,20 +417,22 @@ However, in this section, we will go beyond the use of p-values to consider inde
 
 $$
 \begin{aligned}
-E[\texttt{body_mass_g}] &= \ \beta_0 + \beta_1 \times \texttt{bill_length_mm}\\
-\widehat{\texttt{body_mass_g}} &= \ 362.31 + 87.42 \times \texttt{bill_length_mm}\\
+E[\texttt{body\_mass\_g}] &= \ \beta_0 + \beta_1 \times \texttt{bill\_length\_mm}\\
+\widehat{\texttt{body\_mass\_g}} &= \ 362.31 + 87.42 \times \texttt{bill\_length\_mm}\\
 \end{aligned}
 $$
 
 ```{r}
-#| label: peng-lm-bill
+#| label: tbl-peng-lm-bill
 #| echo: false
+#| tbl-cap: 'The smalller model: least squares estimates of 
+#|   the regression model predicting `body_mass_g` from 
+#|   `bill_length_mm`.'
 lm(body_mass_g ~ bill_length_mm, data = penguins) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
   kbl(
     linesep = "", booktabs = TRUE,
-    caption = caption_helper("The smalller model: least squares estimates of the regression model predicting `body_mass_g` from `bill_length_mm`."),
     digits = 2, align = "lrrrr"
   ) %>%
   kable_styling(
@@ -428,30 +447,33 @@ lm(body_mass_g ~ bill_length_mm, data = penguins) %>%
 
 $$
 \begin{aligned}
-E[\texttt{body_mass_g}] = \beta_0 &+ \beta_1 \times \texttt{bill_length_mm} \\
-&+ \beta_2 \times \texttt{bill_depth_mm} \\
-&+ \beta_3 \times \texttt{flipper_length_mm} \\
-&+ \beta_4 \times \texttt{sex}_{male} \\
-&+ \beta_5 \times \texttt{species}_{Chinstrap} \\
-&+ \beta_6 \times \texttt{species}_{Gentoo}\\
-\widehat{\texttt{body_mass_g}} = -1460.99 &+ 18.20 \times \texttt{bill_length_mm} \\
-&+ 67.22 \times \texttt{bill_depth_mm} \\
-&+ 15.95 \times \texttt{flipper_length_mm} \\
-&+ 389.89 \times \texttt{sex}_{male} \\
-&- 251.48 \times \texttt{species}_{Chinstrap} \\
-&+ 1014.63 \times \texttt{species}_{Gentoo}\\
+E[\texttt{body\_mass\_g}] = \beta_0 &+ \beta_1 \times \texttt{bill\_length\_mm} \\
+&+ \beta_2 \times \texttt{bill\_depth\_mm} \\
+&+ \beta_3 \times \texttt{flipper\_length\_mm} \\
+&+ \beta_4 \times \texttt{sex}\_{male} \\
+&+ \beta_5 \times \texttt{species}\_{Chinstrap} \\
+&+ \beta_6 \times \texttt{species}\_{Gentoo}\\
+\widehat{\texttt{body\_mass\_g}} = -1460.99 &+ 18.20 \times \texttt{bill\_length\_mm} \\
+&+ 67.22 \times \texttt{bill\_depth\_mm} \\
+&+ 15.95 \times \texttt{flipper\_length\_mm} \\
+&+ 389.89 \times \texttt{sex}\_{male} \\
+&- 251.48 \times \texttt{species}\_{Chinstrap} \\
+&+ 1014.63 \times \texttt{species}\_{Gentoo}\\
 \end{aligned}
 $$
 
 ```{r}
-#| label: peng-lm-all
+#| label: tbl-peng-lm-all
 #| echo: false
+#| tbl-cap: 'The larger model: least squares estimates of the 
+#|   regression model predicting `body_mass_g` from `
+#|   bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, 
+#|   `sex`, and `species`.'
 lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins) %>%
   tidy() %>%
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
   kbl(
     linesep = "", booktabs = TRUE,
-    caption = caption_helper("The larger model: least squares estimates of the regression model predicting `body_mass_g` from `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species`."),
     digits = 2, align = "lrrrr"
   ) %>%
   kable_styling(
@@ -468,17 +490,17 @@ In this example, using cross-validation, we remove one quarter of the data befor
 Then the least squares model is used to predict the `body_mass_g` of the penguins in the holdout sample.
 Here we use a 4-fold cross-validation (meaning that one quarter of the data is removed each time) to produce four different versions of each model (other times it might be more appropriate to use 2-fold or 10-fold or even run the model separately after removing each individual data point one at a time).
 
-Figure \@ref(fig:massCV1) displays how a model is fit to 3/4 of the data (note the slight differences in coefficients as compared to Table \@ref(tab:peng-lm-bill)), and then predictions are made on the holdout sample.
+@fig-massCV1 displays how a model is fit to 3/4 of the data (note the slight differences in coefficients as compared to @tbl-peng-lm-bill), and then predictions are made on the holdout sample.
 
 ```{r}
-#| label: massCV1
-#| fig.cap: 'The coefficients are estimated using the least squares model on 3/4 of the
+#| label: fig-massCV1
+#| fig-cap: 'The smaller model. The coefficients are estimated using the least squares model on 3/4 of the
 #|   dataset with only a single predictor variable. Predictions are made on the remaining
 #|   1/4 of the observations. The y-axis in the scatterplot represents the residual:
 #|   true observed value minus the predicted value. Note that the predictions are independent
 #|   of the estimated model coefficients.'
 #| out.width: 100%
-#| fig.alt: The left panel shows the linear model predicting body mass in grams using
+#| fig-alt: The left panel shows the linear model predicting body mass in grams using
 #|   bill length in mm; the model was built using the red, green, and yellow triangular
 #|   sections of the observed data.  The right panel shows a scatterplot of the prediction
 #|   error versus the fitted values for the set of observations in the blue triangular
@@ -491,12 +513,21 @@ By repeating the process for each holdout quarter sample, the residuals from the
 We see that the predictions are scattered which shows a good model fit but that the prediction errors vary $\pm$ 1000g of the true body mass.
 
 ```{r}
-#| label: peng-mass1
-#| fig.cap: One quarter at a time, the data were removed from the model building, and
+#| label: fig-peng-mass1
+#| fig-cap: The smaller model. One quarter at a time, the data were removed from the model building, and
 #|   the body mass of the removed penguins was predicted. The least squares regression
 #|   model was fit independently of the removed penguins.  The predictions of body mass
 #|   are based on bill length only. The x-axis represents the predicted value, the y-axis
 #|   represents the error (difference between predicted value and actual value).
+#| fig-alt: One quarter at a time, the data were removed from the model building, and
+#|   the body mass of the removed penguins was predicted. The least squares regression
+#|   model was fit independently of the removed penguins.  The predictions of body mass
+#|   are based on bill length only. The x-axis represents the predicted value, the y-axis
+#|   represents the error (difference between predicted value and actual value). Four
+#|   different scatterplots are provided, one for each set of predictions (on a quarter
+#|   of the dataset).  All four sets of error values are centered around zero with most
+#|   observations between -500 and + 500.  Virtually all errors are between -1000 
+#|   and +1000.
 #| out.width: 100%
 set.seed(47)
 penguins <- penguins %>% na.omit()
@@ -543,7 +574,7 @@ data.frame(
 ```
 
 ```{r}
-#| label: peng-mass1-output
+#| label: fig-peng-mass1-output
 #| eval: false
 # this code is used to create the powerpoint images above
 massCV1 <- data.frame(
@@ -587,19 +618,19 @@ $$\mbox{CV SSE} = \sum_{i=1}^n (\hat{y}_{cv,i} - y_i)^2$$
 :::
 
 The same process is repeated for the larger number of explanatory variables.
-Note that the coefficients estimated for the first cross-validation model (in Figure \@ref(fig:massCV2)) are slightly different from the estimates computed on the entire dataset (seen in Table \@ref(tab:peng-lm-all)).
-Figure \@ref(fig:massCV2) displays the cross-validation process for the multivariable model with a full set of residual plots given in Figure \@ref(fig:peng-mass2).
+Note that the coefficients estimated for the first cross-validation model (in @fig-massCV2) are slightly different from the estimates computed on the entire dataset (seen in @tbl-peng-lm-all).
+@fig-massCV2 displays the cross-validation process for the multivariable model with a full set of residual plots given in @fig-peng-mass2.
 Note that the residuals are mostly within $\pm$ 500g, providing much more precise predictions for the independent body mass values of the individual penguins.
 
 ```{r}
-#| label: massCV2
-#| fig.cap: 'The coefficients are estimated using the least squares model on 3/4 of the
+#| label: fig-massCV2
+#| fig-cap: 'The larger model. The coefficients are estimated using the least squares model on 3/4 of the
 #|   dataset with the five specified predictor variables. Predictions are made on the
 #|   remaining 1/4 of the observations.  The y-axis in the scatterplot represents the
 #|   residual: true observed value minus the predicted value. Note that the predictions
 #|   are independent of the estimated model coefficients.'
 #| out.width: 100%
-#| fig.alt: The left panel shows the linear model predicting body mass in grams using
+#| fig-alt: The left panel shows the linear model predicting body mass in grams using
 #|   bill length, bill depth, flipper length, sex, and species; the model was built using
 #|   the red, green, and yellow triangular sections of the observed data.  The right
 #|   panel shows a scatterplot of the prediction error versus the fitted values for the
@@ -609,12 +640,20 @@ include_graphics("images/massCV2.png")
 ```
 
 ```{r}
-#| label: peng-mass2
-#| fig.cap: One quarter at a time, the data were removed from the model building, and
+#| label: fig-peng-mass2
+#| fig-cap: 'The larger model. One quarter at a time, the data were removed from the model building, and
 #|   the body mass of the removed penguins was predicted. The least squares regression
 #|   model was fit independently of the removed penguins.  The predictions of body mass
-#|   are based on bill length only. The x-axis represents the predicted value, the y-axis
-#|   represents the error (difference between predicted value and actual value).
+#|   are based on the set of five variables described in @tbl-peng-lm-all. The x-axis represents the predicted value, the y-axis
+#|   represents the error (difference between predicted value and actual value).'
+#| fig-alt: One quarter at a time, the data were removed from the model building, and
+#|   the body mass of the removed penguins was predicted. The least squares regression
+#|   model was fit independently of the removed penguins.  The predictions of body mass
+#|   are based on the set of five variables described in the larger model. The x-axis represents the predicted value, the y-axis
+#|   represents the error (difference between predicted value and actual value). Four
+#|   different scatterplots are provided, one for each set of predictions (on a quarter
+#|   of the dataset).  All four sets of error values are centered around zero virtually
+#|   all errors are between -500 and + 500. 
 data.frame(
   predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1, ]) %>%
     predict(newdata = penguins[penguinfolds$Fold1, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]),
@@ -686,16 +725,16 @@ massCV1 %>%
   theme(text = element_text(size = 20))
 ```
 
-Figure \@ref(fig:peng-mass1) shows that the independent predictions are centered around the true values (i.e., errors are centered around zero), but that the predictions can be as much as 1000g off when using only `bill_length_mm` to predict `body_mass_g`.
-On the other hand, when using `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` to predict `body_mass_g`, the prediction errors seem to be about half as big, as seen in Figure \@ref(fig:peng-mass2).
-For the model using `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` to predict `body_mass_g`, the CV SSE is 27,728,698.
+@fig-peng-mass1 shows that the independent predictions are centered around the true values (i.e., errors are centered around zero), but that the predictions can be as much as 1000g off when using only `bill_length_mm` to predict `body_mass_g`.
+On the other hand, when using `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` to predict `body_mass_g`, the prediction errors seem to be about half as big, as seen in @fig-peng-mass2.
+For the model using `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` to predict `body_mass_g`, the CV SSE is 27,728,698 (as compared to a CV SSE of 141,552,822 for the smaller model).
 Consistent with visually comparing the two sets of residual plots, the sum of squared prediction errors is smaller for the model which uses more predictor variables.
 The model with more predictor variables seems like the better model (according to the cross-validated prediction errors criteria).
 
-We have provided a very brief overview to and example using cross-validation.
+We have provided a very brief overview to and example of using cross-validation.
 Cross-validation is a computational approach to model building and model validation as an alternative to reliance on p-values.
 While p-values have a role to play in understanding model coefficients, throughout this text, we have continued to present computational methods that broaden statistical approaches to data analysis.
-Cross-validation will be used again in Section \@ref(inf-model-logistic) with logistic regression.
+Cross-validation will be used again in @sec-inf-model-logistic with logistic regression.
 We encourage you to consider both standard inferential methods (such as p-values) and computational approaches (such as cross-validation) as you build and use multivariable models of all varieties.
 
 \clearpage
@@ -704,7 +743,7 @@ We encourage you to consider both standard inferential methods (such as p-values
 
 ### Summary
 
-Building on the modeling ideas from Chapter \@ref(model-mlr), we have now introduced methods for evaluating coefficients (based on p-values) and evaluating models (cross-validation).
+Building on the modeling ideas from @sec-model-mlr, we have now introduced methods for evaluating coefficients (based on p-values) and evaluating models (cross-validation).
 There are many important aspects to consider when working with multiple variables in a single model, and we have only glanced at a few topics.
 Remember, multicollinearity can make coefficient interpretation difficult.
 A topic not covered in this text but important for multiple regression models is interaction, and we hope that you learn more about how variables work together as you continue to build up your modeling skills.
