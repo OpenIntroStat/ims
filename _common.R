@@ -36,6 +36,7 @@ suppressMessages(library(Stat2Data))
 suppressMessages(library(GGally))
 suppressMessages(library(mosaicData))
 
+
 # knitr chunk options ----------------------------------------------------------
 
 #knitr::opts_chunk$set(
