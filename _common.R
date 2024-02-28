@@ -4,6 +4,7 @@ options(digits = 3)
 
 # packages ---------------------------------------------------------------------
 
+suppressMessages(library(MASS))
 suppressMessages(library(tidymodels))
 suppressMessages(library(gghighlight))
 suppressMessages(library(glue))
@@ -35,6 +36,7 @@ suppressMessages(library(ukbabynames))
 suppressMessages(library(Stat2Data))
 suppressMessages(library(GGally))
 suppressMessages(library(mosaicData))
+
 
 
 # knitr chunk options ----------------------------------------------------------
