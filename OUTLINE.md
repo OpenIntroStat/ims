@@ -20,7 +20,7 @@ This document contains the proposed outline for OpenIntro - Introductory Statist
 
 ## Chp 3. Correlation and Regression (descriptive)
 
-- Visual summaries of data: scatterplot, side-by-side boxplots, histogram, density plot, box plot (lead out with multivariate, follow with univariate)
+- Visual summaries of data: scatterplot, side-by-side box plots, histogram, density plot, box plot (lead out with multivariate, follow with univariate)
 - Describing distributions: correlation, central tendency, variability, skew, modality
 - Num vs. num - SLR
 	- correlation
