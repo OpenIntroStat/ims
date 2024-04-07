@@ -7,10 +7,12 @@
     antibiotics <- openintro::antibiotics |>
       mutate(condition = fct_rev(fct_infreq(condition)))
 
-    p_1 <- ggplot(antibiotics, 
-                  aes(y = condition, fill = condition)) +
+    p_1 <- ggplot(
+      antibiotics,
+      aes(y = condition, fill = condition)
+    ) +
       geom_bar(show.legend = FALSE) +
-      labs(x =NULL, y = "Condition") +
+      labs(x = NULL, y = "Condition") +
       scale_fill_openintro()
 
     p_2 <- antibiotics |>
@@ -21,8 +23,8 @@
       labs(x = NULL, y = NULL, fill = "Condition") +
       scale_fill_openintro(guide = guide_legend(reverse = TRUE))
 
-    p_1 + p_2 + plot_layout(guides='collect') & 
-      theme(legend.position='bottom')
+    p_1 + p_2 + plot_layout(guides = "collect") &
+      theme(legend.position = "bottom")
     ```
 
     a.  What features are apparent in the bar plot but not in the pie chart?
@@ -42,9 +44,11 @@
       rename(Response = response) |>
       adorn_totals(where = c("row", "col")) |>
       kbl(linesep = "", booktabs = TRUE) |>
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
-                    latex_options = "HOLD_position",
-                    full_width = FALSE)
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"),
+        latex_options = "HOLD_position",
+        full_width = FALSE
+      )
     ```
 
     a.  What percent of these Tampa, FL voters identify themselves as conservatives?
@@ -67,35 +71,36 @@
     [@survey:blmWaPoScar:2020] The results are summarized in the stacked bar plot below.
 
     ```{r}
-    #| fig-asp: 0.4
+    #| fig-asp: 0.5
     blm_survey <- tribble(
-       ~"Opinion",         ~"18-29", ~"30-39", ~"40-49", ~"50-64",	~"65+",
-       "Strongly support",  55,	     42,       51,       45,	    42,
-       "Somewhat support",  26,	     35,       26,       29,	    21,
-       "Somewhat oppose",   13,	     13,       9 ,       10,	    10,
-       "Strongly oppose",   5,       9 ,       13,       17,	    24,
-       "No opinion",        0,	     1,        1,	     0,         2 
+      ~"Opinion", ~"18-29", ~"30-39", ~"40-49", ~"50-64", ~"65+",
+      "Strongly support", 55, 42, 51, 45, 42,
+      "Somewhat support", 26, 35, 26, 29, 21,
+      "Somewhat oppose", 13, 13, 9, 10, 10,
+      "Strongly oppose", 5, 9, 13, 17, 24,
+      "No opinion", 0, 1, 1, 0, 2
     )
 
     blm_survey |>
       pivot_longer(
-            cols = -Opinion,
-            names_to = "Age",
-            values_to = "Proportion"
+        cols = -Opinion,
+        names_to = "Age",
+        values_to = "Proportion"
       ) |>
-      mutate(Opinion = fct_rev(fct_relevel(Opinion, 
-                                           "Strongly oppose", 
-                                           "Somewhat oppose", 
-                                           "No opinion", 
-                                           "Somewhat support", 
-                                           "Strongly support"))) |>
+      mutate(Opinion = fct_rev(fct_relevel(
+        Opinion,
+        "Strongly oppose",
+        "Somewhat oppose",
+        "No opinion",
+        "Somewhat support",
+        "Strongly support"
+      ))) |>
       ggplot(aes(y = Age, x = Proportion, fill = Opinion)) +
       geom_col(position = "fill") +
       scale_fill_manual(values = c(
         IMSCOL["green", "full"], IMSCOL["blue", "full"], IMSCOL["lgray", "full"],
         IMSCOL["pink", "full"], IMSCOL["red", "full"]
-      )
-      ) +
+      )) +
       scale_x_continuous(labels = label_percent(scale = 100)) +
       labs(x = NULL) +
       theme(legend.position = "bottom") +
@@ -112,29 +117,32 @@
     [@survey:raiseTaxes:2015]
 
     ```{r}
-    #| fig-asp: 0.3
+    #| fig-asp: 0.5
     raise_taxes_survey <- tribble(
-       ~"Opinion",                ~"Democrat", ~"Republican", ~"Independent/Other",
-       "Raise taxes on the rich", 91,	       47,            49,
-       "Raise taxes on the poor",  4,	       10,            11,
-       "Not sure",                 5,	       43,            40
+      ~"Opinion", ~"Democrat", ~"Republican", ~"Independent/Other",
+      "Raise taxes on the rich", 91, 47, 49,
+      "Raise taxes on the poor", 4, 10, 11,
+      "Not sure", 5, 43, 40
     )
 
     raise_taxes_survey |>
       pivot_longer(
-            cols = -Opinion,
-            names_to = "Party",
-            values_to = "Proportion"
+        cols = -Opinion,
+        names_to = "Party",
+        values_to = "Proportion"
       ) |>
-      mutate(Opinion = fct_relevel(Opinion, 
-                                   "Raise taxes on the rich", 
-                                   "Raise taxes on the poor", 
-                                   "Not sure")) |>
+      mutate(Opinion = fct_relevel(
+        Opinion,
+        "Raise taxes on the rich",
+        "Raise taxes on the poor",
+        "Not sure"
+      )) |>
       ggplot(aes(y = Party, x = Proportion, fill = Opinion)) +
       geom_col() +
-      scale_fill_manual(values = c(IMSCOL["blue", "full"], 
-                                   IMSCOL["red", "full"], 
-                                   IMSCOL["lgray", "full"])) +
+      scale_fill_manual(
+        values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"], IMSCOL["lgray", "full"]),
+        labels = label_wrap_gen(width = 10)
+      ) +
       scale_x_continuous(labels = label_percent(scale = 1)) +
       labs(x = NULL) +
       theme(legend.position = "bottom") +
@@ -154,28 +162,29 @@
     [@Turnbull+Brown+Hu:1974]
 
     ```{r}
-    #| fig-asp: 0.45
+    #| fig-asp: 0.4
     p1 <- heart_transplant |>
       mutate(
         survived = as.character(survived),
         survived = if_else(survived == "dead", "deceased", survived)
-        ) |>
+      ) |>
       ggplot(aes(y = transplant, fill = survived)) +
       geom_bar() +
       labs(x = "Count", y = "Group", fill = "Outcome") +
       scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"]))
 
-    p2 <-     heart_transplant |>
+    p2 <- heart_transplant |>
       mutate(
         survived = as.character(survived),
         survived = if_else(survived == "dead", "deceased", survived)
-        ) |>
+      ) |>
       ggplot(aes(y = transplant, fill = survived)) +
       geom_bar(position = "fill") +
       labs(x = "Proportion", y = NULL, fill = "Outcome") +
       scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"]))
 
-    p1 + p2 +plot_layout(guides = "collect")
+    p1 + p2 + plot_layout(guides = "collect") &
+      theme(legend.position = "bottom")
     ```
 
     a.  Provide one aspect of the two group comparison that is easier to see from the stacked bar plot (left)?
@@ -186,16 +195,16 @@
         That is, which bar plot would be better as a data visualization?
 
 6.  **Shipping holiday gifts data display.** A local news survey asked 500 randomly sampled Los Angeles residents which shipping carrier they prefer to use for shipping holiday gifts.
-    The table below shows the distribution of responses by age group as well as the expected counts for each cell (shown in italics).
+    The bar plots below show the distribution of responses by age group as well as distribution of responses by shipping method.
 
     ```{r}
     p1 <- tribble(
-      ~shipping_method,   ~`18_34`,  ~`35_54`,  ~`55plus`,
-      "USPS",                   72,     97,        76,
-      "UPS",                    52,        76,      34, 
-      "FedEx",                  31,        24,         9,        
-      "Something else",          7,         6,         3,   
-      "Not sure",                3,         6,          4
+      ~shipping_method, ~`18_34`, ~`35_54`, ~`55plus`,
+      "USPS", 72, 97, 76,
+      "UPS", 52, 76, 34,
+      "FedEx", 31, 24, 9,
+      "Something else", 7, 6, 3,
+      "Not sure", 3, 6, 4
     ) |>
       pivot_longer(cols = 2:4, names_to = "age", values_to = "count") |>
       mutate(shipping_method = fct_relevel(shipping_method, "Not sure", "Something else", "FedEx", "UPS", "USPS")) |>
@@ -203,16 +212,18 @@
       ggplot(aes(y = shipping_method, x = count, fill = age)) +
       geom_bar(stat = "identity", position = "fill") +
       labs(x = "Proportion", y = "Group", fill = "Age") +
-      scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"], IMSCOL["pink", "full"]),
-                        guide = guide_legend(reverse = TRUE)) 
+      scale_fill_manual(
+        values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"], IMSCOL["pink", "full"]),
+        guide = guide_legend(reverse = TRUE)
+      )
 
     p2 <- tribble(
-      ~shipping_method,   ~`18_34`,  ~`35_54`,  ~`55plus`,
-      "USPS",                   72,     97,        76,
-      "UPS",                    52,        76,      34, 
-      "FedEx",                  31,        24,         9,        
-      "Something else",          7,         6,         3,   
-      "Not sure",                3,         6,          4
+      ~shipping_method, ~`18_34`, ~`35_54`, ~`55plus`,
+      "USPS", 72, 97, 76,
+      "UPS", 52, 76, 34,
+      "FedEx", 31, 24, 9,
+      "Something else", 7, 6, 3,
+      "Not sure", 3, 6, 4
     ) |>
       pivot_longer(cols = 2:4, names_to = "age", values_to = "count") |>
       mutate(shipping_method = fct_relevel(shipping_method, "Not sure", "Something else", "FedEx", "UPS", "USPS")) |>
@@ -221,28 +232,31 @@
       geom_bar(stat = "identity", position = "fill") +
       labs(x = "Proportion", y = "Group", fill = "Shipping method") +
       scale_fill_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"], IMSCOL["pink", "full"], IMSCOL["yellow", "full"], IMSCOL["green", "full"]), guide = guide_legend(reverse = TRUE))
-        
-    p1 / p2    
+
+    p1 / p2 
     ```
 
     a.  Which graph (top or bottom) would you use to understand the shipping choices of people of different ages?
+        Explain.
 
     b.  Which graph (top or bottom) would you use to understand the age distribution across different types of shipping choices?
+        Explain.
 
     c.  A new shipping company would like to market to people over the age of 55.
         Who will be their biggest competitor?
+        Explain.
 
     d.  FedEx would like to reach out to grow their market share so as to balance the age demographics of FedEx users.
         To what age group should FedEx market?
 
-7.  **Meat consumption and Life Expectancy.** In data collected for @You:2022, total meat intake is associated with life expectancy (at birth) in 175 countries.
+7.  **Meat consumption and life expectancy.** In data collected for @You:2022, total meat intake is associated with life expectancy (at birth) in 175 countries.
     Meat intake is measured in kg per capita per year (averaged over 2011 to 2013).
     The two ridge plots show an association between income and meat consumption (higher income countries tend to eat more meat) and an association between income and life expectancy (higher income countries have higher life expectancy).
 
     ```{r}
     #| out-height: 100%
     #| fig-height: 10
-    #| fig-asp: 0.9
+    #| fig-asp: 0.7
     meat <- read_csv("data/meat.csv")
 
     p_meat <- meat |>
@@ -250,33 +264,42 @@
       drop_na(gdp) |>
       mutate(ses = cut(gdp, breaks = c(-Inf, 2000, 10000, Inf))) |>
       mutate(income = case_when(
-        ses == "(-Inf,2e+03]" ~ "low income",
-        ses == "(2e+03,1e+04]" ~ "middle income",
-        ses == "(1e+04, Inf]" ~ "high income")) |>
-      mutate(income = fct_relevel(income, c("high income", "middle income", "low income"))) |>
-      ggplot(aes(y = income, x = meat, group = income, 
-                 fill = income, linetype = income, color = income)) +
-      geom_density_ridges() +
+        ses == "(-Inf,2e+03]" ~ "Low income",
+        ses == "(2e+03,1e+04]" ~ "Middle income",
+        ses == "(1e+04, Inf]" ~ "High income"
+      )) |>
+      mutate(income = fct_relevel(income, c("High income", "Middle income", "Low income"))) |>
+      ggplot(aes(
+        y = income, x = meat, group = income,
+        fill = income, linetype = income, color = income
+      )) +
+      geom_density_ridges(alpha = 0.8) +
+      scale_fill_openintro() +
+      scale_color_openintro() +
       labs(y = "", x = "", subtitle = "Meat consumption (kg per capita)") +
-      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
       guides(fill = "none", linetype = "none", color = "none")
 
-    p_life <-  meat |> 
+    p_life <- meat |>
       drop_na(life_0) |>
       drop_na(gdp) |>
       mutate(ses = cut(gdp, breaks = c(-Inf, 2000, 10000, Inf))) |>
       mutate(income = case_when(
-        ses == "(-Inf,2e+03]" ~ "low income",
-        ses == "(2e+03,1e+04]" ~ "middle income",
-        ses == "(1e+04, Inf]" ~ "high income")) |>
-      mutate(income = fct_relevel(income, c("high income", "middle income", "low income"))) |>
-      ggplot(aes(y = income, x  = life_0, group = income, 
-                 fill = income, linetype = income, color = income)) + 
-      geom_density_ridges() +
+        ses == "(-Inf,2e+03]" ~ "Low income",
+        ses == "(2e+03,1e+04]" ~ "Middle income",
+        ses == "(1e+04, Inf]" ~ "High income"
+      )) |>
+      mutate(income = fct_relevel(income, c("High income", "Middle income", "Low income"))) |>
+      ggplot(aes(
+        y = income, x = life_0, group = income,
+        fill = income, linetype = income, color = income
+      )) +
+      geom_density_ridges(alpha = 0.8) +
+      scale_fill_openintro() +
+      scale_color_openintro() +
       labs(y = "", x = "", subtitle = "Life expectancy (years)") +
-      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
       guides(fill = "none", linetype = "none", color = "none")
-
 
     p_meat / p_life
     ```
@@ -317,9 +340,11 @@
       group_by(dest, carrier, status) |>
       summarize(count = n()) |>
       kbl(linesep = "", booktabs = TRUE) |>
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
-                    latex_options = "HOLD_position",
-                    full_width = FALSE)
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"),
+        latex_options = "HOLD_position",
+        full_width = FALSE
+      )
     ```
 
     a.  What percent of all JetBlue flights were delayed?
