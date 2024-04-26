@@ -18,7 +18,6 @@ The method is motivated by scenarios where many variables may be simultaneously 
 ```{r}
 #| label: loans-prep
 #| include: false
-
 loans <- loans_full_schema |>
   mutate(
     credit_util = total_credit_utilized / total_credit_limit,
@@ -39,7 +38,6 @@ Multiple regression will help us answer these and other questions.
 ```{r}
 #| label: loans-n-rows-to-show
 #| include: false
-
 n_rows_to_show <- 6
 n_rows_to_show_string <- "six"
 ```
@@ -59,7 +57,6 @@ We will refer to this modified dataset as `loans`.
 ```{r}
 #| label: tbl-loans-data-matrix
 #| tbl-cap: First six rows of the `loans` dataset.
-
 loans |>
   slice_head(n = n_rows_to_show) |>
   kbl(
@@ -71,13 +68,11 @@ loans |>
     latex_options = c("striped", "scale_down", "hold_position"),
     full_width = FALSE
   )
-
 ```
 
 ```{r}
 #| label: tbl-loans-variables
 #| tbl-cap: Variables and their descriptions for the `loans` dataset.
-
 loans_var_def <- tribble(
   ~variable,         ~description,
   "interest_rate",   "Interest rate on the loan, in an annual percentage.",
@@ -120,7 +115,6 @@ Results of this model are shown in @tbl-int-rate-bankruptcy.
 #|   Summary of a linear model for predicting `interest_rate` 
 #|   based on whether the borrower has a bankruptcy in their 
 #|   record. Degrees of freedom for this model is 9998.
-
 m_bankruptcy <- lm(interest_rate ~ bankruptcy, data = loans)
 
 m_bankruptcy |>
@@ -167,7 +161,6 @@ terms_chp_8 <- c("reference level")
 #|   on whether the borrower’s income source and amount has been 
 #|   verified. This predictor has three levels, which results in 2 
 #|   rows in the regression output.
-
 m_verified_income <- lm(interest_rate ~ verified_income, data = loans)
 
 m_verified_income |>
@@ -281,7 +274,6 @@ While we remain cautious about making any causal interpretations using multiple 
 
 ```{r}
 #| include: false
-
 terms_chp_8 <- c(terms_chp_8, "multiple regression")
 ```
 
@@ -325,7 +317,6 @@ Using this output, we identify $b_i,$ just as we did in the one-predictor case.
 #|   Output for the regression model, where interest rate is the 
 #|   outcome and the variables listed are the predictors. Degrees 
 #|   of freedom for this model is 9990.
-
 m_full <- lm(interest_rate ~ ., data = loans)
 
 m_full |>
@@ -437,7 +428,9 @@ We first used $R^2$ in @sec-r-squared to determine the amount of variability in 
 $$
 R^2 = 1 - \frac{\text{variability in residuals}}{\text{variability in the outcome}}
     = 1 - \frac{Var(e_i)}{Var(y_i)}
-$$ where $e_i$ represents the residuals of the model and $y_i$ the outcomes.
+$$ 
+
+where $e_i$ represents the residuals of the model and $y_i$ the outcomes.
 This equation remains valid in the multiple regression framework, but a small enhancement can make it even more informative when comparing models.
 
 ::: {.guidedpractice data-latex=""}
@@ -556,9 +549,7 @@ The first table summarizes the full model since it includes all predictors, whil
 ```{r}
 #| label: tbl-loans-full-for-model-selection
 #| tbl-cap: |
-#|   The fit for the full regression model, including the 
-#|   adjusted $R^2$.
-
+#|   The fit for the full regression model, including the adjusted $R^2$.
 options(digits = 6) # to get more digits
 m_full_r_sq_adj <- glance(m_full)$adj.r.squared |> round(4)
 options(digits = 3) # to get back to default set in _common.R
@@ -592,7 +583,6 @@ m_full_w_rsq |>
 #| tbl-cap: |
 #|   The fit for the regression model after dropping issue month, 
 #|   including the adjusted $R^2$.
-
 m_full_minus_issue_month <- lm(interest_rate ~ . - issue_month, data = loans)
 
 options(digits = 6) # to get more digits
@@ -746,16 +736,14 @@ Maybe this difference is 1% or maybe it is 5%.
 This "threshold" is what you will then use to decide if one model is "better" than another model.
 Using meaningful thresholds in model selection requires more critical thinking about what the adjusted $R^2$ values mean.
 
-Additionally, backward elimination and forward selection sometimes arrive at different final models.
-This is because the decision for whether to include a given predictor or not depends on the other predictors that are already in the model.
-With forward selection, you start with a model that includes no predictors and add predictors one at a time.
-In backward elimination, you start with a model that includes all of the potential predictors and remove predictors one at a time.
-How much a given predictor changes the percentage of the variability in the outcome that is explained by the model depends on what other predictors are in the model.
-This is especially important if the predictor variables are correlated with each other.
+Additionally, backward elimination and forward selection can arrive at different final models, because the decision for whether to include a given predictor or not depends on the other predictors that are already in the model.
+With forward selection, you start with a model that includes no predictors, and add predictors one at a time.
+In backward elimination, you start with a model that includes all of the potential predictors, and remove predictors one at a time.
+How much a given predictor changes the percentage of the variability in the outcome that is explained by the model depends on the other predictors in the model, particularly if the predictor variables are correlated with each other.
+:::
 
 There is no "one size fits all" model selection strategy, which is why there are so many different model selection methods.
 We hope you walk away from this exploration understanding how stepwise selection is carried out and the considerations that should be made when using stepwise selection with regression models.
-:::
 
 ### Other model selection strategies
 
