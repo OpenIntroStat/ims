@@ -96,7 +96,7 @@ loans_var_def |>
     latex_options = c("striped", "hold_position"), full_width = TRUE
   ) |>
   column_spec(1, monospace = TRUE) |>
-  column_spec(2, width = "30em")
+  column_spec(2, width = "25em")
 ```
 
 ## Indicator and categorical predictors {#sec-ind-and-cat-predictors}
@@ -128,7 +128,7 @@ m_bankruptcy |>
     bootstrap_options = c("striped", "condensed"),
     latex_options = c("striped", "hold_position")
   ) |>
-  column_spec(1, width = "17em", monospace = TRUE) |>
+  column_spec(1, width = "15em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -282,15 +282,11 @@ We want to construct a model that accounts not only for any past bankruptcy or w
 $$
 \begin{aligned}
 \widehat{\texttt{interest\_rate}} &= b_0 \\
-&+ b_1 \times \texttt{verified\_income}_{\texttt{Source Verified}} \\
-&+ b_2 \times \texttt{verified\_income}_{\texttt{Verified}} \\
-&+ b_3 \times \texttt{debt\_to\_income} \\
-&+ b_4 \times \texttt{credit\_util} \\
-&+ b_5 \times \texttt{bankruptcy} \\
-&+ b_6 \times \texttt{term} \\
-&+ b_9 \times \texttt{credit\_checks} \\
-&+ b_7 \times \texttt{issue\_month}_{\texttt{Jan-2018}} \\
-&+ b_8 \times \texttt{issue\_month}_{\texttt{Mar-2018}}
+&+ b_1 \times \texttt{verified\_income}_{\texttt{Source Verified}} + b_2 \times \texttt{verified\_income}_{\texttt{Verified}} \\
+&+ b_3 \times \texttt{debt\_to\_income} + b_4 \times \texttt{credit\_util} \\
+&+ b_5 \times \texttt{bankruptcy} + b_6 \times \texttt{term} \\
+&+ b_7 \times \texttt{credit\_checks} + b_8 \times \texttt{issue\_month}_{\texttt{Jan-2018}} \\
+&+ b_9 \times \texttt{issue\_month}_{\texttt{Mar-2018}}
 \end{aligned}
 $$
 
@@ -322,10 +318,11 @@ m_full <- lm(interest_rate ~ ., data = loans)
 m_full |>
   tidy() |>
   mutate(p.value = ifelse(p.value < 0.001, "<0.0001", round(p.value, 4))) |>
-  kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr") |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) |>
+  kbl(linesep = "", booktabs = TRUE, digits = 2, align = "lrrrr") |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"), 
+    latex_options = c("striped", "hold_position")
+  ) |>
   column_spec(1, width = "17em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
@@ -355,14 +352,10 @@ The fitted model for the interest rate is given by:
 $$
 \begin{aligned}
 \widehat{\texttt{interest\_rate}} &= 1.89 \\
-&+ 1.00 \times \texttt{verified\_income}_{\texttt{Source Verified}} \\
-&+ 2.56 \times \texttt{verified\_income}_{\texttt{Verified}} \\
-&+ 0.02 \times \texttt{debt\_to\_income} \\
-&+ 4.90 \times \texttt{credit\_util} \\
-&+ 0.39 \times \texttt{bankruptcy} \\
-&+ 0.15 \times \texttt{term} \\
-&+ 0.23 \times \texttt{credit\_checks} \\
-&+ 0.05 \times \texttt{issue\_month}_{\texttt{Jan-2018}} \\
+&+ 1.00 \times \texttt{verified\_income}_{\texttt{Source Verified}} + 2.56 \times \texttt{verified\_income}_{\texttt{Verified}} \\
+&+ 0.02 \times \texttt{debt\_to\_income} + 4.90 \times \texttt{credit\_util} \\
+&+ 0.39 \times \texttt{bankruptcy} + 0.15 \times \texttt{term} \\
+&+ 0.23 \times \texttt{credit\_checks} + 0.05 \times \texttt{issue\_month}_{\texttt{Jan-2018}} \\
 &- 0.04 \times \texttt{issue\_month}_{\texttt{Mar-2018}}
 \end{aligned}
 $$
@@ -642,8 +635,7 @@ To check, we fit models that each drop a different predictor, and we record the 
 -   Excluding `credit_checks`: 0.2484
 -   Excluding `issue_month`: 0.2598
 
-The model without `issue_month` has the highest adjusted $R^2$ of 0.2598, higher than the adjusted $R^2$ for the full model.
-Because eliminating `issue_month` leads to a model with a higher adjusted $R^2$, we drop `issue_month` from the model.
+The model without `issue_month` has the highest adjusted $R^2$ of 0.2598, higher than the adjusted $R^2$ for the full model; therefore, we drop `issue_month` from the model.
 
 Since we eliminated a predictor from the model in the first step, we see whether we should eliminate any additional predictors.
 Our baseline adjusted $R^2$ is now $R^2_{adj} = 0.2598$.
@@ -662,16 +654,15 @@ That is, after backward elimination, we are left with the model that keeps all p
 $$
 \begin{aligned}
 \widehat{\texttt{interest\_rate}} &= 1.90 \\
-&+ 1.00 \times \texttt{verified\_income}_\texttt{Source only} \\
-&+ 2.56 \times \texttt{verified\_income}_\texttt{Verified} \\
-&+ 0.02 \times \texttt{debt\_to\_income} \\
-&+ 4.90 \times \texttt{credit\_util} \\
-&+ 0.39 \times \texttt{bankruptcy} \\
-&+ 0.15 \times \texttt{term} \\
+&+ 1.00 \times \texttt{verified\_income}_\texttt{Source only} + 2.56 \times \texttt{verified\_income}_\texttt{Verified} \\
+&+ 0.02 \times \texttt{debt\_to\_income} + 4.90 \times \texttt{credit\_util} \\
+&+ 0.39 \times \texttt{bankruptcy} + 0.15 \times \texttt{term} \\
 &+ 0.23 \times \texttt{credit\_checks}
 \end{aligned}
 $$
 :::
+
+\clearpage
 
 ::: {.workedexample data-latex=""}
 Construct a model for predicting `interest_rate` from the `loans` data using forward selection.
@@ -690,9 +681,8 @@ Then we examine the adjusted $R^2$ for each of these models:
 -   Including `credit_checks`: -0.0001
 -   Including `issue_month`: 0.01711
 
-In this first step, we compare the adjusted $R^2$ against a baseline model that has no predictors.
-The no-predictors model always has $R_{adj}^2 = 0$.
-The model with one predictor that has the largest adjusted $R^2$ is the model with the `term` predictor, and because this adjusted $R^2$ is larger than the adjusted $R^2$ from the model with no predictors ($R_{adj}^2 = 0$), we will add this variable to our model.
+In this first step, we compare the adjusted $R^2$ against a baseline model that has no predictors, which always has $R_{adj}^2 = 0$.
+The model with one predictor that has the largest adjusted $R^2$ is the model with the `term` predictor, so we will add this variable to our model.
 
 We repeat the process again, this time considering 2-predictor models where one of the predictors is `term` and with a new baseline of $R^2_{adj} = 0.12855:$
 
@@ -703,10 +693,10 @@ We repeat the process again, this time considering 2-predictor models where one 
 -   Including `term` and `credit_checks`: 0.12840
 -   Including `term` and `issue_month`: 0.14294
 
-Adding `credit_util` yields the highest increase in adjusted $R^2$ and has a higher adjusted $R^2$ (0.20046) than the baseline (0.12855).
+The model including `credit_util` has the largest increase in adjusted $R^2$ (0.20046) from the baseline (0.12855),
 Thus, we will also add `credit_util` to the model as a predictor.
 
-Since we have again added a predictor to the model, we have a new baseline adjusted $R^2$ of 0.20046.
+Now we have a new baseline adjusted $R^2$ of 0.20046.
 We can continue on and see whether it would be beneficial to add a third predictor:
 
 -   Including `term`, `credit_util`, and `verified_income`: 0.24183
@@ -717,10 +707,10 @@ We can continue on and see whether it would be beneficial to add a third predict
 
 The model including `verified_income` has the largest increase in adjusted $R^2$ (0.24183) from the baseline (0.20046), so we add `verified_income` to the model as a predictor as well.
 
-We continue on in this way, next adding `debt_to_income`, then `credit_checks`, and `bankruptcy`.
+We continue in this way, next adding `debt_to_income`, then `credit_checks`, and `bankruptcy`.
 At this point, we come again to the `issue_month` variable: adding this as a predictor leads to $R_{adj}^2 = 0.25843$, while keeping all the other predictors but excluding `issue_month` has a higher $R_{adj}^2 = 0.25854$.
 This means we do not add `issue_month` to the model as a predictor.
-In this example, we have arrived at the same model that we identified from backward elimination.
+In this example, we have arrived at the same model that we identified with backward elimination.
 :::
 
 ::: {.important data-latex=""}
@@ -752,8 +742,6 @@ Stepwise selection can also be carried out with decision criteria other than adj
 
 Alternatively, one could choose to include or exclude predictors from a model based on expert opinion or due to research focus.
 In fact, many statisticians discourage the use of stepwise regression *alone* for model selection and advocate, instead, for a more thoughtful approach that carefully considers the research focus and features of the data.
-
-\clearpage
 
 ## Chapter review {#sec-chp8-review}
 
