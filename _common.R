@@ -110,15 +110,20 @@ caption_helper <- function(txt) {
 # function: make terms table ---------------------------------------------------
 
 make_terms_table <- function(x, n_cols = 3){
-  x <- sort(x) %>% unique()
+  x <- sort(x) |> unique()
   n_rows <- (length(x) / n_cols) %>% ceiling()
   desired_length <- n_rows * n_cols
   x_updated <- c(x, rep("", (desired_length - length(x))))
   matrix(x_updated, nrow = n_rows) %>%
     kbl(booktabs = TRUE, linesep = "") %>%
-    kable_styling(bootstrap_options = c("striped", "condensed"), 
-                  latex_options = "striped",
-                  full_width = TRUE)
+    kable_styling(
+      bootstrap_options = c("striped", "condensed"),
+      latex_options = "striped",
+      full_width = FALSE
+    ) |>
+    column_spec(1, width = "12em") |>
+    column_spec(2, width = "12em") |>
+    column_spec(3, width = "12em")
 }
 
 # for foundation chapters ------------------------------------------------------
