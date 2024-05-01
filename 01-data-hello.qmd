@@ -41,8 +41,6 @@ Each volunteer patient was randomly assigned to one of two groups:
 Researchers randomly assigned 224 patients to the treatment group and 227 to the control group.
 In this study, the control group provides a reference point against which we can measure the medical impact of stents in the treatment group.
 
-\clearpage
-
 Researchers studied the effect of stents at two time points: 30 days after enrollment and 365 days after enrollment.
 The results of 5 patients are summarized in @tbl-stentStudyResultsDF.
 Patient outcomes are recorded as `stroke` or `no event`, representing whether the patient had a stroke during that time period.
@@ -58,7 +56,7 @@ stent30_renamed <- stent30 |> rename(`30 days` = outcome)
 stent365_renamed <- stent365 |> rename(`365 days` = outcome)
 stent <- stent30_renamed |>
   select(-group) |>
-  bind_cols(stent365_renamed) |> 
+  bind_cols(stent365_renamed) |>
   relocate(group) |>
   mutate(
     group        = fct_rev(group),
@@ -66,14 +64,16 @@ stent <- stent30_renamed |>
     `365 days`   = fct_rev(`365 days`),
   )
 stent |>
-  sample_n(5) |> 
+  sample_n(5) |>
   arrange(group) |>
   mutate(patient = 1:n()) |>
   relocate(patient) |>
   kbl(linesep = "", booktabs = TRUE, align = "llll") |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"),
-                full_width = FALSE) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped"),
+    full_width = FALSE
+  ) |>
   column_spec(1:4, width = "8em")
 ```
 
@@ -89,20 +89,25 @@ To identify the number of control patients who did not have a stroke after 365 d
 #| tbl-cap: Descriptive statistics for the stent study.
 stent |>
   mutate(group = str_to_title(group)) |>
-  pivot_longer(cols = c(`30 days`, `365 days`), 
-               names_to = "stage", 
-               values_to = "outcome") |>
+  pivot_longer(
+    cols = c(`30 days`, `365 days`),
+    names_to = "stage",
+    values_to = "outcome"
+  ) |>
   count(group, stage, outcome) |>
   pivot_wider(names_from = c(stage, outcome), values_from = n) |>
   adorn_totals(where = "row") |>
-  kbl(linesep = "", booktabs = TRUE, 
-      col.names = c("Group", "Stroke", "No event", "Stroke", "No event")) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("Group", "Stroke", "No event", "Stroke", "No event")
+  ) |>
   add_header_above(c(" " = 1, "30 days" = 2, "365 days" = 2), extra_css = "border-bottom: 2px solid") |>
   row_spec(1, extra_css = "border-top: 2px solid") |>
   row_spec(3, extra_css = "border-top: 2px solid") |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"))
-
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped")
+  )
 ```
 
 ::: {.guidedpractice data-latex=""}
@@ -184,13 +189,17 @@ Descriptions of the variables in the `loan50` dataset are given in @tbl-loan-50-
 ```{r}
 #| label: tbl-loan50-df
 #| tbl-cap: Six observations from the `loan50` dataset.
-loan50 |> 
+loan50 |>
   select(loan_amount, interest_rate, term, grade, state, total_income, homeownership) |>
   slice_head(n = 6) |>
-  kbl(linesep = "", booktabs = TRUE,
-      row.names = TRUE, format.args = list(big.mark = ",")) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"))
+  kbl(
+    linesep = "", booktabs = TRUE,
+    row.names = TRUE, format.args = list(big.mark = ",")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped")
+  )
 ```
 
 ```{r}
@@ -208,10 +217,15 @@ loan50_var_def <- tribble(
 )
 
 loan50_var_def |>
-  kbl(linesep = "", booktabs = TRUE, 
-      col.names = c("Variable", "Description")) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = TRUE) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("Variable", "Description")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped"), 
+    full_width = FALSE
+  ) |>
   column_spec(1, monospace = TRUE) |>
   column_spec(2, width = "30em")
 ```
@@ -246,8 +260,6 @@ How might these data be organized in a data frame?[^01-data-hello-4]
 [^01-data-hello-4]: Each county may be viewed as a case, and there are eleven pieces of information recorded for each case.
     A table with 3,142 rows and 14 columns could hold these data, where each row represents a county and each column represents a particular piece of information.
 
-\clearpage
-
 The data described in the Guided Practice above represents the `county` dataset, which is shown as a data frame in @tbl-county-df.
 The variables as well as the variables in the dataset that did not fit in @tbl-county-df are described in @tbl-county-variables.
 
@@ -256,11 +268,15 @@ The variables as well as the variables in the dataset that did not fit in @tbl-c
 #| tbl-cap: Six observations and six variables from the `county` dataset.
 county |>
   select(name, state, pop2017, pop_change, unemployment_rate, median_edu) |>
-  slice_head(n = 6) |> 
-  kbl(linesep = "", booktabs = TRUE, 
-      format.args = list(big.mark = ",")) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"))
+  slice_head(n = 6) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    format.args = list(big.mark = ",")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped")
+  )
 ```
 
 ```{r}
@@ -279,17 +295,21 @@ county_var_def <- tribble(
   "multi_unit",        "Multi-unit rate: percent of housing units that are in multi-unit structures, 2006-2010.",
   "unemployment_rate", "Unemployment rate in 2017.",
   "metro",             "Whether the county contains a metropolitan area, taking one of the values yes or no.",
-  "median_edu",        "Median education level (2013-2017), taking one of the values below_hs, hs_diploma, some_college, or bachelors.", 
+  "median_edu",        "Median education level (2013-2017), taking one of the values below_hs, hs_diploma, some_college, or bachelors.",
   "per_capita_income", "Per capita (per person) income (2013-2017).",
   "median_hh_income",  "Median household income.",
   "smoking_ban",       "Describes the type of county-level smoking ban in place in 2010, taking one of the values none, partial, or comprehensive."
 )
 
 county_var_def |>
-  kbl(linesep = "", booktabs = TRUE, 
-      col.names = c("Variable", "Description")) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = TRUE) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("Variable", "Description")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped")
+  ) |>
   column_spec(1, monospace = TRUE) |>
   column_spec(2, width = "30em")
 ```
@@ -344,6 +364,7 @@ terms_chp_1 <- c(terms_chp_1, "ordinal", "nominal")
 #| label: fig-variables
 #| fig-cap: Breakdown of variables into their respective types.
 #| fig-asp: 0.5
+#| out.width: 70%
 #| fig-alt: |
 #|   Types of variables are broken down into numerical (which can be discrete
 #|   or continuous) and categorical (which can be ordinal or nominal).
@@ -434,7 +455,7 @@ We might brainstorm as to why this relationship exists and investigate each idea
 #| fig-alt: A scatterplot of homeownership (on the y-axis) versus the percent of
 #|   housing units that are in multi-unit structures (on the x-axis) for US
 #|   counties. The observation from Chattahoochee County, Georgia
-#|   is highlighted as having a multi-unit rate of 39.4% and a 
+#|   is highlighted as having a multi-unit rate of 39.4% and a
 #|   homeownership rate of 31.3%
 ggplot(county, aes(x = multi_unit, y = homeownership)) +
   geom_point(alpha = 0.3, fill = IMSCOL["black", "full"], shape = 21) +
@@ -442,18 +463,30 @@ ggplot(county, aes(x = multi_unit, y = homeownership)) +
     x = "Percent of housing units in that are multi-unit structures",
     y = "Homeownership rate"
   ) +
-  geom_point(data = county |> filter(name == "Chattahoochee County"), 
-             size = 3, stroke = 2, color = IMSCOL["red", "full"], shape = 1) +
-  geom_text(data = county |> filter(name == "Chattahoochee County"),
-            label = "Chattahoochee County", fontface = "italic",
-            nudge_x = 21, nudge_y = -5, color = IMSCOL["red", "full"]) +
+  geom_point(
+    data = county |> filter(name == "Chattahoochee County"),
+    size = 3, stroke = 2, color = IMSCOL["red", "full"], shape = 1
+  ) +
+  geom_text(
+    data = county |> filter(name == "Chattahoochee County"),
+    label = "Chattahoochee County", fontface = "italic",
+    nudge_x = 21, nudge_y = -5, color = IMSCOL["red", "full"]
+  ) +
   guides(color = FALSE) +
-  geom_segment(data = county |> filter(name == "Chattahoochee County"),
-               aes(x = 0, y = homeownership, xend = multi_unit, yend = homeownership, 
-                   color = IMSCOL["red", "full"]), linetype = "dashed") +
-  geom_segment(data = county |> filter(name == "Chattahoochee County"),
-               aes(x = multi_unit, y = 0, xend = multi_unit, yend = homeownership, 
-                   color = IMSCOL["red", "full"]), linetype = "dashed") +
+  geom_segment(
+    data = county |> filter(name == "Chattahoochee County"),
+    aes(
+      x = 0, y = homeownership, xend = multi_unit, yend = homeownership,
+      color = IMSCOL["red", "full"]
+    ), linetype = "dashed"
+  ) +
+  geom_segment(
+    data = county |> filter(name == "Chattahoochee County"),
+    aes(
+      x = multi_unit, y = 0, xend = multi_unit, yend = homeownership,
+      color = IMSCOL["red", "full"]
+    ), linetype = "dashed"
+  ) +
   scale_x_continuous(labels = percent_format(scale = 1)) +
   scale_y_continuous(labels = percent_format(scale = 1))
 ```
@@ -491,7 +524,7 @@ Since there is some relationship between the variables, they are associated.
 #|   against median household income.
 #|   Owsley County of Kentucky is highlighted, which lost 3.63% of its population from
 #|   2010 to 2017 and had median household income of $22,736.
-#| fig-alt: A scatterplot showing population change (on the y-axis)  
+#| fig-alt: A scatterplot showing population change (on the y-axis)
 #|   against median household income (on the x-axis).
 #|   Owsley County of Kentucky is highlighted, which lost 3.63% of its population from
 #|   2010 to 2017 and had median household income of $22,736.
@@ -501,21 +534,33 @@ ggplot(county, aes(x = median_hh_income, y = pop_change)) +
     x = "Median household income",
     y = "Population change over 7 years"
   ) +
-  geom_point(data = county |> filter(name == "Owsley County"), 
-             size = 3, stroke = 2, color = IMSCOL["red", "full"], shape = 1) +
+  geom_point(
+    data = county |> filter(name == "Owsley County"),
+    size = 3, stroke = 2, color = IMSCOL["red", "full"], shape = 1
+  ) +
   guides(color = FALSE) +
-  geom_text(data = county |> filter(name == "Owsley County"),
-            label = "Owsley\nCounty", fontface = "italic",
-            nudge_x = -2000, nudge_y = 10, color = IMSCOL["red", "full"],
-            hjust = 1) +
-  geom_segment(data = county |> filter(name == "Owsley County"),
-               aes(x = 0, y = pop_change, 
-                   xend = median_hh_income, yend = pop_change, 
-                   color = IMSCOL["red", "full"]), linetype = "dashed") +
-  geom_segment(data = county |> filter(name == "Owsley County"),
-               aes(x = median_hh_income, y = -40, 
-                   xend = median_hh_income, yend = pop_change, 
-                   color = IMSCOL["red", "full"]), linetype = "dashed") +
+  geom_text(
+    data = county |> filter(name == "Owsley County"),
+    label = "Owsley\nCounty", fontface = "italic",
+    nudge_x = -2000, nudge_y = 10, color = IMSCOL["red", "full"],
+    hjust = 1
+  ) +
+  geom_segment(
+    data = county |> filter(name == "Owsley County"),
+    aes(
+      x = 0, y = pop_change,
+      xend = median_hh_income, yend = pop_change,
+      color = IMSCOL["red", "full"]
+    ), linetype = "dashed"
+  ) +
+  geom_segment(
+    data = county |> filter(name == "Owsley County"),
+    aes(
+      x = median_hh_income, y = -40,
+      xend = median_hh_income, yend = pop_change,
+      color = IMSCOL["red", "full"]
+    ), linetype = "dashed"
+  ) +
   scale_x_continuous(labels = dollar_format(scale = 0.001, suffix = "K")) +
   scale_y_continuous(labels = percent_format(scale = 1), limits = c(-40, 40))
 ```
@@ -620,7 +665,7 @@ We revisit ideas of confounding when we discuss experiments in @sec-principles-e
 
 This chapter introduced you to the world of data.
 Data can be organized in many ways but tidy data, where each row represents an observation and each column represents a variable, lends itself most easily to statistical analysis.
-Many of the ideas from this chapter will be seen as we move on to doing full data analyses.
+Many of the ideas from this chapter will be revisited as we move on to doing end-to-end data analyses.
 In the next chapter you're going to learn about how we can design studies to collect the data we need to make conclusions with the desired scope of inference.
 
 ### Terms
