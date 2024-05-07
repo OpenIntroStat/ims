@@ -21,9 +21,11 @@ By participating in this project you agree to abide by its terms.
 
 ------------------------------------------------------------------------
 
-Conventions we are using in IMS
+#### Conventions 
+used in IMS:
 
-dataset (one word)
-data frame (two words)
-Type I error
-box plot (two words)
+dataset (one word)  
+data frame (two words)  
+Type I error  
+box plot (two words)  
+
