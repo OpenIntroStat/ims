@@ -101,7 +101,7 @@ ggplot2::update_geom_defaults("dotplot", list(color = openintro::IMSCOL["blue","
 
 caption_helper <- function(txt) {
   if (knitr::is_latex_output())
-    stringr::str_replace_all(txt, "([^`]*)`(.*?)`", "\\1\\\\texttt{\\2}") %>%
+    stringr::str_replace_all(txt, "([^`]*)`(.*?)`", "\\1\\\\texttt{\\2}") |>
     stringr::str_replace_all("_", "\\\\_")
   else
     txt
@@ -111,11 +111,11 @@ caption_helper <- function(txt) {
 
 make_terms_table <- function(x, n_cols = 3){
   x <- sort(x) |> unique()
-  n_rows <- (length(x) / n_cols) %>% ceiling()
+  n_rows <- (length(x) / n_cols) |> ceiling()
   desired_length <- n_rows * n_cols
   x_updated <- c(x, rep("", (desired_length - length(x))))
-  matrix(x_updated, nrow = n_rows) %>%
-    kbl(booktabs = TRUE, linesep = "") %>%
+  matrix(x_updated, nrow = n_rows) |>
+    kbl(booktabs = TRUE, linesep = "") |>
     kable_styling(
       bootstrap_options = c("striped", "condensed"),
       latex_options = "striped",
