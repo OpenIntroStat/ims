@@ -18,3 +18,12 @@ If you're looking for the source files for the 1st edition of OpenIntro - Introd
 
 Please note that this project is released with a [Contributor Code of Conduct](https://www.contributor-covenant.org/version/2/0/code_of_conduct/).
 By participating in this project you agree to abide by its terms.
+
+------------------------------------------------------------------------
+
+Conventions we are using in IMS
+
+dataset (one word)
+data frame (two words)
+Type I error
+box plot (two words)
