@@ -31,15 +31,16 @@ loans <- loans_full_schema |>
   mutate(application_type = as.character(application_type)) |>
   filter(application_type != "") |>
   mutate(
-    homeownership    = tolower(homeownership), 
-    homeownership    = fct_relevel(homeownership, "rent", "mortgage", "own"), 
+    homeownership = tolower(homeownership),
+    homeownership = fct_relevel(homeownership, "rent", "mortgage", "own"),
     application_type = fct_relevel(application_type, "joint", "individual")
-    ) 
+  )
 
 loans_individual_rent <- loans |>
   filter(
     application_type == "individual",
-    homeownership    == "rent") |>
+    homeownership == "rent"
+  ) |>
   nrow()
 ```
 
@@ -64,26 +65,30 @@ terms_chp_04 <- c("contingency table", "row totals", "column totals")
 #| tbl-cap: A contingency table for application type and homeownership.
 loans |>
   count(application_type, homeownership) |>
-  pivot_wider(names_from = homeownership, values_from = n) |> 
+  pivot_wider(names_from = homeownership, values_from = n) |>
   select(application_type, rent, mortgage, own) |>
   adorn_totals(where = c("row", "col")) |>
   kbl(linesep = "", booktabs = TRUE) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  ) |>
   add_header_above(c(" " = 1, "homeownership" = 3, " " = 1)) |>
   column_spec(1:5, width = "6em")
 ```
 
 ```{r}
 #| label: tbl-loan-homeownership-totals
-#| tbl-cap: A table summarizing the frequencies for each value of the homeownership 
+#| tbl-cap: A table summarizing the frequencies for each value of the homeownership
 #|   variable -- mortgage, own, and rent.
 loans |>
   count(homeownership, name = "Count") |>
   adorn_totals(where = "row") |>
   kbl(linesep = "", booktabs = TRUE) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  ) |>
   column_spec(1:2, width = "10em")
 ```
 
@@ -95,22 +100,22 @@ In the right panel, the counts are converted into proportions, showing the propo
 #| label: fig-loan-homeownership-bar-plot
 #| fig-cap: 'Two bar plots: the left panel shows the counts, and the right panel shows
 #|   the proportions of values of the homeownership variable.'
-#| fig-alt: 'Two bar plots: the left panel shows the counts and 
+#| fig-alt: 'Two bar plots: the left panel shows the counts and
 #|   the right panel shows
 #|   the proportions of values of the homeownership variable. The
 #|   highest proportion of borrowers have a home mortgage.  The next highest
-#|   group rents. The smallest group of people own their home 
+#|   group rents. The smallest group of people own their home
 #|   outright.'
 #| fig-asp: 0.5
 p_count <- ggplot(loans, aes(x = homeownership)) +
-  geom_bar(fill = IMSCOL["green", "full"]) + 
+  geom_bar(fill = IMSCOL["green", "full"]) +
   labs(x = "Homeownership", y = "Count")
 
 p_proportion <- loans |>
   count(homeownership) |>
   mutate(proportion = n / sum(n)) |>
   ggplot(aes(x = homeownership, y = proportion)) +
-  geom_col(fill = IMSCOL["green", "full"]) + 
+  geom_col(fill = IMSCOL["green", "full"]) +
   labs(x = "Homeownership", y = "Proportion")
 
 p_count + p_proportion
@@ -146,7 +151,7 @@ terms_chp_04 <- c(terms_chp_04, "stacked bar plot", "dodged bar plot", "filled b
 #|   and application type variables.  There are three or four times
 #|   as many individual applications as joint applications. The
 #|   highest proportion of borrowers has a home mortgage.  The next highest
-#|   group rents. The smallest group of people own their home 
+#|   group rents. The smallest group of people own their home
 #|   outright.
 #| fig-asp: 0.8
 #| fig.width: 8.0
@@ -213,16 +218,18 @@ We can again use this plot to see that the `homeownership` and `application_type
 #|   relationship between homeownership and application type.'
 #| fig-alt: 'Two mosaic plots: one for homeownership alone and the other displaying the
 #|   relationship between homeownership and application type. Again, the majority of
-#|   borrowers are individuals, as compared with joint applications. The highest 
+#|   borrowers are individuals, as compared with joint applications. The highest
 #|   proportion of borrowers have a mortgage; the next highest proportion rent their
 #|   home; and the smallest group owns their home outright.'
 #| fig-asp: 0.5
 p_mosaic_1 <- ggplot(loans) +
   geom_mosaic(aes(x = product(homeownership)), fill = IMSCOL["green", "full"]) +
   labs(x = "Homeownership", y = "") +
-  theme(axis.title.y = element_blank(),
-        axis.text.y  = element_blank(),
-        axis.ticks.y = element_blank())
+  theme(
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
 
 p_mosaic_2 <- ggplot(loans) +
   geom_mosaic(aes(x = product(homeownership), fill = application_type)) +
@@ -244,7 +251,7 @@ Like with the bar plots, it's common to use the explanatory variable to represen
 #|   divided into individual and joint application types.
 #| fig-alt: Mosaic plot where loans are grouped by homeownership after they have been
 #|   divided into individual and joint application types. Again, the majority of
-#|   borrowers are individuals, as compared with joint applications. The highest 
+#|   borrowers are individuals, as compared with joint applications. The highest
 #|   proportion of borrowers have a mortgage; the next highest proportion rent their
 #|   home; and the smallest group owns their home outright.
 ggplot(loans) +
@@ -268,19 +275,21 @@ It corresponds to the proportion of individual applicants who rent.
 #| label: tbl-loan-home-app-type-row-proportions
 #| out.width: 70%
 #| tbl-cap: |
-#|   A contingency table with row proportions for the application type and 
+#|   A contingency table with row proportions for the application type and
 #|   homeownership variables.
 
 loans |>
-  count(application_type, homeownership) |> 
+  count(application_type, homeownership) |>
   group_by(application_type) |>
-  mutate(proportion = n / sum(n)) |> 
+  mutate(proportion = n / sum(n)) |>
   select(-n) |>
-  pivot_wider(names_from = homeownership, values_from = proportion) |> 
-  adorn_totals(where = "col") |> 
+  pivot_wider(names_from = homeownership, values_from = proportion) |>
+  adorn_totals(where = "col") |>
   kbl(linesep = "", booktabs = TRUE) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  ) |>
   add_header_above(c(" " = 1, "homeownership" = 3, " " = 1)) |>
   column_spec(1:5, width = "6em")
 ```
@@ -292,18 +301,20 @@ Because these rates vary between the three levels of `homeownership` (`rent`, `m
 
 ```{r}
 #| label: tbl-loan-home-app-type-column-proportions
-#| tbl-cap: A contingency table with column proportions for the application type 
+#| tbl-cap: A contingency table with column proportions for the application type
 #|   and homeownership variables.
 loans |>
-  count(application_type, homeownership) |> 
+  count(application_type, homeownership) |>
   group_by(homeownership) |>
-  mutate(proportion = n / sum(n)) |> 
+  mutate(proportion = n / sum(n)) |>
   select(-n) |>
-  pivot_wider(names_from = homeownership, values_from = proportion) |> 
-  adorn_totals(where = "row") |> 
+  pivot_wider(names_from = homeownership, values_from = proportion) |>
+  adorn_totals(where = "row") |>
   kbl(linesep = "", booktabs = TRUE) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  ) |>
   add_header_above(c(" " = 1, "homeownership" = 3)) |>
   column_spec(1:4, width = "8em")
 ```
@@ -364,15 +375,17 @@ The [email](http://openintrostat.github.io/openintro/reference/email.html) data 
 #| tbl-cap: A contingency table for spam and format.
 email |>
   mutate(
-    format = if_else(format == 0, "text", "HTML"), 
-    spam   = if_else(spam == 0, "not spam", "spam"),  
-  ) |> 
+    format = if_else(format == 0, "text", "HTML"),
+    spam   = if_else(spam == 0, "not spam", "spam"),
+  ) |>
   count(spam, format) |>
-  pivot_wider(names_from = format, values_from = n) |> 
+  pivot_wider(names_from = format, values_from = n) |>
   adorn_totals(where = c("row", "col")) |>
   kbl(linesep = "", booktabs = TRUE) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) 
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  )
 ```
 
 ::: {.workedexample data-latex=""}
@@ -398,14 +411,14 @@ For example, it's not immediately obvious that there are more loans where the bo
 #| label: fig-loan-homeownership-pie-chart
 #| fig-cap: A pie chart and bar plot of homeownership.
 #| fig-alt: A pie chart and bar plot of homeownership.  Both plots show that about half of
-#|   the individuals taking out a loan have a mortgage.  A slightly smaller group of 
-#|   individuals rents.  The smallest group of borrowers owns their home. 
+#|   the individuals taking out a loan have a mortgage.  A slightly smaller group of
+#|   individuals rents.  The smallest group of borrowers owns their home.
 #| fig.width: 8.0
-p_pie <- loans |> 
+p_pie <- loans |>
   mutate(homeownership = fct_infreq(homeownership)) |>
   count(homeownership) |>
-  mutate(text_y = cumsum(n) - n/2) |>
-  ggplot(aes(x = "", fill = homeownership, y = n)) + 
+  mutate(text_y = cumsum(n) - n / 2) |>
+  ggplot(aes(x = "", fill = homeownership, y = n)) +
   geom_col(position = position_stack(reverse = TRUE), show.legend = FALSE) +
   geom_text_repel(aes(x = 1, label = homeownership, y = text_y)) +
   coord_polar("y", start = 0) +
@@ -431,17 +444,17 @@ In this case, it is far easier to compare the counts of each loan grade using th
 ```{r}
 #| label: fig-loan-grade-pie-chart
 #| fig-cap: A pie chart and bar plot of loan grades.
-#| fig-alt: A pie chart and a bar plot of loan grades. Both plots shows that 
+#| fig-alt: A pie chart and a bar plot of loan grades. Both plots shows that
 #|    the most frequent grades are A, B, and C. The bar plot makes it easier to
 #|    count the number of loans in each grade.
 #| fig.width: 8.0
-p_pie <- loans |> 
-  count(grade) |> 
-  mutate(text_y = cumsum(n) - n/2) |> 
-  ggplot(aes(x = "", fill = grade, y = n)) + 
+p_pie <- loans |>
+  count(grade) |>
+  mutate(text_y = cumsum(n) - n / 2) |>
+  ggplot(aes(x = "", fill = grade, y = n)) +
   geom_col(position = position_stack(reverse = TRUE), show.legend = FALSE) +
-  geom_text_repel(aes(x = 1.4, label = grade, y = text_y), nudge_x = 0.3, segment.size = 0.5) + 
-  coord_polar(theta = "y") + 
+  geom_text_repel(aes(x = 1.4, label = grade, y = text_y), nudge_x = 0.3, segment.size = 0.5) +
+  coord_polar(theta = "y") +
   scale_fill_openintro("cool") +
   theme_void() +
   labs(title = "Loan grade")
@@ -469,7 +482,7 @@ However, unlike pie charts, they can make it easier to compare proportions that 
 #|   Plot B: Waffle chart of loan status, with levels current, fully paid, in grace period,
 #|   and late.'
 #| fig-alt: 'Plot A: Waffle chart of homeownership, with levels rent, mortgage, and own.
-#|   Plot B: Waffle chart of loan status, with levels current, fully paid, in grace 
+#|   Plot B: Waffle chart of loan status, with levels current, fully paid, in grace
 #|   period, and late. The waffle plots below are broken down into a 10 by 10 grid where
 #|   each square represents 1 percent of the data. The squares are colored proportionally
 #|   to the variable distributions.'
@@ -488,13 +501,13 @@ p_waffle_homeownership <- loans |>
 p_waffle_loan_status <- loans |>
   count(loan_status) |>
   ggplot(aes(fill = loan_status, values = n)) +
-  geom_waffle(colour = "white", flip = TRUE, make_proportional = TRUE, na.rm = TRUE)  +
+  geom_waffle(colour = "white", flip = TRUE, make_proportional = TRUE, na.rm = TRUE) +
   labs(fill = NULL, title = "Loan status") +
   scale_fill_openintro("four") +
   coord_equal() +
   theme_enhance_waffle() +
   theme(legend.position = "bottom") +
-  guides(fill=guide_legend(nrow = 2))
+  guides(fill = guide_legend(nrow = 2))
 
 p_waffle_homeownership +
   p_waffle_loan_status +
@@ -510,9 +523,9 @@ We will revisit the `county` dataset and compare the median household income for
 While we might like to make a causal connection between income and population growth, remember that these are observational data and so such an interpretation would be, at best, half-baked.
 
 ```{r}
-n_county          <- nrow(county)
-n_missing_pop2017 <- county |> 
-  filter(is.na(pop2017)) |> 
+n_county <- nrow(county)
+n_missing_pop2017 <- county |>
+  filter(is.na(pop2017)) |>
   nrow()
 n_with_pop_change <- n_county - n_missing_pop2017
 
@@ -526,10 +539,18 @@ county <- county |>
     pop_change_2levels = if_else(pop_change_3levels == "gain", "gain", "no gain")
   )
 
-n_pop_no_gain     <- county |> filter(pop_change_2levels == "no gain") |> nrow()
-n_pop_loss        <- county |> filter(pop_change_3levels == "loss") |> nrow()
-n_pop_no_change   <- county |> filter(pop_change_3levels == "no change") |> nrow()
-n_pop_gain        <- county |> filter(pop_change_3levels == "gain") |> nrow()
+n_pop_no_gain <- county |>
+  filter(pop_change_2levels == "no gain") |>
+  nrow()
+n_pop_loss <- county |>
+  filter(pop_change_3levels == "loss") |>
+  nrow()
+n_pop_no_change <- county |>
+  filter(pop_change_3levels == "no change") |>
+  nrow()
+n_pop_gain <- county |>
+  filter(pop_change_3levels == "gain") |>
+  nrow()
 ```
 
 We have data on `r n_county` counties in the United States.
@@ -538,13 +559,13 @@ We are missing 2017 population data from `r n_missing_pop2017` of them, and of t
 
 ```{r}
 #| label: tbl-countyIncomeSplitByPopGainTable
-#| tbl-cap: The median household income from a random sample of 5 counties with 
-#|   population gain between 2010 to 2017 and another random sample of 5 counties 
+#| tbl-cap: The median household income from a random sample of 5 counties with
+#|   population gain between 2010 to 2017 and another random sample of 5 counties
 #|   with no population gain.
 county |>
   select(state, name, pop_change, pop_change_2levels, median_hh_income) |>
   filter(!is.na(pop_change)) |>
-  group_by(pop_change_2levels) |> 
+  group_by(pop_change_2levels) |>
   slice_sample(n = 5) |>
   arrange(pop_change_2levels, state, name) |>
   rename(
@@ -555,8 +576,10 @@ county |>
     `Median household income` = median_hh_income
   ) |>
   kbl(linesep = "", booktabs = TRUE, align = "llccc") |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped", "hold_position"), full_width = FALSE
+  ) |>
   column_spec(3, width = "8em") |>
   column_spec(4, width = "4em") |>
   column_spec(5, width = "8em")
@@ -581,7 +604,7 @@ terms_chp_04 <- c(terms_chp_04, "side-by-side box plot")
 #|   In both plots, the counties who have had a population gain have a household
 #|   income distribution with a higher center.  Additionally, the histogram (but not
 #|   the boxp lot) shows that there are more counties who have had a population gain
-#|   than who have not had a population gain. 
+#|   than who have not had a population gain.
 #| fig.width: 8.0
 #| fig-asp: 0.7
 p_hist <- county |>
@@ -642,8 +665,10 @@ terms_chp_04 <- c(terms_chp_04, "ridge plot")
 #|   had a population gain have a household income distribution with a higher center.
 county |>
   filter(!is.na(pop_change)) |>
-  ggplot(aes(x = median_hh_income, y = pop_change_2levels, 
-             fill = pop_change_2levels, color = pop_change_2levels)) + 
+  ggplot(aes(
+    x = median_hh_income, y = pop_change_2levels,
+    fill = pop_change_2levels, color = pop_change_2levels
+  )) +
   geom_density_ridges(alpha = 0.5) +
   scale_fill_openintro("two") +
   scale_color_openintro("two") +
@@ -692,12 +717,12 @@ p_1 <- county |>
   rename(
     pop_change_num = pop_change,
     pop_change = pop_change_2levels
-    ) |>
+  ) |>
   ggplot(aes(x = median_hh_income, fill = pop_change)) +
   geom_histogram(binwidth = 5000) +
   scale_fill_openintro("two") +
   scale_x_continuous(labels = label_dollar()) +
-  facet_grid(pop_change~., labeller = label_both) +
+  facet_grid(pop_change ~ ., labeller = label_both) +
   labs(x = "Median household income", y = NULL) +
   guides(fill = FALSE)
 
@@ -707,17 +732,17 @@ p_2 <- county |>
   rename(
     pop_change_num = pop_change,
     pop_change = pop_change_2levels
-    ) |>
+  ) |>
   ggplot(aes(x = median_hh_income, fill = pop_change)) +
   geom_histogram(binwidth = 5000) +
   scale_fill_openintro("two") +
   scale_x_continuous(labels = label_dollar()) +
-  facet_grid(pop_change~metro, labeller = label_both) +
+  facet_grid(pop_change ~ metro, labeller = label_both) +
   labs(x = "Median household income", y = NULL) +
   guides(fill = FALSE)
 
-p_1 + p_2 + 
-  plot_annotation(tag_levels = "A") + 
+p_1 + p_2 +
+  plot_annotation(tag_levels = "A") +
   plot_layout(widths = c(1, 2))
 ```
 
@@ -742,14 +767,14 @@ county |>
   rename(
     pop_change_num = pop_change,
     pop_change = pop_change_2levels
-    ) |>
+  ) |>
   ggplot(aes(x = median_hh_income, y = median_edu, fill = median_edu, color = median_edu)) +
   geom_density_ridges(alpha = 0.5, aes(linetype = median_edu)) +
   scale_fill_openintro("hot") +
   scale_color_openintro("hot") +
   scale_linetype_manual(values = c("solid", "dashed", "dotted")) +
   scale_x_continuous(labels = label_dollar()) +
-  facet_grid(pop_change~metro, labeller = label_both) +
+  facet_grid(pop_change ~ metro, labeller = label_both) +
   labs(x = "Median household income", y = NULL) +
   guides(fill = FALSE, color = FALSE, linetype = FALSE)
 ```
