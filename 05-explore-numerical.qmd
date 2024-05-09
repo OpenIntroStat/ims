@@ -41,7 +41,10 @@ terms_chp_05 <- c("scatterplot")
 #| fig-cap: |
 #|   A scatterplot of loan amount versus total income for the `loan50`
 #|   dataset.
-#| fig-alt: A scatter plot with total income on the x-axis and loan amount on the y-axis.  The relationship is moderately positive.
+#| fig-alt: |
+#|   A scatter plot with total income on the x-axis and loan amount on the 
+#|   y-axis. The relationship is moderately positive.
+#| fig-asp: 0.5
 ggplot(loan50, aes(x = total_income, y = loan_amount)) +
   geom_point(alpha = 0.6, shape = 21, size = 3) +
   labs(x = "Total income", y = "Loan amount") +
@@ -57,10 +60,12 @@ Looking at @fig-loan50-amount-income, we see that there are many borrowers with 
 #|   A scatterplot of the median household income against the poverty
 #|   rate for the `county` dataset. Data are from 2017. A statistical model has
 #|   also been fit to the data and is shown as a dashed line.
-#| fig-alt: A scatterplot with poverty rate on the x-axis and median household
-#|   income on the y-axis.  The relationship is negative and curvilinear.
+#| fig-alt: |
+#|   A scatterplot with poverty rate on the x-axis and median household
+#|   income on the y-axis. The relationship is negative and curvilinear.
 #|   The bulk of the points fall with a poverty rate of 10% to 20% and a
 #|   median household income of $25K to $75K.
+#| fig-asp: 0.5
 ggplot(county, aes(x = poverty / 100, y = median_hh_income)) +
   geom_point(
     alpha = 0.3, fill = IMSCOL["black", "full"],
@@ -122,8 +127,7 @@ terms_chp_05 <- c(terms_chp_05, "dot plot")
 #|   A dot plot of interest rate (ranging from about 5% to 25%).
 #|   The distribution is right skewed, and the mean is shown at an interest
 #|   rate of about 11%.
-#| fig-asp: 0.5
-#| fig-width: 8
+#| fig-asp: 0.4
 loan50_interest_rate_mean <- mean(loan50$interest_rate)
 
 ggplot(loan50, aes(x = interest_rate)) +
@@ -136,8 +140,12 @@ ggplot(loan50, aes(x = interest_rate)) +
     axis.ticks.y = element_blank()
   ) +
   geom_polygon(
-    data = data.frame(
-      x = c(loan50_interest_rate_mean - 1, loan50_interest_rate_mean + 1, loan50_interest_rate_mean),
+    data = tibble(
+      x = c(
+        loan50_interest_rate_mean - 1, 
+        loan50_interest_rate_mean + 1, 
+        loan50_interest_rate_mean
+      ),
       y = c(-0.1, -0.1, 0)
     ),
     aes(x = x, y = y),
@@ -185,8 +193,16 @@ We could compute a mean for the entire population in the same way as the sample 
 However, the population mean has a special label: $\mu.$ The symbol $\mu$ is the Greek letter *mu* and represents the average of all observations in the population.
 Sometimes a subscript, such as $_x,$ is used to represent which variable the population mean refers to, e.g., $\mu_x.$ Oftentimes it is too expensive to measure the population mean precisely, so we often estimate $\mu$ using the sample mean, $\bar{x}.$
 
+::: {.content-visible when-format="html"}
 ::: {.pronunciation data-latex=""}
 The Greek letter $\mu$ is pronounced *mu*, listen to the pronunciation [here](https://youtu.be/PStgY5AcEIw?t=47).
+:::
+:::
+
+::: {.content-visible when-format="pdf"}
+::: {.pronunciation data-latex=""}
+The Greek letter $\mu$ is pronounced *mu*.
+:::
 :::
 
 ::: {.workedexample data-latex=""}
@@ -213,6 +229,7 @@ Results of this trial are summarized in @tbl-drug-asthma-results.
 ```{r}
 #| label: tbl-drug-asthma-results
 #| tbl-cap: Results of a trial of 1500 adults that suffer from asthma.
+#| tbl-pos: H
 drug_asthma <- tribble(
   ~x, ~`New drug`, ~`Standard drug`,
   "Number of patients", 500, 1000,
@@ -226,13 +243,16 @@ drug_asthma |>
   ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position"), full_width = FALSE
+    latex_options = c("striped"), full_width = FALSE
   ) |>
   column_spec(1, width = "12em") |>
   column_spec(2:3, width = "8em")
 ```
 
 Comparing the raw counts of 200 to 300 asthma attacks would make it appear that the new drug is better, but this is an artifact of the imbalanced group sizes.
+
+\clearpage
+
 Instead, we should look at the average number of asthma attacks per patient in each group:
 
 -   New drug: $200 / 500 = 0.4$ asthma attacks per patient
@@ -294,6 +314,7 @@ terms_chp_05 <- c(terms_chp_05, "histogram")
 ```{r}
 #| label: tbl-binnedIntRateAmountTable
 #| tbl-cap: Counts for the binned interest rate data.
+#| tbl-pos: H
 loan50 |>
   mutate(interest_rate_cat = cut(interest_rate, breaks = seq(5, 27.5, 2.5))) |>
   count(interest_rate_cat, name = "Count") |>
@@ -310,7 +331,7 @@ loan50 |>
   kbl(linesep = "", booktabs = TRUE, align = "lr") |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position"),
+    latex_options = c("striped"),
     full_width = FALSE
   ) |>
   column_spec(1:2, width = "9em")
@@ -324,7 +345,7 @@ loan50 |>
 #| fig-alt: |
 #|   A histogram of interest rate (ranging from about 5% to 25%).
 #|   The distribution is right skewed.
-#| fig-width: 8
+#| fig-asp: 0.4
 ggplot(loan50, aes(x = interest_rate)) +
   geom_histogram(breaks = seq(5, 27.5, 2.5)) +
   labs(x = "Interest rate", y = "Count") +
@@ -358,7 +379,7 @@ When the distribution of a variable trails off to the right in this way and has 
 #| fig-alt: |
 #|   A density plot of interest rate (ranging from about 5% to 25%).
 #|   The distribution is right skewed.
-#| fig-width: 8
+#| fig-asp: 0.4
 ggplot(loan50, aes(x = interest_rate)) +
   geom_density(fill = IMSCOL[1, 1], alpha = 0.5) +
   labs(x = "Interest rate", y = "Density") +
@@ -367,6 +388,8 @@ ggplot(loan50, aes(x = interest_rate)) +
     labels = label_percent(scale = 1, accuracy = 1)
   )
 ```
+
+\clearpage
 
 @fig-loan50IntRateDensity shows a **density plot** which is a smoothed out histogram.
 The technical details for how to draw density plots (precisely how to smooth out the histogram) are beyond the scope of this text, but you will note that the shape, scale, and spread of the observations are displayed similarly in a histogram as in a density plot.
@@ -414,6 +437,8 @@ Notice that there was one prominent peak in the unimodal distribution with a sec
 terms_chp_05 <- c(terms_chp_05, "unimodal", "bimodal", "multimodal")
 ```
 
+\vspace{-10mm}
+
 ```{r}
 #| label: fig-singleBiMultiModalPlots
 #| fig-cap: |
@@ -421,10 +446,10 @@ terms_chp_05 <- c(terms_chp_05, "unimodal", "bimodal", "multimodal")
 #|   unimodal, bimodal, and multimodal. Note that the left plot is unimodal
 #|   because we are counting prominent peaks, not just any peak.
 #| fig-alt: |
-#|   Three separate histograms on fabricated data.  The first histogram
+#|   Three separate histograms on fabricated data. The first histogram
 #|   shows a unimodal distribution, the second histogram shows a bimodal
 #|   distribution, and the third histogram shows a multimodal distribution.
-#| fig-asp: 0.33
+#| fig-asp: 0.3
 #| out-width: 95%
 df_modes <- tibble(
   uni   = rchisq(65, 6),
@@ -458,12 +483,14 @@ Is the distribution unimodal, bimodal, or multimodal?[^05-explore-numerical-7]
 
 [^05-explore-numerical-7]: Remember that *uni* stands for 1 (think *uni*cycles), and *bi* stands for 2 (think *bi*cycles).
 
+\clearpage
+
 ::: {.guidedpractice data-latex=""}
-Height measurements of young students and adult teachers at a K-3 elementary school were taken.
+Height measurements of young students and adult teachers at an elementary school were taken.
 How many modes would you expect in this height dataset?[^05-explore-numerical-8]
 :::
 
-[^05-explore-numerical-8]: There might be two height groups visible in the dataset: one of the students and one of the adults.
+[^05-explore-numerical-8]: There might be two height groups visible in the dataset: the children (students) and the adults (teachers).
     That is, the data are probably bimodal.
 
 Looking for modes isn't about finding a clear and correct answer about the number of modes in a distribution, which is why *prominent*\index{prominent} is not rigorously defined in this book.
@@ -562,9 +589,29 @@ However, these percentages are not strict rules.
 
 Like the mean, the population values for variance and standard deviation have special symbols: $\sigma^2$ for the variance and $\sigma$ for the standard deviation.
 
+::: {.content-visible when-format="html"}
 ::: {.pronunciation data-latex=""}
 The Greek letter $\sigma$ is pronounced *sigma*, listen to the pronunciation [here](https://youtu.be/PStgY5AcEIw?t=72).
 :::
+:::
+
+::: {.content-visible when-format="pdf"}
+::: {.pronunciation data-latex=""}
+The Greek letter $\sigma$ is pronounced *sigma*.
+:::
+:::
+
+::: {.guidedpractice data-latex=""}
+A good description of the shape of a distribution should include modality and whether the distribution is symmetric or skewed to one side.
+Using @fig-severalDiffDistWithSdOf1 as an example, explain why such a description is important.[^05-explore-numerical-9]
+:::
+
+[^05-explore-numerical-9]: @fig-severalDiffDistWithSdOf1 shows three distributions that look quite different, but all have the same mean, variance, and standard deviation.
+    Using modality, we can distinguish between the first plot (bimodal) and the last two (unimodal).
+    Using skewness, we can distinguish between the last plot (right skewed) and the first two.
+    While a picture, like a histogram, tells a more complete story, we can use modality and shape (symmetry/skew) to characterize basic information about a distribution.
+
+\clearpage
 
 ```{r}
 #| label: sdRuleForIntRate
@@ -579,7 +626,6 @@ The Greek letter $\sigma$ is pronounced *sigma*, listen to the pronunciation [he
 #|   shading indicates the empirical rule cutoffs of one and two standard
 #|   deviations. Because the variable is right-skewed, the empirical rule
 #|   ranges do not capture the desired amoung of data, 68% and 95% respectively.
-#| fig-width: 8
 box_sd1 <- tibble(
   x = c(
     loan50_interest_rate_mean - loan50_interest_rate_sd,
@@ -624,6 +670,8 @@ ggplot(loan50, aes(x = interest_rate)) +
   )
 ```
 
+\vfill
+
 ```{r}
 #| label: fig-severalDiffDistWithSdOf1
 #| fig-cap: |
@@ -631,11 +679,10 @@ ggplot(loan50, aes(x = interest_rate)) +
 #|   and standard deviation (1).
 #| fig-alt: |
 #|   Three histograms of fabricated data with empirical rule shading of
-#|   one and two standard deviations superimposed.  The bimodal and right
+#|   one and two standard deviations superimposed. The bimodal and right
 #|   skewed histogram demonstrate that the empirical rule is not a good
-#|   approximation.  The empirical rule fits well to the unimodal bell-shaped
+#|   approximation. The empirical rule fits well to the unimodal bell-shaped
 #|   distribution.
-#| fig-width: 8
 x1 <- c(rep(-0.975, 1000), rep(0.975, 1000))
 x1 <- (x1 - mean(x1)) / sd(x1)
 x2 <- rnorm(2000)
@@ -663,15 +710,15 @@ ggplot(dists_mean0_sd1, aes(x = x)) +
   scale_x_continuous(breaks = seq(-3, 3, 1)) +
   labs(x = NULL) +
   geom_polygon(
-    data = data.frame(x = c(-1, -1, 1, 1), y = c(0, 1000, 1000, 0)),
+    data = tibble(x = c(-1, -1, 1, 1), y = c(0, 1000, 1000, 0)),
     aes(x = x, y = y), fill = IMSCOL["gray", "f5"], alpha = 0.3
   ) +
   geom_polygon(
-    data = data.frame(x = c(-2, -2, 2, 2), y = c(0, 1000, 1000, 0)),
+    data = tibble(x = c(-2, -2, 2, 2), y = c(0, 1000, 1000, 0)),
     aes(x = x, y = y), fill = IMSCOL["gray", "f5"], alpha = 0.3
   ) +
   geom_polygon(
-    data = data.frame(x = c(-3, -3, 3, 3), y = c(0, 1000, 1000, 0)),
+    data = tibble(x = c(-3, -3, 3, 3), y = c(0, 1000, 1000, 0)),
     aes(x = x, y = y), fill = IMSCOL["gray", "f5"], alpha = 0.3
   ) +
   theme(
@@ -681,15 +728,9 @@ ggplot(dists_mean0_sd1, aes(x = x)) +
   )
 ```
 
-::: {.guidedpractice data-latex=""}
-A good description of the shape of a distribution should include modality and whether the distribution is symmetric or skewed to one side.
-Using @fig-severalDiffDistWithSdOf1 as an example, explain why such a description is important.[^05-explore-numerical-9]
-:::
+\vfill
 
-[^05-explore-numerical-9]: @fig-severalDiffDistWithSdOf1 shows three distributions that look quite different, but all have the same mean, variance, and standard deviation.
-    Using modality, we can distinguish between the first plot (bimodal) and the last two (unimodal).
-    Using skewness, we can distinguish between the last plot (right skewed) and the first two.
-    While a picture, like a histogram, tells a more complete story, we can use modality and shape (symmetry/skew) to characterize basic information about a distribution.
+\clearpage
 
 ::: {.workedexample data-latex=""}
 Describe the distribution of the `interest_rate` variable using the histogram in @fig-loan50IntRateHist.
@@ -709,7 +750,7 @@ For example, in @sec-foundations-mathematical the standard deviation is used in 
 ## Box plots, quartiles, and the median {#sec-boxplots}
 
 A **box plot** summarizes a dataset using five statistics while also identifying unusual observations.
-@fig-loan-int-rate-boxplot-dotplot provides a dot plot alongside a box plot of the `interest_rate` variable from the `loan50` dataset.^[Box plots were introducted by Mary Eleanor Spear who considered them to be a particular type of bar plot, see page 166 of @Spear1952. Mistakenly, box plots are often attributed to John Tukey who was the first person to call them "box-and-whisker plots."]
+@fig-loan-int-rate-boxplot-dotplot provides a dot plot and a box plot of the `interest_rate` variable from the `loan50` dataset.^[Box plots were introducted by Mary Eleanor Spear who considered them to be a particular type of bar plot, see page 166 of @Spear1952. Mistakenly, box plots are often attributed to John Tukey who was the first person to call them "box-and-whisker plots."]
 
 ```{r}
 #| include: false
@@ -718,13 +759,17 @@ terms_chp_05 <- c(terms_chp_05, "box plot")
 
 ```{r}
 #| label: fig-loan-int-rate-boxplot-dotplot
-#| fig-cap: |
-#|   Plot A shows a dot plot and Plot B shows a box plot of the
-#|   distribution of interest rates from the `loan50` dataset.
-#| fig-alt: Two plots showing the same variable, interests rates.  The top image is a dot plot, the bottom image is a box plot.  Both images re-establish that the distribution of interest rates are right skewed.
-#| fig-asp: 0.5
-p_dotplot <- ggplot(loan50, aes(x = interest_rate)) +
-  geom_dotplot(binwidth = 1, dotsize = 0.7) +
+#| fig-cap: Distribution of interest rates from the `loan50` dataset.
+#| fig-subcap:
+#|   - Dot plot
+#|   - Box plot
+#| fig-alt: |
+#|   Two plots showing the same variable, interests rates. The top image is a 
+#|   dot plot, the bottom image is a box plot. Both images re-establish that 
+#|   the distribution of interest rates are right skewed.
+#| fig-asp: 0.25
+ggplot(loan50, aes(x = interest_rate)) +
+  geom_dotplot(binwidth = 1, dotsize = 0.6) +
   labs(x = NULL, y = NULL) +
   theme(
     axis.title.y = element_blank(),
@@ -736,7 +781,7 @@ p_dotplot <- ggplot(loan50, aes(x = interest_rate)) +
     limits = c(0, 30)
   )
 
-p_boxplot <- ggplot(loan50, aes(x = interest_rate)) +
+ggplot(loan50, aes(x = interest_rate)) +
   geom_boxplot(outlier.size = 2.5) +
   theme(
     axis.title.y = element_blank(),
@@ -748,25 +793,22 @@ p_boxplot <- ggplot(loan50, aes(x = interest_rate)) +
     labels = label_percent(scale = 1, accuracy = 1),
     limits = c(0, 30)
   )
-
-p_dotplot /
-  p_boxplot +
-  plot_annotation(tag_levels = "A") &
-  theme(plot.tag = element_text(size = 10))
 ```
 
 The dark line inside the box represents the **median**, which splits the data in half.
 50% of the data fall below this value and 50% fall above it.
 Since in the `loan50` dataset there are `r nrow(loan50)` observations (an even number), the median is defined as the average of the two observations closest to the $50^{th}$ percentile.
 @tbl-loan50-int-rate-sorted shows all interest rates, arranged in ascending order.
-We can see that the $25^{th}$ and the $26^{th}$ values are both `r sort(loan50$interest_rate)[25]`, which corresponds to the dark line in the box plot in @fig-loan-int-rate-boxplot-dotplot.
+We can see that the $25^{th}$ and the $26^{th}$ values are both `r sort(loan50$interest_rate)[25]`, which corresponds to the thick line in  @fig-loan-int-rate-boxplot-dotplot-2.
+
+\clearpage
 
 ```{r}
 #| label: tbl-loan50-int-rate-sorted
-#| tbl-cap: 'Interest rates from the `loan50` dataset,
-#|    arranged in ascending order.'
+#| tbl-cap: |
+#|   Interest rates from the `loan50` dataset, arranged in ascending order.
+#| tbl-pos: H
 loan50_interest_rate_sorted <- sort(loan50$interest_rate)
-
 matrix(
   c(
     loan50_interest_rate_sorted[1:10],
@@ -785,7 +827,7 @@ matrix(
   ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position")
+    latex_options = c("striped")
   )
 ```
 
@@ -858,7 +900,7 @@ Keep in mind, however, that some datasets have a naturally long skew and outlyin
 :::
 
 ::: {.guidedpractice data-latex=""}
-Using the box plot in @fig-loan-int-rate-boxplot-dotplot, estimate the values of the $Q_1,$ $Q_3,$ and IQR for `interest_rate` in the `loan50` dataset.[^05-explore-numerical-11]
+Using the box plot in @fig-loan-int-rate-boxplot-dotplot-2, estimate the values of the $Q_1,$ $Q_3,$ and IQR for `interest_rate` in the `loan50` dataset.[^05-explore-numerical-11]
 :::
 
 [^05-explore-numerical-11]: These visual estimates will vary a little from one person to the next: $Q_1 \approx$ 8%, $Q_3 \approx$ 14%, IQR $\approx$ 14 - 8 = 6%.
@@ -871,17 +913,12 @@ What would happen to these summary statistics \index{summary statistic} if the o
 The three conjectured scenarios are plotted alongside the original data in @fig-loan-int-rate-robust-ex, and sample statistics are computed under each scenario in @tbl-robustOrNotTable.
 
 ```{r}
-#| label: fig-loan-int-rate-robust-ex
-#| fig-cap: Dot plots of the original interest rate data and two modified datasets.
-#| fig-alt: Three dot plots are displayed where a single point is highlighted.
-#|   In the top plot is the original data where the highlighted point is the
-#|   largest value, at 26.3%.  The second plot shows the distribution of the
-#|   interest rate data after moving the highlighted point from 26.3% to 15%.  The
-#|   third plot shows the distribution of the interest rate data after moving the
-#|   highlighted point from 26.3% to 35%.  The corresponding change in statistics
-#|   are given in @tbl--robustOrNotTable.
-#| fig.width: 8.0
-#| fig-asp: 1.2
+#| label: tbl-robustOrNotTable
+#| tbl-cap: |
+#|   A comparison of how the median, IQR, mean, and standard deviation
+#|   change as the value of an extreme observation from the original interest
+#|   data changes.
+#| tbl-pos: H
 loan50_original <- loan50 |>
   select(interest_rate) |>
   mutate(
@@ -902,68 +939,6 @@ loan50_35 <- loan50 |>
     interest_rate = if_else(interest_rate == 26.30, 35, interest_rate)
   )
 
-p_original <- ggplot(loan50_original, aes(x = interest_rate)) +
-  geom_dotplot(binwidth = 1, dotsize = 0.7) +
-  scale_x_continuous(
-    labels = label_percent(scale = 1, accuracy = 1),
-    limits = c(0, 35)
-  ) +
-  theme(
-    axis.title.y = element_blank(),
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank()
-  ) +
-  gghighlight(mark) +
-  labs(
-    x = NULL,
-    title = "Original data"
-  )
-
-p_15 <- ggplot(loan50_15, aes(x = interest_rate)) +
-  geom_dotplot(binwidth = 1, dotsize = 0.7) +
-  scale_x_continuous(
-    labels = label_percent(scale = 1, accuracy = 1),
-    limits = c(0, 35)
-  ) +
-  theme(
-    axis.title.y = element_blank(),
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank()
-  ) +
-  gghighlight(mark) +
-  labs(
-    x = NULL,
-    title = "Move 26.3% to 15%"
-  )
-
-p_35 <- ggplot(loan50_35, aes(x = interest_rate)) +
-  geom_dotplot(binwidth = 1, dotsize = 0.7) +
-  labs(x = "Interest rate") +
-  scale_x_continuous(
-    labels = label_percent(scale = 1, accuracy = 1),
-    limits = c(0, 35)
-  ) +
-  theme(
-    axis.title.y = element_blank(),
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank()
-  ) +
-  gghighlight(mark) +
-  labs(
-    x = NULL,
-    title = "Move 26.3% to 35%"
-  )
-
-p_original /
-  p_15 /
-  p_35
-```
-
-```{r}
-#| label: tbl-robustOrNotTable
-#| tbl-cap: A comparison of how the median, IQR, mean, and standard deviation
-#|   change as the value of an extreme observation from the original interest
-#|   data changes.
 loan50_robust_check <- bind_rows(
   loan50_original |> mutate(Scenario = "Original data"),
   loan50_15 |> mutate(Scenario = "Move 26.3% to 15%"),
@@ -982,9 +957,72 @@ loan50_robust_check |>
   kbl(linesep = "", booktabs = TRUE, align = "lcccc") |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position")
+    latex_options = c("striped")
   ) |>
   add_header_above(c(" " = 1, "Robust" = 2, "Not robust" = 2))
+```
+
+\clearpage
+
+```{r}
+#| label: fig-loan-int-rate-robust-ex
+#| fig-cap: Dot plots of the original interest rate data and two modified datasets.
+#| fig-subcap:
+#|   - Original data
+#|   - Move 26.3% to 15%
+#|   - Move 26.3% to 35%
+#| fig-alt: |
+#|   Three dot plots are displayed where a single point is highlighted.
+#|   In the top plot is the original data where the highlighted point is the
+#|   largest value, at 26.3%. The second plot shows the distribution of the
+#|   interest rate data after moving the highlighted point from 26.3% to 15%. The
+#|   third plot shows the distribution of the interest rate data after moving the
+#|   highlighted point from 26.3% to 35%. The corresponding change in statistics
+#|   are given in @tbl--robustOrNotTable.
+#| fig-asp: 0.4
+#| fig-width: 5
+ggplot(loan50_original, aes(x = interest_rate)) +
+  geom_dotplot(binwidth = 1, dotsize = 0.7) +
+  scale_x_continuous(
+    labels = label_percent(scale = 1, accuracy = 1),
+    limits = c(0, 35)
+  ) +
+  theme(
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  ) +
+  gghighlight(mark) +
+  labs(x = NULL)
+
+ggplot(loan50_15, aes(x = interest_rate)) +
+  geom_dotplot(binwidth = 1, dotsize = 0.7) +
+  scale_x_continuous(
+    labels = label_percent(scale = 1, accuracy = 1),
+    limits = c(0, 35)
+  ) +
+  theme(
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  ) +
+  gghighlight(mark) +
+  labs(x = NULL)
+
+ggplot(loan50_35, aes(x = interest_rate)) +
+  geom_dotplot(binwidth = 1, dotsize = 0.7) +
+  labs(x = "Interest rate") +
+  scale_x_continuous(
+    labels = label_percent(scale = 1, accuracy = 1),
+    limits = c(0, 35)
+  ) +
+  theme(
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  ) +
+  gghighlight(mark) +
+  labs(x = NULL)
 ```
 
 ::: {.guidedpractice data-latex=""}
@@ -1012,16 +1050,16 @@ Why might this be the case?
 The median and IQR are only sensitive to numbers near $Q_1,$ the median, and $Q_3.$ Since values in these regions are stable in the three datasets, the median and IQR estimates are also stable.
 :::
 
-You might not be surprised that the answer to the question "which is better, the mean or the median?" is: *it depends*.  The two statistics measure different things, and so their use is dependent on the context in the analysis.  Consider the following scenarios:
+You might not be surprised that the answer to the question "which is better, the mean or the median?" is: *it depends*. The two statistics measure different things, and so their use is dependent on the context in the analysis. Consider the following scenarios:
 
 * Is it better to measure the average profit per customer or the median profit per customer?
-  - If concern is about the overall profit margin of the company, the mean is a better measure to assess what is happening across the company.  The company could have a positive median profit per customer and still be unprofitable.
+  - If concern is about the overall profit margin of the company, the mean is a better measure to assess what is happening across the company. The company could have a positive median profit per customer and still be unprofitable.
   - If concern is around understanding the profit per typical customer, possibly to understand the growth headroom for the company's profit, the median profit per customer would tell you more about individual customer profits.
   
 * If you operate an app and want to know how long it takes for the app to open on your customers' phones, do you want the mean amount of time or the median amount of time?
   - The mean leads to an understanding of the overall amount of time being wasted in opening the app.
   - The median tells you about the typical user experience.
-  - However, if the app takes less than 5 milliseconds to launch for 50% of the users but more than 10 seconds to launch for 10% of the users, the median doesn't give the information you need.  In that scenario, you might want an upper percentile, like the 95th percentile.
+  - However, if the app takes less than 5 milliseconds to launch for 50% of the users but more than 10 seconds to launch for 10% of the users, the median doesn't give the information you need. In that scenario, you might want an upper percentile, like the 95th percentile.
 
 ::: {.guidedpractice data-latex=""}
 The distribution of loan amounts in the `loan50` dataset is right skewed, with a few large loans lingering out into the right tail.
@@ -1031,36 +1069,40 @@ If you were wanting to understand the typical loan size, should you be more inte
 [^05-explore-numerical-13]: If we are looking to simply understand what a typical individual loan looks like, the median is probably more useful.
     However, if the goal is to understand something that scales well, such as the total amount of money we might need to have on hand if we were to offer 1,000 loans, then the mean would be more useful.
 
-Regardless of the choice of centrality statistic (either mean or median), for most analyses, it is important to consider more than just the centrality.  Other statistics like upper and lower percentiles, IQR, or standard deviation provide information about the variability of the observations.  And visualizing the data through a graphical representation will typically provide a wealth of information necessary for understanding the full data picture associated with the research question.
+Regardless of the choice of centrality statistic (either mean or median), for most analyses, it is important to consider more than just the centrality. Other statistics like upper and lower percentiles, IQR, or standard deviation provide information about the variability of the observations. And visualizing the data through a graphical representation will typically provide a wealth of information necessary for understanding the full data picture associated with the research question.
 
 ## Transforming data {#sec-transforming-data}
 
 When data are very strongly skewed, we sometimes transform them, so they are easier to model.
-@fig-county-unemployed-pop-transform shows two right skewed distributions: distribution of the percentage of unemployed people and the distribution of the population in all counties in the United States.
-The distribution of population is more strongly skewed than the distribution of unemployed, hence the log transformation results in a much bigger change in the shape of the distribution.
+@fig-county-unemployed-pop-transform-1 and @fig-county-unemployed-pop-transform-2 show right-skewed distributions: distribution of the percentage of unemployed people and the distribution of the population in all counties in the United States.
+The distribution of population is more strongly skewed than the distribution of percentage unemployed, hence the log transformation results in a much bigger change in the shape of the distribution.
 
 ```{r}
 #| label: fig-county-unemployed-pop-transform
 #| fig-cap: |
-#|   Plot A: A histogram of the percentage of unemployed in all US counties.
-#|   Plot B: A histogram of log$_{10}$-transformed unemployed percentages.
-#|   Plot C: A histogram of population in all US counties.
-#|   Plot D: A histogram of log$_{10}$-transformed populations.
-#|   For Plots B and D, the x-value corresponds to the power of 10, e.g.,
-#|   1 on the x-axis corresponds to $10^1 =$ 10 and 5 on the x-axis corresponds
-#|   to $10^5=$ 100,000. Data are from 2017.'
+#|   Histograms of percentage unenmployed, population, and their log transformed 
+#|   versions in all US counties. For the plots of transformed variables, the 
+#|   x-value corresponds to the power of 10, e.g., 1 on the x-axis corresponds 
+#|   to $10^1 =$ 10 and 5 on the x-axis corresponds to $10^5=$ 100,000. Data
+#|   are from 2017.
+#| fig-subcap:
+#|   - Percentage unemployed
+#|   - log$_{10}$-transformed percentage unemployed
+#|   - Population
+#|   - log$_{10}$-transformed populations
 #| fig-alt: |
 #|   Two pairs of histograms are shown. In the first pair of histograms,
 #|   percentage of unemployed in all US counties is shown next to the log-10
 #|   transformed percentage of unemployed. The raw percent unemployed shows a
 #|   right-skewed distribution, and the log-10 transformed data is symmetric and
 #|   bell-shaped. In the second pair of histograms, population of each US county
-#|   is shown next to the log-10 transformed population.  The raw population is
+#|   is shown next to the log-10 transformed population. The raw population is
 #|   extremely right-skewed, and the log-10 transformed data is reasonably
 #|   symmetric and bell-shaped.
 #| out-width: 100%
-#| fig-width: 8
-p_unemployed <- ggplot(county, aes(x = unemployment_rate)) +
+#| layout-ncol: 2
+#| fig-width: 5
+ggplot(county, aes(x = unemployment_rate)) +
   geom_histogram(binwidth = 1) +
   scale_x_continuous(labels = label_percent(scale = 1)) +
   labs(
@@ -1068,35 +1110,31 @@ p_unemployed <- ggplot(county, aes(x = unemployment_rate)) +
     y = "Count"
   )
 
-p_unemployed_log <- ggplot(county, aes(x = log(unemployment_rate, base = 10))) +
+ggplot(county, aes(x = log(unemployment_rate, base = 10))) +
   geom_histogram(binwidth = 0.1) +
   labs(
     x = expression(log[10] * "(Percentage unemployed)"),
     y = "Count"
   )
 
-p_pop <- ggplot(county_complete, aes(x = pop_2019)) +
+ggplot(county_complete, aes(x = pop_2019)) +
   geom_histogram(binwidth = 500000) +
   scale_x_continuous(labels = label_number(scale = 0.000001, suffix = "M", accuracy = 1)) +
   labs(
     x = "Population (M = millions)",
     y = "Count"
   )
-p_pop_log <- ggplot(county_complete, aes(x = log(pop_2019, base = 10))) +
+
+ggplot(county_complete, aes(x = log(pop_2019, base = 10))) +
   geom_histogram(binwidth = 0.5) +
   labs(
     x = expression(log[10] * "(Population)"),
     y = "Count"
   )
-
-p_unemployed + p_unemployed_log +
-  p_pop + p_pop_log +
-  plot_annotation(tag_levels = "A") &
-  theme(plot.tag = element_text(size = 10))
 ```
 
 ::: {.workedexample data-latex=""}
-Consider the histogram of county populations shown in Plot C of @fig-county-unemployed-pop-transform, which shows extreme skew.
+Consider the histogram of county populations shown in  @fig-county-unemployed-pop-transform-3, which shows extreme skew.
 What characteristics of the plot keep it from being useful?
 
 ------------------------------------------------------------------------
@@ -1106,7 +1144,7 @@ Nearly all of the data fall into the left-most bin, and the extreme skew obscure
 
 There are some standard transformations that may be useful for strongly right skewed data where much of the data is positive but clustered near zero.
 A **transformation** is a rescaling of the data using a function.
-For instance, a plot of the logarithm (base 10) of unemployment rates and county populations results in the new histograms on the right in @fig-county-unemployed-pop-transform.
+For instance, a plot of the logarithm (base 10) of unemployment rates and county populations results in the new histograms in @fig-county-unemployed-pop-transform-2.
 The transformed data are symmetric, and any potential outliers appear much less extreme than in the original dataset.
 By reigning in the outliers and extreme skew, transformations often make it easier to build statistical models for the data.
 
@@ -1116,27 +1154,31 @@ terms_chp_05 <- c(terms_chp_05, "transformation")
 ```
 
 Transformations can also be applied to one or both variables in a scatterplot.
-A scatterplot of the population change from 2010 to 2017 against the population in 2010 is shown in @fig-county-pop-change-transform.
-In this first scatterplot, it's hard to decipher any interesting patterns because the population variable is so strongly skewed (left plot).
-However, if we apply a log$_{10}$ transformation to the population variable, as shown in @fig-county-pop-change-transform, a positive association between the variables is revealed (right plot).
+A scatterplot of the population change from 2010 to 2017 against the population in 2010 is shown in @fig-county-pop-change-transform-1.
+It's difficult to decipher any interesting patterns because the population variable is so strongly skewed.
+However, if we apply a log$_{10}$ transformation to the population variable, as shown in @fig-county-pop-change-transform-2, a positive association between the variables is revealed.
 In fact, we may be interested in fitting a trend line to the data when we explore methods around fitting regression lines in @sec-model-slr.
 
 ```{r}
 #| label: fig-county-pop-change-transform
-#| fig-cap: 'Plot A: Scatterplot of population change against the population before the
-#|   change. Plot B: A scatterplot of the same data but where the population size has
-#|   been log-transformed.'
+#| fig-cap: |
+#|   Scatterplots of population change and log$_{10}$-transformed population 
+#|   change vs. population before change.
+#| fig-subcap:
+#|   - Population change
+#|   - log$_{10}$-transformed population change
 #| fig-alt: |
-#|   A pair of scatterplots is given.  In both plots the y-axis is
-#|   population change.  In the first plot, the x-axis is given by the raw variable
+#|   A pair of scatterplots is given. In both plots the y-axis is
+#|   population change. In the first plot, the x-axis is given by the raw variable
 #|   population before change, and most of the points are quite small, obscuring
-#|   any  x-y relationship.  In the second plot, the x-axis is given by the
-#|   transformed variable log-10 of the population before change.  The relationship
+#|   any  x-y relationship. In the second plot, the x-axis is given by the
+#|   transformed variable log-10 of the population before change. The relationship
 #|   between log-10 population before change and population change is seen to be
 #|   moderately strong, positive, and linear.
-#| fig-asp: 0.5
-#| fig-width: 8
-p_pop_change <- ggplot(county, aes(y = pop_change, x = pop2010)) +
+#| layout-ncol: 2
+#| fig-width: 4
+#| fig-asp: 0.8
+ggplot(county, aes(y = pop_change, x = pop2010)) +
   geom_point(alpha = 0.5) +
   scale_x_continuous(labels = label_number(scale = 0.000001, suffix = "M", accuracy = 1)) +
   labs(
@@ -1144,16 +1186,12 @@ p_pop_change <- ggplot(county, aes(y = pop_change, x = pop2010)) +
     y = "Population change"
   )
 
-p_pop_change_log <- ggplot(county, aes(y = pop_change, x = log(pop2010, base = 10))) +
+ggplot(county, aes(y = pop_change, x = log(pop2010, base = 10))) +
   geom_point(alpha = 0.5) +
   labs(
     x = expression(log[10] * "(Population before change)"),
     y = "Population change"
   )
-
-p_pop_change + p_pop_change_log +
-  plot_annotation(tag_levels = "A") &
-  theme(plot.tag = element_text(size = 10))
 ```
 
 Transformations other than the logarithm can be useful, too.
@@ -1176,7 +1214,7 @@ terms_chp_05 <- c(terms_chp_05, "intensity map")
 ```
 
 ::: {.workedexample data-latex=""}
-What interesting features are evident in the poverty and unemployment rate intensity maps?
+What interesting features are evident in the poverty and unemployment rate intensity maps in @fig-county-intensity-map-poverty-unemp?
 
 ------------------------------------------------------------------------
 
@@ -1188,14 +1226,6 @@ The unemployment rate follows similar trends, and we can see correspondence betw
 In fact, it makes sense for higher rates of unemployment to be closely related to poverty rates.
 One observation that stands out when comparing the two maps: the poverty rate is much higher than the unemployment rate, meaning while many people may be working, they are not making enough to break out of poverty.
 :::
-
-::: {.guidedpractice data-latex=""}
-What interesting features are evident in the median household income intensity map in @fig-county-intensity-map-howownership-median-income?[^05-explore-numerical-14]
-:::
-
-[^05-explore-numerical-14]: Answers will vary.
-    There is some correspondence between high earning and metropolitan areas, where we can see darker spots (higher median household income), though there are several exceptions.
-    You might look for large cities you are familiar with and try to spot them on the map as dark spots.
 
 ```{r}
 #| label: county-map-prep
@@ -1226,20 +1256,20 @@ map_county <- map_county |>
   left_join(county_for_map, by = "fips")
 ```
 
-\clearpage
-
 ```{r}
 #| label: fig-county-intensity-map-poverty-unemp
-#| fig-cap: 'Plot A: Intensity map of poverty rate (percent). Plot B: Intensity map of
-#|   the unemployment rate (percent).'
-#| fig-alt: Two intensity map (also called heatmaps) of the United States.
-#|   Each county is colored by the value of a variables.  In the top plot, the
+#| fig-cap: Intensity maps of US counties
+#| fig-subcap:
+#|   - Poverty rate
+#|   - Unemployment rate
+#| fig-alt: |
+#|   Two intensity map (also called heatmaps) of the United States.
+#|   Each county is colored by the value of a variables. In the top plot, the
 #|   county is colored by the poverty rate which is higher in the south and parts
-#|   of the midwest.  In the bottom plot, the county is colored by the unemployment
+#|   of the midwest. In the bottom plot, the county is colored by the unemployment
 #|   rate which seems higher in the southwest and parts of the post-industrial Midwest.
-#| fig.width: 10.0
-#| fig-asp: 1.0
-map_poverty <- ggplot(map_county, aes(x = long, y = lat, group = group)) +
+#| fig-asp: 0.6
+ggplot(map_county, aes(x = long, y = lat, group = group)) +
   geom_polygon(aes(fill = poverty_2017)) +
   scale_fill_viridis_c(option = "D", labels = label_percent(scale = 1)) +
   labs(x = NULL, y = NULL, fill = "Poverty") +
@@ -1252,9 +1282,10 @@ map_poverty <- ggplot(map_county, aes(x = long, y = lat, group = group)) +
     axis.ticks.y = element_blank(),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank()
-  )
+  ) +
+  coord_quickmap()
 
-map_unemp <- ggplot(map_county, aes(x = long, y = lat, group = group)) +
+ggplot(map_county, aes(x = long, y = lat, group = group)) +
   geom_polygon(aes(fill = unemployment_rate_2017)) +
   scale_fill_viridis_c(option = "A", labels = label_percent(scale = 1, accuracy = 1)) +
   labs(x = NULL, y = NULL, fill = "Unemployment\nrate") +
@@ -1267,28 +1298,34 @@ map_unemp <- ggplot(map_county, aes(x = long, y = lat, group = group)) +
     axis.ticks.y = element_blank(),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank()
-  )
-
-map_poverty /
-  map_unemp +
-  plot_annotation(tag_levels = "A") &
-  theme(plot.tag = element_text(size = 10))
+  ) +
+  coord_quickmap()
 ```
 
 \clearpage
 
+::: {.guidedpractice data-latex=""}
+What interesting features are evident in the median household income intensity map in @fig-county-intensity-map-howownership-median-income-2?[^05-explore-numerical-14]
+:::
+
+[^05-explore-numerical-14]: Answers will vary.
+    There is some correspondence between high earning and metropolitan areas, where we can see darker spots (higher median household income), though there are several exceptions.
+    You might look for large cities you are familiar with and try to spot them on the map as dark spots.
+
 ```{r}
 #| label: fig-county-intensity-map-howownership-median-income
-#| fig-cap: 'Plot A: Intensity map of homeownership rate (percent). Plot B: Intensity
-#|   map of median household income (in thousands of USD).'
-#| fig-alt: Two intensity map (also called heatmaps) of the United States.
-#|   Each county is colored by the value of a variables.  In the top plot, the
+#| fig-cap: Intensity maps of US counties
+#| fig-subcap:
+#|   - Homeownership rate
+#|   - Median household income, in thousands of USD
+#| fig-alt: |
+#|   Two intensity map (also called heatmaps) of the United States.
+#|   Each county is colored by the value of a variables. In the top plot, the
 #|   county is colored by home ownership ratee which is lowest on the west coast.
 #|   In the bottom plot, the county is colored by median household income which
 #|   is highest in the Bay Area and along the New England coast.
-#| fig.width: 10.0
-#| fig-asp: 1.0
-map_howownership <- ggplot(map_county, aes(x = long, y = lat, group = group)) +
+#| fig-asp: 0.6
+ggplot(map_county, aes(x = long, y = lat, group = group)) +
   geom_polygon(aes(fill = homeownership_2010)) +
   scale_fill_viridis_c(option = "B", labels = label_percent(scale = 1)) +
   labs(x = NULL, y = NULL, fill = "Homeownership\nrate") +
@@ -1301,9 +1338,10 @@ map_howownership <- ggplot(map_county, aes(x = long, y = lat, group = group)) +
     axis.ticks.y = element_blank(),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank()
-  )
+  ) +
+  coord_quickmap()
 
-map_median_income <- ggplot(map_county, aes(x = long, y = lat, group = group)) +
+ggplot(map_county, aes(x = long, y = lat, group = group)) +
   geom_polygon(aes(fill = median_household_income_2017)) +
   scale_fill_viridis_c(option = "C", labels = label_dollar(scale = 0.001, suffix = "K")) +
   labs(x = NULL, y = NULL, fill = "Median\nhousehold\nincome") +
@@ -1316,12 +1354,8 @@ map_median_income <- ggplot(map_county, aes(x = long, y = lat, group = group)) +
     axis.ticks.y = element_blank(),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank()
-  )
-
-map_howownership /
-  map_median_income +
-  plot_annotation(tag_levels = "A") &
-  theme(plot.tag = element_text(size = 10))
+  ) +
+  coord_quickmap()
 ```
 
 \clearpage
@@ -1358,3 +1392,4 @@ Answers to odd-numbered exercises can be found in [Appendix -@sec-exercise-solut
 ::: {.exercises data-latex=""}
 {{< include exercises/_05-ex-explore-numerical.qmd >}}
 :::
+
