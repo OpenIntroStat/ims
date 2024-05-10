@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Applications: Explore {#sec-explore-applications}
 
 ```{r}
@@ -35,7 +40,7 @@ Typically, a bar plot will be easier for the reader to digest than a pie chart, 
 expenses <- tribble(
   ~category,                     ~value,
   "Cutting tools"                , 0.03,
-  "Buildings & administration"   , 0.22,
+  "Buildings and Administration" , 0.22,
   "Labor"                        , 0.31,
   "Machinery"                    , 0.27,
   "Workplace materials"          , 0.17
@@ -64,94 +69,163 @@ ggplot(expenses, aes(x = fct_infreq(category))) +
   labs(x = NULL, y = NULL)
 ```
 
+\vspace{-5mm}
+
 ### Use color to draw attention
 
 There are many reasons why you might choose to add **color** to your plots.
 An important principle to keep in mind is to use color to draw attention.
 Of course, you should still think about how visually pleasing your visualization is, and if you're adding color for making it visually pleasing without drawing attention to a particular feature, that might be fine.
 However, you should be critical of default coloring and explicitly decide whether to include color and how.
-Notice that in Plot B in @fig-red-bar the coloring is done in such a way to draw the reader's attention to one particular piece of information.
-The default coloring in Plot A can be distracting and makes the reader question, for example, is there something similar about the red and purple bars?
-Also note that not everyone sees color the same way, often it's useful to add color and one more feature (e.g., pattern) so that you can refer to the features you're drawing attention to in multiple ways.
+Notice that in @fig-red-bar-2 the coloring is done in such a way to draw the reader's attention to one particular piece of information.
+The default coloring in @fig-red-bar-1 can be distracting and makes the reader question, for example, is there something similar about the red and purple bars?
+Also note that not everyone sees color the same way, often it's useful to add color and one more feature (e.g., pattern) so that you can refer to the features you're drawing attention to in multiple ways, as shown in @fig-red-bar-3.
+
+\vspace{-2mm}
 
 ```{r}
 #| label: fig-red-bar
-#| fig-cap: The default coloring in the first bar plot does nothing for the understanding
-#|   of the data. In the second plot, the color draws attention directly to the bar on
-#|   Buildings and Administration.
-#| fig-alt: Three different bar charts with different shading to
-#|   highlight different aspects. The bar on Buildings and
-#|   administration are highlighted in red where the rest of the
-#|   bars are grey.
-#| fig-asp: 1.0
-p_bad <- ggplot(expenses, aes(y = fct_infreq(category), fill = category)) +
+#| fig-cap: |
+#|   Three bar charts visualizing the same information with different coloring 
+#|   to highlight different aspects.
+#| fig-subcap: 
+#|   - Default coloring does nothing for the understanding of the data.
+#|   - Color draws attention directly to the bar on Buildings and Administration.
+#|   - Color and linetype draw attention directly to the bar on Buildings and Administration.
+#| fig-alt: |
+#|   Three bar charts visualizing the same information with different coloring 
+#|   to highlight different aspects. First plot colors each bar (Cutting tools,
+#|   Workspace materials, Buildings and Administration, Machinery, and Labor)
+#|   differently, while in the second and third plots Buildings and 
+#|   Administration is highlighted in red and the rest of the bars are grey.
+#| fig-width: 4.0
+#| fig-asp: 0.57
+#| out-width: 100%
+#| layout: [[48,-4,48],[48,-4,48]]
+ggplot(expenses, aes(y = fct_infreq(category), fill = category)) +
   geom_bar(show.legend = FALSE) +
   scale_fill_openintro("five") +
-  labs(x = NULL, y = NULL)
+  labs(x = NULL, y = NULL) +
+  scale_y_discrete(labels = label_wrap(14))
 
-p_good <- expenses |>
-  mutate(highlight = if_else(category == "Buildings & administration", "yes", "no")) |>
+expenses |>
+  mutate(highlight = if_else(category == "Buildings and Administration", "yes", "no")) |>
   ggplot(aes(y = fct_infreq(category), fill = highlight)) +
   geom_bar(show.legend = FALSE) +
   scale_fill_manual(values = c(IMSCOL["lgray", "full"], IMSCOL["red", "full"])) +
-  labs(x = NULL, y = NULL)
+  labs(x = NULL, y = NULL) +
+  scale_y_discrete(labels = label_wrap(14))
 
-p_better <- expenses |>
-  mutate(highlight = if_else(category == "Buildings & administration", "yes", "no")) |>
+expenses |>
+  mutate(highlight = if_else(category == "Buildings and Administration", "yes", "no")) |>
   ggplot(aes(y = fct_infreq(category), fill = highlight, color = highlight, linetype = highlight, size = highlight)) +
   geom_bar(show.legend = FALSE) +
   scale_fill_manual(values = c(IMSCOL["lgray", "full"], IMSCOL["red", "full"])) +
   labs(x = NULL, y = NULL) +
   scale_color_manual(values = c(IMSCOL["lgray", "full"], "white")) +
-  scale_size_manual(values = c(0, 0.8))
-
-p_bad / p_good / p_better +
-  plot_annotation(tag_levels = "A")
+  scale_size_manual(values = c(0, 0.8)) +
+  scale_y_discrete(labels = label_wrap(14))
 ```
 
-```{r}
-#| include: false
-terms_chp_6 <- c("color in plots")
-```
+\clearpage
 
 ### Tell a story
 
 For many graphs, an important aspect is the inclusion of information which is not provided in the dataset that is being plotted.
 The external information serves to contextualize the data and helps communicate the narrative of the research.
+
 In @fig-duke-hires, the graph on the right is **annotated** with information about the start of the university's fiscal year which contextualizes the information provided by the data.
 Sometimes the additional information may be a diagonal line given by $y = x$, points above the line quickly show the reader which values have a $y$ coordinate larger than the $x$ coordinate; points below the line show the opposite.
 
-```{r}
-#| include: false
-terms_chp_6 <- c("annotation")
-```
+\vspace{5mm}
 
 ```{r}
 #| label: fig-duke-hires
-#| fig-cap: 'Credit: Angela Zoss and Eric Monson, Duke Data Visualization Services'
-#| fig-alt: Time series plot showing Duke University hiring trends 
-#|   over a calendar year.  The hiring trends spike in July.
-#| out.width: 100%
-knitr::include_graphics("images/time-series-story.png")
+#| fig-cap: |
+#|   Time series plot showing monthly Duke University hiring trends 
+#|   over five calendar years.
+#| fig-alp: |
+#|   Time series plot showing monthly Duke University hiring trends 
+#|   over five calendar years. Hiring spikes in July.
+#| fig-subcap: 
+#|   - Colored by year
+#|   - Same color for all years, annotation summarizing trend
+#| out-width: 100%
+#| fig-asp: 0.35
+duke_hires_raw <- read_csv("data/duke-hires.csv")
+
+set.seed(1234)
+
+duke_hires <- duke_hires_raw |>
+  mutate(
+    `2011` = `2010` + round(runif(12, min = -30, max = 15)),
+    `2011` = `2010` + round(runif(12, min = -12, max = 10) * 1.02),
+    `2012` = `2010` + round(runif(12, min = -11, max = 31) * 0.95),
+    `2013` = `2010` + round(runif(12, min = -37, max = 20) * 1.1),
+    `2014` = `2010` + round(runif(12, min = -10, max = 42) * 0.8),
+    `2015` = `2010` + round(runif(12, min = -23, max = 18) * 1.5),
+    `2012` = if_else(month == 6, 600, `2012`),
+    `2013` = if_else(month == 6, 480, `2013`),
+    `2014` = if_else(month == 6, 550, `2014`),
+    `2015` = if_else(month == 6, 430, `2015`),
+    `2012` = if_else(month == 8, 600 + 10, `2012`),
+    `2013` = if_else(month == 8, 480 + 80, `2013`),
+    `2014` = if_else(month == 8, 550 + 90, `2014`),
+    `2015` = if_else(month == 8, 430 + 140, `2015`),
+    `2015` = if_else(month == 7, 800, `2015`)
+  ) |>
+  pivot_longer(
+    cols = !month,
+    names_to = "year",
+    values_to = "n"
+  )
+
+ggplot(duke_hires, aes(x = month, y = n, color = year)) +
+  geom_line(linewidth = 1) +
+  scale_color_openintro("five") +
+  scale_x_continuous(breaks = 1:12, labels = month.abb, minor_breaks = NULL) +
+  scale_y_continuous(breaks = seq(0, 800, 100), minor_breaks = NULL) +
+  labs(
+    title = "Duke hires by month",
+    y = NULL, x = NULL, color = NULL
+  ) +
+  theme(
+    legend.position = c(0.12, 0.65),
+    legend.background = element_rect(color = "gray")
+  )
+
+ggplot(duke_hires, aes(x = month, y = n, group = year)) +
+  geom_segment(x = 7, xend = 7, y = 0, yend = 800) +
+  geom_line(linewidth = 0.8, color = IMSCOL["blue", "f2"]) +
+  scale_x_continuous(breaks = 1:12, labels = month.abb, minor_breaks = NULL) +
+  scale_y_continuous(breaks = seq(0, 800, 200), minor_breaks = NULL) +
+  labs(
+    title = "Duke hires by month",
+    y = NULL, x = NULL
+  ) +
+  annotate(
+    "label",
+    x = 7, y = 250,
+    label = "Hires always peak in\nJuly, which is the start\nof Duke's fiscal year.",
+    hjust = -0.1
+  )
 ```
+
+\clearpage
 
 ### Order matters
 
-Most software programs have built in methods for some of the plot details.
-For example, the default option for the software program used in this text, R, is to order the bars in a bar plot alphabetically.
-As seen in @fig-brexit-bars, the alphabetical ordering isn't particularly meaningful for describing the data.
-Sometimes it makes sense to **order** the bars from tallest to shortest (or vice versa).
-But in this case, the best ordering is probably the one in which the questions were asked.
+Most software programs have built in methods for some of the plot details -- some order levels alphabetically, some provide functionality for arranging them in a custom order.
+As seen in @fig-brexit-bars-1, the alphabetical ordering isn't particularly meaningful for describing the data.
+Sometimes it makes sense to **order** the bars from tallest to shortest (or vice versa), as shown in @fig-brexit-bars-2.
+But in this case, the best ordering is probably the one in which the questions were asked, as shown in @fig-brexit-bars-3.
 An ordering which does not make sense in the context of the problem (e.g., alphabetically here), can mislead the reader who might take a quick glance at the axes and not read the bar labels carefully.
-
-```{r}
-#| include: false
-terms_chp_6 <- c("ordering")
-```
 
 In September 2019, YouGov survey asked 1,639 Great Britain adults the following question[^06-explore-applications-1]:
 
 [^06-explore-applications-1]: Source: [YouGov Survey Results](https://d25d2506sfb94s.cloudfront.net/cumulus_uploads/document/x0msmggx08/YouGov%20-%20Brexit%20and%202019%20election.pdf), retrieved Oct 7, 2019.
+
+\vspace{5mm}
 
 > How well or badly do you think the government are doing at handling Britain's exit from the European Union?
 >
@@ -179,48 +253,48 @@ brexit <- tibble(
 
 ```{r}
 #| label: fig-brexit-bars
-#| fig-cap: 'Bar plot three different ways. Plot A: Alphabetic ordering of levels, Plot
-#|   B: Bars ordered in descending order of frequency, Plot C: Bars ordered in the same
-#|   order as they were presented in the survey question.'
-#| fig-alt: Three bar plots with the bars sorted differently
-#|   in each plot.  Sorting the bars by the natural order of the 
-#|   categories versus sorting the bars by the height of the bar
-#|   produces a different sense of the distribution of the variable.
-#| fig-width: 8.0
-#| out.width: 100%
-p_bad <- ggplot(data = brexit, aes(y = fct_rev(opinion))) +
+#| fig-cap: |
+#|   Three bar charts visualizing the same information with arrangement of levels.
+#| fig-subcap: 
+#|   - Alphabetic order
+#|   - Frequecy order
+#|   - Same order as presented in the survey question
+#| fig-alt: |
+#|   Three bar plots with the bars (Very well, Fairly well, Fairly badly, 
+#|   Very badly, Don't know) arranged differently in each plot. In the first 
+#|   plot they're in alphabetical order, in the second in frequency order 
+#|   (highest Very badly to lowest Very well), and in the third plot in the 
+#|   same order as presented in the survey question.
+#| fig-width: 4.0
+#| out-width: 100%
+#| layout-ncol: 2
+ggplot(brexit, aes(y = fct_rev(opinion))) +
   geom_bar() + 
   labs(y = "Opinion", x = "Count")
 
-p_desc <- ggplot(data = brexit, aes(y = fct_rev(fct_infreq(opinion)))) +
+ggplot(brexit, aes(y = fct_rev(fct_infreq(opinion)))) +
   geom_bar() + 
   labs(y = "Opinion", x = "Count")
 
-p_ordered <- ggplot(data = brexit, 
-                    aes(y = fct_rev(fct_relevel(opinion, c("Very well", "Fairly well", "Fairly badly", "Very badly", "Don't know"))))) +
+brexit |>
+  mutate(opinion = fct_relevel(opinion, "Very well", "Fairly well", "Fairly badly", "Very badly", "Don't know")) |>
+  ggplot(aes(y = opinion)) +
   geom_bar() + 
-    labs(y = "Opinion", x = "Count")
-
-p_bad + p_desc + p_ordered + plot_spacer() +
-  plot_annotation(tag_levels = "A")
+  labs(y = "Opinion", x = "Count")
 ```
+
+\clearpage
 
 ### Make the labels as easy to read as possible
 
 The Brexit survey results were additionally broken down by region in Great Britain.
 The stacked bar plot allows for comparison of Brexit opinion across the five regions.
-In @fig-brexit-region the bars are vertical in Plot A and horizontal in Plot B. While the quantitative information in the two graphics is identical, flipping the graph and creating horizontal bars provides more space for the **axis labels**.
+In @fig-brexit-region-1 the bars are vertical and in @fig-brexit-region-1 they are horizontal. 
+While the quantitative information in the two graphics is identical, flipping the graph and creating horizontal bars provides more space for the **axis labels**.
 The easier the categories are to read, the more the reader will learn from the visualization.
 Remember, the goal is to convey as much information as possible in a succinct and clear manner.
 
 ```{r}
-#| label: fig-brexit-region
-#| fig-cap: Stacked bar plots vertically and horizontally. The horizontal orientation
-#|   makes the region labels easier to read.
-#| fig-alt: Stacked bar plots vertically and horizontally. The horizontal orientation
-#|   makes the region labels easier to read.
-#| fig-width: 8.0
-#| out.width: 100%
 brexit <- brexit |>
   mutate(
     region = fct_relevel(
@@ -237,27 +311,44 @@ brexit <- brexit |>
     )
   ) |>
   mutate(Opinion = fct_relevel(opinion, c("Very well", "Fairly well", "Fairly badly", "Very badly", "Don't know")))
+```
 
-p_bad <- ggplot(data = brexit, aes(x = region, fill = Opinion)) +
-  geom_bar() +
+::: {#fig-brexit-region layout="[[100], [100]]"}
+
+```{r}
+#| label: fig-brexit-region-1
+#| fig-cap: Vertical bars across the x-axis.
+#| fig-alt: |
+#|   Stacked bar plot of region and opinion, where vertical bars are on 
+#|   the x-axis.
+#| fig-asp: 0.3
+#| out-width: 100%
+ggplot(brexit, aes(x = region, fill = Opinion)) +
+  geom_bar(show.legend = FALSE) +
   scale_fill_openintro("five") +
   labs(x = "Region", y = "Count")
-
-p_good <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
-  geom_bar() +
-  labs(x = "Count", y = NULL) +
-  scale_fill_openintro("five")
-
-p_bad / p_good + 
-  plot_annotation(tag_levels = "A") +
-  plot_layout(guides = "collect") &
-  theme(legend.position='bottom')
 ```
 
 ```{r}
-#| include: false
-terms_chp_6 <- c(terms_chp_6, "axis labels")
+#| label: fig-brexit-region-2
+#| fig-cap: Horizontal bars across the y-axis.
+#| fig-alt: |
+#|   Stacked bar plot of region and opinion, where horizontal bars are on 
+#|   the y-axis.
+#| fig-asp: 0.4
+#| out-width: 100%
+ggplot(brexit, aes(y = region, fill = Opinion)) +
+  geom_bar() +
+  labs(x = "Count", y = NULL) +
+  scale_fill_openintro("five") +
+  theme(legend.position = "bottom")
 ```
+
+Stacked bar plots. Horizontal orientation makes the region labels easier to read.
+
+:::
+
+\vspace{5mm}
 
 ### Pick a purpose
 
@@ -265,65 +356,68 @@ Every graphical decision should be made with a **purpose**.
 As previously mentioned, sticking with default options is not always best for conveying the narrative of your data story.
 Stacked bar plots tell one part of a story.
 Depending on your research question, they may not tell the part of the story most important to the research.
+
+\clearpage
+
 @fig-seg-three-ways provides three different ways of representing the same information.
-If the most important comparison across regions is proportion, you might prefer Plot A. If the most important comparison across regions also considers the total number of individuals in the region, you might prefer Plot B. If a separate bar plot for each region makes the point you'd like, use Plot C, which has been **faceted** by region.
-
-```{r}
-#| include: false
-terms_chp_6 <- c(terms_chp_6, "faceting graphics")
-```
-
-Plot C in @fig-seg-three-ways also provides full titles and a succinct URL with the data source.
+If the most important comparison across regions is proportion, you might prefer @fig-seg-three-ways-1. If the most important comparison across regions also considers the total number of individuals in the region, you might prefer @fig-seg-three-ways-2. If a separate bar plot for each region makes the point you'd like, use @fig-seg-three-ways-3, which has been **faceted** by region.
+@fig-seg-three-ways-3 also provides full titles and a succinct URL with the data source.
 Other deliberate decisions to consider include using informative labels and avoiding redundancy.
 
+::: {#fig-seg-three-ways layout="[[100], [100], [100]]"}
+
 ```{r}
-#| label: fig-seg-three-ways
-#| fig-cap: Three different representations of the two variables including survey opinion
-#|   and region. Use the graphic that best conveys the data narrative at hand.
-#| fig-alt: Three different representations of the two variables including survey opinion
-#|   and region. They convey different information, for example, 
-#|   one plot provides percentages while another provides counts. 
-#| fig-width: 10.0
-#| fig-asp: 1.0
-#| out.width: 90%
-p_bad1 <- ggplot(data = brexit, aes(y = region,  fill = Opinion)) +
+#| label: fig-seg-three-ways-1
+#| fig-cap: Stacked bar plot of region and opinion, showing percentages.
+#| fig-alt: Stacked bar plot of region and opinion, showing percentages.
+#| fig-asp: 0.35
+#| out-width: 100%
+ggplot(brexit, aes(y = region,  fill = Opinion)) +
   geom_bar(position = "fill") +
   labs(x = "Percent", y = NULL) +
   scale_fill_openintro("five") +
   scale_x_continuous(labels = label_percent()) +
   theme(legend.position = "top")
+```
 
-p_bad2 <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
+```{r}
+#| label: fig-seg-three-ways-2
+#| fig-cap: Stacked bar plot of region and opinion, showing counts.
+#| fig-alt: Stacked bar plot of region and opinion, showing counts.
+#| fig-asp: 0.35
+#| out-width: 100%
+ggplot(brexit, aes(y = region, fill = Opinion)) +
   geom_bar() + 
   labs(x = "Count", y = NULL) +
   scale_fill_openintro("five") +
   theme(legend.position = "top")
+```
 
-p_good <- ggplot(data = brexit, aes(y = Opinion)) +
+```{r}
+#| label: fig-seg-three-ways-3
+#| fig-cap: Dodged bar plot of region and opinion, showing counts.
+#| fig-alt: Dodged bar plot of region and opinion, showing counts.
+#| fig-asp: 0.45
+#| out-width: 100%
+ggplot(brexit, aes(y = Opinion)) +
   geom_bar() +
   facet_grid(. ~ region, labeller = label_wrap_gen(width = 12)) +
   scale_x_continuous(breaks = c(0, 100, 200)) +
   labs(
-    title = "How well or badly do you think the government are doing \nat handling Britain's exit from the European Union?",
+    title = "How well or badly do you think the government are doing at handling Britain's exit\nfrom the European Union?",
     subtitle = "YouGov Survey Results, 2-3 September 2019",
     caption = "Source: bit.ly/2lCJZVg", 
     x = NULL, y = NULL
-  )
-
-guide_area() / (p_bad1 + p_bad2) / p_good +
-  plot_layout(heights = unit(c(1, 4, 6), c("cm"))) +
-  plot_layout(guides = "collect") +
-  plot_annotation(tag_levels = "A")
+  ) +
+  theme(plot.title.position = "plot")
 ```
 
-```{r}
-#| include: false
-terms_chp_6 <- c(terms_chp_6, "purpose", "facets")
-```
+Three different representations of two variables from the survey, region and opinion.
+:::
+
+\clearpage
 
 ### Select meaningful colors
-
-<!-- An example with an ordinal variable with more levels would be better. -->
 
 One last consideration for building graphs is to consider color choices.
 Default or rainbow colors are not always the choice which will best distinguish the level of your variables.
@@ -331,33 +425,35 @@ Much research has been done to find color combinations which are distinct and wh
 The cividis scale works well with ordinal data.
 [@Nunez:2018] @fig-brexit-viridis shows the same plot with two different color themes.
 
+\vspace{5mm}
+
 ```{r}
 #| label: fig-brexit-viridis
-#| fig-cap: Identical bar plots with two different coloring options. Plot A uses a default
-#|   color scale, Plot B uses colors from the cividis scale.
+#| fig-cap: Identical bar plots with two different coloring options.
+#| fig-subcap:
+#|   - Default color scale
+#|   - Cividis scale
 #| fig-alt: Identical bar plots with two different coloring options. 
-#| fig-width: 9.0
-#| fig-asp: 0.8
-#| out.width: 90%
-p <- ggplot(data = brexit, aes(y = region, fill = Opinion)) +
+#| fig-asp: 0.4
+#| out-width: 100%
+p <- ggplot(brexit, aes(y = region, fill = Opinion)) +
   geom_bar(position = "fill") +
   labs(
-    title = "How well or badly do you think the government are doing \nat handling Britain's exit from the European Union?",
+    title = "How well or badly do you think the government are doing at handling Britain's exit\nfrom the European Union?",
     subtitle = "YouGov Survey Results, 2-3 September 2019",
     caption = "Source: bit.ly/2lCJZVg",
     x = NULL, y = NULL, fill = NULL
-  ) 
+  ) +
+  theme(plot.title.position = "plot")
 
-p_bad <- p +
+p +
   scale_fill_openintro("five")
 
-p_good <- p +
+p +
   scale_fill_viridis_d(option = "E")
-
-p_bad / 
-  p_good +
-  plot_annotation(tag_levels = "A")
 ```
+
+\vspace{5mm}
 
 In this chapter different representations are contrasted to demonstrate best practices in creating graphs.
 The fundamental principle is that your graph should provide maximal information succinctly and clearly.
