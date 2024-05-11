@@ -8,26 +8,21 @@ library(ggpubr)
 
 ## Case study: Houses for sale {#sec-model-case-study}
 
-Take a walk around your neighborhood and you'll probably see a few houses for sale.
-If you find a house for sale, you can probably go online and look up its price.
-You'll quickly note that the prices seem a bit arbitrary -- the homeowners get to decide what the amount they want to list their house for, and many criteria factor into this decision, e.g., what do comparable houses ("comps" in real estate speak) sell for, how quickly they need to sell the house, etc.
+Take a walk around your neighborhood and you'll probably see a few houses for sale, and you might be able to look up its price online.
+You'll note that house prices are somewhat arbitrary -- the homeowners get to decide the listing price, and many criteria factor into this decision, e.g., what do comparable houses ("comps" in real estate speak) sell for, how quickly they need to sell the house, etc.
 
-In this case study we'll formalize the process of figuring out how much to list a house for by using data on current home sales In November of 2020, information on `r nrow(duke_forest)` houses in the Duke Forest neighborhood of Durham, NC were scraped from [Zillow](https://www.zillow.com).
+In this case study we'll formalize the process of determining the listing price of a house by using data on current home sales. 
+In November of 2020, information on `r nrow(duke_forest)` houses in the Duke Forest neighborhood of Durham, NC were scraped from [Zillow](https://www.zillow.com).
 The homes were all recently sold at the time of data collection, and the goal of the project was to build a model for predicting the sale price based on a particular home's characteristics.
-The first four homes are shown in @tbl-duke-data-frame, and descriptions for each variable are shown in @tbl-duke-variables.
+The first four homes are shown in @tbl-duke-data-frame, and descriptions of each variable are shown in @tbl-duke-variables.
 
 ::: {.data data-latex=""}
 The [`duke_forest`](http://openintrostat.github.io/openintro/reference/duke_forest.html) data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
 :::
 
-\vspace{-4mm}
-
 ```{r}
 #| label: tbl-duke-data-frame
-#| tbl-cap: |
-#|   Top four rows of the data describing homes for sale in the 
-#|   Duke Forest neighborhood of Durham, NC.
-
+#| tbl-cap: Top four rows of `duke_forest`.
 duke_forest |>
   select(price, bed, bath, area, year_built, cooling, lot) |>
   slice_head(n = 4) |>
@@ -37,17 +32,15 @@ duke_forest |>
   ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position")
+    latex_options = c("striped")
   )
 ```
 
-\vspace{-4mm}
+\clearpage
 
 ```{r}
 #| label: tbl-duke-variables
-#| tbl-cap: |
-#|   Variables and their descriptions for the `duke_forest` dataset.
-
+#| tbl-cap: Variables and their descriptions for the `duke_forest` dataset.
 duke_forest_var_def <- tribble(
   ~variable, ~description,
   "price", "Sale price, in USD",
@@ -64,14 +57,12 @@ duke_forest_var_def |>
       col.names = c("Variable", "Description")) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position"),
+    latex_options = c("striped"),
     full_width = FALSE
   ) |>
   column_spec(1, width = "15em", monospace = TRUE) |>
   column_spec(2, width = "25em")
 ```
-
-\clearpage
 
 ### Correlating with `price`
 
@@ -83,17 +74,16 @@ All of the variables seem to be positively associated with price (higher values 
 ```{r}
 #| label: fig-single-scatter
 #| out-width: 100%
-#| fig-asp: 1.0
+#| fig-asp: 0.8
 #| fig-cap: |
 #|   Scatter plots describing six different predictor variables'
 #|   relationship with the price of a home.
-#| fig-alt: Six scatter plots where the observations are different homes.
+#| fig-alt: |
+#|   Six scatter plots where the observations are different homes.
 #|   All plots have sale price on the y axis.  The x axes are number of 
 #|   bedrooms, number of bathrooms, square feet, year built, colling type
 #|   and area of property. All variables are positively correlated with
 #|   price of the house.  Square foot of the home is the most highly correlated.
-#| fig-width: 10
-
 pr_bed <- ggplot(duke_forest, aes(x = bed, y = price)) +
   geom_point(alpha = 0.8) +
     labs(
@@ -153,6 +143,8 @@ pr_bed + pr_bath + pr_area + pr_year + pr_cool + pr_lot +
   plot_layout(ncol = 2) 
 ```
 
+\clearpage
+
 ::: {.guidedpractice data-latex=""}
 In @fig-single-scatter there does not appear to be a correlation value calculated for the predictor variable, `cooling`.
 Why not?
@@ -184,7 +176,7 @@ The resulting model information is given in @tbl-price-slr.
 ```{r}
 #| label: tbl-price-slr
 #| tbl-cap: Summary of least squares fit for price on area.
-
+#| tbl-pos: H
 m_small <- duke_forest |>
   lm(price ~ area, data = _) 
 
@@ -201,7 +193,7 @@ m_small_w_rsq |>
   kbl(linesep = "", booktabs = TRUE, 
       digits = c(0,0,0,2,4), align = "lrrrr", format.args = list(big.mark = ","))  |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) |>
+                latex_options = c("striped")) |>
   column_spec(1, width = "20em") |>
   column_spec(1, monospace = ifelse(as.numeric(rownames(m_small_w_rsq)) < 3, TRUE, FALSE)) |>
   column_spec(2:5, width = "5em") |>
@@ -225,16 +217,19 @@ Using the output in @tbl-price-slr, write out the model for predicting `price` f
 The residuals from the linear model can be used to assess whether a linear model is appropriate.
 @fig-price-resid-slr plots the residuals $e_i = y_i - \hat{y}_i$ on the $y$-axis and the fitted (or predicted) values $\hat{y}_i$ on the $x$-axis.
 
+\clearpage
+
 ```{r}
 #| label: fig-price-resid-slr
 #| fig-cap: |
 #|   Residuals versus predicted values for the model predicting 
 #|   sale price from area of home.
-#| fig-alt: Residual scatterplot showing predicted sale price on the y axis
-#|   and residual on the y axis from the model on square feet only. There is a fan shape showing
-#|   a possible deviation from the equal variance condition.
-#| out-width: 70%
-
+#| fig-alt: |
+#|   Residual scatterplot showing predicted sale price on the y axis and 
+#|   residual on the y axis from the model on square feet only. There is a fan 
+#|   shape showing a possible deviation from the equal variance condition.
+#| fig-width: 7
+#| fig-asp: 0.5
 duke_forest |>
   lm(price ~ area, data = _) |>
   augment() |>
@@ -249,14 +244,18 @@ duke_forest |>
   scale_y_continuous(labels = label_dollar(scale = 1/1000, suffix = "K"))
 ```
 
+\vspace{-2mm}
+
 ::: {.guidedpractice data-latex=""}
 What aspect(s) of the residual plot indicate that a linear model is appropriate?
 What aspect(s) of the residual plot seem concerning when fitting a linear model?[^10-model-applications-4]
 :::
 
-[^10-model-applications-4]: The residual plot shows that the relationship between `area` and the average `price` of a home is indeed linear.
+[^10-model-applications-4]: The residual plot shows that the relationship between `area` and `price` of a home is indeed linear.
     However, the residuals are quite large for expensive homes.
-    The large residuals indicate potential outliers or increasing variability, either of which could warrant more involved modeling techniques than are presented in this text.
+    The large residuals indicate potential outliers or increasing variability, either of which could warrant more involved modeling techniques than are presented in this chapter.
+
+\vspace{-3mm}
 
 ### Modeling `price` with multiple variables
 
@@ -268,7 +267,7 @@ It seems as though the predictions of home price might be more accurate if more 
 #| tbl-cap: |
 #|   Summary of least squares fit for price on multiple predictor
 #|   variables.
-
+#| tbl-pos: H
 m_full <- duke_forest |>
   lm(price ~ area + bed + bath + year_built + cooling + lot, data = _) 
 
@@ -285,7 +284,7 @@ m_full_w_rsq |>
   kbl(linesep = "", booktabs = TRUE, 
       digits = c(0,0,0,2,4), align = "lrrrr", format.args = list(big.mark = ","))  |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) |>
+                latex_options = c("striped")) |>
   column_spec(1, width = "20em") |>
   column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_w_rsq)) < 8, TRUE, FALSE)) |>
   column_spec(2:5, width = "5em") |>
@@ -294,6 +293,8 @@ m_full_w_rsq |>
   row_spec(8:9, italic = TRUE)
 ```
 
+\vspace{-3mm}
+
 ::: {.workedexample data-latex=""}
 Using @tbl-price-mlr, write out the linear model of price on the six predictor variables.
 
@@ -301,13 +302,13 @@ Using @tbl-price-mlr, write out the linear model of price on the six predictor v
 
 $$
 \begin{aligned}
-\widehat{\texttt{price}} &= -2,910,715 \\
-&+ 102 \times \texttt{area} - 13,692 \times \texttt{bed} \\
-&+ 41,076 \times \texttt{bath} + 1,459 \times \texttt{year\_built}\\
-&+ 84,065 \times \texttt{cooling}_{\texttt{central}} + 356,141 \times \texttt{lot}
+\widehat{\texttt{price}} = &-2,910,715 + 102 \times \texttt{area} - 13,692 \times \texttt{bed} + 41,076 \times \texttt{bath} \\
+&+ 1,459 \times \texttt{year\_built} + 84,065 \times \texttt{cooling}_{\texttt{central}} + 356,141 \times \texttt{lot}
 \end{aligned}
 $$
 :::
+
+\clearpage
 
 ::: {.guidedpractice data-latex=""}
 The value of the estimated coefficient on $\texttt{cooling}_{\texttt{central}}$ is $b_5 = 84,065.$ Interpret the value of $b_5$ in the context of the problem.[^10-model-applications-5]
@@ -328,6 +329,8 @@ m_cooling_r_sq_adj <- update(m_full, . ~ . - cooling, data = duke_forest) |> gla
 m_lot_r_sq_adj <- update(m_full, . ~ . - lot, data = duke_forest) |> glance() |> pull(adj.r.squared) |> round(4)
 ```
 
+\vspace{-15mm}
+
 ::: {.workedexample data-latex=""}
 Results corresponding to the full model for the housing data are shown in @tbl-price-mlr.
 How should we proceed under the backward elimination strategy?
@@ -347,7 +350,7 @@ To check, we fit models that each drop a different predictor, and we record the 
 The model without `bed` has the highest adjusted $R^2$ of `r m_bed_r_sq_adj`, higher than the adjusted $R^2$ for the full model.
 Because eliminating `bed` leads to a model with a higher adjusted $R^2$ than the full model, we drop `bed` from the model.
 
-It might seem counter-intuitive to exclude information on number of bedrooms from the model.
+It might seem counter-intuitive to exclude number of bedrooms from the model.
 After all, we would expect homes with more bedrooms to cost more, and we can see a clear relationship between number of bedrooms and sale price in @fig-single-scatter.
 However, note that `area` is still in the model, and it's quite likely that the area of the home and the number of bedrooms are highly associated.
 Therefore, the model already has information on "how much space is available in the house" with the inclusion of `area`.
@@ -386,7 +389,7 @@ That is, after backward elimination, we are left with the model that keeps all p
 #| tbl-cap: |
 #|   Summary of least squares fit for price on multiple predictor 
 #|   variables, excluding number of bedrooms.
-
+#| tbl-pos: H
 m_full_no_bed_r_sq_adj <-  glance(m_full_no_bed)$adj.r.squared |> round(4)
 m_full_no_bed_df_residual <-  glance(m_full_no_bed)$df.residual |> round(4)
 
@@ -400,7 +403,7 @@ m_full_no_bed_w_rsq |>
   kbl(linesep = "", booktabs = TRUE, 
       digits = c(0,0,0,2,4), align = "lrrrr", format.args = list(big.mark = ","))  |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "HOLD_position")) |>
+                latex_options = c("striped")) |>
   column_spec(1, width = "20em") |>
   column_spec(1, monospace = ifelse(as.numeric(rownames(m_full_no_bed_w_rsq)) < 7, TRUE, FALSE)) |>
   column_spec(2:5, width = "5em") |>
@@ -409,14 +412,11 @@ m_full_no_bed_w_rsq |>
   row_spec(7:8, italic = TRUE)
 ```
 
-\vspace{-4mm}
-
 Then, the linear model for predicting sale price based on this model is as follows:
 
 $$ 
 \begin{aligned}
-\widehat{\texttt{price}} &= -2,952,641 + 99 \times \texttt{area}\\ 
-&+ 36,228 \times \texttt{bath} + 1,466 \times \texttt{year\_built}\\
+\widehat{\texttt{price}} = &-2,952,641 + 99 \times \texttt{area} + 36,228 \times \texttt{bath} + 1,466 \times \texttt{year\_built} \\
 &+ 83,856 \times \texttt{cooling}_{\texttt{central}} + 357,119 \times \texttt{lot}
 \end{aligned}
 $$
@@ -432,19 +432,18 @@ However, there is one extreme outlier with a residual of -\$750,000, a house who
 Also, we observe again that the residuals are quite large for expensive homes.
 :::
 
-\vspace{-4mm}
-
 ```{r}
 #| label: fig-price-resid-mlr-nobed
 #| fig-cap: |
 #|   Residuals versus predicted values for the model predicting 
 #|   sale price from all predictors except for number of bedrooms.
-#| fig-alt: Residual scatterplot showing predicted sale price on the y axis
+#| fig-alt: |
+#|   Residual scatterplot showing predicted sale price on the y axis
 #|   and residual on the y axis from the model on all variables except number
 #|   of bedrooms. There is a fan shape showing
 #|   a possible deviation from the equal variance condition.
-#| out-width: 70%
-
+#| fig-width: 7
+#| fig-asp: 0.5
 m_full_no_bed |>
   augment() |>
   ggplot(aes(x = .fitted, y = .resid)) +
@@ -494,7 +493,7 @@ What if you learned that the house was in California?[^10-model-applications-7]
     After we learn that the house is in California, we realize that the model shouldn't be applied to the new home at all!
     The original data are from Durham, NC, and models based on the Durham, NC data should be used only to explore patterns in prices for homes in Durham, NC.
 
-\clearpage
+\vspace{20mm}
 
 ## Interactive R tutorials {#sec-model-tutorials}
 
@@ -616,3 +615,5 @@ You can also access the full list of labs supporting this book at <https://www.o
 ::: {.content-visible when-format="html"}
 You can also access the full list of labs supporting this book [here](https://www.openintro.org/go?id=ims-r-labs).
 :::
+
+
