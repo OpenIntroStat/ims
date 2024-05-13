@@ -26,7 +26,7 @@ There are four possible scenarios in a hypothesis test, which are summarized in 
 ```{r}
 #| label: tbl-fourHTScenarios
 #| tbl-cap: Four different scenarios for hypothesis tests.
-
+#| tbl-pos: H
 ht_scenarios <- tribble(
   ~Truth, ~`Reject null hypothesis`, ~`Fail to reject null hypothesis`,
   "Null hypothesis is true", "Type I error", "Good decision",
@@ -36,7 +36,7 @@ ht_scenarios <- tribble(
 ht_scenarios |>
   kbl(linesep = "", booktabs = TRUE) |>
   add_header_above(c("", "Test conclusion" = 2)) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), latex_options = c("striped", "hold_position"), full_width = FALSE) |>
+  kable_styling(bootstrap_options = c("striped", "condensed"), latex_options = c("striped"), full_width = FALSE) |>
   column_spec(1, width = "15em") |>
   column_spec(2:3, width = "8em")
 ```
@@ -93,8 +93,6 @@ What influence would this have on the Type I error rate?[^14-foundations-errors-
 
 The example and guided practice above provide an important lesson: if we reduce how often we make one type of error, we generally make more of the other type.
 
-\clearpage
-
 ## Discernibility level
 
 \index{discernibility level}
@@ -102,6 +100,8 @@ The example and guided practice above provide an important lesson: if we reduce 
 The **discernibility level** provides the cutoff for the p-value which will lead to a decision of "reject the null hypothesis." Choosing a discernibility level for a test is important in many contexts, and the traditional level is 0.05.
 However, it is sometimes helpful to adjust the discernibility level based on the application.
 We may select a level that is smaller or larger than 0.05 depending on the consequences of any conclusions reached from the test.
+
+\clearpage
 
 If making a Type I error is dangerous or especially costly, we should choose a small discernibility level (e.g., 0.01 or 0.001).
 If we want to be very cautious about rejecting the null hypothesis, we demand very strong evidence favoring the alternative $H_A$ before we would reject $H_0.$
@@ -148,6 +148,8 @@ To do so, let's learn about **two-sided hypothesis tests**\index{two-sided hypot
 #| include: false
 terms_chp_14 <- c(terms_chp_14, "confirmation bias", "one-sided hypothesis test", "two-sided hypothesis test")
 ```
+
+\clearpage
 
 Cardiopulmonary resuscitation (CPR) is a procedure used on individuals suffering a heart attack when other emergency resources are unavailable.
 This procedure is helpful in providing some blood circulation to keep a person alive, but CPR chest compression can also cause internal injuries.
@@ -196,7 +198,7 @@ The study results are shown in @tbl-cpr-summary.
 #| tbl-cap: |
 #|   Results for the CPR study. Patients in the treatment group were given a
 #|   blood thinner, and patients in the control group were not.
-
+#| tbl-pos: H
 cpr |>
   mutate(
     outcome = str_to_title(outcome),
@@ -212,7 +214,7 @@ cpr |>
   ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position"),
+    latex_options = c("striped"),
     full_width = FALSE
   ) |>
   column_spec(1:4, width = "7em")
@@ -248,7 +250,7 @@ terms_chp_14 <- c(terms_chp_14, "null distribution")
 #|   Histogram of the null distribution of the point estimate for the difference
 #|   in proportions, $\hat{p}_T - \hat{p}_C.$ The shaded right tail shows
 #|   observations that are at least as large as the observed difference, 0.13.
-
+#| out-width: 100%
 set.seed(47)
 cpr_rand_dist <- cpr |>
   specify(response = outcome, explanatory = group, success = "survived") |>
@@ -298,7 +300,7 @@ These two shaded tails provide a visual representation of the p-value for a two-
 #|   Histogram of the null distribution of the point estimate for the difference
 #|   in proportions, $\hat{p}_T - \hat{p}_C.$ All values that are at least as
 #|   extreme as +0.13 but in either direction away from 0 are shaded.
-
+#| out-width: 100%
 cpr_rand_dist |>
   ggplot(aes(x = stat)) +
   geom_histogram(binwidth = 0.05) +
@@ -318,6 +320,8 @@ cpr_rand_dist |>
 For a two-sided test, take the single tail (in this case, 0.131) and double it to get the p-value: 0.262.
 Since this p-value is larger than 0.05, we do not reject the null hypothesis.
 That is, we do not find convincing evidence that the blood thinner has any influence on survival of patients who undergo CPR prior to arriving at the hospital.
+
+\clearpage
 
 ::: {.important data-latex=""}
 **Default to a two-sided test.**
@@ -365,29 +369,15 @@ Using $\alpha=0.05,$ we show that freely switching from two-sided tests to one-s
 ------------------------------------------------------------------------
 
 Suppose we are interested in finding any difference from 0.
-We've created a smooth-looking **null distribution** representing differences due to chance in @fig-type1ErrorDoublingExampleFigure.
-
-Suppose the sample difference was larger than 0.
-Then if we can flip to a one-sided test, we would use $H_A:$ difference $> 0.$ Now if we obtain any observation in the upper 5% of the distribution, we would reject $H_0$ since the p-value would just be a the single tail.
-Thus, if the null hypothesis is true, we incorrectly reject the null hypothesis about 5% of the time when the sample mean is above the null value, as shown in @fig-type1ErrorDoublingExampleFigure.
-
-Suppose the sample difference was smaller than 0.
-Then if we change to a one-sided test, we would use $H_A:$ difference $< 0.$ If the observed difference falls in the lower 5% of the figure, we would reject $H_0.$ That is, if the null hypothesis is true, then we would observe this situation about 5% of the time.
-
-By examining these two scenarios, we can determine that we will make a Type I error $5\%+5\%=10\%$ of the time if we are allowed to swap to the "best" one-sided test for the data.
-This is twice the error rate we prescribed with our discernibility level: $\alpha=0.05$ (!).
-:::
+We've created a smooth-looking **null distribution** representing differences due to chance below.
 
 ```{r}
-#| label: fig-type1ErrorDoublingExampleFigure
-#| fig-cap: |
-#|   The shaded regions represent areas where we would reject $H_0$ under the
-#|   bad practices considered in when $\alpha = 0.05.$
+#| label: type1ErrorDoublingExampleFigure
 #| fig-alt: |
 #|   Density curve of a normal distribution with mean 0 and standard deviation 1.
 #|   The shaded regions represent areas where we would reject $H_0$ under the
 #|   bad practices considered in when $\alpha = 0.05.$
-#| fig-asp: 0.4
+#| fig-asp: 0.38
 #| out-width: 60%
 par(mar = c(2, 0, 0, 0))
 normTail(U = 1.65, L = -1.65, col = IMSCOL["blue", "full"])
@@ -397,7 +387,18 @@ arrows(2, 0.17, 1.9, 0.08, length = 0.07, lwd = 1.5)
 text(2.08, 0.21, "5%", cex = 1.2)
 ```
 
-::: caution
+First, suppose the sample difference was larger than 0.
+Then if we can flip to a one-sided test, we would use $H_A:$ difference $> 0.$ Now if we obtain any observation in the upper 5% of the distribution, we would reject $H_0$ since the p-value would just be a the single tail.
+Thus, if the null hypothesis is true, we incorrectly reject the null hypothesis about 5% of the time when the sample mean is above the null value, as shown above.
+
+Then, suppose the sample difference was smaller than 0.
+Then if we change to a one-sided test, we would use $H_A:$ difference $< 0.$ If the observed difference falls in the lower 5% of the figure, we would reject $H_0.$ That is, if the null hypothesis is true, then we would observe this situation about 5% of the time.
+
+By examining these two scenarios, we can determine that we will make a Type I error $5\%+5\%=10\%$ of the time if we are allowed to swap to the "best" one-sided test for the data.
+This is twice the error rate we prescribed with our discernibility level: $\alpha=0.05$!
+:::
+
+::: {.important data-latex=""}
 **Hypothesis tests should be set up *before* seeing the data.**
 
 After observing data, it is tempting to turn a two-sided test into a one-sided test.
@@ -483,3 +484,6 @@ Answers to odd-numbered exercises can be found in [Appendix -@sec-exercise-solut
 ::: {.exercises data-latex=""}
 {{< include exercises/_14-ex-foundations-errors.qmd >}}
 :::
+
+
+
