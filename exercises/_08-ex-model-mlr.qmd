@@ -12,14 +12,16 @@
     Who is right: Elliott or Adrian?
     If you pick Elliott, can you suggest a better alternative for evaluating the association between the categorical predictor and the numerical outcome?
 
-3.  **Meat consumption and Life Expectancy.** In data collected for @You:2022, total meat intake is associated with life expectancy (at birth) in 175 countries.
+3.  **Meat consumption and life expectancy.** In data collected for @You:2022, total meat intake is associated with life expectancy (at birth) in 175 countries.
     Meat intake is measured in kg per capita per year (averaged over 2011 to 2013).
-    The scatterplot on the top left displays the relationship between life expectancy at birth plotted against per capita meat consumption.
+    The scatterplot on the top left displays the relationship between life expectancy at birth vs. per capita meat consumption.
     The scatterplot on the top right displays the same relationship colored by income status of the country.
-    The set of scatterplots across the below displays the same relationship broken apart by income status of the country.
+    The set of scatterplots across the bottom display the same relationship by income status of the country.
 
     ```{r}
-    #| fig-asp: 0.7
+    #| fig-asp: 0.6
+    #| fig-width: 7
+    #| out-width: 90%
     meat <- read_csv("data/meat.csv")
 
     p_life <- meat |>
@@ -61,24 +63,29 @@
       guides(color = "none", shape = "none")  +
       facet_wrap(~ income)
 
-
     (p_life + p_life_confound) / p_life_confound2 + plot_layout(guides='collect') & 
       theme(legend.position='bottom')
     ```
+    
+    \clearpage
 
     a.  Describe the relationship between meat consumption and life expectancy.
 
     b.  Why do you think the variables are positively associated?
 
-    c.  Is the relationship between meat consumption and life expectancy stronger, similar, or weaker when broken down by income bracket in each of the separate plots along the bottom (as compared with the relationship when combined in the top left figure)?
+    c.  Is the relationship between meat consumption and life expectancy stronger, similar, or weaker when broken down by income bracket in the separate plots along the bottom (as compared with the relationship when combined in the top left figure)?
 
 4.  **Arrival delays.** Consider all of the flights out of New York City in 2013 that flew into Puerto Rico (BQN) or San Francisco (SFO) on the following two airlines: JetBlue (B6) or United Airlines (UA).
     We consider the relationship between day of the year and arrival delay (in minutes).
     Note that a negative arrival delay means that the flight arrived early.
     The figures display a least squares regression line for arrival delay versus time (day of the year).[^_08-ex-model-mlr-1]
+    
+    \vspace{-2mm}
 
     ```{r}
-    #| fig-asp: 0.6
+    #| fig-asp: 0.45
+    #| fig-width: 7
+    #| out-width: 90%
     p_delay <- flights |>
       filter(dest %in% c("BQN", "SFO")) |>
       filter(carrier %in% c("B6", "UA")) |>
@@ -86,12 +93,13 @@
       mutate(med_delay = median(arr_delay, na.rm = TRUE)) |>
       #sample_n(1000) |>
       mutate(date = ymd(paste(year, month, day, sep= ' '))) |>
-      ggplot(aes(x = time_hour, y = arr_delay, color = carrier)) +
+      ggplot(aes(x = time_hour, y = arr_delay, color = carrier, linetype = carrier)) +
       #geom_point(size = 0.001, alpha = 0.5) +
       geom_smooth(method = "lm", se = FALSE) + 
-      labs(x = "", y = "", subtitle =  "Arrival delay (min)") +
+      labs(x = NULL, y = NULL, color = "Carrier", linetype = "Carrier") +
       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
-      guides(color = "none")
+      scale_color_openintro("two") +
+      theme(legend.position = c(0.15, 0.8))
 
     p_delay_city <- flights |>
       filter(dest %in% c("BQN", "SFO")) |>
@@ -101,16 +109,18 @@
       mutate(med_delay = median(arr_delay, na.rm = TRUE)) |>
       #sample_n(1000) |>
       mutate(date = ymd(paste(year, month, day, sep= ' '))) |>
-      ggplot(aes(x = time_hour, y = arr_delay, color = carrier)) +
+      ggplot(aes(x = time_hour, y = arr_delay, color = carrier, linetype = carrier)) +
       #geom_point(size = 0.001, alpha = 0.5) +
-      geom_smooth(method = "lm", se = FALSE) + 
-      labs(x = "", y = "") +
+      geom_smooth(method = "lm", se = FALSE, show.legend = FALSE) + 
+      labs(x = NULL, y = NULL) +
       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
-      facet_wrap(~dest)
+      facet_wrap(~dest) +
+      scale_color_openintro("two")
 
-    p_delay + p_delay_city + plot_layout(guides='collect') & 
-      theme(legend.position='bottom')
+    p_delay + p_delay_city
     ```
+    
+    \vspace{-5mm}
 
     a.  Does it seem like there are differences in arrival delays across time when looking at BQN and SFO airports combined (left figure)?
         Explain.
@@ -121,20 +131,19 @@
     c.  Would it be more appropriate to display the combined plot or the plots which display the airports separately?
         Explain.
 
-5.  **Training for the 5K.** Nico signs up for a 5K (a 5,000 metre running race) 30 days prior to the race.
+5.  **Training for a 5K.** Nico signs up for a 5K (a 5,000 metre running race) 30 days prior to the race.
     They decide to run a 5K every day to train for it, and each day they record the following information: `days_since_start` (number of days since starting training), `days_till_race` (number of days left until the race), `mood` (poor, good, awesome), `tiredness` (1-not tired to 10-very tired), and `time` (time it takes to run 5K, recorded as mm:ss).
     Top few rows of the data they collect is shown below.
 
     ```{r}
-    library(tidyverse)
     tribble(
       ~days_since_start, ~days_till_race, ~mood, ~tiredness, ~time,
       "1", "29", "good", "3", "25:45",
       "2", "28", "poor", "5", "27:13",
       "3", "27", "awesome", "4", "24:13",
       "...", "...", "...", "...", "..."
-    ) %>%
-      kbl(linesep = "", booktabs = TRUE, align = "rrlrr") %>%
+    ) |>
+      kbl(linesep = "", booktabs = TRUE, align = "rrlrr") |>
       kable_styling(bootstrap_options = c("striped", "condensed"), 
                     latex_options = "HOLD_position", 
                     full_width = FALSE)
@@ -143,6 +152,8 @@
     Using these data Nico wants to build a model predicting `time` from the other variables.
     Should they include all variables shown above in their model?
     Why or why not?
+
+\clearpage
 
 6.  **Multiple regression fact checking.** Determine which of the following statements are true and false.
     For each statement that is false, explain why it is false.
@@ -163,20 +174,17 @@
     [@data:births14]
 
     ```{r}
-    library(openintro)
-    library(tidyverse)
-    library(kableExtra)
-    library(broom)
-
     m_habit_fage <- lm(weight ~ habit, data = births14)
 
-    tidy(m_habit_fage) %>%
-      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
-      kbl(linesep = "", booktabs = TRUE, align = "lrrrr", digits = 4) %>%
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
-                    latex_options = "HOLD_position",
-                    full_width = FALSE) %>%
-      column_spec(1, width = "10em", monospace = TRUE) %>%
+    tidy(m_habit_fage) |>
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
+      kbl(linesep = "", booktabs = TRUE, align = "lrrrr", digits = 4) |>
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"), 
+        latex_options = "HOLD_position",
+        full_width = FALSE
+      ) |>
+      column_spec(1, width = "10em", monospace = TRUE) |>
       column_spec(2:5, width = "5em")
     ```
 
@@ -188,21 +196,16 @@
     [@data:births14]
 
     ```{r}
-    library(openintro)
-    library(tidyverse)
-    library(kableExtra)
-    library(broom)
-
     m_weight_mature <- lm(weight ~ mature, data = births14)
 
-    m_weight_mature %>%
-      tidy() %>%
-      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
-      kbl(linesep = "", booktabs = TRUE, align = "lrrrr", digits = 4) %>%
+    m_weight_mature |>
+      tidy() |>
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
+      kbl(linesep = "", booktabs = TRUE, align = "lrrrr", digits = 4) |>
       kable_styling(bootstrap_options = c("striped", "condensed"), 
                     latex_options = "HOLD_position",
-                    full_width = FALSE) %>%
-      column_spec(1, width = "10em", monospace = TRUE) %>%
+                    full_width = FALSE) |>
+      column_spec(1, width = "10em", monospace = TRUE) |>
       column_spec(2:5, width = "5em")
     ```
 
@@ -210,26 +213,22 @@
 
     b.  Interpret the slope in this context, and calculate the predicted birth weight of babies born to mature and younger mothers.
 
+\clearpage
+
 9.  **Movie returns, prediction.** A model was fit to predict return-on-investment (ROI) on movies based on release year and genre (Adventure, Action, Drama, Horror, and Comedy).
     The model output is shown below.
     [@webpage:horrormovies]
 
     ```{r}
-    library(openintro)
-    library(tidyverse)
-    library(kableExtra)
-    library(lubridate)
-    library(broom)
-
     movie_profit <- read_csv("data/movie_profit.csv")
-    movie_profit <- movie_profit %>%
+    movie_profit <- movie_profit |>
       mutate(
         release_date = mdy(release_date),
         release_year = year(release_date),
         oct_release = ifelse(month(release_date) == 10, "yes", "no"),
         dom_gross_to_prod = domestic_gross / production_budget,
         ww_gross_to_prod = worldwide_gross / production_budget
-        )%>%
+        )|>
       filter(
         release_year >= 2010,
         release_year < 2019
@@ -241,14 +240,14 @@
     m_movie_small_adj_rsq <- round(glance(m_movie_small)$adj.r.squared, 4)*100
     m_movie_large_adj_rsq <- round(glance(m_movie_large)$adj.r.squared, 4)*100
 
-    m_movie_small %>%
-      tidy() %>%
-      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
-      kbl(linesep = "", booktabs = TRUE, align = "lrrrr", digits = 2) %>%
+    m_movie_small |>
+      tidy() |>
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
+      kbl(linesep = "", booktabs = TRUE, align = "lrrrr", digits = 2) |>
       kable_styling(bootstrap_options = c("striped", "condensed"), 
                     latex_options = "HOLD_position",
-                    full_width = FALSE) %>%
-      column_spec(1, width = "10em", monospace = TRUE) %>%
+                    full_width = FALSE) |>
+      column_spec(1, width = "10em", monospace = TRUE) |>
       column_spec(2:5, width = "5em")
     ```
 
@@ -258,21 +257,25 @@
         Adding the production budget of the movie to the model increases the adjusted $R^2$ to `r m_movie_large_adj_rsq`%.
         Should production budget be added to the model?
 
+\vfill
+
 10. **Movie returns by genre.** A model was fit to predict return-on-investment (ROI) on movies based on release year and genre (Adventure, Action, Drama, Horror, and Comedy).
     The plots below show the predicted ROI vs. actual ROI for each of the genres separately.
     Do these figures support the comment in the FiveThirtyEight.com article that states, "The return-on-investment potential for horror movies is absurd." Note that the x-axis range varies for each plot.
     [@webpage:horrormovies]
 
     ```{r}
+    #| fig-width: 6
+    #| out-width: 90%
     movie_profit <- read_csv("data/movie_profit.csv")
-    movie_profit <- movie_profit %>%
+    movie_profit <- movie_profit |>
       mutate(
         release_date = mdy(release_date),
         release_year = year(release_date),
         oct_release = ifelse(month(release_date) == 10, "yes", "no"),
         dom_gross_to_prod = domestic_gross / production_budget,
         ww_gross_to_prod = worldwide_gross / production_budget
-        ) %>%
+        ) |>
       filter(
         release_year >= 2010,
         release_year < 2019
@@ -289,32 +292,42 @@
       scale_color_openintro("five")
     ```
 
+\vfill
+
+\clearpage
+
 11. **Predicting baby weights.** A more realistic approach to modeling baby weights is to consider all possibly related variables at once.
     Other variables of interest include length of pregnancy in weeks (`weeks`), mother's age in years (`mage`), the sex of the baby (`sex`), smoking status of the mother (`habit`), and the number of hospital (`visits`) visits during pregnancy.
-    Below are three observations from this data set.
+    Below are three observations from this dataset.
 
     ```{r}
-    births14 %>%
+    births14 |>
       dplyr::select(weight, weeks, mage, sex, visits, habit) |>
       slice_head(n = 3) |>
       kbl(linesep = "", booktabs = TRUE, align = "ccccc") |>
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
-                    latex_options = "HOLD_position",
-                    full_width = FALSE) |>
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"),
+        latex_options = "HOLD_position",
+        full_width = FALSE
+      ) |>
       column_spec(1:5, width = "5em")
     ```
+
+    \vspace{-2mm}
 
     The summary table below shows the results of a regression model for predicting the average birth weight of babies based on all of the variables presented above.
 
     ```{r}
-    lm(weight ~ weeks + mage + sex + visits + habit, births14) %>%
-      tidy() %>%
-      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
-      kbl(linesep = "", booktabs = TRUE, align = "lrrrr", digits = 2) %>%
-      kable_styling(bootstrap_options = c("striped", "condensed"), 
-                    latex_options = "HOLD_position",
-                    full_width = FALSE) %>%
-      column_spec(1, width = "10em", monospace = TRUE) %>%
+    lm(weight ~ weeks + mage + sex + visits + habit, births14) |>
+      tidy() |>
+      mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
+      kbl(linesep = "", booktabs = TRUE, align = "lrrrr", digits = 2) |>
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"),
+        latex_options = "HOLD_position",
+        full_width = FALSE
+      ) |>
+      column_spec(1, width = "10em", monospace = TRUE) |>
       column_spec(2:5, width = "5em")
     ```
 
@@ -325,35 +338,32 @@
     c.  If we fit a model predicting baby weight from only `habit` (whether the mom smokes), we observe a difference in the slope coefficient for `habit` in this small model and the slope coefficient for `habit` in the larger model.
         Why might there be a difference?
 
-    d.  Calculate the residual for the first observation in the data set.
+    d.  Calculate the residual for the first observation in the dataset.
 
 12. **Palmer penguins, predicting body mass.** Researchers studying a community of Antarctic penguins collected body measurement (bill length, bill depth, and flipper length measured in millimeters and body mass, measured in grams), species (*Adelie*, *Chinstrap*, or *Gentoo*), and sex (female or male) data on 344 penguins living on three islands (Torgersen, Biscoe, and Dream) in the Palmer Archipelago, Antarctica.[^_08-ex-model-mlr-3]
     The summary table below shows the results of a linear regression model for predicting body mass (which is more difficult to measure) from the other variables in the dataset.
     [@palmerpenguins]
 
     ```{r}
-    library(palmerpenguins)
-    library(broom)
-    library(kableExtra)
-    library(tidyverse)
-
     m_full_penguins <- lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins)
 
     m_full_penguins_rsq <- round(glance(m_full_penguins)$r.squared*100, 1)
     m_full_penguins_tidy <- tidy(m_full_penguins)
 
-    m_full_penguins_tidy %>%
+    m_full_penguins_tidy |>
       mutate(
         p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4)),
-        ) %>%
+        ) |>
       kbl(linesep = "", booktabs = TRUE, align = "lrrrr", digits = 1,
-          format.args = list(scientific = FALSE)) %>%
+          format.args = list(scientific = FALSE)) |>
       kable_styling(bootstrap_options = c("striped", "condensed"), 
                     latex_options = "HOLD_position", 
-                    full_width = FALSE) %>%
-      column_spec(1, width = "10em", monospace = TRUE) %>%
+                    full_width = FALSE) |>
+      column_spec(1, width = "10em", monospace = TRUE) |>
       column_spec(2:5, width = "5em")
     ```
+    
+    \clearpage
 
     a.  Write the equation of the regression model.
 
@@ -369,11 +379,6 @@
     [@data:births14]
 
     ```{r}
-    library(openintro)
-    library(tidyverse)    
-    library(kableExtra)
-    library(broom)    
-
     m_full <- lm(weight ~ mature + weeks + gained + sex + habit, data = births14)
     m_full_adj_rsq <- round(glance(m_full)$adj.r.squared, 4)
     ```
@@ -383,25 +388,25 @@
     Which, if any, variable should be removed from the model?
 
     ```{r}
-    m_m <- update(m_full, . ~ . - mature, data = births14) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_m <- update(m_full, . ~ . - mature, data = births14) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_w <- update(m_full, . ~ . - weeks, data = births14) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_w <- update(m_full, . ~ . - weeks, data = births14) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_v <- update(m_full, . ~ . - visits, data = births14) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_v <- update(m_full, . ~ . - visits, data = births14) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_g <- update(m_full, . ~ . - gained, data = births14) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_g <- update(m_full, . ~ . - gained, data = births14) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_s <- update(m_full, . ~ . - sex, data = births14) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_s <- update(m_full, . ~ . - sex, data = births14) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
     ```
 
@@ -415,26 +420,21 @@
     [@palmerpenguins]
 
     ```{r}
-    library(palmerpenguins)
-    library(broom)
-    library(kableExtra)
-    library(tidyverse)
-
     m_full_penguins <- lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins)
 
     m_full_penguins_rsq_adj <- round(glance(m_full_penguins)$adj.r.squared, 1)
     m_full_penguins_tidy <- tidy(m_full_penguins)
 
-    m_full_penguins_tidy %>%
+    m_full_penguins_tidy |>
       mutate(
         p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4)),
-        ) %>%
+        ) |>
       kbl(linesep = "", booktabs = TRUE, align = "lrrrr", digits = 1,
-          format.args = list(scientific = FALSE)) %>%
+          format.args = list(scientific = FALSE)) |>
       kable_styling(bootstrap_options = c("striped", "condensed"), 
                     latex_options = "HOLD_position", 
-                    full_width = FALSE) %>%
-      column_spec(1, width = "10em", monospace = TRUE) %>%
+                    full_width = FALSE) |>
+      column_spec(1, width = "10em", monospace = TRUE) |>
       column_spec(2:5, width = "5em")
     ```
 
@@ -443,25 +443,25 @@
     These values are given below.
 
     ```{r}
-    m_bl <- update(m_full_penguins, . ~ . - bill_length_mm, data = penguins) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_bl <- update(m_full_penguins, . ~ . - bill_length_mm, data = penguins) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_bd <- update(m_full_penguins, . ~ . - bill_depth_mm, data = penguins) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_bd <- update(m_full_penguins, . ~ . - bill_depth_mm, data = penguins) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_fl <- update(m_full_penguins, . ~ . - flipper_length_mm, data = penguins) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_fl <- update(m_full_penguins, . ~ . - flipper_length_mm, data = penguins) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_sex <- update(m_full_penguins, . ~ . - sex, data = penguins) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_sex <- update(m_full_penguins, . ~ . - sex, data = penguins) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_sp <- update(m_full_penguins, . ~ . - species, data = penguins) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_sp <- update(m_full_penguins, . ~ . - species, data = penguins) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
     ```
 
@@ -480,29 +480,29 @@
     [@data:births14]
 
     ```{r}
-    m_mature  <- lm(weight ~ mature, data = births14) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_mature  <- lm(weight ~ mature, data = births14) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_weeks  <- lm(weight ~ weeks, data = births14) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_weeks  <- lm(weight ~ weeks, data = births14) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_visits  <- lm(weight ~ visits, data = births14) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_visits  <- lm(weight ~ visits, data = births14) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_gained <- lm(weight ~ gained, data = births14) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_gained <- lm(weight ~ gained, data = births14) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_sex  <- lm(weight ~ sex, data = births14) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_sex  <- lm(weight ~ sex, data = births14) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_habit  <- lm(weight ~ habit, data = births14) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_habit  <- lm(weight ~ habit, data = births14) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
     ```
 
@@ -520,25 +520,25 @@
     Below are the five models we evaluate and their adjusted $R^2$ values:
 
     ```{r}
-    m_bl  <- lm(body_mass_g ~ bill_length_mm, data = penguins) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_bl  <- lm(body_mass_g ~ bill_length_mm, data = penguins) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_bd  <- lm(body_mass_g ~ bill_depth_mm, data = penguins) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_bd  <- lm(body_mass_g ~ bill_depth_mm, data = penguins) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_fl  <- lm(body_mass_g ~ flipper_length_mm, data = penguins) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_fl  <- lm(body_mass_g ~ flipper_length_mm, data = penguins) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_sex <- lm(body_mass_g ~ sex, data = penguins) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_sex <- lm(body_mass_g ~ sex, data = penguins) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
-    m_sp  <- lm(body_mass_g ~ species, data = penguins) %>%
-      glance() %>%
-      pull(adj.r.squared) %>%
+    m_sp  <- lm(body_mass_g ~ species, data = penguins) |>
+      glance() |>
+      pull(adj.r.squared) |>
       round(3)
     ```
 

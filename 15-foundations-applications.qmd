@@ -7,7 +7,7 @@ source("_common.R")
 
 ## Recap: Foundations {#sec-foundations-sec-summary}
 
-In the Foundations of inference chapters, we have provided three different methods for statistical inference.
+In the foundations of inference chapters, we have provided three different methods for statistical inference.
 We will continue to build on all three of the methods throughout the text, and by the end, you should have an understanding of the similarities and differences between them.
 Meanwhile, it is important to note that the methods are designed to mimic variability with data, and we know that variability can come from different sources (e.g., random sampling vs. random allocation, see @fig-randsampValloc).
 In @tbl-foundations-summary, we have summarized some of the ways the inferential procedures feature specific sources of variability.
@@ -18,19 +18,18 @@ We hope that you refer back to the table often as you dive more deeply into infe
 #| tbl-cap: |
 #|   Summary and comparison of randomization, bootstrapping, and mathematical
 #|   models as inferential statistical methods.
-
 inference_method_summary_table |>
   filter(question != "What are the technical conditions?") |>
   kbl(
-    linesep = "", booktabs = TRUE,
+    linesep = "\\addlinespace\\addlinespace", booktabs = TRUE,
     col.names = c("Question", "Randomization", "Bootstrapping", "Mathematical models")
   ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position"),
+    latex_options = c("striped"),
     full_width = TRUE
   ) |>
-  column_spec(1, width = "15em") |>
+  column_spec(1, width = "8em") |>
   add_header_above(c("", "Answer" = 3))
 ```
 
@@ -91,15 +90,20 @@ The results are summarized in @tbl-malaria-vaccine-20-ex-summary, where 9 of the
 ```{r}
 #| label: tbl-malaria-vaccine-20-ex-summary
 #| tbl-cap: Summary results for the malaria vaccine experiment.
-
+#| tbl-pos: H
 malaria |>
   count(treatment, outcome, .drop = FALSE) |>
   pivot_wider(names_from = outcome, values_from = n) |>
+  rename(
+    Treatment = treatment,
+    Infection = infection,
+    `No infection` = `no infection`
+  ) |>
   adorn_totals(where = c("row", "col")) |>
   kbl(linesep = "", booktabs = TRUE) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position"),
+    latex_options = c("striped"),
     full_width = FALSE
   )
 ```
@@ -118,6 +122,8 @@ What implications does the study type have on what can be inferred from the resu
 
 In this study, a smaller proportion of patients who received the vaccine showed signs of an infection (35.7% versus 100%).
 However, the sample is very small, and it is unclear whether the difference provides *convincing evidence* that the vaccine is effective.
+
+\vspace{-2mm}
 
 ::: {.workedexample data-latex=""}
 Statisticians and data scientists are sometimes called upon to evaluate the strength of evidence.
@@ -172,9 +178,9 @@ Finally, we tabulate the results, which are shown in @tbl-malaria-vaccine-20-ex-
 ```{r}
 #| label: tbl-malaria-vaccine-20-ex-summary-rand-1
 #| tbl-cap: |
-#|   Simulation results, where any difference in infection ratio is purely 
+#|   Simulation results, where any difference in infection ratio is purely
 #|   due to chance.
-
+#| tbl-pos: H
 # matching OS4
 malaria_rand <- tibble(
   treatment = c(
@@ -194,7 +200,7 @@ malaria_rand |>
   kbl(linesep = "", booktabs = TRUE) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position"),
+    latex_options = c("striped"),
     full_width = FALSE
   )
 ```
@@ -222,16 +228,17 @@ And so on until we repeat the simulation enough times to create a *distribution 
 ```{r}
 #| label: fig-malaria-rand-dot-plot
 #| fig-cap: |
-#|   A stacked dot plot of differences from 100 simulations produced under 
-#|   the independence mode, $H_0,$ where in these simulations infections are 
-#|   unaffected by the vaccine. Two of the 100 simulations had a difference 
+#|   A stacked dot plot of differences from 100 simulations produced under
+#|   the independence mode, $H_0,$ where in these simulations infections are
+#|   unaffected by the vaccine. Two of the 100 simulations had a difference
 #|   of at least 64.3%, the difference observed in the study.
 #| fig-alt: |
-#|   A stacked dot plot of differences from 100 simulations produced under 
-#|   the independence mode, $H_0,$ where in these simulations infections are 
-#|   unaffected by the vaccine. Two of the 100 simulations had a difference 
+#|   A stacked dot plot of differences from 100 simulations produced under
+#|   the independence mode, $H_0,$ where in these simulations infections are
+#|   unaffected by the vaccine. Two of the 100 simulations had a difference
 #|   of at least 64.3%, the difference observed in the study.
-
+#| fig-width: 7
+#| fig-asp: 0.5
 set.seed(19)
 malaria |>
   specify(response = outcome, explanatory = treatment, success = "infection") |>

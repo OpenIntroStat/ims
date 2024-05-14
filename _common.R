@@ -43,19 +43,19 @@ suppressMessages(library(mosaicData))
 # knitr chunk options ----------------------------------------------------------
 
 #knitr::opts_chunk$set(
-#  #eval = FALSE,
-#  #comment = "#>",
-#  #collapse = TRUE,
-#  #message = FALSE,
-#  #warning = FALSE,
-#  #cache = FALSE, # only use TRUE for quick testing!
-#  #echo = FALSE, # hide code unless otherwise noted in chunk options
-#  #fig.align = "center",
-#  #fig.width = 6,
-#  #fig-asp = 0.618,  # 1 / phi
-#  #fig.show = "hold",
-#  #dpi = 300,
-#  #fig.pos = "h"
+  #eval = FALSE,
+  #comment = "#>",
+  #collapse = TRUE,
+  #message = FALSE,
+  #warning = FALSE,
+  #cache = FALSE, # only use TRUE for quick testing!
+  #echo = FALSE, # hide code unless otherwise noted in chunk options
+  #fig.align = "center",
+  #fig.width = 6,
+  #fig.asp = 0.618,  # 1 / phi
+  #fig.show = "hold",
+  #dpi = 300,
+  #fig.pos = "h"
 #)
 
 if (knitr::is_html_output()) {
@@ -81,7 +81,7 @@ options(dplyr.print_min = 6, dplyr.print_max = 6)
 if (knitr::is_html_output()) {
   ggplot2::theme_set(ggplot2::theme_minimal(base_size = 13))
 } else if (knitr::is_latex_output()) {
-  ggplot2::theme_set(ggplot2::theme_minimal(base_size = 11))
+  ggplot2::theme_set(ggplot2::theme_minimal(base_size = 12))
 }
 
 ggplot2::update_geom_defaults("point", list(color = openintro::IMSCOL["blue","full"],
@@ -101,7 +101,7 @@ ggplot2::update_geom_defaults("dotplot", list(color = openintro::IMSCOL["blue","
 
 caption_helper <- function(txt) {
   if (knitr::is_latex_output())
-    stringr::str_replace_all(txt, "([^`]*)`(.*?)`", "\\1\\\\texttt{\\2}") %>%
+    stringr::str_replace_all(txt, "([^`]*)`(.*?)`", "\\1\\\\texttt{\\2}") |>
     stringr::str_replace_all("_", "\\\\_")
   else
     txt
@@ -110,15 +110,20 @@ caption_helper <- function(txt) {
 # function: make terms table ---------------------------------------------------
 
 make_terms_table <- function(x, n_cols = 3){
-  x <- sort(x) %>% unique()
-  n_rows <- (length(x) / n_cols) %>% ceiling()
+  x <- sort(x) |> unique()
+  n_rows <- (length(x) / n_cols) |> ceiling()
   desired_length <- n_rows * n_cols
   x_updated <- c(x, rep("", (desired_length - length(x))))
-  matrix(x_updated, nrow = n_rows) %>%
-    kbl(booktabs = TRUE, linesep = "") %>%
-    kable_styling(bootstrap_options = c("striped", "condensed"), 
-                  latex_options = "striped",
-                  full_width = TRUE)
+  matrix(x_updated, nrow = n_rows) |>
+    kbl(booktabs = TRUE, linesep = "") |>
+    kable_styling(
+      bootstrap_options = c("striped", "condensed"),
+      latex_options = "striped",
+      full_width = FALSE
+    ) |>
+    column_spec(1, width = "12em") |>
+    column_spec(2, width = "12em") |>
+    column_spec(3, width = "12em")
 }
 
 # for foundation chapters ------------------------------------------------------

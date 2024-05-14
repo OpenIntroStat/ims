@@ -41,8 +41,6 @@ Each volunteer patient was randomly assigned to one of two groups:
 Researchers randomly assigned 224 patients to the treatment group and 227 to the control group.
 In this study, the control group provides a reference point against which we can measure the medical impact of stents in the treatment group.
 
-\clearpage
-
 Researchers studied the effect of stents at two time points: 30 days after enrollment and 365 days after enrollment.
 The results of 5 patients are summarized in @tbl-stentStudyResultsDF.
 Patient outcomes are recorded as `stroke` or `no event`, representing whether the patient had a stroke during that time period.
@@ -58,7 +56,7 @@ stent30_renamed <- stent30 |> rename(`30 days` = outcome)
 stent365_renamed <- stent365 |> rename(`365 days` = outcome)
 stent <- stent30_renamed |>
   select(-group) |>
-  bind_cols(stent365_renamed) |> 
+  bind_cols(stent365_renamed) |>
   relocate(group) |>
   mutate(
     group        = fct_rev(group),
@@ -66,14 +64,16 @@ stent <- stent30_renamed |>
     `365 days`   = fct_rev(`365 days`),
   )
 stent |>
-  sample_n(5) |> 
+  sample_n(5) |>
   arrange(group) |>
   mutate(patient = 1:n()) |>
   relocate(patient) |>
   kbl(linesep = "", booktabs = TRUE, align = "llll") |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"),
-                full_width = FALSE) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped"),
+    full_width = FALSE
+  ) |>
   column_spec(1:4, width = "8em")
 ```
 
@@ -89,20 +89,25 @@ To identify the number of control patients who did not have a stroke after 365 d
 #| tbl-cap: Descriptive statistics for the stent study.
 stent |>
   mutate(group = str_to_title(group)) |>
-  pivot_longer(cols = c(`30 days`, `365 days`), 
-               names_to = "stage", 
-               values_to = "outcome") |>
+  pivot_longer(
+    cols = c(`30 days`, `365 days`),
+    names_to = "stage",
+    values_to = "outcome"
+  ) |>
   count(group, stage, outcome) |>
   pivot_wider(names_from = c(stage, outcome), values_from = n) |>
   adorn_totals(where = "row") |>
-  kbl(linesep = "", booktabs = TRUE, 
-      col.names = c("Group", "Stroke", "No event", "Stroke", "No event")) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("Group", "Stroke", "No event", "Stroke", "No event")
+  ) |>
   add_header_above(c(" " = 1, "30 days" = 2, "365 days" = 2), extra_css = "border-bottom: 2px solid") |>
   row_spec(1, extra_css = "border-top: 2px solid") |>
   row_spec(3, extra_css = "border-top: 2px solid") |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"))
-
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped")
+  )
 ```
 
 ::: {.guidedpractice data-latex=""}
@@ -114,7 +119,7 @@ Using these two numbers, compute the proportion of patients in the treatment gro
 [^01-data-hello-1]: The proportion of the 224 patients who had a stroke within 365 days: $45/224 = 0.20.$
 
 We can compute summary statistics from the table to give us a better idea of how the impact of the stent treatment differed between the two groups.
-A **summary statistic** is a single number summarizing data from a sample.
+A **summary statistic** is a single number summarizing data from a sample.\index{summary statistic}
 For instance, the primary results of the study after 1 year could be described by two summary statistics: the proportion of people who had a stroke in the treatment and control groups.
 
 ```{r}
@@ -160,13 +165,13 @@ The [`loan50`](http://openintrostat.github.io/openintro/reference/loans_full_sch
 :::
 
 Each row in the table represents a single loan.
-The formal name for a row is a \index{case}**case** or \index{unit of observation}**observational unit**.
+The formal name for a row is a \index{case}**case** or \index{observation}**observation** or \index{unit of observation}**unit of observation**.
 The columns represent characteristics of each loan, where each column is referred to as a \index{variable}**variable**.
 For example, the first row represents a loan of \$22,000 with an interest rate of 10.90%, where the borrower is based in New Jersey (NJ) and has an income of \$59,000.
 
 ```{r}
 #| include: false
-terms_chp_1 <- c(terms_chp_1, "case", "observational unit", "variable")
+terms_chp_1 <- c(terms_chp_1, "case", "unit of observation", "observation", "variable")
 ```
 
 ::: {.guidedpractice data-latex=""}
@@ -184,13 +189,17 @@ Descriptions of the variables in the `loan50` dataset are given in @tbl-loan-50-
 ```{r}
 #| label: tbl-loan50-df
 #| tbl-cap: Six observations from the `loan50` dataset.
-loan50 |> 
+loan50 |>
   select(loan_amount, interest_rate, term, grade, state, total_income, homeownership) |>
   slice_head(n = 6) |>
-  kbl(linesep = "", booktabs = TRUE,
-      row.names = TRUE, format.args = list(big.mark = ",")) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"))
+  kbl(
+    linesep = "", booktabs = TRUE,
+    row.names = TRUE, format.args = list(big.mark = ",")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped")
+  )
 ```
 
 ```{r}
@@ -208,10 +217,15 @@ loan50_var_def <- tribble(
 )
 
 loan50_var_def |>
-  kbl(linesep = "", booktabs = TRUE, 
-      col.names = c("Variable", "Description")) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = TRUE) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("Variable", "Description")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped"),
+    full_width = FALSE
+  ) |>
   column_spec(1, monospace = TRUE) |>
   column_spec(2, width = "30em")
 ```
@@ -246,8 +260,6 @@ How might these data be organized in a data frame?[^01-data-hello-4]
 [^01-data-hello-4]: Each county may be viewed as a case, and there are eleven pieces of information recorded for each case.
     A table with 3,142 rows and 14 columns could hold these data, where each row represents a county and each column represents a particular piece of information.
 
-\clearpage
-
 The data described in the Guided Practice above represents the `county` dataset, which is shown as a data frame in @tbl-county-df.
 The variables as well as the variables in the dataset that did not fit in @tbl-county-df are described in @tbl-county-variables.
 
@@ -256,11 +268,15 @@ The variables as well as the variables in the dataset that did not fit in @tbl-c
 #| tbl-cap: Six observations and six variables from the `county` dataset.
 county |>
   select(name, state, pop2017, pop_change, unemployment_rate, median_edu) |>
-  slice_head(n = 6) |> 
-  kbl(linesep = "", booktabs = TRUE, 
-      format.args = list(big.mark = ",")) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"))
+  slice_head(n = 6) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    format.args = list(big.mark = ",")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped")
+  )
 ```
 
 ```{r}
@@ -279,17 +295,21 @@ county_var_def <- tribble(
   "multi_unit",        "Multi-unit rate: percent of housing units that are in multi-unit structures, 2006-2010.",
   "unemployment_rate", "Unemployment rate in 2017.",
   "metro",             "Whether the county contains a metropolitan area, taking one of the values yes or no.",
-  "median_edu",        "Median education level (2013-2017), taking one of the values below_hs, hs_diploma, some_college, or bachelors.", 
+  "median_edu",        "Median education level (2013-2017), taking one of the values below_hs, hs_diploma, some_college, or bachelors.",
   "per_capita_income", "Per capita (per person) income (2013-2017).",
   "median_hh_income",  "Median household income.",
   "smoking_ban",       "Describes the type of county-level smoking ban in place in 2010, taking one of the values none, partial, or comprehensive."
 )
 
 county_var_def |>
-  kbl(linesep = "", booktabs = TRUE, 
-      col.names = c("Variable", "Description")) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = TRUE) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("Variable", "Description")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped")
+  ) |>
   column_spec(1, monospace = TRUE) |>
   column_spec(2, width = "30em")
 ```
@@ -298,12 +318,12 @@ county_var_def |>
 The [`county`](http://openintrostat.github.io/usdata/reference/county.html) data can be found in the [**usdata**](http://openintrostat.github.io/usdata) R package.
 :::
 
-### Types of variables {variable-types}
+### Types of variables {#sec-variable-types}
 
 Examine the `unemployment_rate`, `pop2017`, `state`, and `median_edu` variables in the `county` dataset.
 Each of these variables is inherently different from the other three, yet some share certain characteristics.
 
-First consider `unemployment_rate`, which is said to be a \index{numerical variable}**numerical** variable since it can take a wide range of numerical values, and it is sensible to add, subtract, or take averages with those values.
+First consider `unemployment_rate`, which is said to be a \index{variable!numerical}**numerical** variable since it can take a wide range of numerical values, and it is sensible to add, subtract, or take averages with those values.
 On the other hand, we would not classify a variable reporting telephone area codes as numerical since the average, sum, and difference of area codes does not have any clear meaning.
 Instead, we would consider area codes as a categorical variable.
 
@@ -314,8 +334,8 @@ terms_chp_1 <- c(terms_chp_1, "numerical")
 
 The `pop2017` variable is also numerical, although it seems to be a little different than `unemployment_rate`.
 This variable of the population count can only take whole non-negative numbers (0, 1, 2, ...).
-For this reason, the population variable is said to be **discrete** since it can only take numerical values with jumps.
-On the other hand, the unemployment rate variable is said to be **continuous**.
+For this reason, the population variable is said to be **discrete**\index{variable!discrete} since it can only take numerical values with jumps.
+On the other hand, the unemployment rate variable is said to be **continuous**\index{variable!continuous}.
 
 ```{r}
 #| include: false
@@ -332,7 +352,7 @@ terms_chp_1 <- c(terms_chp_1, "categorical", "level")
 
 Finally, consider the `median_edu` variable, which describes the median education level of county residents and takes values `below_hs`, `hs_diploma`, `some_college`, or `bachelors` in each county.
 This variable seems to be a hybrid: it is a categorical variable, but the levels have a natural ordering.
-A variable with these properties is called an **ordinal** variable, while a regular categorical variable without this type of special ordering is called a **nominal** variable.
+A variable with these properties is called an **ordinal**\index{variable!ordinal} variable, while a regular categorical variable without this type of special ordering is called a **nominal**\index{variable!nominal} variable.
 To simplify analyses, any categorical variable in this book will be treated as a nominal (unordered) categorical variable (see @fig-variables).
 
 ```{r}
@@ -344,6 +364,7 @@ terms_chp_1 <- c(terms_chp_1, "ordinal", "nominal")
 #| label: fig-variables
 #| fig-cap: Breakdown of variables into their respective types.
 #| fig-asp: 0.5
+#| out.width: 70%
 #| fig-alt: |
 #|   Types of variables are broken down into numerical (which can be discrete
 #|   or continuous) and categorical (which can be ordinal or nominal).
@@ -403,7 +424,7 @@ Classify each variable as either numerical or categorical?[^01-data-hello-5]
 [^01-data-hello-5]: The `group` variable can take just one of two group names, making it categorical.
     The `num_migraines` variable describes a count of the number of migraines, which is an outcome where basic arithmetic is sensible, which means this is a numerical outcome; more specifically, since it represents a count, `num_migraines` is a discrete numerical variable.
 
-### Relationships between variables {variable-relations}
+### Relationships between variables {#sec-variable-relations}
 
 Many analyses are motivated by a researcher looking for a relationship between two or more variables.
 A social scientist may like to answer some of the following questions:
@@ -434,7 +455,7 @@ We might brainstorm as to why this relationship exists and investigate each idea
 #| fig-alt: A scatterplot of homeownership (on the y-axis) versus the percent of
 #|   housing units that are in multi-unit structures (on the x-axis) for US
 #|   counties. The observation from Chattahoochee County, Georgia
-#|   is highlighted as having a multi-unit rate of 39.4% and a 
+#|   is highlighted as having a multi-unit rate of 39.4% and a
 #|   homeownership rate of 31.3%
 ggplot(county, aes(x = multi_unit, y = homeownership)) +
   geom_point(alpha = 0.3, fill = IMSCOL["black", "full"], shape = 21) +
@@ -442,24 +463,36 @@ ggplot(county, aes(x = multi_unit, y = homeownership)) +
     x = "Percent of housing units in that are multi-unit structures",
     y = "Homeownership rate"
   ) +
-  geom_point(data = county |> filter(name == "Chattahoochee County"), 
-             size = 3, stroke = 2, color = IMSCOL["red", "full"], shape = 1) +
-  geom_text(data = county |> filter(name == "Chattahoochee County"),
-            label = "Chattahoochee County", fontface = "italic",
-            nudge_x = 21, nudge_y = -5, color = IMSCOL["red", "full"]) +
+  geom_point(
+    data = county |> filter(name == "Chattahoochee County"),
+    size = 3, stroke = 2, color = IMSCOL["red", "full"], shape = 1
+  ) +
+  geom_text(
+    data = county |> filter(name == "Chattahoochee County"),
+    label = "Chattahoochee County", fontface = "italic",
+    nudge_x = 21, nudge_y = -5, color = IMSCOL["red", "full"]
+  ) +
   guides(color = FALSE) +
-  geom_segment(data = county |> filter(name == "Chattahoochee County"),
-               aes(x = 0, y = homeownership, xend = multi_unit, yend = homeownership, 
-                   color = IMSCOL["red", "full"]), linetype = "dashed") +
-  geom_segment(data = county |> filter(name == "Chattahoochee County"),
-               aes(x = multi_unit, y = 0, xend = multi_unit, yend = homeownership, 
-                   color = IMSCOL["red", "full"]), linetype = "dashed") +
+  geom_segment(
+    data = county |> filter(name == "Chattahoochee County"),
+    aes(
+      x = 0, y = homeownership, xend = multi_unit, yend = homeownership,
+      color = IMSCOL["red", "full"]
+    ), linetype = "dashed"
+  ) +
+  geom_segment(
+    data = county |> filter(name == "Chattahoochee County"),
+    aes(
+      x = multi_unit, y = 0, xend = multi_unit, yend = homeownership,
+      color = IMSCOL["red", "full"]
+    ), linetype = "dashed"
+  ) +
   scale_x_continuous(labels = percent_format(scale = 1)) +
   scale_y_continuous(labels = percent_format(scale = 1))
 ```
 
 The multi-unit and homeownership rates are said to be associated because the plot shows a discernible pattern.
-When two variables show some connection with one another, they are called **associated** variables.
+When two variables show some connection with one another, they are called **associated**\index{association} variables.
 
 ```{r}
 #| include: false
@@ -491,7 +524,7 @@ Since there is some relationship between the variables, they are associated.
 #|   against median household income.
 #|   Owsley County of Kentucky is highlighted, which lost 3.63% of its population from
 #|   2010 to 2017 and had median household income of $22,736.
-#| fig-alt: A scatterplot showing population change (on the y-axis)  
+#| fig-alt: A scatterplot showing population change (on the y-axis)
 #|   against median household income (on the x-axis).
 #|   Owsley County of Kentucky is highlighted, which lost 3.63% of its population from
 #|   2010 to 2017 and had median household income of $22,736.
@@ -501,34 +534,46 @@ ggplot(county, aes(x = median_hh_income, y = pop_change)) +
     x = "Median household income",
     y = "Population change over 7 years"
   ) +
-  geom_point(data = county |> filter(name == "Owsley County"), 
-             size = 3, stroke = 2, color = IMSCOL["red", "full"], shape = 1) +
+  geom_point(
+    data = county |> filter(name == "Owsley County"),
+    size = 3, stroke = 2, color = IMSCOL["red", "full"], shape = 1
+  ) +
   guides(color = FALSE) +
-  geom_text(data = county |> filter(name == "Owsley County"),
-            label = "Owsley\nCounty", fontface = "italic",
-            nudge_x = -2000, nudge_y = 10, color = IMSCOL["red", "full"],
-            hjust = 1) +
-  geom_segment(data = county |> filter(name == "Owsley County"),
-               aes(x = 0, y = pop_change, 
-                   xend = median_hh_income, yend = pop_change, 
-                   color = IMSCOL["red", "full"]), linetype = "dashed") +
-  geom_segment(data = county |> filter(name == "Owsley County"),
-               aes(x = median_hh_income, y = -40, 
-                   xend = median_hh_income, yend = pop_change, 
-                   color = IMSCOL["red", "full"]), linetype = "dashed") +
+  geom_text(
+    data = county |> filter(name == "Owsley County"),
+    label = "Owsley\nCounty", fontface = "italic",
+    nudge_x = -2000, nudge_y = 10, color = IMSCOL["red", "full"],
+    hjust = 1
+  ) +
+  geom_segment(
+    data = county |> filter(name == "Owsley County"),
+    aes(
+      x = 0, y = pop_change,
+      xend = median_hh_income, yend = pop_change,
+      color = IMSCOL["red", "full"]
+    ), linetype = "dashed"
+  ) +
+  geom_segment(
+    data = county |> filter(name == "Owsley County"),
+    aes(
+      x = median_hh_income, y = -40,
+      xend = median_hh_income, yend = pop_change,
+      color = IMSCOL["red", "full"]
+    ), linetype = "dashed"
+  ) +
   scale_x_continuous(labels = dollar_format(scale = 0.001, suffix = "K")) +
   scale_y_continuous(labels = percent_format(scale = 1), limits = c(-40, 40))
 ```
 
-Because there is a downward trend in @fig-county-multi-unit-homeownership -- counties with more housing units that are in multi-unit structures are associated with lower homeownership -- these variables are said to be **negatively associated**.
-A **positive association** is shown in the relationship between the `median_hh_income` and `pop_change` variables in @fig-county-pop-change-med-hh-income, where counties with higher median household income tend to have higher rates of population growth.
+Because there is a downward trend in @fig-county-multi-unit-homeownership -- counties with more housing units that are in multi-unit structures are associated with lower homeownership -- these variables are said to be **negatively associated**\index{association}.
+A **positive association**\index{association} is shown in the relationship between the `median_hh_income` and `pop_change` variables in @fig-county-pop-change-med-hh-income, where counties with higher median household income tend to have higher rates of population growth.
 
 ```{r}
 #| include: false
 terms_chp_1 <- c(terms_chp_1, "positive association", "negative association")
 ```
 
-If two variables are not associated, then they are said to be **independent**.
+If two variables are not associated, then they are said to be **independent**\index{independence}.
 That is, two variables are independent if there is no evident relationship between the two.
 
 ```{r}
@@ -551,7 +596,7 @@ Consider the following rephrasing of an earlier question about the `county` data
 > If there is an increase in the median household income in a county, does this drive an increase in its population?
 
 In this question, we are asking whether one variable affects another.
-If this is our underlying belief, then *median household income* is the **explanatory variable**, and the *population change* is the **response variable** in the hypothesized relationship.[^01-data-hello-7]
+If this is our underlying belief, then *median household income* is the **explanatory variable**\index{explanatory variable}, and the *population change* is the **response variable**\index{response variable} in the hypothesized relationship.[^01-data-hello-7]
 
 [^01-data-hello-7]: In some disciplines, it's customary to refer to the explanatory variable as the **independent variable** and the response variable as the **dependent variable**.
     However, this becomes confusing since a *pair* of variables might be independent or dependent, so we avoid this language.
@@ -579,13 +624,13 @@ A formal evaluation to check whether one variable causes a change in another req
 
 There are two primary types of data collection: experiments and observational studies.
 
-When researchers want to evaluate the effect of particular traits, treatments, or conditions, they conduct an **experiment**.
+When researchers want to evaluate the effect of particular traits, treatments, or conditions, they conduct an **experiment**\index{study!experiment}.
 For instance, we may suspect drinking a high-calorie energy drink will improve performance in a race.
 To check if there really is a causal relationship between the explanatory variable (whether the runner drank an energy drink or not) and the response variable (the race time), researchers identify a sample of individuals and split them into groups.
 The individuals in each group are *assigned* a treatment.
-When individuals are randomly assigned to a group, the experiment is called a **randomized experiment**.
+When individuals are randomly assigned to a group, the experiment is called a **randomized experiment**\index{study!randomized experiment}.
 Random assignment organizes the participants in a study into groups that are roughly equal on all aspects, thus allowing us to control for any confounding variables that might affect the outcome (e.g., fitness level, racing experience, etc.). (See @sec-principles-experimental-design for more information on confounding variables.)
-For example, each runner in the experiment could be randomly assigned, perhaps by flipping a coin, into one of two groups: the first group receives a **placebo** (fake treatment, in this case a no-calorie drink) and the second group receives the high-calorie energy drink.
+For example, each runner in the experiment could be randomly assigned, perhaps by flipping a coin, into one of two groups: the first group receives a **placebo**\index{placebo} (fake treatment, in this case a no-calorie drink) and the second group receives the high-calorie energy drink.
 See the case study in @sec-case-study-stents-strokes for another example of an experiment, though that study did not employ a placebo.
 
 ```{r}
@@ -593,8 +638,8 @@ See the case study in @sec-case-study-stents-strokes for another example of an e
 terms_chp_1 <- c(terms_chp_1, "experiment", "randomized experiment", "placebo")
 ```
 
-Researchers perform an **observational study** when they collect data in a way that does not directly interfere with how the data arise.
-For instance, researchers may collect information via surveys, review medical or company records, or follow a **cohort** of many similar individuals to form hypotheses about why certain diseases might develop.
+Researchers perform an **observational study**\index{study!observational} when they collect data in a way that does not directly interfere with how the data arise.
+For instance, researchers may collect information via surveys, review medical or company records, or follow a **cohort**\index{cohort} of many similar individuals to form hypotheses about why certain diseases might develop.
 In each of these situations, researchers merely observe the data that arise.
 In general, observational studies can provide evidence of a naturally occurring association between variables, but they cannot by themselves show a causal connection as they do not offer a mechanism for controlling for confounding variables. (See @sec-principles-experimental-design for more information on confounding variables.)
 
@@ -620,17 +665,19 @@ We revisit ideas of confounding when we discuss experiments in @sec-principles-e
 
 This chapter introduced you to the world of data.
 Data can be organized in many ways but tidy data, where each row represents an observation and each column represents a variable, lends itself most easily to statistical analysis.
-Many of the ideas from this chapter will be seen as we move on to doing full data analyses.
+Many of the ideas from this chapter will be revisited as we move on to doing end-to-end data analyses.
 In the next chapter you're going to learn about how we can design studies to collect the data we need to make conclusions with the desired scope of inference.
 
 ### Terms
 
-We introduced the following terms in the chapter.
+The terms introduced in this chapter are presented in @tbl-terms-chp-1.
 If you're not sure what some of these terms mean, we recommend you go back in the text and review their definitions.
-We are purposefully presenting them in alphabetical order, instead of in order of appearance, so they will be a little more challenging to locate.
-However, you should be able to easily spot them as **bolded text**.
+You should be able to easily spot them as **bolded text**.
 
 ```{r}
+#| label: tbl-terms-chp-1
+#| tbl-cap: Terms introduced in this chapter.
+#| tbl-pos: H
 make_terms_table(terms_chp_1)
 ```
 

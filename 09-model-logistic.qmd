@@ -34,6 +34,8 @@ Finally, they randomly assigned a name to each resume, where the name would impl
 The [`resume`](http://openintrostat.github.io/openintro/reference/resume.html) data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
 :::
 
+\clearpage
+
 The first names that were used and randomly assigned in the experiment were selected so that they would predominantly be recognized as belonging to Black or White individuals; other races were not considered in the study.
 While no name would definitively be inferred as pertaining to a Black individual or to a White individual, the researchers conducted a survey to check for racial association of the names; names that did not pass the survey check were excluded from usage in the experiment.
 You can find the full set of names that did pass the survey test and were ultimately used in the study in @tbl-resume-names.
@@ -42,46 +44,52 @@ For example, Lakisha was a name that their survey indicated would be interpreted
 ```{r}
 #| label: tbl-resume-names
 #| tbl-cap: |
-#|   List of all 36 unique names along with the commonly inferred 
+#|   List of all 36 unique names along with the commonly inferred
 #|   race and sex associated with these names.
-
-resume_names_full <- resume |> 
-  select(firstname, race, gender) |> 
-  distinct(firstname, .keep_all = TRUE) |> 
+#| tbl-pos: H
+resume_names_full <- resume |>
+  select(firstname, race, gender) |>
+  distinct(firstname, .keep_all = TRUE) |>
   arrange(firstname) |>
-  rownames_to_column() |> 
+  rownames_to_column() |>
   mutate(
-    rowname = as.numeric(rowname), 
+    rowname = as.numeric(rowname),
     column = cut(rowname, breaks = c(0, 12, 24, 36)),
     race = str_to_title(race),
     sex = if_else(gender == "f", "female", "male"),
     column = as.numeric(column)
-    ) |>
+  ) |>
   select(-rowname, -gender) |>
   relocate(column)
 
-resume_names_1 <- resume_names_full |> 
+resume_names_1 <- resume_names_full |>
   filter(column == 1) |>
   select(-column)
 
-resume_names_2 <- resume_names_full |> 
+resume_names_2 <- resume_names_full |>
   filter(column == 2) |>
   select(-column)
 
-resume_names_3 <- resume_names_full |> 
+resume_names_3 <- resume_names_full |>
   filter(column == 3) |>
   select(-column)
 
 resume_names_1 |>
   bind_cols(resume_names_2) |>
   bind_cols(resume_names_3) |>
-  kbl(linesep = "", booktabs = TRUE, align = "lllllllll", 
-      col.names = c("first_name", "race", "sex",
-                    "first_name", "race", "sex",
-                    "first_name", "race", "sex")) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE) |>
-  column_spec(4, border_left = T) |> 
+  kbl(
+    linesep = "", booktabs = TRUE, align = "lllllllll",
+    col.names = c(
+      "first_name", "race", "sex",
+      "first_name", "race", "sex",
+      "first_name", "race", "sex"
+    )
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped"), full_width = FALSE
+  ) |>
+  column_spec(4, border_left = T) |>
   column_spec(7, border_left = T)
 ```
 
@@ -98,9 +106,11 @@ resume <- resume |>
     military = as.factor(military),
     has_email_address = as.factor(has_email_address),
     race = if_else(race == "black", "Black", "White")
-    ) |>
-  select(received_callback, job_city, college_degree, years_experience,
-         honors, military, has_email_address, race, sex)
+  ) |>
+  select(
+    received_callback, job_city, college_degree, years_experience,
+    honors, military, has_email_address, race, sex
+  )
 ```
 
 The response variable of interest is whether there was a callback from the employer for the applicant, and there were 8 attributes that were randomly assigned that we'll consider, with special interest in the race and sex variables.
@@ -110,11 +120,11 @@ The full set of attributes considered is provided in @tbl-resume-variables.
 ```{r}
 #| label: tbl-resume-variables
 #| tbl-cap: |
-#|   Descriptions of nine variables from the `resume` dataset. Many 
-#|   of the variables are indicator variables, meaning they take 
-#|   the value 1 if the specified characteristic is present and 
+#|   Descriptions of nine variables from the `resume` dataset. Many
+#|   of the variables are indicator variables, meaning they take
+#|   the value 1 if the specified characteristic is present and
 #|   0 otherwise.
-
+#| tbl-pos: H
 resume_variables <- tribble(
   ~variable,           ~description,
   "received_callback", "Specifies whether the employer called the applicant following submission of the application for the job.",
@@ -130,15 +140,21 @@ resume_variables <- tribble(
 
 resume_variables |>
   kbl(linesep = "", booktabs = TRUE) |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = TRUE) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped"), full_width = TRUE
+  ) |>
   column_spec(1, monospace = TRUE) |>
   column_spec(2, width = "30em")
 ```
 
+\clearpage
+
 All of the attributes listed on each resume were randomly assigned, which means that no attributes that might be favorable or detrimental to employment would favor one demographic over another on these resumes.
 Importantly, due to the experimental nature of the study, we can infer causation between these variables and the callback rate, if substantial differences are found.
 Our analysis will allow us to compare the practical importance of each of the variables relative to each other.
+
+\vspace{10mm}
 
 ## Modelling the probability of an event {#sec-modelingTheProbabilityOfAnEvent}
 
@@ -179,6 +195,8 @@ $$
 logit(p_i) = \log_{e}\left( \frac{p_i}{1-p_i} \right)
 $$
 
+\clearpage
+
 The logit transformation is shown in Figure @fig-logit-transformation.
 Below, we rewrite the equation relating $Y_i$ to its predictors using the logit transformation of $p_i$:
 
@@ -211,9 +229,9 @@ logit_df_point <- tibble(
     label = glue::glue("({lp}, {p})"),
     label_pos = case_when(
       lp %in% c(-5, -3, 4, 6) ~ "above",
-      lp %in% c(-4, 3, 5)     ~ "below",
-      lp == -2                ~ "right",
-      lp %in% c(-1, 0, 1, 2)  ~ "left",
+      lp %in% c(-4, 3, 5) ~ "below",
+      lp == -2 ~ "right",
+      lp %in% c(-1, 0, 1, 2) ~ "left",
     )
   )
 
@@ -222,19 +240,29 @@ ggplot(logit_df_line, aes(x = lp, y = p)) +
   geom_hline(yintercept = 1, linetype = "dashed", color = IMSCOL["blue", "full"]) +
   geom_smooth(se = FALSE, size = 0.5) +
   coord_cartesian(
-    xlim = c(-5.5, 6.15), 
+    xlim = c(-5.5, 6.15),
     ylim = c(-0.05, 1.1)
   ) +
-  geom_point(data = logit_df_point, shape = "circle open", 
-             size = 3, color = IMSCOL["red", "full"], stroke = 2) +
-  geom_text(data = logit_df_point |> filter(label_pos == "above"), 
-            aes(label = label), vjust = -2) +
-  geom_text(data = logit_df_point |> filter(label_pos == "below"), 
-            aes(label = label), vjust = 2.5) +
-  geom_text(data = logit_df_point |> filter(label_pos == "right"), 
-            aes(label = label), hjust = -0.25) +
-  geom_text(data = logit_df_point |> filter(label_pos == "left"), 
-            aes(label = label), hjust = 1.25) +
+  geom_point(
+    data = logit_df_point, shape = "circle open",
+    size = 3, color = IMSCOL["red", "full"], stroke = 2
+  ) +
+  geom_text(
+    data = logit_df_point |> filter(label_pos == "above"),
+    aes(label = label), vjust = -2
+  ) +
+  geom_text(
+    data = logit_df_point |> filter(label_pos == "below"),
+    aes(label = label), vjust = 2.5
+  ) +
+  geom_text(
+    data = logit_df_point |> filter(label_pos == "right"),
+    aes(label = label), hjust = -0.25
+  ) +
+  geom_text(
+    data = logit_df_point |> filter(label_pos == "left"),
+    aes(label = label), hjust = 1.25
+  ) +
   labs(
     x = expression(logit(p[i])),
     y = expression(p[i])
@@ -261,6 +289,8 @@ $$
 
 As with most applied data problems, we substitute in the point estimates (the observed $b_i$) to calculate relevant probabilities.
 
+\vspace{5mm}
+
 ::: {.workedexample data-latex=""}
 We start by fitting a model with a single predictor: `honors`.
 This variable indicates whether the applicant had any type of honors listed on their resume, such as employee of the month.
@@ -269,15 +299,19 @@ A logistic regression model was fit using statistical software and the following
 $$\log_e \left( \frac{\widehat{p}_i}{1-\widehat{p}_i} \right) = -2.4998 + 0.8668 \times {\texttt{honors}}$$
 
 a.  If a resume is randomly selected from the study and it does not have any honors listed, what is the probability it resulted in a callback?
+
 b.  What would the probability be if the resume did list some honors?
 
 ------------------------------------------------------------------------
 
 a.  If a randomly chosen resume from those sent out is considered, and it does not list honors, then `honors` takes the value of 0 and the right side of the model equation equals -2.4998. Solving for $p_i$: $\frac{e^{-2.4998}}{1 + e^{-2.4998}} = 0.076$. Just as we labeled a fitted value of $y_i$ with a "hat" in single-variable and multiple regression, we do the same for this probability: $\hat{p}_i = 0.076{}$.
+
 b.  If the resume had listed some honors, then the right side of the model equation is $-2.4998 + 0.8668 \times 1 = -1.6330$, which corresponds to a probability $\hat{p}_i = 0.163$. Notice that we could examine -2.4998 and -1.6330 in Figure @fig-logit-transformation to estimate the probability before formally calculating the value.
 :::
 
 While knowing whether a resume listed honors provides some signal when predicting whether the employer would call, we would like to account for many different variables at once to understand how each of the different resume characteristics affected the chance of a callback.
+
+\clearpage
 
 ## Logistic model with many variables
 
@@ -287,21 +321,24 @@ Like multiple regression, the result may be presented in a summary table, which 
 ```{r}
 #| label: tbl-resume-full-fit
 #| tbl-cap: |
-#|   Summary table for the full logistic regression model for the 
+#|   Summary table for the full logistic regression model for the
 #|   resume callback example.
-
+#| tbl-pos: H
 resume_full_fit <- logistic_reg() |>
-  set_engine("glm") |>
   fit(received_callback ~ job_city + college_degree + years_experience + honors + military + has_email_address + race + sex, data = resume, family = "binomial")
 
 resume_full_fit |>
   tidy() |>
   mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
-  kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrrr") |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) |>
-  column_spec(1, width = "15em", monospace = TRUE) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    digits = 2, align = "lrrrrr"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped")
+  ) |>
+  column_spec(1, width = "10em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -319,48 +356,55 @@ It is important to note that AIC provides information about the quality of a mod
 ```{r}
 #| label: tbl-resume-full-fit-aic
 #| tbl-cap: |
-#|   AIC for the full logistic regression model fit to the full 
+#|   AIC for the full logistic regression model fit to the full
 #|   resume callback example.
-
+#| tbl-pos: H
 resume_full_fit <- logistic_reg() |>
-  set_engine("glm") |>
   fit(received_callback ~ job_city + college_degree + years_experience + honors + military + has_email_address + race + sex, data = resume, family = "binomial")
 
 resume_full_fit |>
   glance() |>
   select(AIC, number_observations = nobs) |>
-  kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "rr") |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"),
-                full_width = FALSE) |>
-  column_spec(1:2, width = "10em", monospace = TRUE) 
+  kbl(
+    linesep = "", booktabs = TRUE,
+    digits = 2, align = "rr"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped"),
+    full_width = FALSE
+  ) |>
+  column_spec(1:2, width = "10em", monospace = TRUE)
 ```
 
-
 We will look for models with a lower AIC using a backward elimination strategy.  @tbl-resume-fit-aic provides the AIC values for the model with variables as given in @tbl-resume-fit.  Notice that the same number of observations are used, but one fewer variable (`college_degree` is dropped from the model).
+
+\clearpage
 
 ```{r}
 #| label: tbl-resume-fit-aic
 #| tbl-cap: |
-#|   AIC for the logistic regression model fit to the 
+#|   AIC for the logistic regression model fit to the
 #|   resume callback example without `college_degree`.
-
 resume_fit <- logistic_reg() |>
-  set_engine("glm") |>
   fit(received_callback ~ job_city + years_experience + honors + military + has_email_address + race + sex, data = resume, family = "binomial")
 
 resume_fit |>
   glance() |>
-  select(AIC,number_observations = nobs) |>
-  kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "rrr") |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"),
-                full_width = FALSE) |>
-  column_spec(1:2, width = "10em", monospace = TRUE) 
+  select(AIC, number_observations = nobs) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    digits = 2, align = "rrr"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped"),
+    full_width = FALSE
+  ) |>
+  column_spec(1:2, width = "10em", monospace = TRUE)
 ```
 
+\vspace{5mm}
 
 After using the AIC criteria, the variable `college_degree` is eliminated (the AIC value without `college_degree` is smaller than the AIC value on the full model), giving the model summarized in @tbl-resume-fit with fewer variables, which is what we'll rely on for the remainder of the section.
 
@@ -369,27 +413,34 @@ After using the AIC criteria, the variable `college_degree` is eliminated (the A
 terms_chp_09 <- c(terms_chp_09, "Akaike information criterion")
 ```
 
+\vspace{5mm}
+
 ```{r}
 #| label: tbl-resume-fit
 #| tbl-cap: |
-#|   Summary table for the logistic regression model for the resume 
-#|   callback example, where variable selection has been performed 
+#|   Summary table for the logistic regression model for the resume
+#|   callback example, where variable selection has been performed
 #|   using AIC and `college_degree` has been dropped from the model.
-
+#| tbl-pos: H
 resume_fit <- logistic_reg() |>
-  set_engine("glm") |>
   fit(received_callback ~ job_city + years_experience + honors + military + has_email_address + race + sex, data = resume, family = "binomial")
 
 resume_fit |>
   tidy() |>
   mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
-  kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrrr") |>
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) |>
-  column_spec(1, width = "17em", monospace = TRUE) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    digits = 2, align = "lrrrrr"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped")
+  ) |>
+  column_spec(1, width = "10em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
+
+\vspace{5mm}
 
 ::: {.workedexample data-latex=""}
 The `race` variable had taken only two levels: `Black` and `White`.
@@ -402,9 +453,13 @@ The positive coefficient reflects a positive gain in callback rate for resumes w
 The model results suggest that prospective employers favor resumes where the first name is typically interpreted to be White.
 :::
 
+\vspace{5mm}
+
 The coefficient of $\texttt{race}_{\texttt{White}}$ in the full model in @tbl-resume-full-fit, is nearly identical to the model shown in @tbl-resume-fit.
 The predictors in the experiment were thoughtfully laid out so that the coefficient estimates would typically not be much influenced by which other predictors were in the model, which aligned with the motivation of the study to tease out which effects were important to getting a callback.
 In most observational data, it's common for point estimates to change a little, and sometimes a lot, depending on which other variables are included in the model.
+
+\clearpage
 
 ::: {.workedexample data-latex=""}
 Use the model summarized in @tbl-resume-fit to estimate the probability of receiving a callback for a job in Chicago where the candidate lists 14 years experience, no honors, no military experience, includes an email address, and has a first name that implies they are a White male.
@@ -415,11 +470,10 @@ We can start by writing out the equation using the coefficients from the model:
 
 $$
 \begin{aligned}
-&log_e \left(\frac{\widehat{p}}{1 - \widehat{p}}\right) \\
-&= - 2.7162 - 0.4364 \times \texttt{job\_city}_{\texttt{Chicago}} \\
-& \quad \quad + 0.0206 \times \texttt{years\_experience} \\
-& \quad \quad + 0.7634 \times \texttt{honors} - 0.3443 \times \texttt{military} + 0.2221 \times \texttt{email} \\
-& \quad \quad + 0.4429 \times \texttt{race}_{\texttt{White}} - 0.1959 \times \texttt{sex}_{\texttt{man}} 
+log_e \left(\frac{\widehat{p}}{1 - \widehat{p}}\right) &= - 2.7162 - 0.4364 \times \texttt{job\_city}_{\texttt{Chicago}} \\
+& \quad + 0.0206 \times \texttt{years\_experience} \\
+& \quad + 0.7634 \times \texttt{honors} - 0.3443 \times \texttt{military} + 0.2221 \times \texttt{email} \\
+& \quad + 0.4429 \times \texttt{race}_{\texttt{White}} - 0.1959 \times \texttt{sex}_{\texttt{man}} 
 \end{aligned}
 $$
 
@@ -427,8 +481,7 @@ Now we can add in the corresponding values of each variable for the individual o
 
 $$
 \begin{aligned}
-&log_e \left(\frac{\widehat{p}}{1 - \widehat{p}}\right) \\
-&\quad= - 2.7162 - 0.4364 \times 1 + 0.0206 \times 14 \\
+log_e \left(\frac{\widehat{p}}{1 - \widehat{p}}\right) &\quad= - 2.7162 - 0.4364 \times 1 + 0.0206 \times 14 \\
 &\quad \quad + 0.7634 \times 0 - 0.3443 \times 0 + 0.2221 \times 1 \\
 &\quad \quad + 0.4429 \times 1 - 0.1959 \times 1 = - 2.3955  
 \end{aligned}
@@ -436,8 +489,6 @@ $$
 
 We can now back-solve for $\widehat{p}$: the chance such an individual will receive a callback is about $\frac{e^{-2.3955}}{1 + e^{-2.3955}} = 0.0835.$
 :::
-
-\vspace{-4mm}
 
 ::: {.workedexample data-latex=""}
 Compute the probability of a callback for an individual with a name commonly inferred to be from a Black male but who otherwise has the same characteristics as the one described in the previous example.
@@ -452,18 +503,18 @@ In practical terms, an individual perceived as White based on their first name w
 That is, applicants who are perceived as Black need to apply to 50% more employers to receive a callback than someone who is perceived as White based on their first name for jobs like those in the study.
 :::
 
-\vspace{-4mm}
-
 What we have quantified in the current section is alarming and disturbing.
 However, one aspect that makes the racism so difficult to address is that the experiment, as well-designed as it is, cannot send us much signal about which employers are discriminating.
 It is only possible to say that discrimination is happening, even if we cannot say which particular callbacks --- or non-callbacks --- represent discrimination.
 Finding strong evidence of racism for individual cases is a persistent challenge in enforcing anti-discrimination laws.
 
+\clearpage
+
 ## Groups of different sizes
 
 Any form of discrimination is concerning, which is why we decided it was so important to discuss the topic using data.
 The resume study also only examined discrimination in a single aspect: whether a prospective employer would call a candidate who submitted their resume.
-There was a 50% higher barrier for resumes simply when the candidate had a first name that was perceived to be from a Black individual.
+There was a 50% higher barrier for resumes simply when the candidate had a first name that was perceived to be of a Black individual.
 It's unlikely that discrimination would stop there.
 
 ::: {.workedexample data-latex=""}
@@ -471,9 +522,7 @@ Let's consider a sex-imbalanced company that consists of 20% women and 80% men, 
 (A more deliberate example would include more inclusive gender identities.) Suppose when someone goes up for promotion at the company, 5 of their colleagues are randomly chosen to provide feedback on their work.
 
 Now let's imagine that 10% of the people in the company are prejudiced against the other sex.
-That is, 10% of men are prejudiced against women, and similarly, 10% of women are prejudiced against men.
-
-Who is discriminated against more at the company, men or women?
+That is, 10% of men are prejudiced against women, and similarly, 10% of women are prejudiced against men. Who is discriminated against more at the company, men or women?
 
 ------------------------------------------------------------------------
 
@@ -514,12 +563,14 @@ Logistic model fit and variable selection can be carried out in similar ways as 
 
 ### Terms
 
-We introduced the following terms in the chapter.
+The terms introduced in this chapter are presented in @tbl-terms-chp-09.
 If you're not sure what some of these terms mean, we recommend you go back in the text and review their definitions.
-We are purposefully presenting them in alphabetical order, instead of in order of appearance, so they will be a little more challenging to locate.
-However, you should be able to easily spot them as **bolded text**.
+You should be able to easily spot them as **bolded text**.
 
 ```{r}
+#| label: tbl-terms-chp-09
+#| tbl-cap: Terms introduced in this chapter.
+#| tbl-pos: H
 make_terms_table(terms_chp_09)
 ```
 
@@ -532,3 +583,4 @@ Answers to odd-numbered exercises can be found in [Appendix -@sec-exercise-solut
 ::: {.exercises data-latex=""}
 {{< include exercises/_09-ex-model-logistic.qmd >}}
 :::
+

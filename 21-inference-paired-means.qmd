@@ -24,7 +24,6 @@ However, because the observational unit is **paired** across the two groups, the
 #| tbl-cap: |
 #|   Examples of studies where a paired design is used to measure the
 #|   difference in the measurement over two conditions.
-
 paired_study_examples <- tribble(
   ~variable, ~col1, ~col2, ~col3,
   "Car", "Smooth Turn vs Quick Spin", "amount of tire tread after 1,000 miles", "difference in tread",
@@ -39,7 +38,8 @@ paired_study_examples |>
   ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position"), full_width = TRUE
+    latex_options = c("striped", "hold_position"), 
+    full_width = FALSE
   ) |>
   column_spec(1:3, width = "8em")
 ```
@@ -164,13 +164,13 @@ In the first randomization, it just so happens that the 4th car's tire brands we
 ```{r}
 #| label: fig-tiredata4
 #| fig-cap: |
-#|   "The 4th car: the tire brand was randomly permuted, and in the randomization
-#|   calculation, the measurements (in cm) ended up in different groups."
+#|   The 4th car: the tire brand was randomly permuted, and in the randomization
+#|   calculation, the measurements (in cm) ended up in different groups.
 #| fig-alt: |
 #|   Line plot connecting the tread for the 4th car in the dataset. The first
 #|   plot is the original data and the second plot is the permuted data where
 #|   the groups happened to get permuted randomly.
-
+#| fig-asp: 0.4
 set.seed(47)
 permdata <- tires |>
   group_by(car) |>
@@ -232,14 +232,14 @@ origplot4 + shuffbrand4
 ```{r}
 #| label: fig-tiredata5
 #| fig-cap: |
-#|   "The 5th car: the tire brand was randomly permuted to stay the same! In the
+#|   The 5th car: the tire brand was randomly permuted to stay the same! In the
 #|   randomization calculation, the measurements (in cm) ended up in the
-#|   original groups."
+#|   original groups.
 #| fig-alt: |
 #|   Line plot connecting the tread for the 5th car in the dataset. The first
 #|   plot is the original data and the second plot is the permuted data where
 #|   the groups happened to stay connected to the original measurements.
-
+#| fig-asp: 0.4
 origplot5 <- tires |>
   filter(car == "car 5") |>
   ggplot(aes(
@@ -293,15 +293,17 @@ shuffbrand5 <- permdata |>
 origplot5 + shuffbrand5
 ```
 
-We can put the shuffled assignments for all the cars into one plot as seen in @fig-tiredataPerm.
+We can put the shuffled assignments for all the cars into one plot as seen in @fig-tiredataPerm-2.
 
 ```{r}
 #| label: fig-tiredataPerm
 #| fig-cap: |
-#|   "Tire tread data (in cm) with: the brand of tire from which the original
-#|   measurements came (left) and shuffled brand assignment (right). As
-#|   evidenced by the colors, some of the cars kept their original tire
-#|   assignments and some cars swapped the tire assignments."
+#|   Tire tread (in cm) by brand, original and shuffled. As evidenced by the 
+#|   colors, some of the cars kept their original tire assignments and some 
+#|   cars swapped the tire assignments.
+#| fig-subcap:
+#|   - Brand of tire is the original brand.
+#|   - Brand of tire is the shuffled brand assignment.
 #| fig-alt: |
 #|   Line plot connecting the tread for the all of the cars in the
 #|   dataset. The first plot is the original data and the second plot is
@@ -309,7 +311,8 @@ We can put the shuffled assignments for all the cars into one plot as seen in @f
 #|   original tread measurements and some of the brands have been swapped
 #|   across the two tread measurements, within a car.
 #| out-width: 100%
-
+#| layout-ncol: 2
+#| fig-asp: 0.7
 origplot <- tires |>
   ggplot(aes(
     x = brand, y = tread,
@@ -355,18 +358,21 @@ shuffbrand <- permdata |>
     color = NULL, shape = NULL
   )
 
-origplot + shuffbrand
+origplot
+shuffbrand
 ```
 
 The next step in the randomization test is to sort the brands so that the assigned brand value on the x-axis aligns with the assigned group from the randomization.
-See @fig-tiredataPermSort which has the same randomized groups (right image in @fig-tiredataPerm and left image in @fig-tiredataPermSort) as seen previously.
-However, the right image in @fig-tiredataPermSort sorts the randomized groups so that we can measure the variability across groups as compared to the variability within groups.
+See @fig-tiredataPermSort-1 shows the same randomized groups, as seen in @fig-tiredataPerm-2 previously.
+However, @fig-tiredataPermSort-2 sorts the randomized groups so that we can measure the variability across groups as compared to the variability within groups.
 
 ```{r}
 #| label: fig-tiredataPermSort
 #| fig-cap: |
-#|   Tire tread from (left) randomized brand assignment, (right) sorted
-#|   by randomized brand.
+#|   Tire tread (in cm) by brand.
+#| fig-subcap:
+#|   - Randomized brand assignment
+#|   - Randomized brand assignment sorted by brand.
 #| out-width: 100%
 #| fig-alt: |
 #|   Scatterplot of tread on the y axis and tire brand on the
@@ -379,7 +385,8 @@ However, the right image in @fig-tiredataPermSort sorts the randomized groups so
 #|   the permuted tire brand assigned in the randomization. In the
 #|   right panel, the two tire brands seem equivalent with respect
 #|   to tire wear.
-
+#| layout-ncol: 2
+#| fig-asp: 0.7
 permed_means <- permdata |>
   group_by(random_brand) |>
   summarize(mean_tread = round(mean(tread), 4)) |>
@@ -411,7 +418,8 @@ shuffbrandfull <- permdata |>
   ) +
   scale_color_manual(values = c(IMSCOL["blue", "full"], IMSCOL["red", "full"]))
 
-shuffbrand + shuffbrandfull
+shuffbrand
+shuffbrandfull
 ```
 
 @fig-tiredatarand1 presents a second randomization of the data.
@@ -630,7 +638,7 @@ The bootstrap SE interval is found by computing the SE of the bootstrapped diffe
 
 The confidence intervals seem to indicate that the UCLA bookstore price is, on average, higher than the Amazon price, as the majority of the confidence interval is positive.
 However, if the analysis required a strong degree of certainty (e.g., 99% confidence), and the bootstrap SE interval was most appropriate (given a second course in statistics the nuances of the methods can be investigated), the results of which book seller is higher is not well determined (because the bootstrap SE interval overlaps zero).
-That is, the 99% bootstrap SE interval gives potential for UCLA to be lower, on average, than Amazon (because of the possible negative values for the true mean difference in price).
+That is, the 99% bootstrap SE interval gives potential for UCLA bookstore to be lower, on average, than Amazon (because of the possible negative values for the true mean difference in price).
 
 ```{r}
 #| label: fig-pairboot
@@ -645,7 +653,6 @@ That is, the 99% bootstrap SE interval gives potential for UCLA to be lower, on 
 #|   the distribution is given at approximately $3.75. Two bootstrap
 #|   intervals are given. The percentile interval is approximately $0.25
 #|   to $8.50. The SE interval is approximately -$0.50 to $7.75.
-
 diff_price <- ucla_textbooks_f18 |>
   select(subject, course_num, bookstore_new, amazon_new) |>
   mutate(price_diff = bookstore_new - amazon_new) |>
@@ -669,19 +676,20 @@ ci_se_diff <- boot_diff |>
     level = 0.99, type = "se",
     point_estimate = diff_price
   )
+
 boot_diff |>
   infer::visualize(bins = 20) +
   infer::shade_confidence_interval(ci_perc_diff,
     color = IMSCOL["blue", "full"],
-    fill = NULL, size = 1, linetype = "dashed"
+    fill = NULL, linewidth = 1, linetype = "dashed"
   ) +
   infer::shade_confidence_interval(ci_se_diff,
     color = IMSCOL["red", "full"],
-    fill = NULL, size = 1, linetype = "dotted"
+    fill = NULL, linewidth = 1, linetype = "dotted"
   ) +
-  geom_vline(xintercept = diff_price$stat, size = 1) +
-  geom_line(aes(y = replicate, x = stat, color = "a", linetype = "a"), alpha = 0, size = 1) + # bogus code
-  geom_line(aes(y = replicate, x = stat, color = "b", linetype = "b"), alpha = 0, size = 1) + # bogus code
+  geom_vline(xintercept = diff_price$stat, linewidth = 1) +
+  geom_line(aes(y = replicate, x = stat, color = "a", linetype = "a"), alpha = 0, linewidth = 1) + # bogus code
+  geom_line(aes(y = replicate, x = stat, color = "b", linetype = "b"), alpha = 0, linewidth = 1) + # bogus code
   geom_line(aes(y = replicate, x = stat, color = "c", linetype = "c"), alpha = 0) + # bogus code
   ylim(c(0, 200)) +
   guides(color = guide_legend(override.aes = list(alpha = 1))) +
@@ -728,11 +736,12 @@ The first difference shown in @tbl-textbooksDF is computed as $47.97 - 47.45 = 0
 
 ```{r}
 #| label: fig-diffInTextbookPricesF18
-#| fig-cap: Histogram of the difference in price for each book sampled.
+#| fig-cap: Histogram of the differences in prices for each book sampled.
 #| fig-alt: |
-#|   Histogram of the difference in price for each book samples,
-#|   UCLA minus Amazon. The prices range from -$10 to $80 with a strong
-#|   right skew.
+#|   Histogram of the differences in prices for each book samples,
+#|   UCLA minus Amazon. The prices differences range from -$10 to $80 with a 
+#|   strong right skew.
+#| fig-asp: 0.5
 ucla_textbooks_f18 <- ucla_textbooks_f18 |>
   select(subject, course_num, bookstore_new, amazon_new) |>
   filter(!is.na(bookstore_new), !is.na(amazon_new)) |>
@@ -838,14 +847,15 @@ To visualize the p-value, the sampling distribution of $\bar{x}_{diff}$ is drawn
 The degrees of freedom is $df = 68 - 1 = 67.$ Using statistical software, we find the one-tail area of 0.0156.
 
 ```{r}
-#| label: fig-textbooksF18HTTails
-#| fig-asp: 0.5
+#| label: textbooksF18HTTails
 #| out-width: 60%
+#| fig-asp: 0.4
 m <- mean(ucla_textbooks_f18$price_diff)
 s <- sd(ucla_textbooks_f18$price_diff)
 se <- s / sqrt(length(ucla_textbooks_f18$price_diff))
 z <- m / se
 
+par(mar = c(2, 0, 0, 0))
 normTail(
   L = -abs(m),
   U = abs(m),
@@ -861,7 +871,8 @@ axis(1, at, labels, cex.axis = 0.9)
 
 Doubling this area gives the p-value: 0.0312.
 Because the p-value is less than 0.05, we reject the null hypothesis.
-Amazon prices are, on average, lower than the UCLA Bookstore prices for UCLA courses.
+The data provide evidence that Amazon prices are different, on average, 
+than the UCLA Bookstore prices for UCLA courses.
 :::
 
 Recall that the margin of error is defined by the standard error.
@@ -929,12 +940,14 @@ The procedure for creating a confidence interval for the paired difference is al
 
 ### Terms
 
-We introduced the following terms in the chapter.
+The terms introduced in this chapter are presented in @tbl-terms-chp-21.
 If you're not sure what some of these terms mean, we recommend you go back in the text and review their definitions.
-We are purposefully presenting them in alphabetical order, instead of in order of appearance, so they will be a little more challenging to locate.
-However, you should be able to easily spot them as **bolded text**.
+You should be able to easily spot them as **bolded text**.
 
 ```{r}
+#| label: tbl-terms-chp-21
+#| tbl-cap: Terms introduced in this chapter.
+#| tbl-pos: H
 make_terms_table(terms_chp_21)
 ```
 
