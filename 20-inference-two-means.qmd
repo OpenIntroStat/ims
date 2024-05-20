@@ -43,6 +43,7 @@ Summary statistics for how students performed on these two exams are shown in @t
 ```{r}
 #| label: tbl-summaryStatsForTwoVersionsOfExams
 #| tbl-cap: Summary statistics of scores for each exam version.
+#| tbl-pos: H
 classdata <- classdata |>
   filter(lecture %in% c("a", "b")) |>
   mutate(
@@ -66,7 +67,7 @@ classdata |>
   ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position"), full_width = FALSE
+    latex_options = c("striped"), full_width = FALSE
   ) |>
   column_spec(1:5, width = "5em")
 ```
@@ -118,8 +119,6 @@ There is only one iteration of the randomization process in @fig-rand2means, lea
 #| fig-cap: |
 #|   The version of the test (A or B) is randomly allocated to the test scores,
 #|   under the null assumption that the tests are equally difficult.
-#| warning: false
-#| out-width: 75%
 #| fig-alt: |
 #|   Four panels representing four different orientations of a toy dataset of
 #|   9 exam scores. The first panel provides the observed data; 4 of the exams were
@@ -130,7 +129,9 @@ There is only one iteration of the randomization process in @fig-rand2means, lea
 #|   is connected with which new reassigned version of the exam. And the fourth panel
 #|   sorts the exams so that version A exams are together and version B exams are
 #|   together. In the randomly reassigned versions, the average score for
-#|   version A is 74.25 and the average score for version B is 78.2, a difference of -3.95.
+#|   version A is 74.25 and the average score for version B is 78.2, a difference 
+#|   of -3.95.
+#| out-width: 75%
 include_graphics("images/rand2means.png")
 ```
 
@@ -174,7 +175,6 @@ By plotting the value of 3.1 on @fig-randexamspval, we can measure how different
 #|   Histogram of differences in means, calculated from 1,000 different randomizations
 #|   of the exam types. The observed difference of 3.1 points is plotted as a vertical
 #|   line, and the area more extreme than 3.1 is shaded to represent the p-value.
-
 stat_2means <- classdata |>
   specify(m1 ~ exam) |>
   calculate(stat = "diff in means", order = c("A", "B"))
@@ -206,18 +206,6 @@ To get the p-value, we double the proportion of randomized differences which are
 Previously, we specified that we would use $\alpha = 0.01.$ Since the p-value is larger than $\alpha,$ we do not reject the null hypothesis.
 That is, the data do not convincingly show that one exam version is more difficult than the other, and the teacher should not be convinced that they should add points to the Version B exam scores.
 :::
-
-```{r}
-#| echo: false
-#| eval: false
-set.seed(47)
-classdata |>
-  specify(m1 ~ exam) |>
-  hypothesize(null = "independence") |>
-  generate(reps = 1000, type = "permute") |>
-  calculate(stat = "diff in means", order = c("A", "B")) |>
-  get_p_value(obs_stat = stat_2means, direction = "two-sided")
-```
 
 The large p-value and consistency of $\bar{x}_A - \bar{x}_B=3.1$ with the randomized differences leads us to *not reject the null hypothesis*.
 Said differently, there is no evidence to think that one of the tests is easier than the other.
@@ -252,8 +240,6 @@ terms_chp_20 <- c(terms_chp_20, "difference in means")
 #|   on each group, but the statistic is calculated as a difference. The set of
 #|   k differences is then analyzed as the statistic of interest with
 #|   conclusions drawn on the parameter of interest.
-#| warning: false
-#| out-width: 75%
 #| fig-alt: |
 #|   Samples are shown as separately coming from two independent, large, unknown
 #|   populations. Direcly from each of the two observed samples, bootstrap
@@ -262,6 +248,7 @@ terms_chp_20 <- c(terms_chp_20, "difference in means")
 #|   in bootstrapped averages. A histogram of differences in bootstrapped
 #|   averages displays the differences ranging from roughly -20000 dollars to
 #|   +10000 dollars.
+#| out-width: 80%
 include_graphics("images/bootmeans2means.png")
 ```
 
@@ -283,7 +270,7 @@ The [`stem_cell`](http://openintrostat.github.io/openintro/reference/stem_cell.h
 ```{r}
 #| label: tbl-statsSheepEscStudy
 #| tbl-cap: Summary statistics of the embryonic stem cell study.
-
+#| tbl-pos: H
 stem_cell <- openintro::stem_cell |>
   mutate(
     trmt = if_else(trmt == "ctrl", "Control", "ESC"),
@@ -305,10 +292,12 @@ stem_cell |>
   ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position"), full_width = FALSE
+    latex_options = c("striped"), full_width = FALSE
   ) |>
   column_spec(1:4, width = "6em")
 ```
+
+\clearpage
 
 The point estimate of the difference in the heart pumping variable is straightforward to find: it is the difference in the sample means.
 
@@ -320,7 +309,7 @@ As we saw in @sec-two-prop-boot-ci, we will use bootstrapping to estimate the va
 In a method akin to two proportions, a *separate* sample is taken with replacement from each group (here ESCs and control), the sample means are calculated, and their difference is taken.
 The entire process is repeated multiple times to produce a bootstrap distribution of the difference in sample means (*without* the null hypothesis assumption).
 
-@fig-bootexamsci displays the variability of the differences in means with the 90% percentile and SE CIs super imposed.
+@fig-bootexamsci displays the variability of the differences in means with the 90% percentile and SE confidence intevals super imposed.
 
 ```{r}
 #| label: fig-bootexamsci
@@ -328,14 +317,14 @@ The entire process is repeated multiple times to produce a bootstrap distributio
 #|   Histogram of differences in means after 1,000 bootstrap samples from each
 #|   of the two groups. The observed difference is plotted as a black vertical line at
 #|   7.83. The blue dashed and red dotted lines provide the bootstrap percentile and
-#|   boostrap SE confidence intervals, respectively, for the difference in true population
-#|   means.
+#|   boostrap SE confidence intervals, respectively, for the difference in true 
+#|   population means.
 #| fig-alt: |
 #|   Histogram of differences in means after 1,000 bootstrap samples from each
 #|   of the two groups. The observed difference is plotted as a black vertical line at
 #|   7.83. The blue dashed and red dotted lines provide the bootstrap percentile and
-#|   boostrap SE confidence intervals, respectively, for the difference in true population
-#|   means.
+#|   boostrap SE confidence intervals, respectively, for the difference in true
+#|   population means.
 set.seed(470)
 
 boot_2mean <- stem_cell |>
@@ -425,7 +414,7 @@ The `weight` variable represents the weights of the newborns and the `smoke` var
 ```{r}
 #| label: tbl-babySmokeDF
 #| tbl-cap: Four cases from the `births14` dataset. The emoty cells indicate missing data.
-
+#| tbl-pos: H
 births14 |>
   select(-premie, -mature, -lowbirthweight, -whitemom, -marital) |>
   head(4) |>
@@ -435,7 +424,7 @@ births14 |>
   ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position")
+    latex_options = c("striped")
   )
 ```
 
@@ -453,12 +442,15 @@ The null hypothesis represents the case of no difference between the groups.
 -   $H_A:$ There is some difference in average newborn weights from mothers who did and did not smoke $(\mu_{n} - \mu_{s} \neq 0).$
 :::
 
+\vspace{-2mm}
+
 @tbl-births14-summary-stats displays sample statistics from the data.
 We can see that the average birth weight of babies born to smoker moms is lower than those born to nonsmoker moms.
 
 ```{r}
 #| label: tbl-births14-summary-stats
 #| tbl-cap: Summary statistics for the `births14` dataset.
+#| tbl-pos: H
 births14_nona <- births14 |>
   filter(
     !is.na(habit), !is.na(weight)
@@ -495,7 +487,7 @@ births14_sample_stats |>
   ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position"), full_width = FALSE
+    latex_options = c("striped"), full_width = FALSE
   ) |>
   column_spec(1:4, width = "7em")
 ```
@@ -509,6 +501,8 @@ We check the two conditions necessary to model the difference in sample means us
 
 Since both conditions are satisfied, the difference in sample means may be modeled using a $t$-distribution.
 
+\vspace{-2mm}
+
 ```{r}
 #| label: fig-babySmokePlotOfTwoGroupsToExamineSkew
 #| fig-cap: |
@@ -519,15 +513,18 @@ Since both conditions are satisfied, the difference in sample means may be model
 #|   The top panel represents birth weights for infants whose mothers smoked during
 #|   pregnancy. The bottom panel represents the birth weights for infants whose mothers
 #|   who did not smoke during pregnancy.
-
+#| fig-asp: 0.35
+#| out-width: 100%
 births14_nona |>
   mutate(habit = fct_rev(if_else(habit == "smoker", "Mothers who smoked", "Mothers who did not smoke"))) |>
   ggplot(aes(x = weight)) +
   geom_histogram(binwidth = 1) +
-  facet_wrap(~habit, ncol = 1, scales = "free_y") +
+  facet_wrap(~habit, ncol = 2, scales = "free_y") +
   scale_x_continuous(breaks = seq(0, 10, 2), limits = c(0, 10)) +
   labs(x = "Newborn weights (lbs)", y = "Count")
 ```
+
+\clearpage
 
 ::: {.guidedpractice data-latex=""}
 The summary statistics in @tbl-births14-summary-stats may be useful for this Guided Practice.
@@ -565,7 +562,7 @@ terms_chp_20 <- c(terms_chp_20, "T score", "t-test")
 Compute the standard error of the point estimate for the average difference between the weights of babies born to nonsmoker and smoker mothers.[^20-inference-two-means-5]
 :::
 
-[^20-inference-two-means-5]: $SE(\bar{x}_{n} - \bar{x}_{s}) = \sqrt{s^2_{n}/ n_{n} + s^2_{s}/n_{s}}\\ = \sqrt{1.23^2/867 + 1.60^2/114} = 0.16$
+[^20-inference-two-means-5]: $SE(\bar{x}_{n} - \bar{x}_{s}) = \sqrt{s^2_{n}/ n_{n} + s^2_{s}/n_{s}} = \sqrt{1.23^2/867 + 1.60^2/114} = 0.16$
 
 ::: {.workedexample data-latex=""}
 Complete the hypothesis test started in the previous Example and Guided Practice on `births14` dataset and research question.
@@ -580,9 +577,11 @@ $$T = \frac{\ `r xbar_difference` - 0\ }{`r se_difference`} = `r t_difference`$$
 We find the single tail area using software.
 We'll use the smaller of $n_n - 1 = `r n_nonsmoker-1`$ and $n_s - 1 = `r n_smoker-1`$ as the degrees of freedom: $df = `r df_difference`.$ The one tail area is roughly 0.00017; doubling this value gives the two-tail area and p-value, 0.00034.
 
-The p-value is much smaller than the discernibility level, 0.05, so we reject the null hypothesis.
-The data provide is convincing evidence of a difference in the average weights of babies born to mothers who smoked during pregnancy and those who did not.
+The p-value is smaller than the discernibility level, 0.05, so we reject the null hypothesis.
+The data provide statistically discernible evidence of a difference in the average weights of babies born to mothers who smoked during pregnancy and those who did not.
 :::
+
+\clearpage
 
 This result is likely not surprising.
 We all know that smoking is bad for you and you've probably also heard that smoking during pregnancy is not just bad for the mother but also for the baby as well.
@@ -595,7 +594,7 @@ Furthermore, health differences between babies born to mothers who smoke and tho
 [^20-inference-two-means-6]: You can watch an episode of John Oliver on [*Last Week Tonight*](youtu.be/6UsHHOCH4q8) to explore the present day offenses of the tobacco industry.
     Please be aware that there is some adult language.
 
-A small note on the power of the independent t-test (recall the discussion of power in @sec-pow). It turns out that the independent t-test given here is often less powerful than the paired t-test discussed in @sec-mathpaired.  That said, depending on how the data are collected, we don't always have mechanism for pairing the data and reducing the inherent variability across observations.
+A small note on the power of the independent t-test (recall the discussion of power in @sec-pow). It turns out that the independent t-test given here is often less powerful than the paired t-test discussed in @sec-mathpaired. That said, depending on how the data are collected, we don't always have mechanism for pairing the data and reducing the inherent variability across observations.
 
 ## Mathematical model for estimating the difference in means
 
@@ -626,6 +625,8 @@ $$SE = \sqrt{\frac{\sigma_1^2}{n_1} + \frac{\sigma_2^2}{n_2}}$$
 
 The official formula for the degrees of freedom is quite complex and is generally computed using software, so instead you may use the smaller of $n_1 - 1$ and $n_2 - 1$ for the degrees of freedom if software isn't readily available.
 :::
+
+\clearpage
 
 Recall that the margin of error is defined by the standard error.
 The margin of error for $\bar{x}_1 - \bar{x}_2$ can be directly obtained from $SE(\bar{x}_1 - \bar{x}_2).$
@@ -670,7 +671,6 @@ With both conditions met, we can use the $t$-distribution to model the differenc
 #|   Histograms for the difference in heart pumping function after a heart attack
 #|   for both the treatment group (ESC, which received an the embryonic stem cell
 #|   treatment) and the control group (which did not receive the treatment).
-
 stem_cell |>
   ggplot(aes(x = change)) +
   geom_histogram(binwidth = 2.5) +
@@ -681,6 +681,8 @@ stem_cell |>
     y = "Count"
   )
 ```
+
+\clearpage
 
 Generally, we use statistical software to find the appropriate degrees of freedom, or if software isn't available, we can use the smaller of $n_1 - 1$ and $n_2 - 1$ for the degrees of freedom, e.g., if using a $t$-table to find tail areas.
 For transparency in the Examples and Guided Practice, we'll use the latter approach for finding $df$; in the case of the ESC example, this means we'll use $df = 8.$
