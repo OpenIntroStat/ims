@@ -5,6 +5,8 @@
 source("_common.R")
 ```
 
+\vspace{-10mm}
+
 ## Case study: Mario Kart {#sec-case-study-mario-cart}
 
 In this case study, we consider Ebay auctions of a video game called *Mario Kart* for the Nintendo Wii.
@@ -24,26 +26,28 @@ Notice that the condition and stock photo variables are **indicator variables**\
 
 ```{r}
 #| label: tbl-mariokart-data-frame
-#| tbl-cap: 'Top four rows of the `mariokart` dataset.'
-mariokart <- mariokart %>%
-  mutate(price = total_pr, cond_new = forcats::fct_rev(cond)) %>%
+#| tbl-cap: Top four rows of the `mariokart` dataset.
+#| tbl-pos: H
+mariokart <- mariokart |>
+  mutate(price = total_pr, cond_new = forcats::fct_rev(cond)) |>
   filter(price < 100)
 
-mariokart %>%
-  select(price, cond_new, stock_photo, duration, wheels) %>%
-  slice_head(n = 4) %>%
-  kbl(linesep = "", booktabs = TRUE, 
-      row.names = FALSE, align = "ccccc") %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"),
-                full_width = FALSE) %>%
+mariokart |>
+  select(price, cond_new, stock_photo, duration, wheels) |>
+  slice_head(n = 4) |>
+  kbl(linesep = "", booktabs = TRUE, row.names = FALSE, align = "ccccc") |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"), 
+    latex_options = c("striped"),
+    full_width = FALSE
+  ) |>
   column_spec(1:5, width = "7em")
 ```
 
 ```{r}
 #| label: tbl-mariokart-var-def
-#| tbl-cap: 'Variables and their descriptions for the 
-#|   `mariokart` dataset.'
+#| tbl-cap: Variables and their descriptions for the `mariokart` dataset.
+#| tbl-pos: H
 mariokart_var_def <- tribble(
   ~variable, ~description,
   "price", "Final auction price plus shipping costs, in US dollars.",
@@ -53,17 +57,14 @@ mariokart_var_def <- tribble(
   "wheels", "The number of Wii wheels included with the auction. A Wii wheel is an optional steering wheel accessory that holds the Wii controller."
 )
 
-mariokart_var_def %>%
-  kbl(
-    linesep = "", booktabs = TRUE, 
-    col.names = c("Variable", "Description")
-  ) %>%
+mariokart_var_def |>
+  kbl(linesep = "", booktabs = TRUE, col.names = c("Variable", "Description")) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position"), 
+    latex_options = c("striped"), 
     full_width = TRUE
-  ) %>%
-  column_spec(1, monospace = TRUE) %>%
+  ) |>
+  column_spec(1, monospace = TRUE) |>
   column_spec(2, width = "30em")
 ```
 
@@ -77,25 +78,23 @@ Results of the model are summarized below:
 
 ```{r}
 #| label: tbl-mariokart-model-output
-#| tbl-cap: 'Summary of a linear model for predicting 
-#|    `price` based on `cond_new`.'
-mariokart <- mariokart %>%
-  mutate(cond_new = ifelse(cond_new == "used", 0 , 1),
-         stock_photo = ifelse(stock_photo == "yes", 1, 0)) 
+#| tbl-cap: Summary of a linear model for predicting `price` based on `cond_new`.
+#| tbl-pos: H
+mariokart <- mariokart |>
+  mutate(
+    cond_new = ifelse(cond_new == "used", 0 , 1),
+    stock_photo = ifelse(stock_photo == "yes", 1, 0)
+  )
 
-mariokart %>%
-  lm(price ~ cond_new, data = .) %>% 
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(
-    linesep = "", booktabs = TRUE,
-    digits = 2, align = "lrrrr"
-  ) %>%
+lm(price ~ cond_new, data = mariokart) |> 
+  tidy() |>
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
+  kbl(linesep = "", booktabs = TRUE, digits = 2, align = "lrrrr") |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position")
-  ) %>%
-  column_spec(1, width = "10em", monospace = TRUE) %>%
+    latex_options = c("striped")
+  ) |>
+  column_spec(1, width = "10em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -115,13 +114,7 @@ We would like to fit a model that includes all potentially important variables s
 We want to construct a model that accounts for not only the game condition but simultaneously accounts for three other variables:
 
 $$
-\begin{aligned}
-E[\texttt{price}]
-    = \beta_0 &+ \beta_1\times \texttt{cond\_new}\\
-    &+ \beta_2\times \texttt{stock\_photo} \\
-    &+ \beta_3 \times  \texttt{duration}\\
-    &+ \beta_4 \times  \texttt{wheels}
-\end{aligned}
+E[\texttt{price}] = \beta_0 + \beta_1 \times \texttt{cond\_new} + \beta_2\times \texttt{stock\_photo} + \beta_3 \times \texttt{duration} + \beta_4 \times  \texttt{wheels}
 $$
 
 @tbl-mariokart-full-model-output summarizes the full model.
@@ -129,22 +122,19 @@ Using the output, we identify the point estimates of each coefficient and the co
 
 ```{r}
 #| label: tbl-mariokart-full-model-output
-#| tbl-cap: 'Summary of a linear model for predicting 
-#|    `price` based on `cond_new`, `stock_photo`, `duration`, 
-#|    and `wheels`.'
-mariokart %>%
-  lm(price ~ cond_new + stock_photo + duration + wheels, data = .) %>% 
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(
-    linesep = "", booktabs = TRUE,
-    digits = 2, align = "lrrrr"
-  ) %>%
+#| tbl-cap: |
+#|   Summary of a linear model for predicting `price` based on `cond_new`,
+#|   `stock_photo`, `duration`, and `wheels`.
+#| tbl-pos: H
+lm(price ~ cond_new + stock_photo + duration + wheels, data = mariokart) |> 
+  tidy() |>
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
+  kbl(linesep = "", booktabs = TRUE, digits = 2, align = "lrrrr") |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position")
-  ) %>%
-  column_spec(1, width = "10em", monospace = TRUE) %>%
+    latex_options = c("striped")
+  ) |>
+  column_spec(1, width = "10em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -156,6 +146,8 @@ How many coefficients are estimated?[^27-inf-model-applications-2]
 
 [^27-inf-model-applications-2]: $\widehat{\texttt{price}} = 36.21 + 5.13 \times \texttt{cond\_new} + 1.08 \times \texttt{stock\_photo} - 0.03 \times \texttt{duration} + 7.29 \times \texttt{wheels},$ with 4 predictors but 5 coefficients (including the intercept).
 
+\vspace{-3mm}
+
 ::: {.guidedpractice data-latex=""}
 What does $\beta_4,$ the coefficient of variable $x_4$ (Wii wheels), represent?
 What is the point estimate of $\beta_4?$[^27-inf-model-applications-3]
@@ -164,11 +156,15 @@ What is the point estimate of $\beta_4?$[^27-inf-model-applications-3]
 [^27-inf-model-applications-3]: In the population of all auctions, it is the average difference in auction price for each additional Wii wheel included when holding the other variables constant.
     The point estimate is $b_4 = 7.29$
 
+\vspace{-3mm}
+
 ::: {.guidedpractice data-latex=""}
 Compute the residual of the first observation in @tbl-mariokart-data-frame using the equation identified in @tbl-mariokart-full-model-output.[^27-inf-model-applications-4]
 :::
 
 [^27-inf-model-applications-4]: $e_i = y_i - \hat{y_i} = 51.55 - 49.62 = 1.93$.
+
+\vspace{-3mm}
 
 ::: {.workedexample data-latex=""}
 In @tbl-mariokart-model-output, we estimated a coefficient for `cond_new` in of $b_1 = 10.90$ with a standard error of $SE_{b_1} = 1.26$ when using simple linear regression.
@@ -182,7 +178,7 @@ That model was biased by the confounding variable `wheels`.
 When we use both variables, this particular underlying and unintentional bias is reduced or eliminated (though bias from other confounding variables may still remain).
 :::
 
-\clearpage
+\vspace{-5mm}
 
 ### Computational approach to linear models
 
@@ -190,19 +186,23 @@ Previously, using a mathematical model, we investigated the coefficients associa
 
 ```{r}
 #| label: fig-mariokart-rand-dist
-#| fig-cap: 'Estimated slopes from linear models (`price` regressed on `cond_new`) 
+#| fig-cap: |
+#|   Estimated slopes from linear models (`price` regressed on `cond_new`) 
 #|   built on 1,000 randomized datasets. Each dataset was permuted under the 
-#|   null hypothesis.'
-#| fig-alt: Estimated slopes from linear models (of price regressed on cond_new) 
+#|   null hypothesis.
+#| fig-alt: |
+#|   Estimated slopes from linear models (of price regressed on cond_new) 
 #|   built on 1,000 randomized datasets. Each dataset was permuted under the 
-#|   null hypothesis. The randomized slopes range from about -5 to +5, and the observed
-#|   slope value is 10.9 which is not near the distribution of randomized slopes.
+#|   null hypothesis. The randomized slopes range from about -5 to +5, and the
+#|   observed slope value is 10.9 which is not near the distribution of 
+#|   randomized slopes.
+#| fig-asp: 0.5
 set.seed(47)
-mariokart %>%
-  specify(price ~ cond_new) %>%
-  hypothesize(null = "independence") %>%
-  generate(reps = 1000, type = "permute") %>%
-  calculate(stat = "slope") %>%
+mariokart |>
+  specify(price ~ cond_new) |>
+  hypothesize(null = "independence") |>
+  generate(reps = 1000, type = "permute") |>
+  calculate(stat = "slope") |>
   ggplot(aes(x = stat)) +
   geom_histogram(binwidth = 0.5, fill = IMSCOL["green", "full"]) +
   labs(
@@ -228,7 +228,7 @@ So the slope describing the actual observed relationship is not one that is like
 :::
 
 ::: {.guidedpractice data-latex=""}
-Using the histogram in @fig-mariokart-rand-dist, find the p-value and conclude the hypothesis test in the context of the problem (use words like price of the game and whether it is new).[^27-inf-model-applications-5]
+Using the histogram in @fig-mariokart-rand-dist, find the p-value and conclude the hypothesis test in the context of the problem.[^27-inf-model-applications-5]
 :::
 
 [^27-inf-model-applications-5]: The observed slope is 10.9 which is nowhere near the range of values for the permuted slopes (roughly -5 to +5).
@@ -243,23 +243,29 @@ Explain.[^27-inf-model-applications-6]
 [^27-inf-model-applications-6]: The p-value in @tbl-mariokart-model-output is also essentially zero, so the null hypothesis is also rejected when the mathematical model approach is taken.
     Often, the mathematical and computational approaches to inference will give quite similar answers.
 
+\vspace{-5mm}
+
 Although knowing there is a relationship between the condition of the game and its price, we might be more interested in the difference in price, here given by the slope of the linear regression line.
 That is, $\beta_1$ represents the population value for the difference in price between new *Mario Kart* games and used games.
 
 ```{r}
 #| label: fig-mariokart-boot-dist
-#| fig-cap: 'Estimated slopes from linear models (`price` regressed on `cond_new`) 
-#|   built on 1000 bootstrapped datasets. Each bootstrap dataset was a resample 
-#|   taken from the original Mario Kart auction data.'
-#| fig-alt: 'Estimated slopes from linear models (of price regressed on cond new) 
-#|   built on 1000 bootstrapped datasets. Each bootstrap dataset was a resample 
-#|   taken from the original Mario Kart auction data. The histogram of the boostrapped
-#|   slopes is bell-shaped, symmetric, and centered around the observed value of 10.9'
+#| fig-cap: |
+#|   Estimated slopes from linear models (`price` regressed on `cond_new`) 
+#|   built on 1,000 bootstrapped datasets. Each bootstrap sample was
+#|   taken from the original Mario Kart auction data.
+#| fig-alt: |
+#|   Estimated slopes from linear models (of price regressed on cond new) 
+#|   built on 1,000 bootstrapped datasets. Each bootstrap sample was 
+#|   taken from the original Mario Kart auction data. The histogram of the
+#|   boostrapped slopes is bell-shaped, symmetric, and centered around the 
+#|   observed value of 10.9.
+#| fig-asp: 0.5
 set.seed(47)
-mariokart %>%
-  specify(price ~ cond_new) %>%
-  generate(reps = 1000, type = "bootstrap") %>%
-  calculate(stat = "slope") %>%
+mariokart |>
+  specify(price ~ cond_new) |>
+  generate(reps = 1000, type = "bootstrap") |>
+  calculate(stat = "slope") |>
   ggplot(aes(x = stat)) +
   geom_histogram(binwidth = 0.5, fill = IMSCOL["green", "full"]) +
   labs(
@@ -296,7 +302,7 @@ Use @fig-mariokart-boot-dist to create a 90% bootstrap percentile confidence int
 Interpret the interval in context.[^27-inf-model-applications-8]
 :::
 
-[^27-inf-model-applications-8]: Because there were 1000 bootstrap resamples, we look for the cutoffs which provide 50 bootstrap slopes on the left, 900 in the middle, and 50 on the right.
+[^27-inf-model-applications-8]: Because there were 1,000 bootstrap resamples, we look for the cutoffs which provide 50 bootstrap slopes on the left, 900 in the middle, and 50 on the right.
     Looking at the bootstrap histogram, the rough 95% confidence interval is \$9 to \$13.10.
     For games that are new, the average price is higher by between \$9.00 and \$13.10 than games that are used, with 90% confidence.
 
@@ -310,22 +316,27 @@ Note that each time 1/3 of the data is removed, the resulting model will produce
 
 The points in @fig-mariokart-cv-residuals represent the prediction (x-axis) and residual (y-axis) for each observation run through the cross-validated model.
 In other words, the model is built (using the other 2/3) without the observation (which is in the 1/3) being used.
-The residuals give us a sense for how well the model will do at predicting observations which were not a part of the original dataset (e.g., future studies).
+The residuals give us a sense for how well the model will do at predicting observations which were not a part of the original dataset, e.g., future studies.
 
 ```{r}
 #| label: fig-mariokart-cv-residuals
 #| fig-cap: |
 #|   Cross-validation predictions and errors from linear models built on 
-#|   two different sets of variables. Left `price` is regressed on `cond_new`; 
-#|   right `price` is regressed on `cond_new`, `stock_photo`, `duration`, and `wheels`.
+#|   two different sets of variables.
+#| fig-subcap: 
+#|   - "`price` vs. `cond_new`"
+#|   - "`price` vs. `cond_new`, `stock_photo`, `duration`, and `wheels`"
 #| fig-alt: |
 #|   Cross-validation predictions and errors from linear models built on 
 #|   two different sets of variables. Left regressed price on cond new; 
-#|   right regressed price on cond new, stock photo, duration, and wheels.  For each
-#|   of the two models, the x-axis plots the predicted value and the y-axis plots the
-#|   prediction error. More variables lead to smaller prediction errors.
+#|   right regressed price on cond new, stock photo, duration, and wheels. For 
+#|   each of the two models, the x-axis plots the predicted value and the 
+#|   y-axis plots the prediction error. More variables lead to smaller 
+#|   prediction errors.
 #| out-width: 100%
-#| fig-width: 8.0
+#| layout-ncol: 2
+#| fig-width: 5
+#| fig-asp: 0.7
 set.seed(4)
 mario_CV1 <- train(price ~ cond_new,
   data = mariokart,
@@ -347,24 +358,24 @@ mario_CV2 <- train(price ~ cond_new + stock_photo + duration + wheels,
   )
 )
 
-SSE_CV1 <- mario_CV1$pred %>%
-  mutate(resid = obs - pred) %>%
-  select(resid) %>%
+SSE_CV1 <- mario_CV1$pred |>
+  mutate(resid = obs - pred) |>
+  select(resid) |>
   pull() %>%
-  `^`(2) %>%
-  sum() %>%
+  `^`(2) |>
+  sum() |>
   round(2)
 
-SSE_CV2 <- mario_CV2$pred %>%
-  mutate(resid = obs - pred) %>%
-  select(resid) %>%
+SSE_CV2 <- mario_CV2$pred |>
+  mutate(resid = obs - pred) |>
+  select(resid) |>
   pull() %>%
-  `^`(2) %>%
-  sum() %>%
+  `^`(2) |>
+  sum() |>
   round(2)
 
-p1 <- mario_CV1$pred %>%
-  mutate(resid = obs - pred) %>%
+mario_CV1$pred |>
+  mutate(resid = obs - pred) |>
   ggplot() +
   geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample)) +
   geom_rug(aes(y = resid)) +
@@ -375,13 +386,16 @@ p1 <- mario_CV1$pred %>%
     color = "CV Fold", shape = "CV Fold",
     x = "Predicted", y = "Prediction error (residual)"
   ) +
-  annotate(geom = "text", x = 40, y = 25, label = paste("CV SSE =", SSE_CV1)) +
-  labs(title = "Model with cond_new") +
-  #theme(legend.position = "none") +
+  annotate(geom = "text", x = 55, y = 25, label = paste("CV SSE =", SSE_CV1)) +
+  labs(title = "Model with one predictor") +
+  theme(
+    legend.position = c(0.2, 0.7),
+    legend.background = element_rect(color = "gray", fill = "white")
+  ) +
   scale_color_openintro("three")
 
-p2 <- mario_CV2$pred %>%
-  mutate(resid = obs - pred) %>%
+mario_CV2$pred |>
+  mutate(resid = obs - pred) |>
   ggplot() +
   geom_point(aes(x = pred, y = resid, color = Resample, shape = Resample)) +
   geom_rug(aes(y = resid)) +
@@ -392,23 +406,20 @@ p2 <- mario_CV2$pred %>%
     color = "CV Fold", shape = "CV Fold",
     x = "Predicted", y = "Prediction error (residual)"
   ) +
-  annotate(geom = "text", x = 40, y = 25, label = paste("CV SSE =", SSE_CV2)) +
-  labs(title = "Model with 4 predictors") +
+  annotate(geom = "text", x = 55, y = 25, label = paste("CV SSE =", SSE_CV2)) +
+  labs(title = "Model with four predictors") +
   scale_color_openintro("three")
-
-p1 + p2 + plot_layout(guides = "collect") & 
-  theme(legend.position = "bottom")
 ```
 
 ::: {.guidedpractice data-latex=""}
-In the right plot of @fig-mariokart-cv-residuals, note the point at roughly (predicted = 50 and error = 10).
+In @fig-mariokart-cv-residuals-2, note the point at roughly predicted = 50 and prediction error = 10.
 Estimate the observed and predicted value for that observation.[^27-inf-model-applications-9]
 :::
 
 [^27-inf-model-applications-9]: The predicted value is roughly $\widehat{\texttt{price}} = \$50.$ The observed value is roughly $\texttt{price}_i = \$60$ riders (using $e_i = y_i - \hat{y}_i).$
 
 ::: {.guidedpractice data-latex=""}
-In the second graph in @fig-mariokart-cv-residuals, for the same point at roughly (predicted = 50 and error = 10), describe which cross-validation fold(s) were used to build its prediction model.[^27-inf-model-applications-10]
+In @fig-mariokart-cv-residuals-2, for the same point at roughly predicted = 50 and prediction error = 10, describe which cross-validation fold(s) were used to build its prediction model.[^27-inf-model-applications-10]
 :::
 
 [^27-inf-model-applications-10]: The point appears to be in fold 2, so folds 1 and 3 were used to build the prediction model.
@@ -435,51 +446,51 @@ Navigate the concepts you've learned in this chapter in R using the following se
 All you need is your browser to get started!
 
 ::: {.alltutorials data-latex=""}
-[Tutorial 6: Inferential modeling](https://openintrostat.github.io/ims-tutorials/06-model-infer/)\
+[Tutorial 6: Inferential modeling](https://openintrostat.github.io/ims-tutorials/06-model-infer/)
+
 ::: {.content-hidden unless-format="pdf"}
 https://openintrostat.github.io/ims-tutorials/06-model-infer
 :::
-
 :::
 
 ::: {.singletutorial data-latex=""}
-[Tutorial 6 - Lesson 1: Inference in regression](https://openintro.shinyapps.io/ims-06-model-infer-01/)\
+[Tutorial 6 - Lesson 1: Inference in regression](https://openintro.shinyapps.io/ims-06-model-infer-01/)
+
 ::: {.content-hidden unless-format="pdf"}
 https://openintro.shinyapps.io/ims-06-model-infer-01
 :::
-
 :::
 
 ::: {.singletutorial data-latex=""}
-[Tutorial 6 - Lesson 2: Randomization test for slope](https://openintro.shinyapps.io/ims-06-model-infer-02/)\
+[Tutorial 6 - Lesson 2: Randomization test for slope](https://openintro.shinyapps.io/ims-06-model-infer-02/)
+
 ::: {.content-hidden unless-format="pdf"}
 https://openintro.shinyapps.io/ims-06-model-infer-02
 :::
-
 :::
 
 ::: {.singletutorial data-latex=""}
-[Tutorial 6 - Lesson 3: t-test for slope](https://openintro.shinyapps.io/ims-06-model-infer-03/)\
+[Tutorial 6 - Lesson 3: t-test for slope](https://openintro.shinyapps.io/ims-06-model-infer-03/)
+
 ::: {.content-hidden unless-format="pdf"}
 https://openintro.shinyapps.io/ims-06-model-infer-03
 :::
-
 :::
 
 ::: {.singletutorial data-latex=""}
-[Tutorial 6 - Lesson 4: Checking technical conditions for slope inference](https://openintro.shinyapps.io/ims-06-model-infer-04/)\
+[Tutorial 6 - Lesson 4: Checking technical conditions for slope inference](https://openintro.shinyapps.io/ims-06-model-infer-04/)
+
 ::: {.content-hidden unless-format="pdf"}
 https://openintro.shinyapps.io/ims-06-model-infer-04
 :::
-
 :::
 
 ::: {.singletutorial data-latex=""}
-[Tutorial 6 - Lesson 5: Inference beyond the simple linear regression model](https://openintro.shinyapps.io/ims-06-model-infer-05/)\
+[Tutorial 6 - Lesson 5: Inference beyond the simple linear regression model](https://openintro.shinyapps.io/ims-06-model-infer-05/)
+
 ::: {.content-hidden unless-format="pdf"}
 https://openintro.shinyapps.io/ims-06-model-infer-05
 :::
-
 :::
 
 ::: {.content-hidden unless-format="pdf"}
