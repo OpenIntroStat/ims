@@ -45,9 +45,13 @@ There appears to be a linear relationship between advertising dollars and revenu
 
 ```{r}
 #| label: fig-sandpop
-#| fig-cap: Revenue as a linear model of advertising dollars for a population of sandwich
+#| fig-cap: |
+#|   Revenue as a linear model of advertising dollars for a population of sandwich
 #|   stores, in thousands of dollars.
-#| fig-alt: Scatterplot with advertising amount on the x-axis and revenue on the y-axis. A linear model is superimposed.  The points show a reasonably strong and positive linear trend.
+#| fig-alt: |
+#|   Scatterplot with advertising amount on the x-axis and revenue on the y-axis. 
+#|   A linear model is superimposed. The points show a reasonably strong and
+#|   positive linear trend.
 set.seed(4747)
 popsize <- 1000
 ad <- rnorm(popsize, 4, 1)
@@ -82,28 +86,35 @@ Consider the linear model which describes revenue (in \$1,000) based on advertis
 
 The least squares regression model uses the data to find a sample linear fit: $$\hat{y} = b_0 + b_1 x.$$
 
-A random sample of 20 stores shows a different least square regression line depending on which observations are selected.
-A subset of size 20 stores shows a similar positive trend between advertising and revenue (to what we saw in @fig-sandpop which described the population) despite having fewer observations on the plot.
+Two random samples of 20 stores shows different least squares regression lines in @fig-sand-samp-1 and @fig-sand-samp-2, depending on which observations are selected.
+Both trends are similar to those seen in @fig-sandpop, which describes the population.
 
 ```{r}
 #| echo: false
 set.seed(470)
-sandwich2 <- sandwich %>%
+sandwich2 <- sandwich |>
   sample_n(size = 20)
-sandwich3 <- sandwich %>%
+sandwich3 <- sandwich |>
   sample_n(size = 20)
-sandwich_many <- sandwich %>%
+sandwich_many <- sandwich |>
   rep_sample_n(size = 20, replace = FALSE, reps = 50)
 ```
 
 ```{r}
-#| label: fig-sand-samp1
-#| fig-cap: A random sample of 20 stores from the entire population. A linear trend between
-#|   advertising and revenue continues to be observed.
+#| label: fig-sand-samp
+#| fig-cap: |
+#|   Two random samples of 20 stores from the entire population. A linear 
+#|   trend between advertising and revenue is observed in both.
+#| fig-subcap: 
+#|   - First sample.
+#|   - Second sample.
 #| fig-alt: |
-#|   For a random sample of 20 stores, scatterplot with advertising amount on the x-axis and
-#|   revenue on the y-axis. A linear model is superimposed.  The points show a reasonably strong 
-#|   and positive linear trend.
+#|   For two random samples of 20 stores, scatterplots with advertising amount on 
+#|   the x-axis and revenue on the y-axis. Linear models are superimposed. 
+#|   The points in each plot show reasonably strong and positive linear trends.
+#| layout-ncol: 2
+#| out-width: 100%
+#| fig-width: 5
 ggplot(sandwich2, aes(x = ad, y = rev)) +
   geom_point(size = 3, fill = IMSCOL["green", "full"], color = "#FFFFFF", shape = 22) +
   geom_smooth(method = "lm", se = FALSE, fullrange = TRUE, color = IMSCOL["green", "full"]) +
@@ -116,17 +127,6 @@ ggplot(sandwich2, aes(x = ad, y = rev)) +
     subtitle = "Random sample of 20 stores"
   ) +
   coord_cartesian(ylim = c(0, 65))
-```
-
-A second sample of size 20 also shows a positive trend!
-
-```{r}
-#| label: fig-sand-samp2
-#| fig-cap: A different random sample of 20 stores from the entire population. Again,
-#|   a linear trend between advertising and revenue is observed.
-#| fig-alt: For a random sample of 20 stores, scatterplot with advertising amount on the 
-#|   x-axis and revenue on the y-axis. A linear model is superimposed.  The points 
-#|   show a reasonably strong and positive linear trend.
 
 ggplot(sandwich3, aes(x = ad, y = rev)) +
   geom_point(size = 3, fill = IMSCOL["gray", "full"], color = "#FFFFFF", shape = 23) +
@@ -137,22 +137,31 @@ ggplot(sandwich3, aes(x = ad, y = rev)) +
     x = "Amount spent on advertising",
     y = "Revenue",
     title = "Chain sandwich store",
-    subtitle = "Random sample of 20 stores"
+    subtitle = "Another random sample of 20 stores"
   ) +
   coord_cartesian(ylim = c(0, 65))
 ```
 
-But the lines are slightly different!
+@fig-sand-samp12 shows the two samples and the least squares regressions from fig-sand-samp on the same plot.
+We can see that the two lines are different.
+That is, there is **variability** in the regression line from sample to sample.
+The concept of the sampling variability is something you've seen before, but in this lesson, you will focus on the variability of the line often measured through the variability of a single statistic: **the slope of the line**.
+
+```{r}
+#| include: false
+terms_chp_24 <- c(terms_chp_24, "variability of the slope")
+```
 
 ```{r}
 #| label: fig-sand-samp12
-#| fig-cap: The linear models from the two different random samples are quite similar,
+#| fig-cap: |
+#|   The linear models from the two different random samples are quite similar,
 #|   but they are not the same line.
-#| fig-alt: For two different random samples, superimposed onto the same plot, 
+#| fig-alt: |
+#|   For two different random samples, superimposed onto the same plot, 
 #|   scatterplot with advertising amount on the x-axis and revenue on the y-axis. 
 #|   Two linear models are plotted to demonstrate that the lines are very similar, 
 #|   yet they are not the same.
-
 ggplot() +
   geom_point(data = sandwich2, aes(x = ad, y = rev), 
              size = 3, , shape = 22,
@@ -177,24 +186,19 @@ ggplot() +
   coord_cartesian(ylim = c(0, 65))
 ```
 
-That is, there is **variability** in the regression line from sample to sample.
-The concept of the sampling variability is something you've seen before, but in this lesson, you will focus on the variability of the line often measured through the variability of a single statistic: **the slope of the line**.
-
-```{r}
-#| include: false
-terms_chp_24 <- c(terms_chp_24, "variability of the slope")
-```
+@fig-slopes shows least squares lines fit to many more random samples of 20 from the population.
 
 ```{r}
 #| label: fig-slopes
-#| fig-cap: If repeated samples of size 20 are taken from the entire population, each
+#| fig-cap: |
+#|   If repeated samples of size 20 are taken from the entire population, each
 #|   linear model will be slightly different. The red line provides the linear fit to
 #|   the entire population.
-#| fig-alt: An x-y coordinate system with least squares regression lines from many 
-#|   random samples of size 20 (no points are plotted).  The lines vary around the 
-#|   true population line.  On the x-axis is advertising amount; on the y-axis 
+#| fig-alt: |
+#|   An x-y coordinate system with least squares regression lines from many 
+#|   random samples of size 20 (no points are plotted). The lines vary around the 
+#|   true population line. On the x-axis is advertising amount; on the y-axis 
 #|   is revenue.
-
 ggplot() +
   geom_smooth(
     data = sandwich_many, aes(x = ad, y = rev, group = replicate),
@@ -220,19 +224,20 @@ You might notice in @fig-slopes that the $\hat{y}$ values given by the lines are
 The reason is that the data itself anchors the lines in such a way that the line must pass through the center of the data cloud.
 The effect of the fan-shaped lines is that predicted revenue for advertising close to \$4,000 will be much more precise than the revenue predictions made for \$1,000 or \$7,000 of advertising.
 
-The distribution of slopes (for samples of size $n=20$) can be seen in a histogram, as in @fig-sand20lm.
+The distribution of slopes (for samples of size $n=20$) can be seen in @fig-sand20lm.
 
 ```{r}
 #| label: fig-sand20lm
-#| fig-cap: Variability of slope estimates taken from many different samples of stores,
+#| fig-cap: |
+#|   Variability of slope estimates from many different samples of stores,
 #|   each of size 20.
-#| fig-alt: Histogram of the slope values from many random samples of size 20.  
-#|   The slope estimates vary from about 2.1 to 8.  The histogram is reasonably
+#| fig-alt: |
+#|   Histogram of the slope values from many random samples of size 20. 
+#|   The slope estimates vary from about 2.1 to 8. The histogram is reasonably
 #|   bell-shaped.
-
-sandwich_many_lm <- sandwich_many %>%
-  group_by(replicate) %>%
-  do(tidy(lm(rev ~ ad, data = .))) %>%
+sandwich_many_lm <- sandwich_many |>
+  group_by(replicate) |>
+  do(tidy(lm(rev ~ ad, data = .))) |>
   filter(term == "ad")
 
 ggplot(sandwich_many_lm, aes(x = estimate)) +
@@ -242,7 +247,7 @@ ggplot(sandwich_many_lm, aes(x = estimate)) +
     y = "Count",
     title = "Chain sandwich store",
     subtitle = "Many random samples of 20 stores"
-    )
+  )
 ```
 
 Recall, the example described in this introduction is hypothetical.
@@ -280,38 +285,42 @@ terms_chp_24 <- c(terms_chp_24, "randomization test for the slope")
 
 ```{r}
 #| label: fig-babyweight
-#| fig-cap: Weight of baby at birth (in lbs) as plotted by four other birth variables
-#|   (mother's weight gain, mother's age, number of hospital visits, and weeks gestation).
-#| fig-alt: Four different scatterplots, all with weight of baby on the y-axis.  
+#| fig-cap: |
+#|   Weight of baby at birth (in lbs) as plotted by four other birth variables
+#|   (mother's weight gain, mother's age, number of hospital visits, and weeks
+#|   gestation).
+#| fig-alt: |
+#|   Four different scatterplots, all with weight of baby on the y-axis. 
 #|   On the x-axis are weight gained by mother, mother's age, number of hospital 
-#|   visits, and weeks gestation.  Weeks gestation and weight of baby show the 
+#|   visits, and weeks gestation. Weeks gestation and weight of baby show the 
 #|   strongest linear relationship (which is positive).
-
 set.seed(47)
-births14_100 <- births14 %>%
-  drop_na() %>%
+births14_100 <- births14 |>
+  drop_na() |>
   sample_n(100)
 
 p_gained <- ggplot(births14_100) +
   geom_jitter(aes(y = weight, x = gained)) +
-  xlab("weight gained by mother") +
-  ylab("weight of baby")
+  xlab("Weight gained by mother") +
+  ylab("Weight of baby")
 p_mage <- ggplot(births14_100) +
   geom_jitter(aes(y = weight, x = mage)) +
-  xlab("mother's age") +
-  ylab("weight of baby")
+  xlab("Mother's age") +
+  ylab("Weight of baby")
 p_visits <- ggplot(births14_100) +
   geom_jitter(aes(y = weight, x = visits)) +
-  xlab("number of hospital visits during pregnancy") +
-  ylab("weight of baby")
+  xlab("Number of hospital visits during pregnancy") +
+  ylab("Weight of baby")
 p_weeks <- ggplot(births14_100) +
   geom_jitter(aes(x = weeks, y = weight)) +
-  xlab("weeks of gestation") +
-  ylab("weight of baby")
+  xlab("Weeks of gestation") +
+  ylab("Weight of baby")
 
 p_gained + p_mage + p_visits + p_weeks +
   plot_layout(ncol = 2)
 ```
+
+\vspace{-5mm}
 
 As you have seen previously, statistical inference typically relies on setting a null hypothesis which is hoped to be subsequently rejected.
 In the linear model setting, we might hope to have a linear relationship between `weeks` and `weight` in settings where `weeks` gestation is known and `weight` of baby needs to be predicted.
@@ -324,43 +333,49 @@ Here the population refers to a larger population of births in the US.
 
 Recall that for the randomization test, we permute one variable to eliminate any existing relationship between the variables.
 That is, we set the null hypothesis to be true, and we measure the natural variability in the data due to sampling but **not** due to variables being correlated.
-@fig-permweightScatter shows the observed data and a scatterplot of one permutation of the `weight` variable.
+@fig-permweightScatter-1 shows the observed data and @fig-permweightScatter-2 shows one permutation of the `weight` variable.
 The careful observer can see that each of the observed values for `weight` (and for `weeks`) exist in both the original data plot as well as the permuted `weight` plot, but the `weight` and `weeks` gestation are no longer matched for a given birth.
 That is, each `weight` value is randomly assigned to a new `weeks` gestation.
-
-```{r}
-#| label: fig-permweightScatter
-#| fig-cap: Original (left) and permuted (right) data. The permutation removes the
-#|   linear relationship between `weight` and `weeks`. Repeated permutations allow 
-#|   for quantifying the variability in the slope under the condition that there is 
-#|   no linear relationship (i.e., that the null hypothesis is true).
-#| fig-alt: Two scatterplots, both with length of gestation on the x-axis and weight 
-#|   of baby on the y-axis.  The left panel is the original data.  The right panel 
-#|   is data where the weight of the baby has been permuted across the observations.
-#| fig-asp: 0.5
-set.seed(4747)
-p1 <- ggplot(births14_100) +
-  geom_point(aes(x = weeks, y = weight)) +
-  labs(
-    x = "Length of gestation (weeks)",
-    y = "Weight of baby (pounds)",
-    title = "Original data"
-  )
-
-p2 <- ggplot(births14_100) +
-  geom_point(aes(x = weeks, y = sample(weight))) +
-  labs(
-    x = "Length of gestation (weeks)",
-    y = "Permuted weight of baby (pounds)",
-    title = "Permuted data"
-  )
-
-p1 + p2
-```
 
 By repeatedly permuting the response variable, any pattern in the linear model that is observed is due only to random chance (and not an underlying relationship).
 The randomization test compares the slopes calculated from the permuted response variable with the observed slope.
 If the observed slope is inconsistent with the slopes from permuting, we can conclude that there is some underlying relationship (and that the slope is not merely due to random chance).
+
+```{r}
+#| label: fig-permweightScatter
+#| fig-cap: |
+#|   Permutation removes the linear relationship between `weight` and `weeks`.
+#|   Repeated permutations allow for quantifying the variability in the slope
+#|   under the condition that there is no linear relationship (i.e., that the
+#|   null hypothesis is true).
+#| fig-subcap: 
+#|   - Original data.
+#|   - Permuted data.
+#| fig-alt: |
+#|   Two scatterplots, both with length of gestation on the x-axis and weight 
+#|   of baby on the y-axis. The left panel is the original data. The right panel 
+#|   is data where the weight of the baby has been permuted across the
+#|   observations.
+#| out-width: 100%
+#| layout-ncol: 2
+#| fig-width: 5
+set.seed(4747)
+ggplot(births14_100) +
+  geom_point(aes(x = weeks, y = weight)) +
+  labs(
+    x = "Length of gestation (weeks)",
+    y = "Weight of baby (lbs)",
+    title = "Original data"
+  )
+
+ggplot(births14_100) +
+  geom_point(aes(x = weeks, y = sample(weight))) +
+  labs(
+    x = "Length of gestation (weeks)",
+    y = "Permuted weight of baby (lbs)",
+    title = "Permuted data"
+  )
+```
 
 ### Observed data
 
@@ -370,17 +385,22 @@ The columns in @tbl-ls-births are further described in @sec-mathslope.
 
 ```{r}
 #| label: tbl-ls-births
-#| tbl-cap: The least squares estimates of the intercept and slope are given in the estimate column. The observed slope is 0.335.
-lm(weight ~ weeks, data = births14_100) %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+#| tbl-cap: |
+#|   The least squares estimates of the intercept and slope are given in 
+#|   the estimate column. The observed slope is 0.335.
+#| tbl-pos: H
+lm(weight ~ weeks, data = births14_100) |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
   kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr") %>%
+      digits = 2, align = "lrrrr") |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "10em", monospace = TRUE) %>%
+                latex_options = c("striped")) |>
+  column_spec(1, width = "10em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
+
+\clearpage
 
 ### Variability of the statistic
 
@@ -390,33 +410,38 @@ Repeated permutations and slope calculations describe the variability in the lin
 
 ```{r}
 #| label: fig-permweekslm
-#| fig-cap: Two different permutations of the `weight` variable with slightly 
-#|   different least squares regression lines.
-#| fig-alt: Two scatterplots, both with length of gestation on the x-axis and 
-#|   weight of baby on the y-axis.  Each plot includes data where the weight of 
-#|   the baby has been permuted across the observations.  The two different 
+#| fig-cap: |
+#|   Two permutations of `weight` with slightly different least 
+#|   squares regression lines.
+#| fig-subcap:
+#|   - First permutation.
+#|   - Second permutation.
+#| fig-alt: |
+#|   Two scatterplots, both with length of gestation on the x-axis and 
+#|   weight of baby on the y-axis. Each plot includes data where the weight of 
+#|   the baby has been permuted across the observations. The two different 
 #|   permutations produce slightly different least squares regression lines.
-#| fig-asp: 0.5
+#| out-width: 100%
+#| layout-ncol: 2
+#| fig-width: 5
 set.seed(470)
-p1 <- ggplot(births14_100, aes(x = weeks, y = sample(weight))) +
+ggplot(births14_100, aes(x = weeks, y = sample(weight))) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
   labs(
-    y = "Permuted weight of baby (pounds)",
+    y = "Permuted weight of baby (lbs)",
     x = "Length of gestation (weeks)",
-    title = "First permutation of \nweight"
+    title = "First permutation of weight"
   )
 
-p2 <- ggplot(births14_100, aes(x = weeks, y = sample(weight))) +
+ggplot(births14_100, aes(x = weeks, y = sample(weight))) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
   labs(
-    y = "Permuted weight of baby (pounds)",
+    y = "Permuted weight of baby (lbs)",
     x = "Length of gestation (weeks)",
-    title = "Second permutation of \nweight"
+    title = "Second permutation of weight"
   )
-
-p1 + p2
 ```
 
 As you can see, sometimes the slope of the permuted data is positive, sometimes it is negative.
@@ -426,21 +451,23 @@ Because the randomization happens under the condition of no underlying relations
 
 ```{r}
 #| label: fig-nulldistBirths
-#| fig-cap: Histogram of slopes given different permutations of the `weight` variable.
+#| fig-cap: |
+#|   Histogram of slopes given different permutations of the `weight` variable.
 #|   The vertical red line is at the observed value of the slope, 0.335.
-#| fig-alt: Histogram of slopes describing the linear model from permuted weight 
-#|   regressed on weeks gestation.  The permuted slopes range from -0.15 to +0.15 
+#| fig-alt: |
+#|   Histogram of slopes describing the linear model from permuted weight 
+#|   regressed on weeks gestation. The permuted slopes range from -0.15 to +0.15 
 #|   and are nowhere near the observed slope value of 0.335.
-
-perm_slope <- births14_100 %>%
-  specify(weight ~ weeks) %>%
-  hypothesize(null = "independence") %>%
-  generate(reps = 1000, type = "permute") %>%
+#| fig-asp: 0.48
+perm_slope <- births14_100 |>
+  specify(weight ~ weeks) |>
+  hypothesize(null = "independence") |>
+  generate(reps = 1000, type = "permute") |>
   calculate(stat = "slope")
 
-obs_slope <- births14_100 %>%
-  specify(weight ~ weeks) %>%
-  calculate(stat = "slope") %>%
+obs_slope <- births14_100 |>
+  specify(weight ~ weeks) |>
+  calculate(stat = "slope") |>
   pull()
 
 ggplot(data = perm_slope, aes(x = stat)) +
@@ -449,6 +476,7 @@ ggplot(data = perm_slope, aes(x = stat)) +
   labs(x = "Randomly generated slopes", y = "Count")
 ```
 
+\vspace{-3mm}
 
 As we can see from @fig-nulldistBirths, a slope estimate as extreme as the observed slope estimate (the red line) never happened in many repeated permutations of the `weight` variable.
 That is, if indeed there were no linear relationship between `weight` and `weeks`, the natural variability of the slopes would produce estimates between approximately -0.15 and +0.15.
@@ -478,11 +506,11 @@ The linear model regressing `weight` on `mage` is provided in @tbl-ls-births-mag
 ```{r}
 #| echo: false
 set.seed(4747)
-births4 <- births14_100 %>%
+births4 <- births14_100 |>
   sample_n(size = 100, replace = TRUE)
-births5 <- births14_100 %>%
+births5 <- births14_100 |>
   sample_n(size = 100, replace = TRUE)
-births_many_BS <- births14_100 %>%
+births_many_BS <- births14_100 |>
   rep_sample_n(size = 100, replace = TRUE, reps = 50)
 ```
 
@@ -490,13 +518,14 @@ births_many_BS <- births14_100 %>%
 #| label: fig-magePlot
 #| fig-cap: |
 #|   Using the original data, the weight of baby as a linear model of 
-#|   mother's age. Notice that the relationship between mother's age and weight of baby 
-#|   is not as strong as the relationship we saw previously between 
+#|   mother's age. Notice that the relationship between mother's age and weight 
+#|   of baby is not as strong as the relationship we saw previously between 
 #|   weeks gestation and weight of baby.
-#| fig-alt: Scatterplot with mother's age on the x-axis and baby's weight on the 
+#| fig-alt: |
+#|   Scatterplot with mother's age on the x-axis and baby's weight on the 
 #|   y-axis. A linear model is superimposed. The points show a weak positive 
 #|   linear trend.
-
+#| fig-asp: 0.5
 ggplot(births14_100) +
   geom_point(aes(x = mage, y = weight)) +
   geom_smooth(aes(x = mage, y = weight),
@@ -506,18 +535,22 @@ ggplot(births14_100) +
   labs(x = "Mother's age", y = "Weight of baby")
 ```
 
+\vspace{-5mm}
 
 ```{r}
 #| label: tbl-ls-births-mage
-#| tbl-cap: The least squares estimates of the intercept and slope are given in the estimate column. The observed slope is 0.036.
-lm(weight ~ mage, data = births14_100) %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+#| tbl-cap: |
+#|   The least squares estimates of the intercept and slope are given in 
+#|   the estimate column. The observed slope is 0.036.
+#| tbl-pos: H
+lm(weight ~ mage, data = births14_100) |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
   kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr") %>%
+      digits = 2, align = "lrrrr") |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "10em", monospace = TRUE) %>%
+                latex_options = c("striped")) |>
+  column_spec(1, width = "10em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -529,23 +562,32 @@ When sampling in the linear model case, consider each observation to be a single
 If the dot is resampled, both the `weight` and the `mage` measurement are observed.
 The measurements are linked to the dot (i.e., to the birth in the sample).
 
+\vspace{-3mm}
+
 ```{r}
 #| label: fig-birth2BS
-#| fig-cap: Original and one bootstrap sample of the births data.  Note that it is difficult
-#|   to differentiate the two plots, as (within a single bootstrap sample) the observations
-#|   which have been resampled twice are plotted as points on top of one another. The
-#|   red circles represent points in the original data which were not included in the
-#|   bootstrap sample. The blue circles represent a data point that was repeatedly resampled
-#|   (and is therefore darker) in the bootstrap sample. The green circles represent
-#|   a particular structure to the data which is observed in both the original and bootstrap
-#|   samples.
-#| fig-alt: Two scatterplots, both with mother's age on the x-axis and baby's weight 
-#|   on the y-axis.  The left plot is the original data.  The right plot is the 
-#|   bootstrapped data.  Comparing the bootstrapped points to the original points, 
+#| fig-cap: |
+#|   Original and one bootstrap sample of the births data. It is difficult to 
+#|   differentiate between the two plots, as (within a single bootstrap sample) 
+#|   the observations which have been resampled twice are plotted as points on 
+#|   top of one another. The red circles represent points in the original data 
+#|   which were not included in the bootstrap sample. The blue circles represent 
+#|   a data point that was repeatedly resampled (and is therefore darker) in the 
+#|   bootstrap sample. The green circles represent a particular structure to the 
+#|   data which is observed in both the original and bootstrap samples.
+#| fig-subcap: 
+#|   - Original data.
+#|   - Bootstrapped data.
+#| fig-alt: |
+#|   Two scatterplots, both with mother's age on the x-axis and baby's weight 
+#|   on the y-axis. The left plot is the original data. The right plot is the 
+#|   bootstrapped data. Comparing the bootstrapped points to the original points, 
 #|   we can see that some observations were sampled more than once, and some 
 #|   observations were not selected for the bootstrap sample at all.
-#| fig-asp: 0.5
-p1 <- ggplot(births14_100) +
+#| out-width: 100%
+#| layout-ncol: 2
+#| fig-width: 5
+ggplot(births14_100) +
   geom_point(aes(x = mage, y = weight), alpha = 0.4) +
   geom_smooth(aes(x = mage, y = weight),
     method = "lm", se = FALSE,
@@ -553,12 +595,12 @@ p1 <- ggplot(births14_100) +
   ) +
   xlab("mother's age") +
   ylab("weight of baby") +
-  ggtitle("Original births data.") +
+  ggtitle("Original data") +
   geom_point(x = 29, y = 9, color = IMSCOL["green", "full"], pch = 1, size = 8) +
   geom_point(x = 20, y = 6, color = IMSCOL["red", "full"], pch = 1, size = 8) +
   geom_point(x = 39, y = 9, pch = 1, size = 8)
 
-p2 <- ggplot(births5) +
+ggplot(births5) +
   geom_point(aes(x = mage, y = weight), alpha = 0.4) +
   geom_smooth(aes(x = mage, y = weight),
     method = "lm", se = FALSE,
@@ -566,15 +608,13 @@ p2 <- ggplot(births5) +
   ) +
   xlab("mother's age") +
   ylab("weight of baby") +
-  ggtitle("Bootstrap sample from \nthe births data.") +
+  ggtitle("Bootstrap sample") +
   geom_point(x = 29, y = 9, color = IMSCOL["green", "full"], pch = 1, size = 8) +
   geom_point(x = 20, y = 6, color = IMSCOL["red", "full"], pch = 1, size = 8) +
   geom_point(x = 39, y = 9, pch = 1, size = 8)
-
-p1 + p2
 ```
 
-@fig-birth2BS shows the original data as compared with a single bootstrap sample, resulting in (slightly) different linear models.
+@fig-birth2BS-1 shows the original data as compared with a single bootstrap sample in @fig-birth2BS-2, resulting in (slightly) different linear models.
 The red circles represent points in the original data which were not included in the bootstrap sample.
 The blue circles represent a point that was repeatedly resampled (and is therefore darker) in the bootstrap sample.
 The green circles represent a particular structure to the data which is observed in both the original and bootstrap samples.
@@ -582,41 +622,46 @@ By repeatedly resampling, we can see dozens of bootstrapped slopes on the same p
 
 ```{r}
 #| label: fig-birthBS
-#| fig-cap: Repeated bootstrap resamples of size 100 are taken from the original data.  Each
+#| fig-cap: |
+#|   Repeated bootstrap resamples of size 100 are taken from the original data. Each
 #|   of the bootstrapped linear models is slightly different.
-#| fig-alt: An x-y coordinate system with least squares regression lines from many 
-#|   bootstrap samples (no points are plotted).  The lines vary around the observed 
-#|   population line.  On the x-axis is mother's age; on the y-axis is baby's weight
- 
-
+#| fig-alt: |
+#|   An x-y coordinate system with least squares regression lines from many 
+#|   bootstrap samples (no points are plotted). The lines vary around the observed 
+#|   population line. On the x-axis is mother's age; on the y-axis is baby's weight.
+#| fig-asp: 0.5
 ggplot(births_many_BS, aes(x = mage, y = weight, group = replicate)) +
-  geom_smooth(method = "lm", se = FALSE, color = IMSCOL["blue", "full"], fullrange = TRUE, alpha = 0.8) +
-  xlab("mother's age") +
-  ylab("weight of baby") 
+  geom_smooth(method = "lm", se = FALSE, color = IMSCOL["blue", "f2"], fullrange = TRUE) +
+  labs(
+    x = "Mother's age",
+    y = "Weight of baby"
+  )
 ```
 
 Recall that in order to create a confidence interval for the slope, we need to find the range of values that the statistic (here the slope) takes on from different bootstrap samples.
 @fig-mageBSslopes is a histogram of the relevant bootstrapped slopes.
 We can see that a 95% bootstrap percentile interval for the true population slope is given by (-0.01, 0.081).
-We are 95% confident that for the model describing the population of births, described by mother's age and `weight` of baby, a one unit increase in `mage` (in years) will be associated with an increase in predicted average baby `weight` of between -0.01 and 0.081 pounds (notice that the CI overlaps zero, so the true relationship *might* be null!).
+We are 95% confident that for the model describing the population of births, predicting weight of baby from mother's age, a one unit increase in `mage` (in years) is associated with an increase in predicted average baby `weight` of between -0.01 and 0.081 pounds. Notice that the CI contains zero, so the true relationship *might* be null!
 
 ```{r}
 #| label: fig-mageBSslopes
-#| fig-cap: The original births data on baby's weight and mother's age is 
-#|   bootstrapped 1,000 times. The histogram provides a sense for the variability 
-#|   of the slope of the linear model from sample to sample.
-#| fig-alt: Histogram of the slopes computed from many bootstrapped samples. 
+#| fig-cap: |
+#|   The original births data on baby's weight and mother's age is 
+#|   bootstrapped 1,000 times. The histogram provides a sense for the 
+#|   variability of the slope of the linear model from sample to sample.
+#| fig-alt: |
+#|   Histogram of the slopes computed from many bootstrapped samples. 
 #|   The bootstrap samples range from -0.05 (with the 2.5 percentile at -0.01) to 
 #|   +0.1 (with the 97.5 percentile at 0.081). The bootstrapped slopes form a 
 #|   histogram that is reasonably symmetric and bell-shaped.
-
+#| fig-asp: 0.48
 set.seed(47)
-births_many_BS_1000 <- births14_100 %>%
+births_many_BS_1000 <- births14_100 |>
   rep_sample_n(size = 100, replace = TRUE, reps = 1000)
 
-births_many_lm_BS <- births_many_BS_1000 %>%
-  group_by(replicate) %>%
-  do(tidy(lm(weight ~ mage, data = .))) %>%
+births_many_lm_BS <- births_many_BS_1000 |>
+  group_by(replicate) |>
+  do(tidy(lm(weight ~ mage, data = .))) |>
   filter(term == "mage")
 
 lower <- round(quantile(births_many_lm_BS$estimate, 0.025), 3)
@@ -629,7 +674,7 @@ ggplot(births_many_lm_BS, aes(x = estimate)) +
   annotate("text", x = lower, y = 35, label = "2.5 percentile\n-0.01", size = 5) +
   annotate("text", x = upper, y = 35, label = "97.5 percentile\n0.081", size = 5) +
   labs(
-    x = "Bootstrapped values of the slope modeling weight on mother's age",
+    x = "Bootstrapped values of the slope for predicting weight of baby from mother's age",
     y = NULL
   ) +
   theme(axis.text.y = element_blank())
@@ -644,8 +689,8 @@ Using the bootstrap standard error, find a 95% bootstrap SE confidence interval 
 
 Notice that most of the bootstrapped slopes fall between -0.01 and +0.08 (a range of 0.09).
 Using the empirical rule (that with bell-shaped distributions, most observations are within two standard errors of the center), the standard error of the slopes is approximately 0.0225.
-The normal cutoff for a 95% confidence interval is $z^\star = 1.96$ which leads to a confidence interval of $b_1 \pm 1.96 \cdot SE \rightarrow 0.036 \pm 1.96 \cdot 0.0225 \rightarrow (-0.0081, 0.0801).$ The bootstrap SE confidence interval is almost identical to the bootstrap percentile interval.
-In context, we are 95% confident that for the model describing the population of births, described by mother's age and `weight` of baby, a one unit increase in `mage` (in years) will be associated with an increase in predicted average baby `weight` of between -0.0081 and 0.0801 pounds
+The critical value for a 95% confidence interval is $z^\star = 1.96$ which leads to a confidence interval of $b_1 \pm 1.96 \cdot SE \rightarrow 0.036 \pm 1.96 \cdot 0.0225 \rightarrow (-0.0081, 0.0801).$ The bootstrap SE confidence interval is almost identical to the bootstrap percentile interval.
+In context, we are 95% confident that for the model describing the population of births, predicting weight of baby from mother's age, a one unit increase in `mage` (in years) is associated with an increase in predicted average baby `weight` of between -0.0081 and 0.0801 pounds.
 :::
 
 ## Mathematical model for testing the slope {#sec-mathslope}
@@ -657,6 +702,8 @@ The validity of the technical conditions will be considered in detail in @sec-te
 
 In this section, we discuss uncertainty in the estimates of the slope and y-intercept for a regression line.
 Just as we identified standard errors for point estimates in previous chapters, we start by discussing standard errors for the slope and y-intercept estimates.
+
+\clearpage
 
 ### Observed data
 
@@ -692,25 +739,28 @@ While the data are collected sequentially, a separate analysis was used to check
 
 ```{r}
 #| label: fig-unemploymentAndChangeInHouse
-#| fig-cap: The percent change in House seats for the President's party in each election
+#| fig-cap: |
+#|   The percent change in House seats for the President's party in each election
 #|   from 1898 to 2010 plotted against the unemployment rate. The two points for the
 #|   Great Depression have been removed, and a least squares regression line has been
 #|   fit to the data.
-#| fig-alt: Scatterplot with percent unemployed on the x-axis and percent change in 
+#| fig-alt: |
+#|   Scatterplot with percent unemployed on the x-axis and percent change in 
 #|   House seats for the President's party on the y-axis. Each point represents a 
 #|   different President's midterm and is colored according to their political party 
 #|   (Democrat or Republican). The relationship is moderate and negative.
-
+#| out-width: 100%
+#| fig-asp: 0.5
 years_to_label <- c(2019, 2003, 1995, 1983, 2011, 1899)
 
-midterms_house_with_labels <- midterms_house %>%
+midterms_house_with_labels <- midterms_house |>
   mutate(
     label_top = word(potus, -1), 
     label_bottom = year - 1
     ) 
 
-midterms_house_with_labels %>%
-  filter(!(year %in% c(1935, 1939))) %>%
+midterms_house_with_labels |>
+  filter(!(year %in% c(1935, 1939))) |>
   ggplot(aes(x = unemp, y = house_change)) +
   geom_point(aes(color = party, shape = party), size = 3, alpha = 0.7) +
   geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
@@ -723,8 +773,8 @@ midterms_house_with_labels %>%
     y = "Percent change in House seats\nfor the President's party",
     color = "Party", shape = "Party"
     ) +
-  geom_text(data = midterms_house_with_labels %>% filter(year %in% years_to_label),
-    aes(x = unemp, y = house_change + 2, label = paste0(label_top, "\n", label_bottom)), color = IMSCOL["black", "full"]
+  geom_text(data = midterms_house_with_labels |> filter(year %in% years_to_label),
+    aes(x = unemp, y = house_change + 4, label = paste0(label_top, "\n", label_bottom)), color = IMSCOL["black", "full"]
   ) +
   theme(
     legend.position = c(0.8, 0.8),
@@ -775,17 +825,21 @@ terms_chp_24 <- c(terms_chp_24, "t-distribution for slope")
 
 ```{r}
 #| label: tbl-midtermUnempRegTable
-#| tbl-cap: Output from statistical software for the regression line modeling the midterm election losses for the President's party as a response to unemployment.
+#| tbl-cap: |
+#|   Output from statistical software for the regression line modeling the 
+#|   midterm election losses for the President's party as a response to
+#|   unemployment.
+#| tbl-pos: H
 d <- midterms_house
 th <- !d$year %in% c(1935, 1939)
-lm(house_change ~ unemp, d[th, ]) %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+lm(house_change ~ unemp, d[th, ]) |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
   kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr") %>%
+      digits = 2, align = "lrrrr") |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "10em", monospace = TRUE) %>%
+                latex_options = c("striped")) |>
+  column_spec(1, width = "10em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -817,7 +871,7 @@ Use @tbl-midtermUnempRegTable to determine the p-value for the hypothesis test.
 
 ------------------------------------------------------------------------
 
-The last column of the table gives the p-value for the two-sided hypothesis test for the coefficient of the unemployment rate 0.2961 That is, the data do not provide convincing evidence that a higher unemployment rate has any correspondence with smaller or larger losses for the President's party in the House of Representatives in midterm elections.  If there was no linear relationship between the two variables (i.e., if $\beta_1 = 0)$, then we would expect to see linear models as or more extreme that the observed model roughly 30% of the time.
+The last column of the table gives the p-value for the two-sided hypothesis test for the coefficient of the unemployment rate 0.2961 That is, the data do not provide convincing evidence that a higher unemployment rate has any correspondence with smaller or larger losses for the President's party in the House of Representatives in midterm elections. If there was no linear relationship between the two variables (i.e., if $\beta_1 = 0)$, then we would expect to see linear models as or more extreme that the observed model roughly 30% of the time.
 :::
 
 ### Observed statistic vs. null statistics
@@ -845,21 +899,24 @@ The tools in this section help you go beyond a visual interpretation of the line
 
 ```{r}
 #| label: tbl-rOutputForIncomeAidLSRLineInInferenceSection
-#| tbl-cap: Summary of least squares fit for the Elmhurst College data, where we are predicting the gift aid by the university based on the family income of students.
-
-elmhurst %>%
+#| tbl-cap: |
+#|   Summary of least squares fit for the Elmhurst College data, where we 
+#|   are predicting the gift aid by the university based on the family 
+#|   income of students.
+#| tbl-pos: H
+elmhurst |>
   mutate(
     gift_aid = gift_aid * 1000,
     family_income = family_income * 1000
-  ) %>%
-  lm(gift_aid ~ family_income, .) %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+  ) |>
+  lm(gift_aid ~ family_income, data = _) |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
   kbl(linesep = "", booktabs = TRUE,
-      digits = 2, align = "lrrrr") %>%
+      digits = 2, align = "lrrrr") |>
   kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "17em", monospace = TRUE) %>%
+                latex_options = c("striped")) |>
+  column_spec(1, width = "10em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -925,8 +982,6 @@ We are 95% confident that for an additional one unit (i.e., $1000 increase) in f
 On the topic of intervals in this book, we have focused exclusively on confidence intervals for model parameters.
 However, there are other types of intervals that may be of interest (and are outside the scope of this book), including prediction intervals for a response value and confidence intervals for a mean response value in the context of regression.
 
-\clearpage
-
 ## Checking model conditions {#sec-tech-cond-linmod}
 
 \index{technical conditions linear regression}
@@ -954,34 +1009,36 @@ When fitting a least squares line, we generally require the following:
 
 -   **Nearly normal residuals.** Generally, the residuals should be nearly normal.
     When this condition is found to be unreasonable, it is often because of outliers or concerns about influential points, which we'll talk about more in @sec-outliers-in-regression.
-    An example of a residual that would be potentially concerning is shown in the second panel of @fig-whatCanGoWrongWithLinearModel, where one observation is clearly much further from the regression line than the others.  Outliers should be treated extremely carefully.  Do not automatically remove an outlier if it truly belongs in the dataset.  However, be honest about its impact on the analysis.  A strategy for dealing with outliers is to present two analyses: one with the outlier and one without the outlier.
-Additionally, a type of violation of normality happens when the positive residuals are smaller in magnitude than the negative residuals (or vice versa).  That is, when the residuals are not symmetrically distributed around the line $y=0.$ 
+    An example of a residual that would be potentially concerning is shown in the second panel of @fig-whatCanGoWrongWithLinearModel, where one observation is clearly much further from the regression line than the others. Outliers should be treated extremely carefully. Do not automatically remove an outlier if it truly belongs in the dataset. However, be honest about its impact on the analysis. A strategy for dealing with outliers is to present two analyses: one with the outlier and one without the outlier.
+Additionally, a type of violation of normality happens when the positive residuals are smaller in magnitude than the negative residuals (or vice versa). That is, when the residuals are not symmetrically distributed around the line $y=0.$ 
 
 -   **Constant or equal variability.** The variability of points around the least squares line remains roughly constant.
     An example of non-constant variability is shown in the third panel of @fig-whatCanGoWrongWithLinearModel, which represents the most common pattern observed when this condition fails: the variability of $y$ is larger when $x$ is larger.
 
 ```{r}
 #| label: fig-whatCanGoWrongWithLinearModel
-#| fig-cap: 'Four examples showing when the methods in this chapter are insufficient
-#|   to apply a linear model to the data. The top set of graphs represents the $x$ and $y$ relationship.  The
-#|   bottom set of graphs is a residual plot. First panel: linearity fails. Second panel:
-#|   there are outliers, most especially one point that is very far away from the line.
-#|   Third panel: the variability of the errors is related to the value of $x$. Fourth
-#|   panel: a time series dataset is shown, where successive observations are highly
-#|   correlated.'
-#| fig-alt: A grid of 2 by 4 scatterplots with fabricated data.  The top row of plots 
+#| fig-cap: |
+#|   Four examples showing when the methods in this chapter are insufficient
+#|   to apply a linear model to the data. The top set of graphs represents the 
+#|   $x$ and $y$ relationship. The bottom set of graphs is a residual plot. 
+#|   First panel -- linearity fails. Second panel -- there are outliers, most 
+#|   especially one point that is very far away from the line. Third panel -- 
+#|   the variability of the errors is related to the value of $x$. Fourth panel -- 
+#|   a time series dataset is shown, where successive observations are highly correlated.
+#| fig-alt: |
+#|   A grid of 2 by 4 scatterplots with fabricated data. The top row of plots 
 #|   contains original x-y data plots with a least squares regression line. The 
 #|   bottom row of plots is a series of residual plot with predicted value on the 
-#|   x-axis and residual on the y-axis.  The first column of plots gives an example 
+#|   x-axis and residual on the y-axis. The first column of plots gives an example 
 #|   of points that have a quadratic relationship instead of a linear relationship. 
 #|   The second column of plots gives an example where a single outlying point 
-#|   does not fit the linear model.  The third column of points gives an example 
+#|   does not fit the linear model. The third column of points gives an example 
 #|   where the points have increasing variability as the value of x increases. 
 #|   The last column of points gives an example where the points are correlated 
 #|   with one another, possibly as part of a time series.
-#| out.width: 100%
-#| fig.width: 10.0
-#| fig-asp: 0.5
+#| out-width: 100%
+#| fig-width: 9
+#| fig-asp: 0.45
 par_og <- par(no.readonly = TRUE) # save original par
 par(mar = rep(1.2, 4))
 
@@ -1183,29 +1240,27 @@ That is, without the technical conditions, the T score will not have the assumed
 That said, it is almost always impossible to check the conditions precisely, so we look for large deviations from the conditions.
 If there are large deviations, we will be unable to trust the calculated p-value or the endpoints of the resulting confidence interval.
 
-**The model based on Linearity**
+**The model based on linearity**
 
 The linearity condition is among the most important if your goal is to understand a linear model between $x$ and $y$.
 For example, the value of the slope will not be at all meaningful if the true relationship between $x$ and $y$ is quadratic, as in @fig-notGoodAtAllForALinearModel.
 Not only should we be cautious about the inference, but the model *itself* is also not an accurate portrayal of the relationship between the variables.
 However, an extended discussion on the different methods for modeling functional forms other than linear is outside the scope of this text.
 
-**The importance of Independence**
+**The importance of independence**
 
 The technical condition describing the independence of the observations is often the most crucial but also the most difficult to diagnose.
 It is also extremely difficult to gather a dataset which is a true random sample from the population of interest.
-(Note: a true randomized experiment from a fixed set of individuals is much easier to implement, and indeed, randomized experiments are done in most medical studies these days.)
+A true randomized experiment from a fixed set of individuals is much easier to implement, and indeed, randomized experiments are done in most medical studies these days.
 
 Dependent observations can bias results in ways that produce fundamentally flawed analyses.
 That is, if you hang out at the gym measuring height and weight, your linear model is surely not a representation of all students at your university.
-At best it is a model describing students who use the gym (but also who are willing to talk to you, that use the gym at the times you were there measuring, etc.).
+At best it is a model describing students who use the gym, but also who are willing to talk to you, that use the gym at the times you were there measuring, etc.
 
 In lieu of trying to answer whether your observations are a true random sample, you might instead focus on whether you believe your observations are representative of a population of interest.
 Humans are notoriously bad at implementing random procedures, so you should be wary of any process that used human intuition to balance the data with respect to, for example, the demographics of the individuals in the sample.
 
-\clearpage
-
-**Some thoughts on Normality**
+**Some thoughts on normality**
 
 The normality condition requires that points vary symmetrically around the line, spreading out in a bell-shaped fashion.
 You should consider the "bell" of the normal distribution as sitting on top of the line (coming off the paper in a 3-D sense) so as to indicate that the points are dense close to the line and disperse gradually as they get farther from the line.
@@ -1248,7 +1303,7 @@ We also used modeling to formalize the relationships.
 Many chapters were dedicated to inferential methods which allowed claims about the population to be made based on samples of data.
 Not only did we present the mathematical model for each of the inferential techniques, but when appropriate, we also presented bootstrapping and permutation methods.
 
-Here in @sec-inf-model-slr we brought all of those ideas together by considering inferential claims on linear models through randomization tests, bootstrapping, and mathematical modeling.
+In @sec-inf-model-slr we brought all of those ideas together by considering inferential claims on linear models through randomization tests, bootstrapping, and mathematical modeling.
 We continue to emphasize the importance of experimental design in making conclusions about research claims.
 In particular, recall that variability can come from different sources (e.g., random sampling vs. random allocation, see @fig-randsampValloc).
 
