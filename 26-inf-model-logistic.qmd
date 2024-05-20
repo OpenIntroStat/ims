@@ -28,7 +28,10 @@ The [`email`](http://openintrostat.github.io/openintro/reference/email.html) dat
 
 ```{r}
 #| label: tbl-resume-variables
-#| tbl-cap: 'Variables and their descriptions for the `email` dataset. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.'
+#| tbl-cap: |
+#|   Variables and their descriptions for the `email` dataset. Many of the 
+#|   variables are indicator variables, meaning they take the value 1 if the 
+#|   specified characteristic is present and 0 otherwise.
 email_variables <- tribble(
   ~variable, ~description,
   "spam", "Indicator for whether the email was spam.",
@@ -47,12 +50,16 @@ email_variables <- tribble(
   "number", "Factor variable saying whether there was no number, a small number (under 1 million), or a big number."
 )
 
-email_variables %>%
-  kbl(linesep = "", booktabs = TRUE, 
-      col.names = c("Variable", "Description")) %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = TRUE) %>%
-  column_spec(1, monospace = TRUE) %>%
+email_variables |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    col.names = c("Variable", "Description")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped"), full_width = TRUE
+  ) |>
+  column_spec(1, monospace = TRUE) |>
   column_spec(2, width = "30em")
 ```
 
@@ -88,25 +95,35 @@ Let's first visualize these data by plotting the true classification of the emai
 
 ```{r}
 #| label: fig-spam-predict
-#| fig-cap: The predicted probability that each of the 3921 emails are spam. Points
-#|   have been jittered so that those with nearly identical values aren’t plotted exactly
-#|   on top of one another.
-#| fig-alt: Scatterplot with predicted probability of being spam on the x-axis and original class, either spam or not spam, on the y-axis. We can see that the predictions do not perfectly classify the emails; however, the not spam emails generally have lower prediction probabilities than the spam emails.
+#| fig-cap: |
+#|   The predicted probability that each of the 3921 emails are spam. Points
+#|   have been jittered so that those with nearly identical values aren’t plotted 
+#|   exactly on top of one another.
+#| fig-alt: |
+#|   Scatterplot with predicted probability of being spam on the x-axis and 
+#|   original class, either spam or not spam, on the y-axis. We can see that 
+#|   the predictions do not perfectly classify the emails; however, the not spam 
+#|   emails generally have lower prediction probabilities than the spam emails.
 #| fig-asp: 0.4
-spam_fit <- logistic_reg() %>%
-  set_engine("glm") %>%
+#| fig-width: 7
+spam_fit <- logistic_reg() |>
+  set_engine("glm") |>
   fit(spam ~ to_multiple + cc + dollar + urgent_subj, data = email, family = "binomial")
 
-spam_pred <- predict(spam_fit, new_data = email, type = "prob") %>%
-  bind_cols(email %>% select(spam))
+spam_pred <- predict(spam_fit, new_data = email, type = "prob") |>
+  bind_cols(email |> select(spam))
 
 ggplot(spam_pred, aes(x = .pred_1, y = spam)) +
   geom_jitter(alpha = 0.2) +
   coord_cartesian(xlim = c(0, 1)) +
-  labs(y = NULL,
-       x = "Predicted probability that email is spam") +
+  labs(
+    y = NULL,
+    x = "Predicted probability that email is spam"
+  ) +
   scale_y_discrete(labels = c("Not spam (0)", "Spam (1)"))
 ```
+
+\vspace{-5mm}
 
 We'd like to assess the quality of the model.
 For example, we might ask: if we look at emails that we modeled as having 10% chance of being spam, do we find out 10% of the actually are spam?
@@ -123,10 +140,21 @@ Such a plot is shown in @fig-logisticModelBucketDiag.
 
 ```{r}
 #| label: fig-logisticModelBucketDiag
-#| fig-cap: A reconfiguration of @fig-spam-predict.  Again, the predicted probabilities are on the x-axis and the truth is on the y-axis for each email. After data have been bucketed into predicted probability groups, the proportion of spam emails (i.e., the observed probability) is given by the black circles. The dashed line is within the confidence bound of the 95% confidence intervals for many of the buckets, suggesting the logistic fit is reasonable.
-#| fig-alt: Scatterplot with predicted probability of being spam on the x-axis and original class, either spam or not spam, on the y-axis. Superimposed are the observed probabilities of being spam, calculated by the proportion of spam emails in each bucket of predicted probabilities.  The observed probabilities and predicted probabilities line up reasonably well.
+#| fig-cap: |
+#|   A reconfiguration of @fig-spam-predict. Again, the predicted probabilities 
+#|   are on the x-axis and the truth is on the y-axis for each email. After data 
+#|   have been bucketed into predicted probability groups, the proportion of spam 
+#|   emails (i.e., the observed probability) is given by the black circles. The 
+#|   dashed line is within the confidence bound of the 95% confidence intervals 
+#|   for many of the buckets, suggesting the logistic fit is reasonable.
+#| fig-alt: |
+#|   Scatterplot with predicted probability of being spam on the x-axis and 
+#|   original class, either spam or not spam, on the y-axis. Superimposed are 
+#|   the observed probabilities of being spam, calculated by the proportion of 
+#|   spam emails in each bucket of predicted probabilities. The observed 
+#|   probabilities and predicted probabilities line up reasonably well.
 #| out-width: 90%
-#| fig-asp: 0.7
+#| fig-asp: 0.6
 par_og <- par(no.readonly = TRUE) # save original par
 par(mar = c(5.1, 7, 0, 0))
 
@@ -139,34 +167,40 @@ noise <- rnorm(nrow(email), sd = 0.08)
 
 ns1 <- 4
 plot(p, as.numeric(email$spam) - 1 + noise / 5,
-     type = "n",
-     xlim = 0:1,
-     ylim = c(-0.07, 1.07),
-     axes = FALSE,
-     xlab = "Predicted Probability",
-     ylab = "")
+  type = "n",
+  xlim = 0:1,
+  ylim = c(-0.07, 1.07),
+  axes = FALSE,
+  xlab = "Predicted Probability",
+  ylab = ""
+)
 par(las = 0)
 mtext("Truth", 2, 5.5)
 par(las = 1)
 rect(0, 0, 1, 1,
-     border = IMSCOL["gray", "full"],
-     col = "#00000000",
-     lwd = 1.5)
+  border = IMSCOL["gray", "full"],
+  col = "#00000000",
+  lwd = 1.5
+)
 lines(0:1, 0:1,
-      lty = 2,
-      col = IMSCOL["gray", "full"],
-      lwd = 1.5)
+  lty = 2,
+  col = IMSCOL["gray", "full"],
+  lwd = 1.5
+)
 points(p, as.numeric(email$spam) - 1 + noise / 5,
-       col = IMSCOL["blue", "f5"],
-       pch = 20)
+  col = IMSCOL["blue", "f5"],
+  pch = 20
+)
 axis(1)
 at <- seq(0, 1, length.out = 6)
-labels <- c("0 (Not spam)",
-            "0.2  ",
-            "0.4  ",
-            "0.6  ",
-            "0.8  ",
-            "1 (Spam)")
+labels <- c(
+  "0 (Not spam)",
+  "0.2  ",
+  "0.4  ",
+  "0.6  ",
+  "0.8  ",
+  "1 (Spam)"
+)
 axis(2, at, labels)
 eps <- 1e-4
 bucket_breaks <- quantile(p, seq(0, 1, 0.01))
@@ -191,27 +225,30 @@ zs <- qnorm(0.975)
 for (i in 1:n_buckets) {
   these <- bucket_breaks[i] < p & p <= bucket_breaks[i + 1]
   xp[i] <- mean(p[these])
-  #cat(paste("xp", "i", "=", xp[i]))
+  # cat(paste("xp", "i", "=", xp[i]))
   y <- (as.numeric(email$spam) - 1)[these]
   yp[i] <- mean(y)
-  #cat(paste("yp", "i", "=", yp[i]))
+  # cat(paste("yp", "i", "=", yp[i]))
   yp_lower[i] <- yp[i] - zs * sqrt(yp[i] * (1 - yp[i]) / length(y))
-  #cat(paste("yp_lower", "i", "=", yp_lower[i]))
+  # cat(paste("yp_lower", "i", "=", yp_lower[i]))
   yp_upper[i] <- yp[i] + zs * sqrt(yp[i] * (1 - yp[i]) / length(y))
-  #cat(paste("yp_upper", "i", "=", yp_upper[i]))
+  # cat(paste("yp_upper", "i", "=", yp_upper[i]))
 }
 points(xp, yp, pch = 19)
 segments(xp, yp_lower, xp, yp_upper)
 arrows(0.3, 0.17,
-       0.24, 0.22,
-       length = 0.07)
+  0.24, 0.22,
+  length = 0.07
+)
 text(0.3, 0.15,
-    paste("Observations are bucketed, then we compute",
-        "the observed probability in each bucket (y)",
-        "against the average predicted probability (x)",
-        "for each of the buckets with 95% confidence intervals.",
-        sep = "\n"),
-    cex = 0.85, pos = 4)
+  paste("Observations are bucketed, then we compute",
+    "the observed probability in each bucket (y)",
+    "against the average predicted probability (x)",
+    "for each of the buckets with 95% confidence intervals.",
+    sep = "\n"
+  ),
+  cex = 0.85, pos = 4
+)
 par(par_og) # restore original par
 ```
 
@@ -236,7 +273,7 @@ $$
 \end{aligned}
 $$
 
-The estimated equation for the regression model may be written as a model with four predictor variables (where $\hat{p}$ is the estimated probability of being a spam email message):
+The estimated equation for the regression model may be written as a model with four predictor variables, where $\hat{p}$ is the estimated probability of being a spam email message:
 
 $$
 \begin{aligned}
@@ -249,15 +286,23 @@ $$
 
 ```{r}
 #| label: tbl-emaillogmodel
-#| tbl-cap: Summary of a logistic model for predicting whether an email is spam based on the variables to_multiple, cc, dollar, and urgent_subj. Each of the variables has its own coefficient estimate and p-value.
-glm(spam ~ to_multiple + cc + dollar + urgent_subj, data = email, family = "binomial") %>% 
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr") %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "15em", monospace = TRUE) %>%
+#| tbl-cap: |
+#|   Summary of a logistic model for predicting whether an email is spam based 
+#|   on the variables to_multiple, cc, dollar, and urgent_subj. Each of the 
+#|   variables has its own coefficient estimate and p-value.
+#| tbl-pos: H
+glm(spam ~ to_multiple + cc + dollar + urgent_subj, data = email, family = "binomial") |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    digits = 2, align = "lrrrr"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped")
+  ) |>
+  column_spec(1, width = "15em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -271,6 +316,8 @@ terms_chp_26 <- c(terms_chp_26, "multiple predictors")
 ```
 
 > if multiple predictors $H_0: \beta_i = 0$ given other variables in the model
+
+\clearpage
 
 Using the example above and focusing on each of the variable p-values (here we won't discuss the p-value associated with the intercept), we can write out the four different hypotheses (associated with the p-value corresponding to each of the coefficients / rows in @tbl-emaillogmodel):
 
@@ -303,12 +350,14 @@ A full treatment of cross-validation and logistic regression models is beyond th
 Using $k$-fold cross-validation, we can build $k$ different models which are used to predict the observations in each of the $k$ holdout samples.
 As with linear regression (see @sec-inf-mult-reg-cv), we compare a smaller logistic regression model to a larger logistic regression model.
 The smaller model uses only the `to_multiple` variable, see the complete dataset (not cross-validated) model output in @tbl-emaillogmodel1.
-The logistic regression model can be written as (where $\hat{p}$ is the estimated probability of being a spam email message):
+The logistic regression model can be written as, where $\hat{p}$ is the estimated probability of being a spam email message:
 
 ```{r}
 #| include: false
 terms_chp_26 <- c(terms_chp_26, "cross-validation", "accuracy")
 ```
+
+\clearpage
 
 **The smaller model:**
 
@@ -316,15 +365,23 @@ $$\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -2.12 + -1.81 \times \texttt{to
 
 ```{r}
 #| label: tbl-emaillogmodel1
-#| tbl-cap: The smaller model. Summary of a logistic model for predicting whether an email is spam based on only the predictor variable to_multiple. Each of the variables has its own coefficient estimate and p-value.
-glm(spam ~ to_multiple, data = email, family = "binomial") %>% 
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr") %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "15em", monospace = TRUE) %>%
+#| tbl-cap: |
+#|   The smaller model. Summary of a logistic model for predicting whether an 
+#|   email is spam based on only the predictor variable to_multiple. Each of 
+#|   the variables has its own coefficient estimate and p-value.
+#| tbl-pos: H
+glm(spam ~ to_multiple, data = email, family = "binomial") |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    digits = 2, align = "lrrrr"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped")
+  ) |>
+  column_spec(1, width = "15em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -333,19 +390,22 @@ The model from the first cross-validation sample is given in @fig-emailCV1 and c
 
 ```{r}
 #| label: fig-emailCV1
-#| fig-cap: The smaller model. The coefficients are estimated using the least squares model on 3/4 of the
-#|   dataset with a single predictor variable. Predictions are made on the remaining
-#|   1/4 of the observations. Note that the predictions are independent of the estimated
-#|   model coefficients, and the prediction error rate is quite high.
-#| out-width: 100%
+#| fig-cap: |
+#|   The smaller model. The coefficients are estimated using the least squares 
+#|   model on 3/4 of the dataset with a single predictor variable. Predictions 
+#|   are made on the remaining 1/4 of the observations. Note that the predictions 
+#|   are independent of the estimated model coefficients, and the prediction 
+#|   error rate is quite high.
 #| fig-alt: |
-#|   The left panel shows the logistic model predicting the probability of an
-#|   email being spam as a function of whether the email was sent to multiple individuals;
-#|   the model was built using the red, green, and yellow triangular sections of the
-#|   observed data. The right panel shows a confusion matrix of the predicted spam label
-#|   crossed with the observed spam label for the set of observations in the blue triangular
-#|   section of the observed data. Of the 83 spam emails, 80 were correctly classified
-#|   as spam. Of the 897 non-spam emails, 143 were correctly classified as not spam.
+#|   The left panel shows the logistic model predicting the probability of an 
+#|   email being spam as a function of whether the email was sent to multiple 
+#|   individuals; the model was built using the red, green, and yellow triangular 
+#|   sections of the observed data. The right panel shows a confusion matrix of 
+#|   the predicted spam label crossed with the observed spam label for the set of 
+#|   observations in the blue triangular section of the observed data. Of the 83 
+#|   spam emails, 80 were correctly classified as spam. Of the 897 non-spam emails, 
+#|   143 were correctly classified as not spam.
+#| out-width: 100%
 include_graphics("images/emailCV1.png")
 ```
 
@@ -355,59 +415,70 @@ set.seed(470)
 data(email)
 emailfolds <- caret::createFolds(email$spam, k = 4)
 
-logCV1 <- data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold1,], family = "binomial") %>% 
-             predict(newdata = email[emailfolds$Fold1,c("to_multiple")], type="response") ,
-           obs = email[emailfolds$Fold1,]$spam,
-           fold = rep("1st quarter", length(emailfolds$Fold1))) %>%
-  rbind(data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold2,], family = "binomial") %>% 
-             predict(newdata = email[emailfolds$Fold2,c("to_multiple")], type="response") ,
-           obs = email[emailfolds$Fold2,]$spam,
-           fold = rep("2nd quarter", length(emailfolds$Fold2))) )%>%
-  rbind(data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold3,], family = "binomial") %>% 
-             predict(newdata = email[emailfolds$Fold3,c("to_multiple")], type="response") ,
-           obs = email[emailfolds$Fold3,]$spam,
-           fold = rep("3rd quarter", length(emailfolds$Fold3))) )%>%
-  rbind(data.frame(predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold4,], family = "binomial") %>% 
-             predict(newdata = email[emailfolds$Fold4,c("to_multiple")], type="response") ,
-           obs = email[emailfolds$Fold4,]$spam,
-           fold = rep("4th quarter", length(emailfolds$Fold4))) )%>%
-  mutate(predspam = ifelse(predicted <= 0.1, 0, 1)) 
+logCV1 <- data.frame(
+  predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold1, ], family = "binomial") |>
+    predict(newdata = email[emailfolds$Fold1, c("to_multiple")], type = "response"),
+  obs = email[emailfolds$Fold1, ]$spam,
+  fold = rep("1st quarter", length(emailfolds$Fold1))
+) |>
+  rbind(data.frame(
+    predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold2, ], family = "binomial") |>
+      predict(newdata = email[emailfolds$Fold2, c("to_multiple")], type = "response"),
+    obs = email[emailfolds$Fold2, ]$spam,
+    fold = rep("2nd quarter", length(emailfolds$Fold2))
+  )) |>
+  rbind(data.frame(
+    predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold3, ], family = "binomial") |>
+      predict(newdata = email[emailfolds$Fold3, c("to_multiple")], type = "response"),
+    obs = email[emailfolds$Fold3, ]$spam,
+    fold = rep("3rd quarter", length(emailfolds$Fold3))
+  )) |>
+  rbind(data.frame(
+    predicted = glm(spam ~ to_multiple, data = email[-emailfolds$Fold4, ], family = "binomial") |>
+      predict(newdata = email[emailfolds$Fold4, c("to_multiple")], type = "response"),
+    obs = email[emailfolds$Fold4, ]$spam,
+    fold = rep("4th quarter", length(emailfolds$Fold4))
+  )) |>
+  mutate(predspam = ifelse(predicted <= 0.1, 0, 1))
 
-#logCV1 %>%
-#  select(obs, predspam, fold) %>%
+# logCV1 |>
+#  select(obs, predspam, fold) |>
 #  table()
 
-#glm(spam ~ to_multiple, 
-#    data = email[-emailfolds$Fold1,], family = "binomial") %>% tidy() %>%
-#  select(term, estimate) %>%
+# glm(spam ~ to_multiple,
+#    data = email[-emailfolds$Fold1,], family = "binomial") |> tidy() |>
+#  select(term, estimate) |>
 #  mutate(estimate = round(estimate,2))
 ```
 
 ```{r}
 #| label: tbl-email-spam
-#| tbl-cap: 'The smaller model. One quarter at a time, the 
-#|   data were removed from the model building, and whether 
-#|   the email was spam (TRUE) or not (FALSE) was predicted. 
-#|   The logistic regression model was fit independently of 
-#|   the removed emails. Only `to_multiple` is used to 
-#|   predict whether the email is spam. Because we used a 
-#|   cutoff designed to identify spam emails, the accuracy 
-#|   of the non-spam email predictions is very low. `spamTP` 
-#|   is the proportion of true spam emails that were 
-#|   predicted to be spam.  `notspamTP` is the proportion of 
-#|   true not spam emails that were predicted to be not spam.'
-logCV1 %>%
-  group_by(fold) %>%
+#| tbl-cap: |
+#|   The smaller model. One quarter at a time, the data were removed from the 
+#|   model building, and whether the email was spam (TRUE) or not (FALSE) was 
+#|   predicted. The logistic regression model was fit independently of the 
+#|   removed emails. Only `to_multiple` is used to predict whether the email is 
+#|   spam. Because we used a cutoff designed to identify spam emails, the 
+#|   accuracy of the non-spam email predictions is very low. `spamTP` is the 
+#|   proportion of true spam emails that were predicted to be spam. `notspamTP` 
+#|   is the proportion of true not spam emails that were predicted to be not spam.
+#| tbl-pos: H
+logCV1 |>
+  group_by(fold) |>
   summarize(
     count = n(),
-    accuracy = sum(obs==predspam) / n(),
-    notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0),
+    accuracy = sum(obs == predspam) / n(),
+    notspamTP = sum(obs == 0 & predspam == 0) / sum(obs == 0),
     spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1)
-    ) %>%
-  kbl(linesep = "", booktabs = TRUE, 
-      digits = 2) %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE)
+  ) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    digits = 2
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped"), full_width = FALSE
+  )
 ```
 
 Because the `email` dataset has a ratio of roughly 90% non-spam and 10% spam emails, a model which randomly guessed all non-spam would have an overall accuracy of 90%!
@@ -418,60 +489,63 @@ However, the trade-off was that most of the non-spam emails are now predicted to
 Adding more variables to the model may help with both the spam and non-spam predictions.
 
 The larger model uses `to_multiple`, `attach`, `winner`, `format`, `re_subj`, `exclaim_mess`, and `number` as the set of seven predictor variables, see the complete dataset (not cross-validated) model output in @tbl-emaillogmodel2.
-The logistic regression model can be written as follows (where $\hat{p}$ is the estimated probability of being a spam email message).
+The logistic regression model can be written as follows, where $\hat{p}$ is the estimated probability of being a spam email message.
 
 **The larger model:**
 
 $$
 \begin{aligned}
-\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) = -0.34 &- 2.56 \times \texttt{to\_multiple}\\ 
-&+ 0.20 \times \texttt{attach} \\
-&+ 1.73 \times \texttt{winner}_{yes}\\
-&- 1.28 \times \texttt{format} \\
-&- 2.86 \times \texttt{re\_subj}\\
-&+ 0.00 \times \texttt{exclaim\_mess} \\
-&- 1.07 \times \texttt{number}_{small}\\
-&- 0.42 \times \texttt{number}_{big}
+\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) = -0.34 &- 2.56 \times \texttt{to\_multiple} + 0.20 \times \texttt{attach} + 1.73 \times \texttt{winner}_{yes} \\
+&- 1.28 \times \texttt{format} - 2.86 \times \texttt{re\_subj} + 0.00 \times \texttt{exclaim\_mess} \\
+&- 1.07 \times \texttt{number}_{small} - 0.42 \times \texttt{number}_{big}
 \end{aligned}
 $$
 
 ```{r}
 #| label: tbl-emaillogmodel2
-#| tbl-cap: The larger model. Summary of a logistic model for 
-#|   predicting whether an email is spam based on the variables 
-#|   `to_multiple`, `attach`, `winner`, `format`, `re_subj`, 
-#|   `exclaim_mess`, and `number`. Each of the variables has 
-#|   its own coefficient estimate and p-value.
-glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email, family = "binomial") %>% 
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
-  kbl(linesep = "", booktabs = TRUE, 
-      digits = 2, align = "lrrrr") %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position")) %>%
-  column_spec(1, width = "15em", monospace = TRUE) %>%
+#| tbl-cap: |
+#|   The larger model. Summary of a logistic model for predicting whether an 
+#|   email is spam based on the variables `to_multiple`, `attach`, `winner`, 
+#|   `format`, `re_subj`, `exclaim_mess`, and `number`. Each of the variables 
+#|   has its own coefficient estimate and p-value.
+#| tbl-pos: H
+glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email, family = "binomial") |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    digits = 2, align = "lrrrr"
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped")
+  ) |>
+  column_spec(1, width = "15em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
 ```{r}
 #| label: fig-emailCV2
 #| fig-cap: |
-#|   The larger model. The coefficients are estimated using the least squares model on 3/4 of the
-#|   dataset with the seven specified predictor variables. Predictions are made on the
-#|   remaining 1/4 of the observations. Note that the predictions are independent of
-#|   the estimated model coefficients. The predictions are now much better for both the spam and
-#|   the non-spam emails (than they were with a single predictor variable).
-#| out-width: 100%
+#|   The larger model. The coefficients are estimated using the least squares 
+#|   model on 3/4 of the dataset with the seven specified predictor variables. 
+#|   Predictions are made on the remaining 1/4 of the observations. Note that the 
+#|   predictions are independent of the estimated model coefficients. The 
+#|   predictions are now much better for both the spam and the non-spam emails 
+#|   (than they were with a single predictor variable).
 #| fig-alt: |
-#|   The left panel shows the logistic model predicting the probability of an
-#|   email being spam as a function of the email being sent to multiple recipients, number
-#|   of attachments, using the word winner, format of HTML, RE in the subject line, number
-#|   of exclamation points in the message, and the existence of a number in the email;
-#|   the model was built using the red, green, and yellow triangular sections of the
-#|   observed data. The right panel shows a confusion matrix of the predicted spam label
-#|   crossed with the observed spam label for the set of observations in the blue triangular
-#|   section of the observed data. Of the 97 spam emails, 73 were correctly classified
-#|   as spam. Of the 883 non-spam emails, 688 were correctly classified as not spam.
+#|   The left panel shows the logistic model predicting the probability of an 
+#|   email being spam as a function of the email being sent to multiple 
+#|   recipients, number of attachments, using the word winner, format of HTML, 
+#|   RE in the subject line, number of exclamation points in the message, and 
+#|   the existence of a number in the email; the model was built using the red, 
+#|   green, and yellow triangular sections of the observed data. The right panel 
+#|   shows a confusion matrix of the predicted spam label crossed with the 
+#|   observed spam label for the set of observations in the blue triangular 
+#|   section of the observed data. Of the 97 spam emails, 73 were correctly 
+#|   classified as spam. Of the 883 non-spam emails, 688 were correctly classified 
+#|   as not spam.
+#| out-width: 100%
 include_graphics("images/emailCV2.png")
 ```
 
@@ -480,57 +554,60 @@ set.seed(470)
 emailfolds <- caret::createFolds(email$spam, k = 4)
 
 logCV2 <- data.frame(
-  predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold1, ], family = "binomial") %>%
+  predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold1, ], family = "binomial") |>
     predict(newdata = email[emailfolds$Fold1, c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type = "response"),
   obs = email[emailfolds$Fold1, ]$spam,
   fold = rep("1st quarter", length(emailfolds$Fold1))
-) %>%
+) |>
   rbind(data.frame(
-    predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold2, ], family = "binomial") %>%
+    predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold2, ], family = "binomial") |>
       predict(newdata = email[emailfolds$Fold2, c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type = "response"),
     obs = email[emailfolds$Fold2, ]$spam,
     fold = rep("2nd quarter", length(emailfolds$Fold2))
-  )) %>%
+  )) |>
   rbind(data.frame(
-    predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold3, ], family = "binomial") %>%
+    predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold3, ], family = "binomial") |>
       predict(newdata = email[emailfolds$Fold3, c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type = "response"),
     obs = email[emailfolds$Fold3, ]$spam,
     fold = rep("3rd quarter", length(emailfolds$Fold3))
-  )) %>%
+  )) |>
   rbind(data.frame(
-    predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold4, ], family = "binomial") %>%
+    predicted = glm(spam ~ to_multiple + attach + winner + format + re_subj + exclaim_mess + number, data = email[-emailfolds$Fold4, ], family = "binomial") |>
       predict(newdata = email[emailfolds$Fold4, c("to_multiple", "attach", "winner", "format", "re_subj", "exclaim_mess", "number")], type = "response"),
     obs = email[emailfolds$Fold4, ]$spam,
     fold = rep("4th quarter", length(emailfolds$Fold4))
-  )) %>%
+  )) |>
   mutate(predspam = ifelse(predicted <= 0.1, 0, 1))
 ```
 
 ```{r}
 #| label: tbl-email-spam2
-#| tbl-cap: 'The larger model. One quarter at a time, the 
-#|   data were removed from the model building, and whether 
-#|   the email was spam (TRUE) or not (FALSE) was predicted. 
-#|   The logistic regression model was fit independently of 
-#|   the removed emails. Now, the variables `to_multiple`, 
-#|   `attach`, `winner`, `format`, `re_subj`, `exclaim_mess`, and 
-#|   `number` are used to predict whether the email is 
-#|    spam. `spamTP` is the proportion of true spam emails 
-#|    that were predicted to be spam.  `notspamTP` is the
-#|    proportion of true not spam emails that were predicted 
-#|    to be not spam.'
-logCV2 %>%
-  group_by(fold) %>%
+#| tbl-cap: |
+#|   The larger model. One quarter at a time, the data were removed from the 
+#|   model building, and whether the email was spam (TRUE) or not (FALSE) was 
+#|   predicted. The logistic regression model was fit independently of the 
+#|   removed emails. Now, the variables `to_multiple`, `attach`, `winner`, 
+#|   `format`, `re_subj`, `exclaim_mess`, and `number` are used to predict 
+#|   whether the email is  spam. `spamTP` is the proportion of true spam emails 
+#|   that were predicted to be spam. `notspamTP` is the proportion of true not 
+#|   spam emails that were predicted to be not spam.'
+#| tbl-pos: H
+logCV2 |>
+  group_by(fold) |>
   summarize(
     count = n(),
-    accuracy = sum(obs==predspam) / n(),
-    notspamTP = sum(obs == 0 & predspam == 0)/ sum(obs == 0),
+    accuracy = sum(obs == predspam) / n(),
+    notspamTP = sum(obs == 0 & predspam == 0) / sum(obs == 0),
     spamTP = sum(obs == 1 & predspam == 1) / sum(obs == 1)
-    ) %>%
-  kbl(linesep = "", booktabs = TRUE, 
-      digits = 2) %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), 
-                latex_options = c("striped", "hold_position"), full_width = FALSE)
+  ) |>
+  kbl(
+    linesep = "", booktabs = TRUE,
+    digits = 2
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    latex_options = c("striped"), full_width = FALSE
+  )
 ```
 
 Somewhat expected, the larger model (see @tbl-email-spam2) was able to capture more nuance in the emails which lead to better predictions.
