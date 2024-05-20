@@ -47,32 +47,33 @@ $$
 
 ```{r}
 #| label: tbl-loansmodel
-#| tbl-cap: 'Summary of a linear model for predicting interest 
-#|    rate based on `debt_to_income`, `term`, and 
-#|    `credit_checks`. Each of the variables has its 
-#|    own coefficient estimate as well as a p-value.'
-loans <- loans_full_schema %>%
+#| tbl-cap: |
+#|   Summary of a linear model for predicting interest rate based on
+#|   `debt_to_income`, `term`, and `credit_checks`. Each of the variables
+#|   has its own coefficient estimate as well as a p-value.
+#| tbl-pos: H
+loans <- loans_full_schema |>
   mutate(
     credit_util = total_credit_utilized / total_credit_limit,
     bankruptcy = as.factor(if_else(public_record_bankrupt == 0, 0, 1)),
     verified_income = droplevels(verified_income)
-  ) %>%
-  rename(credit_checks = inquiries_last_12m) %>%
+  ) |>
+  rename(credit_checks = inquiries_last_12m) |>
   select(interest_rate, verified_income, debt_to_income, credit_util, bankruptcy, term, credit_checks, issue_month)
 
 
-lm(interest_rate ~ debt_to_income + term + credit_checks, data = loans) %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) %>%
+lm(interest_rate ~ debt_to_income + term + credit_checks, data = loans) |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < 0.0001, "<0.0001", round(p.value, 4))) |>
   kbl(
     linesep = "", booktabs = TRUE,
     digits = 2, align = "lrrrr"
-  ) %>%
+  ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position")
-  ) %>%
-  column_spec(1, width = "17em", monospace = TRUE) %>%
+    latex_options = c("striped")
+  ) |>
+  column_spec(1, width = "10em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -140,29 +141,38 @@ The number of low coins is the number of coins minus the number of quarters (a q
 
 ```{r}
 #| label: fig-money
-#| fig-cap: A sample of coins with 16 total coins, 10 low coins, and a net worth of \$1.90.
+#| fig-cap: |
+#|   A sample of coins with 16 total coins, 10 low coins, and a net worth of \$1.90.
 #| fig-width: 10.0
-#| fig-alt: Graphic of five pennies, three nickles, two dimes, and six quarters. A summary
-#|   table indicates that there are 16 total coins, 10 of which are considered low coins.  The
-#|   total amount of money is one dollar and ninety cents.
+#| fig-alt: |
+#|   Graphic of five pennies, three nickles, two dimes, and six quarters. A summary
+#|   table indicates that there are 16 total coins, 10 of which are considered 
+#|   low coins. The total amount of money is one dollar and ninety cents.
 include_graphics("images/money.png")
 ```
-
-
 
 The collected data is given in @fig-coinfig and shows that the `total_amount` of money is more highly correlated with the total `number_of_coins` than it is with the `number_of_low_coins`.
 We also note that the total `number_of_coins` and the `number_of_low_coins` are positively correlated.
 
 ```{r}
 #| label: fig-coinfig
-#| fig-cap: Plot describing the total amount of money (USD) as a function of the number
-#|   of coins and the number of low coins. As you might expect, the total amount of money
-#|   is more highly postively correlated with the total number of coins than with the
-#|   number of low coins.
-#| fig-alt: Two scatterplots, both with total amount of money on the y-axis.  The left
+#| fig-cap: |
+#|   Two plots describing the total amount of money (USD) as a function of the 
+#|   total number of coins or low coins. As you might expect, the total amount 
+#|   of money is more highly postively correlated with the total number of coins
+#|   than with the number of low coins.
+#| fig-subcap: 
+#|   - Total number of coins on the x-axis.
+#|   - Number of low coins on the x-axis.
+#| fig-alt: |
+#|   Two scatterplots, both with total amount of money on the y-axis. The left
 #|   plot has total number of coins on the x-axis. The right plot has number of
-#|   low coins on the x-axis.  Both plots show positive correlation, but the total 
-#|   number of coins plot is more strongly correlated than the number of low coins plot.
+#|   low coins on the x-axis. Both plots show positive correlation, but the total
+#|   number of coins plot is more strongly correlated than the number of low coins
+#|   plot.
+#| layout-ncol: 2
+#| fig-width: 5
+#| out-width: 100%
 # Data are simulated
 money <- tibble(
   number_of_coins = c(9, 10, 3, 5, 10, 37, 28, 9, 11, 4, 6, 17, 15, 7, 9, 1, 5, 9, 36, 30, 47, 13, 5, 7, 18, 16),
@@ -170,16 +180,16 @@ money <- tibble(
   total_amount = c(1.37, 1.01, 1.5, 0.56, 0.61, 3.06, 5.42, 1.75, 5.4, 0.56, 0.34, 2.33, 3.34, 1.3, 1.2, 1.7, 0.86, 0.61, 2.96, 5.52, 8.95, 5.2, 1.56, 0.74, 1.83, 3.74)
 )
 
-p1 <- ggplot(money, aes(y = total_amount, x = number_of_coins)) +
+ggplot(money, aes(y = total_amount, x = number_of_coins)) +
   geom_point() +
   labs(x = "Number of coins", y = "Total amount (USD)")
 
-p2 <- ggplot(money, aes(y = total_amount, x = number_of_low_coins)) +
+ggplot(money, aes(y = total_amount, x = number_of_low_coins)) +
   geom_point() +
   labs(x = "Number of low coins", y = "Total amount (USD)")
-
-p1 + p2
 ```
+
+\vspace{-5mm}
 
 Using the total `number_of_coins` as the predictor variable, @tbl-coinhigh provides the least squares estimate of the coefficient is 0.13.
 For every additional coin in the dish, we would predict that the student had US\$0.13 more.
@@ -189,20 +199,22 @@ $$\widehat{\texttt{total\_amount}} = 0.55 + 0.13 \times \texttt{number\_of\_coin
 
 ```{r}
 #| label: tbl-coinhigh
-#| tbl-cap: 'Linear model output predicting the total amount 
-#|    of money based on the total number of coins.'
-lm(total_amount ~ number_of_coins, data = money) %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
+#| tbl-cap: |
+#|   Linear model output predicting the total amount of money based on the
+#|   total number of coins.
+#| tbl-pos: H
+lm(total_amount ~ number_of_coins, data = money) |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) |>
   kbl(
     linesep = "", booktabs = TRUE,
     digits = 2
-  ) %>%
+  ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position")
-  ) %>%
-  column_spec(1, width = "10em", monospace = TRUE) %>%
+    latex_options = c("striped")
+  ) |>
+  column_spec(1, width = "10em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -214,20 +226,22 @@ $$\widehat{\texttt{total\_amount}} = 2.28 + 0.02 \times \texttt{number\_of\_low\
 
 ```{r}
 #| label: tbl-coinlow
-#| tbl-cap: 'Linear model output predicting the total amount 
-#|    of money based on the number of low coins.'
-lm(total_amount ~ number_of_low_coins, data = money) %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
+#| tbl-cap: |
+#|   Linear model output predicting the total amount of money based on the
+#|   number of low coins.
+#| tbl-pos: H
+lm(total_amount ~ number_of_low_coins, data = money) |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) |>
   kbl(
     linesep = "", booktabs = TRUE,
     digits = 2, align = "lrrrr"
-  ) %>%
+  ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position")
-  ) %>%
-  column_spec(1, width = "10em", monospace = TRUE) %>%
+    latex_options = c("striped")
+  ) |>
+  column_spec(1, width = "10em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -243,8 +257,8 @@ Two samples of coins with the same number of low coins (3), but a different numb
 #| label: lowsame
 #| fig-alt: |
 #|   A set of four coins is shown: one of each penny, nickle, dime, and quarter.
-#|   One quarter is then added to create a set of five coins -- one penny, one 
-#|   nickle, one dime, and two quarters.  The two sets of coins have the same 
+#|   One quarter is then added to create a set of five coins -- one penny, one
+#|   nickle, one dime, and two quarters. The two sets of coins have the same
 #|   number of low coins but a different number of total coins.
 knitr::include_graphics("images/lowsame.png")
 ```
@@ -261,9 +275,9 @@ Two samples of coins with the same total number of coins (4), but a different nu
 ```{r}
 #| label: totalsame
 #| fig-alt: |
-#|   A set of four coins is shown: one of each penny, nickle, dime, and quarter.  
-#|   The quarter is then replaced with a penny to create a new set of four coins -- 
-#|   two pennies, one nickle, and one dime.  The two sets of coins have the same 
+#|   A set of four coins is shown: one of each penny, nickle, dime, and quarter.
+#|   The quarter is then replaced with a penny to create a new set of four coins --
+#|   two pennies, one nickle, and one dime. The two sets of coins have the same
 #|   number of total coins but a different number of low coins.
 knitr::include_graphics("images/totalsame.png")
 ```
@@ -292,21 +306,22 @@ $$
 
 ```{r}
 #| label: tbl-coinhighlow
-#| tbl-cap: 'Linear model output predicting the total amount 
-#|    of money based on both the total number of coins and 
-#|    the number of low coins.'
-lm(total_amount ~ number_of_coins + number_of_low_coins, data = money) %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
+#| tbl-cap: |
+#|    Linear model output predicting the total amount of money based on both
+#|    the total number of coins and the number of low coins.
+#| tbl-pos: H
+lm(total_amount ~ number_of_coins + number_of_low_coins, data = money) |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) |>
   kbl(
     linesep = "", booktabs = TRUE,
     digits = 2, align = "lrrrr"
-  ) %>%
+  ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position")
-  ) %>%
-  column_spec(1, width = "10em", monospace = TRUE) %>%
+    latex_options = c("striped")
+  ) |>
+  column_spec(1, width = "10em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -335,10 +350,13 @@ So if the task at hand is only to do prediction (and not to interpret coefficien
 Things I didn't talk about but could:
 
 * add R^2 and R^2_adj to the coin model
-* For assessing model fit, as is necessary, we will create residual plots of residual vs. fitted (instead of residual vs. X as we saw previously).  
+* For assessing model fit, as is necessary, we will create residual plots of residual vs. fitted (instead of residual vs. X as we saw previously). 
 * Give another example here with a quadratic relationship and the wonky things that can happen with the p-values.
 -->
 ```
+
+\clearpage
+
 ## Cross-validation for prediction error {#sec-inf-mult-reg-cv}
 
 In @sec-inf-mult-reg-soft, p-values were calculated on each of the model coefficients.
@@ -355,23 +373,28 @@ See @fig-cv for a visual representation of the cross-validation process.
 
 ```{r}
 #| label: fig-cv
-#| fig-cap: The dataset is broken into k folds (here k = 4).  One at a time, a model
-#|   is built using k-1 of the folds, and predictions are calculated on the single held
-#|   out sample which will be completely independent of the model estimation.
+#| fig-cap: |
+#|   The dataset is broken into k folds (here k = 4). One at a time, a model
+#|   is built using k-1 of the folds, and predictions are calculated on the 
+#|   single held out sample which will be completely independent of the model
+#|   estimation.
+#| fig-alt: |
+#|   A square represents the original observed data which has been partitioned
+#|   into four triangular segments. From the original partition, four different
+#|   settings are considered. The first setting is such that the red, green, and
+#|   yellow triangular representations of the data are used to build the model; 
+#|   the blue triangular representation of the data is heldout and used for
+#|   independent model prediction. The second setting is such that the blue, 
+#|   green, and yellow triangular representations of the data are used to build 
+#|   the model; the red triangular representation of the data is heldout and used
+#|   for independent model prediction. The third setting is such that the red, 
+#|   blue, and yellow triangular representations of the data are used to build 
+#|   the model; the green triangular representation of the data is heldout and 
+#|   used for independent model prediction. The fourth setting is such that the 
+#|   red, green, and blue triangular representations of the data are used to 
+#|   build the model; the yellow triangular representation of the data is 
+#|   held out and used for independent model prediction.
 #| fig-width: 10.0
-#| fig-alt: A square represents the original observed data which has been partitioned
-#|   into four triangular segments.  From the original partition, four different settings
-#|   are considered. The first setting is such that the red, green, and yellow triangular
-#|   representations of the data are used to build the model; the blue triangular representation
-#|   of the data is heldout and used for independent model prediction. The second setting
-#|   is such that the blue, green, and yellow triangular representations of the data
-#|   are used to build the model; the red triangular representation of the data is heldout
-#|   and used for independent model prediction. The third setting is such that the red,
-#|   blue, and yellow triangular representations of the data are used to build the model;
-#|   the green triangular representation of the data is heldout and used for independent
-#|   model prediction. The fourth setting is such that the red, green, and blue triangular
-#|   representations of the data are used to build the model; the yellow triangular representation
-#|   of the data is heldout and used for independent model prediction.
 include_graphics("images/CV.png")
 ```
 
@@ -426,24 +449,26 @@ $$
 
 ```{r}
 #| label: tbl-peng-lm-bill
-#| echo: false
-#| tbl-cap: 'The smalller model: least squares estimates of 
-#|   the regression model predicting `body_mass_g` from 
-#|   `bill_length_mm`.'
-lm(body_mass_g ~ bill_length_mm, data = penguins) %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
+#| tbl-cap: |
+#|   Least squares estimates for the smaller regression model
+#|   predicting `body_mass_g` from `bill_length_mm`.
+#| tbl-pos: H
+lm(body_mass_g ~ bill_length_mm, data = penguins) |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) |>
   kbl(
     linesep = "", booktabs = TRUE,
     digits = 2, align = "lrrrr"
-  ) %>%
+  ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position")
-  ) %>%
-  column_spec(1, width = "15em", monospace = TRUE) %>%
+    latex_options = c("striped")
+  ) |>
+  column_spec(1, width = "10em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
+
+\clearpage
 
 **The larger model:**
 
@@ -466,23 +491,23 @@ $$
 
 ```{r}
 #| label: tbl-peng-lm-all
-#| echo: false
-#| tbl-cap: 'The larger model: least squares estimates of the 
-#|   regression model predicting `body_mass_g` from `
-#|   bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, 
-#|   `sex`, and `species`.'
-lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins) %>%
-  tidy() %>%
-  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) %>%
+#| tbl-cap: |
+#|   Least squares estimates of the larger regression model
+#|   predicting `body_mass_g` from `bill_length_mm`, `bill_depth_mm`,
+#|   `flipper_length_mm`, `sex`, and `species`.
+#| tbl-pos: H
+lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins) |>
+  tidy() |>
+  mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) |>
   kbl(
     linesep = "", booktabs = TRUE,
     digits = 2, align = "lrrrr"
-  ) %>%
+  ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position")
-  ) %>%
-  column_spec(1, width = "15em", monospace = TRUE) %>%
+    latex_options = c("striped")
+  ) |>
+  column_spec(1, width = "10em", monospace = TRUE) |>
   column_spec(2:5, width = "5em")
 ```
 
@@ -496,72 +521,82 @@ Here we use a 4-fold cross-validation (meaning that one quarter of the data is r
 
 ```{r}
 #| label: fig-massCV1
-#| fig-cap: 'The smaller model. The coefficients are estimated using the least squares model on 3/4 of the
-#|   dataset with only a single predictor variable. Predictions are made on the remaining
-#|   1/4 of the observations. The y-axis in the scatterplot represents the residual:
-#|   true observed value minus the predicted value. Note that the predictions are independent
-#|   of the estimated model coefficients.'
-#| out-width: 100%
-#| fig-alt: The left panel shows the linear model predicting body mass in grams using
-#|   bill length in mm; the model was built using the red, green, and yellow triangular
-#|   sections of the observed data.  The right panel shows a scatterplot of the prediction
-#|   error versus the fitted values for the set of observations in the blue triangular
-#|   section of the observed data. The prediction errors range from roughly -1000 grams
-#|   to +1000 grams.
+#| fig-cap: |
+#|   The smaller model. The coefficients are estimated using the least squares 
+#|   model on 3/4 of the dataset with only a single predictor variable. 
+#|   Predictions are made on the remaining 1/4 of the observations. The y-axis 
+#|   in the scatterplot represents the residual, true observed value minus the
+#|   predicted value. Note that the predictions are independent of the 
+#|   estimated model coefficients.
+#| fig-alt: |
+#|   The left panel shows the linear model predicting body mass in grams using
+#|   bill length in mm; the model was built using the red, green, and yellow
+#|   triangular sections of the observed data. The right panel shows a 
+#|   scatterplot of the prediction error versus the fitted values for the set 
+#|   of observations in the blue triangular section of the observed data. 
+#|   The prediction errors range from roughly -1,000 grams to +1,000 grams.
+#| out-width: 90%
 include_graphics("images/massCV1.png")
 ```
 
+\vspace{-5mm}
+
 By repeating the process for each holdout quarter sample, the residuals from the model can be plotted against the predicted values.
-We see that the predictions are scattered which shows a good model fit but that the prediction errors vary $\pm$ 1000g of the true body mass.
+We see that the predictions are scattered which shows a good model fit but that the prediction errors vary $\pm$ 1,000 g of the true body mass.
 
 ```{r}
 #| label: fig-peng-mass1
-#| fig-cap: The smaller model. One quarter at a time, the data were removed from the model building, and
-#|   the body mass of the removed penguins was predicted. The least squares regression
-#|   model was fit independently of the removed penguins.  The predictions of body mass
-#|   are based on bill length only. The x-axis represents the predicted value, the y-axis
-#|   represents the error (difference between predicted value and actual value).
-#| fig-alt: One quarter at a time, the data were removed from the model building, and
-#|   the body mass of the removed penguins was predicted. The least squares regression
-#|   model was fit independently of the removed penguins.  The predictions of body mass
-#|   are based on bill length only. The x-axis represents the predicted value, the y-axis
-#|   represents the error (difference between predicted value and actual value). Four
-#|   different scatterplots are provided, one for each set of predictions (on a quarter
-#|   of the dataset).  All four sets of error values are centered around zero with most
-#|   observations between -500 and + 500.  Virtually all errors are between -1000 
-#|   and +1000.
+#| fig-cap: |
+#|   The smaller model. One quarter at a time, the data were removed from the 
+#|   model building, and the body mass of the removed penguins was predicted. 
+#|   The least squares regression model was fit independently of the removed 
+#|   penguins. The predictions of body mass are based on bill length only. 
+#|   The x-axis represents the predicted value, the y-axis represents the error, 
+#|   the difference between predicted value and actual value.
+#| fig-alt: |
+#|   One quarter at a time, the data were removed from the model building,
+#|   and the body mass of the removed penguins was predicted. The least squares 
+#|   regression model was fit independently of the removed penguins. The 
+#|   predictions of body mass are based on bill length only. The x-axis 
+#|   represents the predicted value, the y-axis represents the error, the 
+#|   difference between predicted value and actual value). Four different 
+#|   scatterplots are provided, one for each set of predictions (on a quarter 
+#|   of the dataset). All four sets of error values are centered around zero 
+#|   with most observations between -500 and + 500. Virtually all errors are 
+#|   between -1,000 and +1,000.
 #| out-width: 100%
+#| fig-asp: 0.6
 set.seed(47)
-penguins <- penguins %>% na.omit()
+penguins <- penguins |> na.omit()
 
 penguinfolds <- caret::createFolds(penguins$body_mass_g, k = 4)
 
 data.frame(
-  predicted = lm(body_mass_g ~ bill_length_mm, data = penguins[-penguinfolds$Fold1, ]) %>%
+  predicted = lm(body_mass_g ~ bill_length_mm, data = penguins[-penguinfolds$Fold1, ]) |>
     predict(newdata = penguins[penguinfolds$Fold1, c("bill_length_mm")]),
   obs = penguins[penguinfolds$Fold1, ]$body_mass_g,
   fold = rep("1st quarter", length(penguinfolds$Fold1))
-) %>%
+) |>
   rbind(data.frame(
-    predicted = lm(body_mass_g ~ bill_length_mm, data = penguins[-penguinfolds$Fold2, ]) %>%
+    predicted = lm(body_mass_g ~ bill_length_mm, data = penguins[-penguinfolds$Fold2, ]) |>
       predict(newdata = penguins[penguinfolds$Fold2, c("bill_length_mm")]),
     obs = penguins[penguinfolds$Fold2, ]$body_mass_g,
     fold = rep("2nd quarter", length(penguinfolds$Fold2))
-  )) %>%
+  )) |>
   rbind(data.frame(
-    predicted = lm(body_mass_g ~ bill_length_mm, data = penguins[-penguinfolds$Fold3, ]) %>%
+    predicted = lm(body_mass_g ~ bill_length_mm, data = penguins[-penguinfolds$Fold3, ]) |>
       predict(newdata = penguins[penguinfolds$Fold3, c("bill_length_mm")]),
     obs = penguins[penguinfolds$Fold3, ]$body_mass_g,
     fold = rep("3rd quarter", length(penguinfolds$Fold3))
-  )) %>%
+  )) |>
   rbind(data.frame(
-    predicted = lm(body_mass_g ~ bill_length_mm, data = penguins[-penguinfolds$Fold4, ]) %>%
+    predicted = lm(body_mass_g ~ bill_length_mm, data = penguins[-penguinfolds$Fold4, ]) |>
       predict(newdata = penguins[penguinfolds$Fold4, c("bill_length_mm")]),
     obs = penguins[penguinfolds$Fold4, ]$body_mass_g,
     fold = rep("4th quarter", length(penguinfolds$Fold4))
-  )) %>%
-  mutate(error = obs - predicted) %>%
-  #mutate(error2 = error^2) %>% summarize(sum(error2)) %>% pull() %>% format(scientific = FALSE)  
+  )) |>
+  mutate(error = obs - predicted) |>
+  # mutate(error2 = error^2) |> summarize(sum(error2)) |> pull() |> format(scientific = FALSE)
   ggplot(aes(x = predicted, y = error)) +
   geom_point() +
   geom_hline(yintercept = 0) +
@@ -580,19 +615,19 @@ data.frame(
 #| eval: false
 # this code is used to create the powerpoint images above
 massCV1 <- data.frame(
-  predicted = lm(body_mass_g ~ bill_length_mm, data = penguins[-penguinfolds$Fold1, ]) %>%
+  predicted = lm(body_mass_g ~ bill_length_mm, data = penguins[-penguinfolds$Fold1, ]) |>
     predict(newdata = penguins[penguinfolds$Fold1, c("bill_length_mm")]),
   obs = penguins[penguinfolds$Fold1, ]$body_mass_g,
   fold = rep("1st quarter", length(penguinfolds$Fold1))
 )
 
-lm(body_mass_g ~ bill_length_mm, data = penguins[-penguinfolds$Fold1, ]) %>%
-  tidy() %>%
-  select(term, estimate) %>%
+lm(body_mass_g ~ bill_length_mm, data = penguins[-penguinfolds$Fold1, ]) |>
+  tidy() |>
+  select(term, estimate) |>
   mutate(estimate = round(estimate, 2))
 
-massCV1 %>%
-  mutate(error = obs - predicted) %>%
+massCV1 |>
+  mutate(error = obs - predicted) |>
   ggplot(aes(x = predicted, y = error)) +
   geom_point() +
   geom_hline(yintercept = 0) +
@@ -626,62 +661,73 @@ Note that the residuals are mostly within $\pm$ 500g, providing much more precis
 
 ```{r}
 #| label: fig-massCV2
-#| fig-cap: 'The larger model. The coefficients are estimated using the least squares model on 3/4 of the
-#|   dataset with the five specified predictor variables. Predictions are made on the
-#|   remaining 1/4 of the observations.  The y-axis in the scatterplot represents the
-#|   residual: true observed value minus the predicted value. Note that the predictions
-#|   are independent of the estimated model coefficients.'
-#| out-width: 100%
-#| fig-alt: The left panel shows the linear model predicting body mass in grams using
-#|   bill length, bill depth, flipper length, sex, and species; the model was built using
-#|   the red, green, and yellow triangular sections of the observed data.  The right
-#|   panel shows a scatterplot of the prediction error versus the fitted values for the
-#|   set of observations in the blue triangular section of the observed data. The prediction
-#|   errors range from roughly -500 grams to +500 grams.
+#| fig-cap: |
+#|   The larger model. The coefficients are estimated using the least squares 
+#|   model on 3/4 of the dataset with the five specified predictor variables. 
+#|   Predictions are made on the remaining 1/4 of the observations. The y-axis 
+#|   in the scatterplot represents the residual, true observed value minus the 
+#|   predicted value. Note that the predictions are independent of the estimated 
+#|   model coefficients.
+#| fig-alt: |
+#|   The left panel shows the linear model predicting body mass in grams using 
+#|   bill length, bill depth, flipper length, sex, and species; the model was 
+#|   built using the red, green, and yellow triangular sections of the observed 
+#|   data. The right panel shows a scatterplot of the prediction error versus 
+#|   the fitted values for the set of observations in the blue triangular 
+#|   section of the observed data. The prediction errors range from roughly 
+#|   -500 grams to +500 grams.
+#| out-width: 90%
 include_graphics("images/massCV2.png")
 ```
 
 ```{r}
 #| label: fig-peng-mass2
-#| fig-cap: 'The larger model. One quarter at a time, the data were removed from the model building, and
-#|   the body mass of the removed penguins was predicted. The least squares regression
-#|   model was fit independently of the removed penguins.  The predictions of body mass
-#|   are based on the set of five variables described in @tbl-peng-lm-all. The x-axis represents the predicted value, the y-axis
-#|   represents the error (difference between predicted value and actual value).'
-#| fig-alt: One quarter at a time, the data were removed from the model building, and
-#|   the body mass of the removed penguins was predicted. The least squares regression
-#|   model was fit independently of the removed penguins.  The predictions of body mass
-#|   are based on the set of five variables described in the larger model. The x-axis represents the predicted value, the y-axis
-#|   represents the error (difference between predicted value and actual value). Four
-#|   different scatterplots are provided, one for each set of predictions (on a quarter
-#|   of the dataset).  All four sets of error values are centered around zero virtually
-#|   all errors are between -500 and + 500. 
+#| fig-cap: |
+#|   The larger model. One quarter at a time, the data were removed from the 
+#|   model building, and the body mass of the removed penguins was predicted. 
+#|   The least squares regression model was fit independently of the removed 
+#|   penguins. The predictions of body mass are based on the set of five 
+#|   variables described in @tbl-peng-lm-all. The x-axis represents the 
+#|   predicted value, the y-axis represents the error, the difference between 
+#|   predicted value and actual value.
+#| fig-alt: |
+#|   One quarter at a time, the data were removed from the model building, and 
+#|   the body mass of the removed penguins was predicted. The least squares 
+#|   regression model was fit independently of the removed penguins. The 
+#|   predictions of body mass are based on the set of five variables described 
+#|   in the larger model. The x-axis represents the predicted value, the y-axis 
+#|   represents the error, the  difference between predicted value and actual 
+#|   value. Four different scatterplots are provided, one for each set of 
+#|   predictions (on a quarter of the dataset). All four sets of error values 
+#|   are centered around zero virtually all errors are between -500 and + 500.
+#| out-width: 100%
+#| fig-asp: 0.6
 data.frame(
-  predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1, ]) %>%
+  predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1, ]) |>
     predict(newdata = penguins[penguinfolds$Fold1, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]),
   obs = penguins[penguinfolds$Fold1, ]$body_mass_g,
   fold = rep("1st quarter", length(penguinfolds$Fold1))
-) %>%
+) |>
   rbind(data.frame(
-    predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold2, ]) %>%
+    predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold2, ]) |>
       predict(newdata = penguins[penguinfolds$Fold2, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]),
     obs = penguins[penguinfolds$Fold2, ]$body_mass_g,
     fold = rep("2nd quarter", length(penguinfolds$Fold2))
-  )) %>%
+  )) |>
   rbind(data.frame(
-    predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold3, ]) %>%
+    predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold3, ]) |>
       predict(newdata = penguins[penguinfolds$Fold3, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]),
     obs = penguins[penguinfolds$Fold3, ]$body_mass_g,
     fold = rep("3rd quarter", length(penguinfolds$Fold3))
-  )) %>%
+  )) |>
   rbind(data.frame(
-    predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold4, ]) %>%
+    predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold4, ]) |>
       predict(newdata = penguins[penguinfolds$Fold4, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")]),
     obs = penguins[penguinfolds$Fold4, ]$body_mass_g,
     fold = rep("4th quarter", length(penguinfolds$Fold4))
-  )) %>%
-  mutate(error = obs - predicted) %>%
-  #mutate(error2 = error^2) %>% summarize(sum(error2)) %>% pull() %>% format(scientific = FALSE)
+  )) |>
+  mutate(error = obs - predicted) |>
+  # mutate(error2 = error^2) |> summarize(sum(error2)) |> pull() |> format(scientific = FALSE)
   ggplot(aes(x = predicted, y = error)) +
   geom_point() +
   geom_hline(yintercept = 0) +
@@ -689,8 +735,10 @@ data.frame(
   geom_hline(yintercept = -500, lty = 2, color = "grey") +
   facet_wrap(~fold) +
   ylim(c(-1000, 1000)) +
-  xlab("Predicted body mass (g)") +
-  ylab("Prediction error (g)")
+  labs(
+    x = "Predicted body mass (g)",
+    y = "Prediction error (g)"
+  )
 ```
 
 ```{r}
@@ -699,7 +747,7 @@ data.frame(
 # this code is used to create the powerpoint images above
 
 massCV1 <- data.frame(
-  predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1, ]) %>%
+  predicted = lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1, ]) |>
     predict(newdata = penguins[
       penguinfolds$Fold1,
       c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "sex", "species")
@@ -708,13 +756,13 @@ massCV1 <- data.frame(
   fold = rep("1st quarter", length(penguinfolds$Fold1))
 )
 
-lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1, ]) %>%
-  tidy() %>%
-  select(term, estimate) %>%
+lm(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm + sex + species, data = penguins[-penguinfolds$Fold1, ]) |>
+  tidy() |>
+  select(term, estimate) |>
   mutate(estimate = round(estimate, 2))
 
-massCV1 %>%
-  mutate(error = obs - predicted) %>%
+massCV1 |>
+  mutate(error = obs - predicted) |>
   ggplot(aes(x = predicted, y = error)) +
   geom_point() +
   geom_hline(yintercept = 0) +
@@ -722,12 +770,14 @@ massCV1 %>%
   geom_hline(yintercept = -500, lty = 2, color = "grey") +
   facet_wrap(~fold) +
   ylim(c(-1000, 1000)) +
-  xlab("Predicted Body Mass (g)") +
-  ylab("Prediction Error (g)") +
+  labs(
+    x = "Predicted body mass (g)",
+    y = "Prediction error (g)"
+  ) +
   theme(text = element_text(size = 20))
 ```
 
-@fig-peng-mass1 shows that the independent predictions are centered around the true values (i.e., errors are centered around zero), but that the predictions can be as much as 1000g off when using only `bill_length_mm` to predict `body_mass_g`.
+@fig-peng-mass1 shows that the independent predictions are centered around the true values (i.e., errors are centered around zero), but that the predictions can be as much as 1,000 g off when using only `bill_length_mm` to predict `body_mass_g`.
 On the other hand, when using `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` to predict `body_mass_g`, the prediction errors seem to be about half as big, as seen in @fig-peng-mass2.
 For the model using `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `sex`, and `species` to predict `body_mass_g`, the CV SSE is 27,728,698 (as compared to a CV SSE of 141,552,822 for the smaller model).
 Consistent with visually comparing the two sets of residual plots, the sum of squared prediction errors is smaller for the model which uses more predictor variables.
@@ -772,3 +822,4 @@ Answers to odd-numbered exercises can be found in [Appendix -@sec-exercise-solut
 ::: {.exercises data-latex=""}
 {{< include exercises/_25-ex-inf-model-mlr.qmd >}}
 :::
+
