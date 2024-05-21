@@ -27,9 +27,14 @@ Notice that there are racers from both the Men's and Women's divisions as well a
 The T11 athletes have almost complete visual impairment, run with a black-out blindfold, and are allowed to run with a guide-runner.
 T12 and T13 athletes have some visual impairment, and the visual acuity of Olympic runners is not determined.
 
+When you encounter a new dataset, taking a peek at the last few rows as we did in @tbl-paralympic-df-tail should be instinctual.
+It can be helpful to look at the first few rows of the data as well to get a sense of other aspects of the data which may not be apparent in the last few rows.
+@tbl-paralympic-df-head shows the top five rows of the `paralympic_1500` dataset, which reveals that for at least the first five Olympiads, there were no runners in the Women's division or in the Paralympics.
+
 ```{r}
 #| label: tbl-paralympic-df-tail
 #| tbl-cap: Last five rows of the `paralympic_1500` dataset.
+#| tbl-pos: H
 paralympic_1500 |>
   rowid_to_column() |>
   slice_tail(n = 5) |>
@@ -52,13 +57,10 @@ paralympic_1500 |>
   column_spec(10, width = "4em")
 ```
 
-When you encounter a new dataset, taking a peek at the last few rows as we did in @tbl-paralympic-df-tail should be instinctual.
-It can be helpful to look at the first few rows of the data as well to get a sense of other aspects of the data which may not be apparent in the last few rows.
-@tbl-paralympic-df-head shows the top five rows of the `paralympic_1500` dataset, which reveals that for at least the first five Olympiads, there were no runners in the Women's division or in the Paralympics.
-
 ```{r}
 #| label: tbl-paralympic-df-head
 #| tbl-cap: First five rows of the `paralympic_1500` dataset.
+#| tbl-pos: H
 paralympic_1500 |>
   rowid_to_column() |>
   slice_head(n = 5) |>
@@ -80,8 +82,6 @@ paralympic_1500 |>
   column_spec(8, width = "5em") |>
   column_spec(10, width = "4em")
 ```
-
-\clearpage
 
 At this stage it's also useful to think about how the data were collected, as that will inform the scope of any inference you can make based on your analysis of the data.
 
@@ -147,8 +147,6 @@ The categorical classification is due to the colon `:` which separates the hours
 Sometimes the data dictionary (presented in @tbl-paralympic-var-def) isn't sufficient for a complete analysis, and we need to go back to the data source and try to understand the data better before we can proceed with the analysis meaningfully.
 :::
 
-\clearpage
-
 Next, let's try to get to know each variable a little bit better.
 For categorical variables, this involves figuring out what their levels are and how commonly represented they are in the data.
 @fig-paralympic-cat shows the distributions of two of the categorical variables in this dataset.
@@ -158,23 +156,32 @@ Similarly, there are a large number of countries who have hosted the Games only 
 Over the last century, the name describing the country for athletes from one particular region has changed and includes Russian Federation, Unified Team, and Russian Paralympic Committee.
 Both of the visualizations are bar plots, which you will learn more about in @sec-explore-categorical.
 
+Similarly, we can examine the distributions of the numerical variables as well.
+We already know that the 1500m times are mostly between 3.5min and 4.5min, based on @tbl-paralympic-df-tail and @tbl-paralympic-df-head.
+We can break down the 1500m time by division and type of race.
+@tbl-paralympic-summary shows the mean, minimum, and maximum 1500m times broken down by division and race type.
+Recall that the Men's Olympic division has taken place since 1896, whereas the Men's Paralympic division has happened only since 1960.
+The maximum race time, therefore, should be taken into context in terms of the year of the Games.
+
 ```{r}
 #| label: fig-paralympic-cat
 #| fig-cap: |
 #|   Distributions of categorical variables in the `paralympic_1500` dataset.
-#|   Plot A shows the distribution of the country of origin of the athlete;
-#|   Plot B shows the distribution of the country in which the Games gook place.
+#| fig-subcap: 
+#|   - Country of origin of the athlete
+#|   - Country in which the Games gook place
 #| fig-alt: |
 #|   Two separate bar plots. The left panel shows a bar plot counting the number
 #|   of gold medal athletes from each country. Great Britain has had 8 top
 #|   finishers, Kenya has had 7 top finishers, and Tunisia and Algeria have both
 #|   had 5. The right panel shows a bar plot counting the number of Games which
 #|   have happened in each country. The USA has hosted 4 Games, the UK has hosted
-#|   3 Games, and each of Japan, Greece, Germany, France, and Australia have hosted
-#|   the Games twice.
-#| fig-asp: 1.1
-#| fig-width: 8
-p_country_games <- paralympic_1500 |>
+#|   3 Games, and each of Japan, Greece, Germany, France, and Australia have 
+#|   hosted the Games twice.
+#| fig-asp: 2
+#| fig-width: 4
+#| layout-ncol: 2
+paralympic_1500 |>
   group_by(country_of_games, year) |>
   sample_n(size = 1) |>
   ungroup() |>
@@ -195,7 +202,7 @@ p_country_games <- paralympic_1500 |>
   ) +
   theme(plot.title.position = "plot")
 
-p_country_athlete <- paralympic_1500 |>
+paralympic_1500 |>
   group_by(country_of_athlete, year) |>
   sample_n(size = 1) |>
   ungroup() |>
@@ -211,25 +218,7 @@ p_country_athlete <- paralympic_1500 |>
     title = "Country of athlete"
   ) +
   theme(plot.title.position = "plot")
-
-patchwork <- p_country_athlete | p_country_games
-
-patchwork +
-  plot_annotation(
-    title = "Olympic and Paralympic Games, Men's division",
-    tag_levels = "A"
-  ) &
-  theme(plot.tag = element_text(size = 12, color = "darkgray"))
 ```
-
-Similarly, we can examine the distributions of the numerical variables as well.
-We already know that the 1500m times are mostly between 3.5min and 4.5min, based on @tbl-paralympic-df-tail and @tbl-paralympic-df-head.
-We can break down the 1500m time by division and type of race.
-@tbl-paralympic-summary shows the mean, minimum, and maximum 1500m times broken down by division and race type.
-Recall that the Men's Olympic division has taken place since 1896, whereas the Men's Paralympic division has happened only since 1960.
-The maximum race time, therefore, should be taken into context in terms of the year of the Games.
-
-\clearpage
 
 ```{r}
 #| label: tbl-paralympic-summary
@@ -267,6 +256,7 @@ In fact, some internet sleuthing tells you that the *top four* T13 finishers all
 #|   The points are colored by which group the athlete is in - T11, T12, T13, or
 #|   Olympic. A vertical line at 2016 show that in the Rio Games the T13 gold medal
 #|   athlete was faster than the Olympic gold medal athlete.
+#| fig-asp: 0.5
 paralympic_1500 |>
   filter(division == "Men") |>
   filter(year > 1950) |>
@@ -290,8 +280,6 @@ paralympic_1500 |>
 So far we examined aspects of some of the individual variables, and we have broken down the 1500m race times in terms of division and race type.
 You might have already wondered how the race times vary across year.
 The `paralymic_1500` dataset will provide us with an ability to explore an important statistical concept, Simpson's paradox.
-
-\clearpage
 
 ## Simpson's paradox
 
