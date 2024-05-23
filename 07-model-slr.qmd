@@ -40,7 +40,6 @@ However, the prediction would be far from perfect, since other factors play a ro
 #|   stocks to purchase on the x-axis and total cost of the share purchase 
 #|   on the y-axis.
 #| fig-asp: 0.4
-#| fig-width: 6
 target <- simulated_scatter |>
   filter(group == 4)
 
@@ -106,7 +105,7 @@ As we move forward in this chapter, we will learn about criteria for line-fittin
 #|   positive linear relationship. The last panel shows no relationship 
 #|   between the x and y variables.
 #| out-width: 100%
-#| fig-asp: 0.3
+#| fig-asp: 0.25
 neg <- simulated_scatter |> filter(group == 1)
 pos <- simulated_scatter |> filter(group == 2)
 ran <- simulated_scatter |> filter(group == 3)
@@ -129,6 +128,8 @@ p_ran <- ggplot(ran, aes(x = x, y = y)) +
 p_neg + p_pos + p_ran
 ```
 
+\vspace{-5mm}
+
 There are also cases where fitting a straight line to the data, even if there is a clear relationship between the variables, is not helpful.
 One such case is shown in @fig-notGoodAtAllForALinearModel where there is a very clear relationship between the variables even though the trend is not linear.
 We discuss nonlinear trends in this chapter and the next, but details of fitting nonlinear models are saved for a later course.
@@ -145,7 +146,7 @@ We discuss nonlinear trends in this chapter and the next, but details of fitting
 #|   best fit is superimposed as a perfectly horizontal line. That is to say,
 #|   the variables are clearly related, but they do not have a linear 
 #|   relationship.
-#| fig-asp: 0.3
+#| fig-asp: 0.25
 bad <- simulated_scatter |> filter(group == 5)
 
 ggplot(bad, aes(x = x, y = y)) +
@@ -156,6 +157,8 @@ ggplot(bad, aes(x = x, y = y)) +
     y = "Distance Traveled (m)"
   )
 ```
+
+\clearpage
 
 ### Using linear regression to predict possum head lengths
 
@@ -194,6 +197,7 @@ While the relationship is not perfectly linear, it could be helpful to partially
 #|   y-axis. The variables show a moderately strong positive linear 
 #|   relationship. A single observation is circled in red with coordinates 
 #|   of approximately 84cm of total length and 87mm of head length.
+#| fig-asp: 0.5
 ggplot(possum, aes(x = total_l, y = head_l)) +
   geom_point(alpha = 0.7, size = 2) +
   labs(
@@ -211,6 +215,8 @@ ggplot(possum, aes(x = total_l, y = head_l)) +
 We want to describe the relationship between head and total length of possum's with a line.
 In this example, we will use the total length as the predictor variable, $x,$ to predict a possum's head length, $y.$ We could fit the linear relationship by eye, as in @fig-scattHeadLTotalLLine.
 
+\clearpage
+
 ```{r}
 #| label: fig-scattHeadLTotalLLine
 #| fig-cap: |
@@ -220,6 +226,7 @@ In this example, we will use the total length as the predictor variable, $x,$ to
 #|   A scatterplot with total length on the x-axis and head length on the 
 #|   y-axis. The variables show a moderately strong positive linear relationship.
 #|   A least squares line is superimposed.
+#| fig-asp: 0.5
 ggplot(possum, aes(x = total_l, y = head_l)) +
   geom_point(alpha = 0.7, size = 2) +
   labs(
@@ -231,6 +238,8 @@ ggplot(possum, aes(x = total_l, y = head_l)) +
 
 The equation for this line is
 
+\vspace{-5mm}
+
 $$
 \hat{y} = 41 + 0.59x
 $$
@@ -238,6 +247,8 @@ $$
 A "hat" on $y$ is used to signify that this is an estimate.
 We can use this line to discuss properties of possums.
 For instance, the equation predicts a possum with a total length of 80 cm will have a head length of
+
+\vspace{-5mm}
 
 $$
 \hat{y} = 41 + 0.59 \times 80 = 88.2
@@ -266,7 +277,9 @@ It's harder to tell if age changes the relationship between total length and hea
 #|   length on the y-axis. The top plot colors the points by sex where the female
 #|   possums seem slightly longer with slightly smaller head lengths. The bottom
 #|   plot is colored by age with no obvious trends between age and lengths.
-#| fig-asp: 0.45
+#| layout-ncol: 2
+#| fig-width: 5
+#| out-width: 100%
 p_sex <- ggplot(possum, aes(x = total_l, y = head_l, shape = sex, color = sex)) +
   geom_point(alpha = 0.8, size = 2) +
   scale_color_manual(values = c(IMSCOL["red", "full"], IMSCOL["blue", "full"])) +
@@ -308,7 +321,7 @@ $$
 Each observation will have a residual, and three of the residuals for the linear model we fit for the possum data are shown in @fig-scattHeadLTotalLLine-highlighted.
 If an observation is above the regression line, then its residual, the vertical distance from the observation to the line, is positive.
 Observations below the line have negative residuals.
-One goal in picking the right linear model is for these residuals to be as small as possible.
+One goal in picking the right linear model is for residuals to be as small as possible.
 
 ```{r}
 #| include: false
@@ -379,25 +392,15 @@ We typically identify $\hat{y}_i$ by plugging $x_i$ into the model.
 :::
 
 ::: {.workedexample data-latex=""}
-The linear fit shown in @fig-scattHeadLTotalLLine-highlighted is given as $\hat{y} = 41 + 0.59x.$ Based on this line, formally compute the residual of the observation $(76.0, 85.1).$ This observation is marked by a red circle in @fig-scattHeadLTotalLLine-highlighted.
+The linear fit shown in @fig-scattHeadLTotalLLine-highlighted is given as $\hat{y} = 41 + 0.59x.$ Based on this line, compute the residual of the observation $(76.0, 85.1).$ This observation is marked by a red circle in @fig-scattHeadLTotalLLine-highlighted.
 Check it against the earlier visual estimate, -1.
 
 ------------------------------------------------------------------------
 
-We first compute the predicted value of the observation marked by a red circle based on the model:
-
-$$
-\hat{y} = 41+0.59x = 41+0.59\times 76.0 = 85.84
-$$
-
-Next we compute the difference of the actual head length and the predicted head length:
-
-$$
-e = y - \hat{y} = 85.1 -  85.84 = -0.74
-$$
-
+We first compute the predicted value of the observation marked by a red circle based on the model: $\hat{y} = 41+0.59x = 41+0.59\times 76.0 = 85.84$.
+Next we compute the difference of the actual head length and the predicted head length: $e = y - \hat{y} = 85.1 -  85.84 = -0.74$.
 The model's error is $e = -0.74$ mm, which is very close to the visual estimate of -1 mm.
-The negative residual indicates that the linear model overpredicted head length for this particular possum.
+The negative residual indicates that the linear model overpredicted head length for this possum.
 :::
 
 ::: {.guidedpractice data-latex=""}
@@ -483,33 +486,15 @@ ggplot(m_head_total_aug, aes(x = .fitted, y = .resid)) +
   )
 ```
 
+\clearpage
+
 ::: {.workedexample data-latex=""}
 One purpose of residual plots is to identify characteristics or patterns still apparent in data after fitting a model.
-@fig-sampleLinesAndResPlots shows three scatterplots with linear models in the first row and residual plots in the second row.
-Can you identify any patterns remaining in the residuals?
-
-------------------------------------------------------------------------
-
-In the first dataset (first column), the residuals show no obvious patterns.
-The residuals appear to be scattered randomly around the dashed line that represents 0.
-
-The second dataset shows a pattern in the residuals.
-There is some curvature in the scatterplot, which is more obvious in the residual plot.
-We should not use a straight line to model these data.
-Instead, a more advanced technique should be used to model the curved relationship, such as the variable transformations discussed in @sec-transforming-data.
-
-The last plot shows very little upwards trend, and the residuals also show no obvious patterns.
-It is reasonable to try to fit a linear model to the data.
-However, it is unclear whether there is evidence that the slope parameter is different from zero.
-The point estimate of the slope parameter, labeled $b_1,$ is not zero, but we might wonder if this could just be due to chance.
-We will address this sort of scenario in @sec-inf-model-slr.
-:::
+The figure below shows three scatterplots with linear models in the first row and residual plots in the second row.
+Can you identify any patterns in the residuals?
 
 ```{r}
-#| label: fig-sampleLinesAndResPlots
-#| fig-cap: |
-#|   Sample data with their best fitting lines (top row) and their corresponding
-#|   residual plots (bottom row).
+#| label: sampleLinesAndResPlots
 #| fig-alt: |
 #|   A grid of 2 by 3 scatterplots with fabricated data. The top row of 
 #|   plots contains original x-y data plots with a least squares regression line. 
@@ -519,6 +504,7 @@ We will address this sort of scenario in @sec-inf-model-slr.
 #|   column of plots gives an example where the correct model seems to be quadratic 
 #|   insead of linear. The third column of points gives an example where there is 
 #|   no visual relationship between x and y.
+#| fig-align: center
 #| fig-asp: 0.5
 neg_lin <- simulated_scatter |> filter(group == 6)
 neg_cur <- simulated_scatter |> filter(group == 7)
@@ -532,19 +518,22 @@ p_neg_lin <- ggplot(neg_lin, aes(x = x, y = y)) +
   geom_point(size = 2, alpha = 0.8) +
   geom_smooth(method = "lm", se = FALSE) +
   theme_void() +
-  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
+  labs(title = "Dataset 1")
 
 p_neg_cur <- ggplot(neg_cur, aes(x = x, y = y)) +
   geom_point(size = 2, alpha = 0.8) +
   geom_smooth(method = "lm", se = FALSE) +
   theme_void() +
-  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))+
+  labs(title = "Dataset 2")
 
 p_random <- ggplot(random, aes(x = x, y = y)) +
   geom_point(size = 2, alpha = 0.8) +
   geom_smooth(method = "lm", se = FALSE) +
   theme_void() +
-  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1))
+  theme(panel.border = element_rect(colour = "gray", fill = NA, size = 1)) +
+  labs(title = "Dataset 3")
 
 p_neg_lin_res <- ggplot(neg_lin_mod, aes(x = .fitted, y = .resid)) +
   geom_point(size = 2, alpha = 0.8) +
@@ -570,6 +559,23 @@ p_neg_lin + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) +
   p_neg_cur_res + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + p_random_res +
   plot_layout(ncol = 3, heights = c(2, 1))
 ```
+
+------------------------------------------------------------------------
+
+Dataset 1: the residuals show no obvious patterns.
+The residuals are scattered randomly around 0, represented by the dashed line.
+
+Dataset 2: The second dataset shows a pattern in the residuals.
+There is some curvature in the scatterplot, which is more obvious in the residual plot.
+We should not use a straight line to model these data.
+Instead, a more advanced technique should be used to model the curved relationship, such as the variable transformations discussed in @sec-transforming-data.
+
+Dataset 3: The last plot shows very little upwards trend, and the residuals also show no obvious patterns.
+It is reasonable to try to fit a linear model to the data.
+However, it is unclear whether there is evidence that the slope parameter is different from zero.
+The point estimate of the slope parameter is not zero, but we might wonder if this could just be due to chance.
+We will address this scenario in @sec-inf-model-slr.
+:::
 
 ### Describing linear relationships with correlation
 
@@ -600,6 +606,8 @@ r = \frac{1}{n-1} \sum_{i=1}^{n} \frac{x_i-\bar{x}}{s_x}\frac{y_i-\bar{y}}{s_y}
 $$
 
 where $\bar{x},$ $\bar{y},$ $s_x,$ and $s_y$ are the sample means and standard deviations for each variable.
+
+\clearpage
 
 @fig-posNegCorPlots shows eight plots and their corresponding correlations.
 Only when the relationship is perfectly linear is the correlation either -1 or +1.
@@ -655,7 +663,7 @@ Nonlinear trends, even when strong, sometimes produce correlations that do not r
 #|   trend (like a sin wave) with a correlation of 0.31. The third plot shows
 #|   a distinct relationship that is not obviously functional and has a 
 #|   correlation of 0.5.
-#| fig-asp: 0.3
+#| fig-asp: 0.25
 #| out-width: 100%
 simulated_scatter |>
   filter(group %in% 17:19) |>
@@ -683,6 +691,8 @@ Once you create a curve for each, describe what is important in your fit.[^07-mo
 [^07-model-slr-4]: We'll leave it to you to draw the lines.
     In general, the lines you draw should be close to most points and reflect overall trends in the data.
 
+\clearpage
+
 ::: {.workedexample data-latex=""}
 The plot below displays the relationships between various crop yields in countries.
 In the plots, each point represents a different country.
@@ -692,7 +702,6 @@ Order the six scatterplots from strongest negative to strongest positive linear 
 
 ```{r}
 #| label: crop-yields-af-prep
-
 # from tidytuesday: https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-01/key_crop_yields.csv
 
 crops_country <- read_csv("data/key_crop_yields.csv")
@@ -728,6 +737,7 @@ crops_country <- crops_country |>
 #|   do not seem correlated at all.
 #| fig-asp: 0.8
 #| out-width: 90%
+#| fig-align: center
 sb <- ggplot(crops_country) +
   geom_point(aes(x = prop_soybeans, y = prop_bananas), alpha = 0.7) +
   scale_x_continuous(
@@ -907,6 +917,7 @@ Is the correlation positive or negative in @fig-elmhurstScatterWLine?[^07-model-
 #| fig-alt: |
 #|   Scatterplot with family income on the x-axis and gift aid on the
 #|   y-axis. The relationship is moderate negative and linear.
+#| fig-asp: 0.6
 ggplot(elmhurst, aes(x = family_income, y = gift_aid)) +
   geom_point(size = 2) +
   geom_smooth(method = "lm", se = FALSE) +
@@ -918,14 +929,14 @@ ggplot(elmhurst, aes(x = family_income, y = gift_aid)) +
   )
 ```
 
+\vspace{-5mm}
+
 ### An objective measure for finding the best line
 
 We begin by thinking about what we mean by the "best" line.
 Mathematically, we want a line that has small residuals.
 But beyond the mathematical reasons, hopefully it also makes sense intuitively that whatever line we fit, the residuals should be small (i.e., the points should be close to the line).
 The first option that may come to mind is to minimize the sum of the residual magnitudes:
-
-\vspace{-5mm}
 
 $$
 |e_1| + |e_2| + \dots + |e_n|
@@ -947,6 +958,7 @@ The resulting dashed line shown in @fig-elmhurstScatterW2Lines demonstrates this
 #|   superimposed on the scatterplot. One line is fit to the data by minimizing
 #|   the sum of squared residuals, i.e., the least squares line. The other line
 #|   is fit to the data by minimizing the sum of the abolute value of the residuals.
+#| fig-asp: 0.6
 ggplot(elmhurst, aes(x = family_income, y = gift_aid)) +
   geom_point(alpha = 0.8) +
   geom_smooth(method = "lm", se = FALSE) +
@@ -959,13 +971,13 @@ ggplot(elmhurst, aes(x = family_income, y = gift_aid)) +
   )
 ```
 
-\clearpage
-
 However, a more common practice is to choose the line that minimizes the sum of the squared residuals:
 
 $$
 e_{1}^2 + e_{2}^2 + \dots + e_{n}^2
 $$
+
+\clearpage
 
 The line that minimizes this least squares criterion is represented as the solid line in @fig-elmhurstScatterW2Lines and is commonly called the **least squares line**\index{least squares line}.
 The following are three possible reasons to choose the least squares option instead of trying to minimize the sum of residual magnitudes without any squaring:
@@ -1005,6 +1017,7 @@ The first 5 rows of this dataset are given in @tbl-elmhurst-data.
 ```{r}
 #| label: tbl-elmhurst-data
 #| tbl-cap: First five rows of the `elmhurst` dataset.
+#| tbl-pos: H
 elmhurst |>
   slice_head(n = 5) |>
   kbl(linesep = "", booktabs = TRUE) |>
@@ -1036,6 +1049,7 @@ m_ga_fi_slope <- m_ga_fi |>
 ```{r}
 #| label: tbl-rOutputForIncomeAidLSRLine
 #| tbl-cap: Summary of least squares fit for the Elmhurst data.
+#| tbl-pos: H
 m_ga_fi |>
   mutate(p.value = ifelse(p.value < .0001, "<0.0001", round(p.value, 4))) |>
   kbl(
@@ -1101,7 +1115,7 @@ We could plot the point $(102, 19.9)$ on @fig-elmhurstScatterWLine to verify it 
 ```{r}
 #| label: tbl-summaryStatsElmhurstRegr
 #| tbl-cap: Summary statistics for family income and gift aid.
-
+#| tbl-pos: H
 elmhurst |>
   select(family_income, gift_aid) |>
   summarise(
@@ -1124,7 +1138,7 @@ elmhurst |>
   column_spec(1:5, width = "6em")
 ```
 
-Next, we formally find the point estimates $b_0$ and $b_1$ of the parameters $\beta_0$ and $\beta_1.$
+Next, we find the point estimates $b_0$ and $b_1$ of the parameters $\beta_0$ and $\beta_1.$
 
 ::: {.workedexample data-latex=""}
 Using the summary statistics in @tbl-summaryStatsElmhurstRegr, compute the slope for the regression line of gift aid against family income.
@@ -1161,6 +1175,8 @@ Using the point (102, 19.9) from the sample means and the slope estimate $b_1 = 
 
 Apply the point-slope equation using $(102, 19.9)$ and the slope $b_1 = -0.0431$:
 
+\vspace{-5mm}
+
 $$
 \begin{aligned}
 y - y_0  &= b_1 (x - x_0) \\
@@ -1170,6 +1186,8 @@ $$
 
 Expanding the right side and then adding 19.9 to each side, the equation simplifies:
 
+\vspace{-5mm}
+
 $$
 \widehat{\texttt{aid}} = 24.3 - 0.0431 \times \texttt{family\_income}
 $$
@@ -1178,6 +1196,8 @@ Here we have replaced $y$ with $\widehat{\texttt{aid}}$ and $x$ with $\texttt{fa
 The final least squares equation should always include a "hat" on the variable being predicted, whether it is a generic $``y"$ or a named variable like $``aid"$.
 :::
 
+\clearpage
+
 ::: {.workedexample data-latex=""}
 Suppose a high school senior is considering Elmhurst College.
 Can they simply use the linear equation that we have estimated to calculate her financial aid from the university?
@@ -1185,9 +1205,9 @@ Can they simply use the linear equation that we have estimated to calculate her 
 ------------------------------------------------------------------------
 
 She may use it as an estimate, though some qualifiers on this approach are important.
-First, the data all come from one first-year class, and the way aid is determined by the university may change from year to year.
+First, all data come from one first-year class, and the way aid is determined by the university may change from year to year.
 Second, the equation will provide an imperfect estimate.
-While the linear equation is good at capturing the trend in the data, no individual student's aid will be perfectly predicted (as can be seen from the individual data points in the cloud around the line).
+While the linear equation is good at modeling the trend in the data, no individual student's aid will be perfectly predicted (as can be seen from the individual data points around the line).
 :::
 
 ### Extrapolation is treacherous
@@ -1206,6 +1226,8 @@ Use the model $\widehat{\texttt{aid}} = 24.3 - 0.0431 \times \texttt{family\_inc
 We want to calculate the aid for a family with \$1 million income.
 Note that in our model this will be represented as 1,000 since the data are in \$1,000s.
 
+\vspace{-5mm}
+
 $$
 24.3 - 0.0431 \times 1000 = -18.8
 $$
@@ -1213,6 +1235,8 @@ $$
 The model predicts this student will have -\$18,800 in aid (!).
 However, Elmhurst College does not offer *negative aid* where they select some students to pay extra on top of tuition to attend.
 :::
+
+\vspace{-5mm}
 
 Applying a model estimate to values outside of the realm of the original data is called **extrapolation**\index{extrapolation}.
 Generally, a linear model is only an approximation of the real relationship between two variables.
@@ -1253,6 +1277,8 @@ It turns out that $R^2$ corresponds exactly to the squared value of the correlat
 $$
 r = -0.499 \rightarrow R^2 = 0.25
 $$
+
+\clearpage
 
 ::: {.guidedpractice data-latex=""}
 If a linear model has a very strong negative relationship with a correlation of -0.97, how much of the variation in the outcome is explained by the predictor?[^07-model-slr-8]
@@ -1399,7 +1425,7 @@ terms_chp_07 <- c(terms_chp_07, "indicator variable")
 #| tbl-cap: |
 #|   Least squares regression summary for the final auction price against the
 #|   condition of the game.
-
+#| tbl-pos: H
 m_total_pr_cond <- lm(total_pr ~ cond, data = mariokart_lt100)
 m_total_pr_cond_tidy <- tidy(m_total_pr_cond)
 
@@ -1454,8 +1480,6 @@ However, when the predictor variable is binary, the coefficient estimates ($b_0$
 
 We'll elaborate further on modeling categorical predictors in @sec-model-mlr, where we examine the influence of many predictor variables simultaneously using multiple regression.
 
-\clearpage
-
 ## Outliers in linear regression {#sec-outliers-in-regression}
 
 In this section, we discuss when outliers are important and influential.
@@ -1479,11 +1503,32 @@ B: There is one outlier on the right (in the $x$ and $y$ direction although it i
 C: There is one point far away from the cloud (in the $x$ and $y$ direction and an outlier of the bivariate model), and this outlier appears to pull the least squares line up on the right; examine how the line around the primary cloud does not appear to fit very well.
 :::
 
+::: {.workedexample data-latex=""}
+There are three plots shown in @fig-outlier-plots-2 along with the least squares line and residual plots.
+As you did in previous exercise, for each scatterplot and residual plot pair, identify the outliers and note how they influence the least squares line.
+Recall that an outlier is any point that does not appear to belong with the vast majority of the other points. A point can be outlying in the $x$ direction, in the $y$ direction, or in relation to the bivariate model.
+
+------------------------------------------------------------------------
+
+D: There is a primary cloud and then a small secondary cloud of four outliers (with respect to both $x$ and the bivariate model).
+The secondary cloud appears to be influencing the line somewhat strongly, making the least square line fit poorly almost everywhere.
+There might be an interesting explanation for the dual clouds, which is something that could be investigated.
+
+E: There is no obvious trend in the main cloud of points and the outlier on the right (with respect to both $x$ and $y$) appears to largely (and problematically) control the slope of the least squares line.
+The point creates a bivariate model when seemingly there is none. 
+
+F: There is one outlier far from the cloud (with respect to both $x$ and $y$).
+However, it falls quite close to the least squares line and does not appear to be very influential (it is not outlying with respect to the bivariate model).
+:::
+
 ```{r}
-#| label: fig-outlier-plots-1
+#| label: fig-outlier-plots
 #| fig-cap: |
-#|   Three plots, each with a least squares line and corresponding residual plot.
-#|   Each dataset has at least one outlier.
+#|   Plots of six datasets, each with a least squares line and 
+#|   corresponding residual plot. Each dataset has at least one outlier.
+#| fig-subcap: 
+#|   - Plots A, B, and C
+#|   - Plots D, E, and F
 #| fig-alt: |
 #|   A grid of 2 by 3 scatterplots with fabricated data, all of which 
 #|   contain at least one outlying observation. The top row of plots contains
@@ -1494,9 +1539,17 @@ C: There is one point far away from the cloud (in the $x$ and $y$ direction and 
 #|   regression line. The second column gives an example of a point which is
 #|   outlying in both the x and y directions but it is not a model outlier.
 #|   The third column gives an example of a point that pulls the regression
-#|   line toward it, impacting the least squares line.
+#|   line toward it, impacting the least squares line. The fourth column of 
+#|   plots gives an example of a small cloud of points that drags the 
+#|   regression line toward it. The fifth column gives an example of a point 
+#|   which is outlying enough in both the x and y direction that it changes 
+#|   a model which has no linearity into what seems like a strong positive
+#|   relationship. The sixth column gives an example of a point that is far 
+#|   in both the x and y directions but is in-line with the regression model 
+#|   and has very little impact on the least squares regression line.
 #| out-width: 100%
-#| fig-asp: 0.5
+#| fig-asp: 0.4
+# abc
 d1 <- simulated_scatter |>
   filter(group == 24) |>
   mutate(outlier = if_else(y == min(y), TRUE, FALSE))
@@ -1624,46 +1677,8 @@ p_1 + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) +
   p_1_res + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) +
   p_2_res + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) + p_3_res +
   plot_layout(ncol = 3, heights = c(2, 1))
-```
 
-::: {.workedexample data-latex=""}
-There are three plots shown in @fig-outlier-plots-2 along with the least squares line and residual plots.
-As you did in previous exercise, for each scatterplot and residual plot pair, identify the outliers and note how they influence the least squares line.
-Recall that an outlier is any point that does not appear to belong with the vast majority of the other points. A point can be outlying in the $x$ direction, in the $y$ direction, or in relation to the bivariate model.
-
-------------------------------------------------------------------------
-
-D: There is a primary cloud and then a small secondary cloud of four outliers (with respect to both $x$ and the bivariate model).
-The secondary cloud appears to be influencing the line somewhat strongly, making the least square line fit poorly almost everywhere.
-There might be an interesting explanation for the dual clouds, which is something that could be investigated.
-
-E: There is no obvious trend in the main cloud of points and the outlier on the right (with respect to both $x$ and $y$) appears to largely (and problematically) control the slope of the least squares line.
-The point creates a bivariate model when seemingly there is none. 
-
-F: There is one outlier far from the cloud (with respect to both $x$ and $y$).
-However, it falls quite close to the least squares line and does not appear to be very influential (it is not outlying with respect to the bivariate model).
-:::
-
-```{r}
-#| label: fig-outlier-plots-2
-#| fig-cap: |
-#|   Three plots, each with a least squares line and residual plot. 
-#|   All datasets have at least one outlier.
-#| fig-alt: |
-#|   A grid of 2 by 3 scatterplots with fabricated data, all of which 
-#|   contain at least one outlying observation. The top row of plots contains
-#|   original x-y data plots with a least squares regression line. The bottom row 
-#|   of plots is a series of residual plot with predicted value on the x-axis and 
-#|   residual on the y-axis. The first column of plots gives an example of a small
-#|   cloud of points that drags the regression line toward it. The second column 
-#|   gives an example of a point which is
-#|   outlying enough in both the x and y direction that it changes a model which 
-#|   has no linearity into what seems like a strong positive relationship.
-#|   The third column gives an example of a point that is far in both the x
-#|   and y directions but is in-line with the regression model and has very
-#|   little impact on the least squares regression line.
-#| out-width: 100%
-#| fig-asp: 0.5
+# def
 d4 <- simulated_scatter |>
   filter(group == 27)
 
@@ -1744,12 +1759,12 @@ p_4 + theme(plot.margin = unit(c(0, 10, 5, 0), "pt")) +
   plot_layout(ncol = 3, heights = c(2, 1))
 ```
 
+\clearpage
+
 Examine the residual plots in @fig-outlier-plots-1 and @fig-outlier-plots-2.
 In Plots C, D, and E, you will probably find that there are a few observations which are both away from the remaining points along the x-axis and not in the trajectory of the trend in the rest of the data.
 In these cases, the outliers influenced the slope of the least squares lines.
 In Plot E, the bulk of the data show no clear trend, but if we fit a line to these data, we impose a trend where there isn't really one.
-
-\clearpage
 
 A good practice for dealing with outlying observations is to produce two analyses: one with and one without the outlying observations. Presenting both analyses to a client and discussing the role of the outlying observations should lead you to a more holistic understanding of the appropriate model for the data.
 
@@ -1815,3 +1830,7 @@ Answers to odd-numbered exercises can be found in [Appendix -@sec-exercise-solut
 ::: {.exercises data-latex=""}
 {{< include exercises/_07-ex-model-slr.qmd >}}
 :::
+
+
+
+

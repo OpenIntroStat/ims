@@ -214,10 +214,11 @@ terms_chp_13 <- c(terms_chp_13, "normal curve", "normal model", "normal distribu
 ::: {.important data-latex=""}
 **Normal distribution facts.**
 
-Many summary statistics and variables are nearly normal, but none are exactly normal.
-Thus the normal distribution, while not perfect for any single problem, is very useful for a variety of problems.
-We will use it in data exploration and to solve important problems in statistics.
+Distributions of many variables are nearly normal, but none are exactly normal.
+Thus, the normal distribution, while not perfect for any single problem, is very useful for a variety of problems.
 :::
+
+\vspace{-2mm}
 
 In this section, we will discuss the normal distribution in the context of data to become familiar with normal distribution techniques.
 In the following sections and beyond, we'll move our discussion to focus on applying the normal distribution and other related distributions to model point estimates for hypothesis tests and for constructing confidence intervals.
@@ -228,32 +229,33 @@ The normal distribution always describes a symmetric, unimodal, bell-shaped curv
 However, normal curves can look different depending on the details of the model.
 Specifically, the normal model can be adjusted using two parameters: mean and standard deviation.
 As you can probably guess, changing the mean shifts the bell curve to the left or right, while changing the standard deviation stretches or constricts the curve.
-@fig-twoSampleNormals shows the normal distribution with mean $0$ and standard deviation $1$ (which is commonly referred to as the **standard normal distribution**\index{standard normal distribution}) on the left.
+@fig-twoSampleNormals-1 shows the normal distribution with mean $0$ and standard deviation $1$ (which is commonly referred to as the **standard normal distribution**\index{standard normal distribution}).
 A normal distribution with mean $19$ and standard deviation $4$ is shown on the right.
 @fig-twoSampleNormalsStacked shows the same two normal distributions on the same axis.
+
+\vspace{-3mm}
 
 ```{r}
 #| label: fig-twoSampleNormals
 #| fig-cap: |
-#|   Both curves represent the normal distribution, however, they differ in 
-#|   their center and spread. The normal distribution with mean 0 and standard
-#|   deviation 1 (blue solid line, on the left) is called the 
-#|   **standard normal distribution**. The other distribution (green dashed 
-#|   line, on the right) has mean 19 and standard deviation 4.
+#|   Two normal distributions with different centers and spreads.
+#| fig-subcap:
+#|   - Mean = 0, SD = 1
+#|   - Mean = 19, SD = 4
 #| fig-alt: |
-#|   Two normal curves. The first one has a mean at zero
-#|   with a standard deviation of one and is called the standard
-#|   normal distribution. The second one has a mean
-#|   at 19 with a standard deviation of four.
-#| fig-asp: 0.3
+#|   Two normal curves. The first one has a mean at zero with a standard
+#|   deviation of one and is called the standard normal distribution. The 
+#|   second one has a mean at 19 with a standard deviation of four.
+#| fig-asp: 0.5
 #| out-width: 100%
-
+#| layout-ncol: 2
+#| fig-width: 5
 normals <- tibble(
   x = c(rnorm(100000, mean = 0, sd = 1), rnorm(100000, mean = 19, sd = 4)),
   group = c(rep(1, 100000), rep(2, 100000))
 )
 
-p1 <- ggplot(normals |> filter(group == 1), aes(x = x)) +
+ggplot(normals |> filter(group == 1), aes(x = x)) +
   geom_histogram(aes(y = ..density..), alpha = 0.5) +
   geom_function(fun = dnorm, args = list(mean = 0, sd = 1), color = IMSCOL["blue", "full"], size = 1) +
   labs(y = NULL, x = NULL) +
@@ -263,7 +265,7 @@ p1 <- ggplot(normals |> filter(group == 1), aes(x = x)) +
     panel.grid = element_blank()
   )
 
-p2 <- ggplot(normals |> filter(group == 2), aes(x = x)) +
+ggplot(normals |> filter(group == 2), aes(x = x)) +
   geom_histogram(aes(y = ..density..), alpha = 0.5, fill = IMSCOL["green", "full"]) +
   geom_function(
     fun = dnorm, args = list(mean = 19, sd = 4), color = IMSCOL["green", "full"], size = 1,
@@ -275,8 +277,6 @@ p2 <- ggplot(normals |> filter(group == 2), aes(x = x)) +
     axis.text.y = element_blank(),
     panel.grid = element_blank()
   )
-
-p1 + p2
 ```
 
 ```{r}
@@ -294,7 +294,7 @@ terms_chp_13 <- c(terms_chp_13, "standard normal distribution")
 #|   standard normal curve with a mean at zero and a standard
 #|   deviation of one. The other has a mean of 19 with a standard
 #|   deviation of four.
-#| fig-asp: 0.3
+#| fig-asp: 0.25
 #| out-width: 100%
 
 ggplot(normals, aes(x = x)) +
@@ -306,6 +306,8 @@ ggplot(normals, aes(x = x)) +
     panel.grid = element_blank()
   )
 ```
+
+\clearpage
 
 If a normal distribution has mean $\mu$ and standard deviation $\sigma,$ we may write the distribution as $N(\mu, \sigma).$ The two distributions in @fig-twoSampleNormalsStacked can be written as
 
@@ -354,6 +356,7 @@ Who performed better?[^13-foundations-mathematical-3]
 #|   score is plotted on a normal curve with a mean of 21 and a
 #|   standard deviation of 5. Nel's score is relatively higher
 #|   than Sian's score.
+#| fig-asp: 0.5
 sat_mean <- 1500
 sat_sd <- 300
 act_mean <- 21
@@ -406,6 +409,8 @@ p_act <- ggplot(tests |> filter(test == "ACT"), aes(x = score)) +
 p_sat /
   p_act
 ```
+
+\clearpage
 
 The solution to the previous example relies on a standardization technique called a Z score, a method most commonly employed for nearly normal observations (but that may be used with any distribution).
 The **Z score**\index{Z score} of an observation is defined as the number of standard deviations it falls above or below the mean.
@@ -470,6 +475,8 @@ Which of the two brushtail possum observations in the previous guided practice i
 
 [^13-foundations-mathematical-6]: Because the *absolute value* of Z score for the second observation is larger than that of the first, the second observation has a more unusual head length.
 
+\vspace{-5mm}
+
 ### Normal probability calculations
 
 ::: {.workedexample data-latex=""}
@@ -498,8 +505,9 @@ terms_chp_13 <- c(terms_chp_13, "percentile")
 #|   with mean of 1500 and standard deviation of 300. The scores
 #|   lower than Nel's are shaded in blue and represent roughly
 #|   84% of the distribution.
-#| fig-asp: 0.4
+#| fig-asp: 0.3
 #| out-width: 60%
+par(mar = c(2, 0, 0, 0))
 normTail(m = 1500, s = 300, L = 1800, col = IMSCOL["blue", "full"])
 ```
 
@@ -518,14 +526,11 @@ For instance, the percentile of $Z=0.43$ is 0.6664, or the $66.64^{th}$ percenti
 The `pnorm()` function is available in default R and will provide the percentile associated with any cutoff on a normal curve.
 The `normTail()` function is available in the [**openintro**](http://openintrostat.github.io/openintro/) R package and will draw the associated normal distribution curve.
 
-\clearpage
-
 ```{r}
 #| echo: true
-#| fig-asp: 0.5
+#| fig-asp: 0.3
 #| out-width: 60%
-#| fig-align: center
-
+par(mar = c(2, 0, 0, 0))
 pnorm(0.43, mean = 0, sd = 1)
 openintro::normTail(m = 0, s = 1, L = 0.43)
 ```
@@ -536,14 +541,11 @@ The quantile represents the cutoff value.
 (To remember the function `qnorm()` as providing a cutozff, notice that both `qnorm()` and "cutoff" start with the sound "kuh".
 To remember the `pnorm()` function as providing a probability from a given cutoff, notice that both `pnorm()` and probability start with the sound "puh".) We determine the Z score for the $80^{th}$ percentile using `qnorm()`: 0.84.
 
-\vspace{5mm}
-
 ```{r}
 #| echo: true
-#| fig-asp: 0.5
+#| fig-asp: 0.3
 #| out-width: 60%
-#| fig-align: center
-
+par(mar = c(2, 0, 0, 0))
 qnorm(0.80, mean = 0, sd = 1)
 openintro::normTail(m = 0, s = 1, L = 0.842)
 ```
@@ -554,8 +556,6 @@ Determine the proportion of SAT test takers who scored better than Nel on the SA
 
 [^13-foundations-mathematical-7]: If 84% had lower scores than Nel, the number of people who had better scores must be 16%.
     (Generally ties are ignored when the normal model, or any other continuous distribution, is used.)
-
-\clearpage
 
 ### Normal probability examples
 
@@ -588,14 +588,15 @@ This calculation is visualized in @fig-subtractingArea.
 ```{r}
 #| label: fig-subtractingArea
 #| fig-cap: |
-#|   Visual calculation of the probability that Shannon scores at least 1630 on
-#|   the SAT.
+#|   Visual calculation of the probability that Shannon scores at 
+#|   least 1630 on the SAT.
 #| fig-alt: |
 #|   Three normal curves visualizing that probabilities can
 #|   be calculated using arithmetic on areas. The area above
 #|   1630 can be calculated by taking the total area of one and
 #|   subtracting the area below 1630 (which is 0.6664). The
 #|   resulting value is 0.3336.
+#| fig-asp: 0.45
 par_og <- par(no.readonly = TRUE) # save original par
 par(mar = c(0, 0, 0, 0), mfrow = c(2, 1))
 
@@ -664,6 +665,7 @@ These are the scores to the left of 1400, as shown below.
 #| label: edward-percentile
 #| fig-asp: 0.4
 #| out-width: 60%
+#| fig-align: center
 #| fig-alt: |
 #|   A normal curve with a mean of 1500 and a standard
 #|   deviation of 300. Values less than 1400 are shaded blue in
@@ -693,6 +695,7 @@ If Edward did better than 37% of SAT takers, then about 63% must have done bette
 #| label: edward-percentile-better
 #| fig-asp: 0.4
 #| out-width: 60%
+#| fig-align: center
 #| fig-alt: |
 #|   A normal curve with a mean of 1500 and a standard deviation of 300.
 #|   Values greater than 1400 are shaded blue in the upper part of the curve.
@@ -749,6 +752,7 @@ As always, first draw the picture.
 ```{r}
 #| fig-asp: 0.4
 #| out-width: 60%
+#| fig-align: center
 par(mar = c(2, 0, 0, 0))
 normTail(70, 3.3, L = qnorm(0.4, 70, 3.3), col = IMSCOL["blue", "full"])
 text(67, 0.03, "40%\n(0.40)", cex = 1, col = IMSCOL["black", "full"])
@@ -799,6 +803,7 @@ Again, we draw the figure first.
 #| label: height82Perc
 #| fig-asp: 0.4
 #| out-width: 60%
+#| fig-align: center
 par(mar = c(2, 0, 0, 0))
 normTail(70, 3.3, L = qnorm(0.82, 70, 3.3), col = IMSCOL["blue", "full"])
 text(70, 0.04, "82%\n(0.82)", cex = 1, col = IMSCOL["black", "full"])
@@ -853,6 +858,7 @@ The area of interest is no longer an upper or lower tail.
 ```{r}
 #| fig-asp: 0.4
 #| out-width: 60%
+#| fig-align: center
 par(mar = c(2, 0, 0, 0))
 normTail(70, 3.3, M = c(69, 74), col = IMSCOL["blue", "full"])
 ```
@@ -861,7 +867,9 @@ The total area under the curve is 1.
 If we find the area of the two tails that are not shaded (from the previous Guided Practice, these areas are $0.3821$ and $0.1131$), then we can find the middle area:
 
 ```{r}
-#| fig-asp: 0.4
+#| fig-asp: 0.25
+#| fig-align: center
+#| out-width: 100%
 X <- seq(-3.2, 3.2, 0.01)
 Y <- dnorm(X)
 par(mar = c(2, 0, 0, 0))
@@ -934,7 +942,9 @@ The rule will be useful in a wide range of practical settings, especially when t
 #|   deviation of the mean (which is 0.68), the area within two
 #|   standard deviations of the mean (which is 0.95), and the are
 #|   within three standard deviations of the mean (which is 0.997).
-#| fig-asp: 0.5
+#| fig-asp: 0.3
+#| out-width: 60%
+par(mar = c(2, 0, 0, 0))
 X <- seq(-4, 4, 0.01)
 Y <- dnorm(X)
 plot(X, Y, type = "n", axes = F, ylim = c(0, 0.4), xlim = c(-3.2, 3.2), xlab = NA, ylab = NA)
@@ -973,8 +983,6 @@ Similarly there should be an area of about 0.95 between $Z=-2$ and $Z=2.$[^13-fo
 [^13-foundations-mathematical-15]: First draw the pictures.
     To find the area between $Z=-1$ and $Z=1,$ use `pnorm()` or the normal probability table to determine the areas below $Z=-1$ and above $Z=1.$ Next verify the area between $Z=-1$ and $Z=1$ is about 0.68.
     Repeat this for $Z=-2$ to $Z=2$ and for $Z=-3$ to $Z=3.$
-
-\clearpage
 
 It is possible for a normal random variable to fall 4, 5, or even more standard deviations from the mean.
 However, these occurrences are very rare if the data are nearly normal.
@@ -1028,8 +1036,6 @@ That is, if you notice the sample proportions go from 0.1 to 0.4, the SE can be 
 terms_chp_13 <- c(terms_chp_13, "margin of error")
 ```
 
-\clearpage
-
 ## Case Study (test): Opportunity cost {#sec-caseopp}
 
 The approach for using the normal model in the context of inference is very similar to the practice of applying the model to individual observations that are nearly normal.
@@ -1064,7 +1070,7 @@ Next, we'll use the normal distribution approach to compute the p-value.
 #|   theoretical normal distribution fits the histogram
 #|   quite well. The observed difference in sample proportions of
 #|   0.2 is in the tail of both the normal curve and the histogram.
-
+#| fig-asp: 0.45
 ggplot(opportunity_cost_sim_dist, aes(x = stat)) +
   geom_histogram(aes(y = ..density..), binwidth = 0.05) +
   geom_function(fun = dnorm, args = list(mean = 0, sd = sd(opportunity_cost_sim_dist$stat)), color = IMSCOL["black", "full"], size = 1) +
@@ -1084,8 +1090,6 @@ ggplot(opportunity_cost_sim_dist, aes(x = stat)) +
   annotate("text", x = 0.2, y = 2.8, label = "observed\ndifference")
 ```
 
-\clearpage
-
 ### Observed statistic vs. null statistics
 
 As we learned in @sec-normalDist, it is helpful to draw and shade a picture of the normal distribution so we know precisely what we want to calculate.
@@ -1093,8 +1097,9 @@ Here we want to find the area of the tail beyond 0.2, representing the p-value.
 
 ```{r}
 #| label: OpportunityCostDiffs_normal_only
-#| fig-asp: 0.4
+#| fig-asp: 0.3
 #| out-width: 60%
+#| fig-align: center
 par(mar = c(2, 0, 0, 0))
 normTail(m = 0, s = 0.078, U = 0.2, col = IMSCOL["blue", "full"])
 ```
@@ -1120,8 +1125,6 @@ The standard error in this case is the equivalent of the standard deviation of t
 We have confirmed that the randomization approach we used earlier and the normal distribution approach provide almost identical p-values and conclusions in the opportunity cost case study.
 Next, let's turn our attention to the medical consultant case study.
 
-\clearpage
-
 ## Case study (test): Medical consultant {#sec-casemed}
 
 ### Observed data
@@ -1140,7 +1143,8 @@ In fact, the normal distribution only sort-of fits this model.
 #| label: fig-MedConsNullSim-w-normal
 #| fig-cap: |
 #|   The null distribution for the sample proportion, created from 10,000
-#|   simulated studies from the medical consultant, along with the best-fitting normal model.
+#|   simulated studies from the medical consultant, along with the best-fitting
+#|   normal model.
 #| fig-alt: |
 #|   Normal curve overlaid on the histogram of the simulated
 #|   sample proportions in the medical consultant study. The
@@ -1150,6 +1154,7 @@ In fact, the normal distribution only sort-of fits this model.
 #|   The observed sample proportion of 0.0484 is towards the tail
 #|   in both the normal curve and the histogram, but it is not
 #|   an extreme value.
+#| fig-asp: 0.5   
 ggplot(medical_consultant_sim_dist, aes(x = stat)) +
   geom_histogram(aes(y = ..density..), binwidth = 0.0167, fill = IMSCOL["blue", "full"]) +
   geom_function(fun = dnorm, args = list(mean = mean(medical_consultant_sim_dist$stat), sd = sd(medical_consultant_sim_dist$stat)), color = IMSCOL["black", "full"], size = 1) +
@@ -1175,13 +1180,12 @@ Below is a normal distribution centered at 0.10 with a standard error of 0.038.
 
 ```{r}
 #| label: MedConsNullSim-normal-only
-#| fig-asp: 0.4
+#| fig-asp: 0.3
 #| out-width: 60%
+#| fig-align: center
 par(mar = c(2, 0, 0, 0))
 normTail(m = 0.1, s = 0.038, L = 0.048, col = IMSCOL["blue", "full"])
 ```
-
-\clearpage
 
 Next, we can calculate the Z score using the observed complication rate, $\hat{p} = 0.048$ along with the mean and standard deviation of the normal model.
 Here again, we use the standard error for the standard deviation.
@@ -1216,8 +1220,6 @@ Working with data that come from normal populations makes higher-order models ea
 There are times when simulation, randomization, or bootstrapping are unwieldy in either structure or computational demand.
 Normality can often lead to excellent approximations of the data using straightforward modeling techniques.
 
-\clearpage
-
 ## Case study (interval): Stents {#sec-casestent}
 
 A point estimate is our best guess for the value of the parameter, so it makes sense to build the confidence interval around that value.
@@ -1231,10 +1233,14 @@ Here, we use the value 1.96 to be slightly more precise.
 When the sampling distribution of a point estimate can reasonably be modeled as normal, the point estimate we observe will be within 1.96 standard errors of the true value of interest about 95% of the time.
 Thus, a **95% confidence interval**\index{95\% confidence interval}\index{confidence interval} for such a point estimate can be constructed:
 
+\vspace{-5mm}
+
 $$\text{point estimate} \pm 1.96 \times SE$$
 
 We can be **95% confident**\index{95\% confident} this interval captures the true value.
 :::
+
+\vspace{-3mm}
 
 ```{r}
 #| include: false
@@ -1249,17 +1255,19 @@ Compute the area between -1.96 and 1.96 for a normal distribution with mean 0 an
     The Z scores are $Z_{left} = -1.96$ and $Z_{right} = 1.96.$ The area between these two Z scores is $0.9750 - 0.0250 = 0.9500.$ This is where "1.96" comes from in the 95% confidence interval formula.
 
 ::: {.workedexample data-latex=""}
-The point estimate from the opportunity cost study was that 20% fewer students would buy a video if they were reminded that money not spent now could be spent later on something else.
-The point estimate from this study can reasonably be modeled with a normal distribution, and a proper standard error for this point estimate is $SE = 0.078.$ Construct a 95% confidence interval.
+The point estimate in the opportunity cost study was that 20% fewer students would buy a video if they were reminded that money not spent now could be spent later on something else.
+This point estimate can reasonably be modeled with a normal distribution with a standard error of $SE = 0.078.$ Construct a 95% confidence interval for the point estimate.
 
 ------------------------------------------------------------------------
 
-Since the conditions for the normal approximation have already been verified, we can move forward with the construction of the 95% confidence interval:
+Since we're told the point estimate can be modeled with a normal distribution:
+
+\vspace{-5mm}
 
 $$\text{point estimate} \pm 1.96 \times SE = 0.20 \pm 1.96 \times 0.078 = (0.047, 0.353)$$
 
 We are 95% confident that the video purchase rate resulting from the treatment is between 4.7% and 35.3% lower than in the control group.
-Since this confidence interval does not contain 0, it is consistent with our earlier result where we rejected the notion of "no difference" using a hypothesis test.
+Since this confidence interval does not contain 0, it is consistent with our earlier hypothesis test where we rejected the notion of "no difference".
 
 Note that we have used SE = 0.078 from the last section.
 However, it would more generally be appropriate to recompute the SE slightly differently for this confidence interval using sample proportions.
