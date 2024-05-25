@@ -5,6 +5,8 @@
 source("_common.R")
 ```
 
+\vspace{-10mm}
+
 ::: {.chapterintro data-latex=""}
 In this chapter we introduce **logistic regression**\index{logistic regression} as a tool for building models when there is a categorical response variable with two levels, e.g., yes and no.
 Logistic regression is a type of **generalized linear model (GLM)**\index{generalized linear model} for response variables where regular multiple regression does not work very well.
@@ -18,6 +20,8 @@ Ultimately, the application of a GLM will feel very similar to multiple regressi
 #| include: false
 terms_chp_09 <- c("logistic regression", "generalized linear model")
 ```
+
+\vspace{-8mm}
 
 ## Discrimination in hiring
 
@@ -34,12 +38,12 @@ Finally, they randomly assigned a name to each resume, where the name would impl
 The [`resume`](http://openintrostat.github.io/openintro/reference/resume.html) data can be found in the [**openintro**](http://openintrostat.github.io/openintro) R package.
 :::
 
-\clearpage
-
 The first names that were used and randomly assigned in the experiment were selected so that they would predominantly be recognized as belonging to Black or White individuals; other races were not considered in the study.
 While no name would definitively be inferred as pertaining to a Black individual or to a White individual, the researchers conducted a survey to check for racial association of the names; names that did not pass the survey check were excluded from usage in the experiment.
 You can find the full set of names that did pass the survey test and were ultimately used in the study in @tbl-resume-names.
 For example, Lakisha was a name that their survey indicated would be interpreted as a Black woman, while Greg was a name that would generally be interpreted to be associated with a White male.
+
+\clearpage
 
 ```{r}
 #| label: tbl-resume-names
@@ -142,19 +146,17 @@ resume_variables |>
   kbl(linesep = "", booktabs = TRUE) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped"), full_width = TRUE
+    full_width = FALSE
   ) |>
   column_spec(1, monospace = TRUE) |>
   column_spec(2, width = "30em")
 ```
 
-\clearpage
-
 All of the attributes listed on each resume were randomly assigned, which means that no attributes that might be favorable or detrimental to employment would favor one demographic over another on these resumes.
 Importantly, due to the experimental nature of the study, we can infer causation between these variables and the callback rate, if substantial differences are found.
 Our analysis will allow us to compare the practical importance of each of the variables relative to each other.
 
-\vspace{10mm}
+\clearpage
 
 ## Modelling the probability of an event {#sec-modelingTheProbabilityOfAnEvent}
 
@@ -195,8 +197,6 @@ $$
 logit(p_i) = \log_{e}\left( \frac{p_i}{1-p_i} \right)
 $$
 
-\clearpage
-
 The **logit transformation**\index{logit transformation} is shown in Figure @fig-logit-transformation.
 Below, we rewrite the equation relating $Y_i$ to its predictors using the logit transformation of $p_i$:
 
@@ -215,7 +215,7 @@ $$
 #| fig-alt: A scatterplot with a superimposed line connecting values of p from -5 to +6
 #|   (on the x-axis) with their logit transformed value (on the y-axis).
 #| out-width: 100%
-
+#| fig-asp: 0.45
 logit_df_line <- tibble(
   p  = seq(0.0001, 0.9999, 0.0002),
   lp = log(p / (1 - p))
@@ -288,8 +288,6 @@ p_i &= \frac{e^{\beta_0 + \beta_1 x_{1,i}  + \cdots + \beta_k x_{k,i}}}{1 + e^{\
 $$
 
 As with most applied data problems, we substitute in the point estimates (the observed $b_i$) to calculate relevant probabilities.
-
-\vspace{5mm}
 
 ::: {.workedexample data-latex=""}
 We start by fitting a model with a single predictor: `honors`.
@@ -379,13 +377,12 @@ resume_full_fit |>
 
 We will look for models with a lower AIC using a backward elimination strategy.  @tbl-resume-fit-aic provides the AIC values for the model with variables as given in @tbl-resume-fit.  Notice that the same number of observations are used, but one fewer variable (`college_degree` is dropped from the model).
 
-\clearpage
-
 ```{r}
 #| label: tbl-resume-fit-aic
 #| tbl-cap: |
 #|   AIC for the logistic regression model fit to the
 #|   resume callback example without `college_degree`.
+#| tbl-pos: H
 resume_fit <- logistic_reg() |>
   fit(received_callback ~ job_city + years_experience + honors + military + has_email_address + race + sex, data = resume, family = "binomial")
 
@@ -404,16 +401,12 @@ resume_fit |>
   column_spec(1:2, width = "10em", monospace = TRUE)
 ```
 
-\vspace{5mm}
-
 After using the AIC criteria, the variable `college_degree` is eliminated (the AIC value without `college_degree` is smaller than the AIC value on the full model), giving the model summarized in @tbl-resume-fit with fewer variables, which is what we'll rely on for the remainder of the section.
 
 ```{r}
 #| include: false
 terms_chp_09 <- c(terms_chp_09, "Akaike information criterion", "AIC")
 ```
-
-\vspace{5mm}
 
 ```{r}
 #| label: tbl-resume-fit
@@ -440,8 +433,6 @@ resume_fit |>
   column_spec(2:5, width = "5em")
 ```
 
-\vspace{5mm}
-
 ::: {.workedexample data-latex=""}
 The `race` variable had taken only two levels: `Black` and `White`.
 Based on the model results, what does the coefficient of the `race` variable say about callback decisions?
@@ -453,13 +444,9 @@ The positive coefficient reflects a positive gain in callback rate for resumes w
 The model results suggest that prospective employers favor resumes where the first name is typically interpreted to be White.
 :::
 
-\vspace{5mm}
-
 The coefficient of $\texttt{race}_{\texttt{White}}$ in the full model in @tbl-resume-full-fit, is nearly identical to the model shown in @tbl-resume-fit.
 The predictors in the experiment were thoughtfully laid out so that the coefficient estimates would typically not be much influenced by which other predictors were in the model, which aligned with the motivation of the study to tease out which effects were important to getting a callback.
 In most observational data, it's common for point estimates to change a little, and sometimes a lot, depending on which other variables are included in the model.
-
-\clearpage
 
 ::: {.workedexample data-latex=""}
 Use the model summarized in @tbl-resume-fit to estimate the probability of receiving a callback for a job in Chicago where the candidate lists 14 years experience, no honors, no military experience, includes an email address, and has a first name that implies they are a White male.
@@ -470,10 +457,9 @@ We can start by writing out the equation using the coefficients from the model:
 
 $$
 \begin{aligned}
-log_e \left(\frac{\widehat{p}}{1 - \widehat{p}}\right) &= - 2.7162 - 0.4364 \times \texttt{job\_city}_{\texttt{Chicago}} \\
-& \quad + 0.0206 \times \texttt{years\_experience} \\
-& \quad + 0.7634 \times \texttt{honors} - 0.3443 \times \texttt{military} + 0.2221 \times \texttt{email} \\
-& \quad + 0.4429 \times \texttt{race}_{\texttt{White}} - 0.1959 \times \texttt{sex}_{\texttt{man}} 
+log_e \left(\frac{\widehat{p}}{1 - \widehat{p}}\right) = -2.7162 &- 0.4364 \times \texttt{job\_city}_{\texttt{Chicago}} + 0.0206 \times \texttt{years\_experience} \\
+&+ 0.7634 \times \texttt{honors} - 0.3443 \times \texttt{military} + 0.2221 \times \texttt{email} \\
+&+ 0.4429 \times \texttt{race}_{\texttt{White}} - 0.1959 \times \texttt{sex}_{\texttt{man}} 
 \end{aligned}
 $$
 
@@ -481,14 +467,16 @@ Now we can add in the corresponding values of each variable for the individual o
 
 $$
 \begin{aligned}
-log_e \left(\frac{\widehat{p}}{1 - \widehat{p}}\right) &\quad= - 2.7162 - 0.4364 \times 1 + 0.0206 \times 14 \\
-&\quad \quad + 0.7634 \times 0 - 0.3443 \times 0 + 0.2221 \times 1 \\
-&\quad \quad + 0.4429 \times 1 - 0.1959 \times 1 = - 2.3955  
+log_e \left(\frac{\widehat{p}}{1 - \widehat{p}}\right) = - 2.7162 &- 0.4364 \times 1 + 0.0206 \times 14 \\
+&+ 0.7634 \times 0 - 0.3443 \times 0 + 0.2221 \times 1 \\
+&+ 0.4429 \times 1 - 0.1959 \times 1 = - 2.3955  
 \end{aligned}
 $$
 
 We can now back-solve for $\widehat{p}$: the chance such an individual will receive a callback is about $\frac{e^{-2.3955}}{1 + e^{-2.3955}} = 0.0835.$
 :::
+
+\clearpage
 
 ::: {.workedexample data-latex=""}
 Compute the probability of a callback for an individual with a name commonly inferred to be from a Black male but who otherwise has the same characteristics as the one described in the previous example.
@@ -507,8 +495,6 @@ What we have quantified in the current section is alarming and disturbing.
 However, one aspect that makes the racism so difficult to address is that the experiment, as well-designed as it is, cannot send us much signal about which employers are discriminating.
 It is only possible to say that discrimination is happening, even if we cannot say which particular callbacks --- or non-callbacks --- represent discrimination.
 Finding strong evidence of racism for individual cases is a persistent challenge in enforcing anti-discrimination laws.
-
-\clearpage
 
 ## Groups of different sizes
 
@@ -537,6 +523,8 @@ Of these 400 men, about 40 (10%) hold a bias against women.
 Of the 500 colleagues providing feedback on the promotion packet for these women, 8% of the colleagues hold a bias against the women.
 :::
 
+\clearpage
+
 The example highlights something profound: even in a hypothetical setting where each demographic has the same degree of prejudice against the other demographic, the smaller group experiences the negative effects more frequently.
 Additionally, if we would complete a handful of examples like the one above with different numbers, we would learn that the greater the imbalance in the population groups, the more the smaller group is disproportionately impacted.[^09-model-logistic-2]
 
@@ -550,7 +538,7 @@ Ultimately, discrimination is complex, and there are many factors at play beyond
 We close the chapter on the serious topic of discrimination, and we hope it inspires you to think about the power of reasoning with data.
 Whether it is with a formal statistical model or by using critical thinking skills to structure a problem, we hope the ideas you have learned will help you do more and do better in life.
 
-\clearpage
+\vfill
 
 ## Chapter review {#sec-chp9-review}
 
@@ -574,6 +562,8 @@ You should be able to easily spot them as **bolded text**.
 make_terms_table(terms_chp_09)
 ```
 
+\vfill
+
 \clearpage
 
 ## Exercises {#sec-chp09-exercises}
@@ -583,4 +573,3 @@ Answers to odd-numbered exercises can be found in [Appendix -@sec-exercise-solut
 ::: {.exercises data-latex=""}
 {{< include exercises/_09-ex-model-logistic.qmd >}}
 :::
-
