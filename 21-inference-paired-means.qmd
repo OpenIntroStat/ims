@@ -172,7 +172,7 @@ In the first randomization, it just so happens that the 4th car's tire brands we
 #|   Line plot connecting the tread for the 4th car in the dataset. The first
 #|   plot is the original data and the second plot is the permuted data where
 #|   the groups happened to get permuted randomly.
-#| fig-asp: 0.4
+#| fig-asp: 0.5
 set.seed(47)
 permdata <- tires |>
   group_by(car) |>
@@ -241,7 +241,7 @@ origplot4 + shuffbrand4
 #|   Line plot connecting the tread for the 5th car in the dataset. The first
 #|   plot is the original data and the second plot is the permuted data where
 #|   the groups happened to stay connected to the original measurements.
-#| fig-asp: 0.4
+#| fig-asp: 0.5
 origplot5 <- tires |>
   filter(car == "car 5") |>
   ggplot(aes(
@@ -314,7 +314,8 @@ We can put the shuffled assignments for all the cars into one plot as seen in @f
 #|   across the two tread measurements, within a car.
 #| out-width: 100%
 #| layout-ncol: 2
-#| fig-asp: 0.7
+#| fig-width: 5
+#| fig-asp: 0.8
 origplot <- tires |>
   ggplot(aes(
     x = brand, y = tread,
@@ -364,11 +365,9 @@ origplot
 shuffbrand
 ```
 
-\clearpage
-
 The next step in the randomization test is to sort the brands so that the assigned brand value on the x-axis aligns with the assigned group from the randomization.
-See @fig-tiredataPermSort-1 shows the same randomized groups, as seen in @fig-tiredataPerm-2 previously.
-However, @fig-tiredataPermSort-2 sorts the randomized groups so that we can measure the variability across groups as compared to the variability within groups.
+@fig-tiredataPermSort-1 shows the same randomized groups, as seen in @fig-tiredataPerm-2 previously.
+However, @fig-tiredataPermSort-2 sorts the randomized groups so that we can measure the variability *across* groups as compared to the variability *within* groups.
 
 ```{r}
 #| label: fig-tiredataPermSort
@@ -390,7 +389,8 @@ However, @fig-tiredataPermSort-2 sorts the randomized groups so that we can meas
 #|   right panel, the two tire brands seem equivalent with respect
 #|   to tire wear.
 #| layout-ncol: 2
-#| fig-asp: 0.7
+#| fig-width: 5
+#| fig-asp: 0.8
 permed_means <- permdata |>
   group_by(random_brand) |>
   summarize(mean_tread = round(mean(tread), 4)) |>
@@ -427,7 +427,7 @@ shuffbrandfull
 ```
 
 @fig-tiredatarand1 presents a second randomization of the data.
-Notice how the two observations from the same car are linked by a grey line; some of the tread values have been randomly assigned to the opposite tire brand than they were originally (while some are still connected to their original tire brands).
+Notice that the two observations from the same car are linked with a grey line; some of the tread values have been randomly assigned to the other tire brand, while some are still connected to their original tire brands.
 
 ```{r}
 #| label: fig-tiredatarand1
@@ -627,6 +627,8 @@ ucla_textbooks_f18 |>
 Each textbook has two corresponding prices in the dataset: one for the UCLA Bookstore and one for Amazon.
 When two sets of observations have this special correspondence, they are said to be **paired**.
 
+\clearpage
+
 ### Variability of the statistic
 
 Following the example of bootstrapping the one-sample statistic, the observed *differences* can be bootstrapped in order to understand the variability of the average difference from sample to sample.
@@ -734,8 +736,12 @@ boot_diff |>
 Thinking about the differences as a single observation on an observational unit changes the paired setting into the one-sample setting.
 The mathematical model for the one-sample case is covered in @sec-one-mean-math.
 
+\vspace{-2mm}
+
 ### Observed data
 
+:::: {layout="[0.55, -0.05, 0.4]"}
+:::{#text}
 To analyze paired data, it is often useful to look at the difference in outcomes of each pair of observations.
 In the textbook data, we look at the differences in prices, which is represented as the `price_difference` variable in the dataset.
 Here the differences are taken as
@@ -744,7 +750,8 @@ $$\text{UCLA Bookstore price} - \text{Amazon price}$$
 
 It is important that we always subtract using a consistent order; here Amazon prices are always subtracted from UCLA prices.
 The first difference shown in @tbl-textbooksDF is computed as $47.97 - 47.45 = 0.52.$ Similarly, the second difference is computed as $14.26 - 13.55 = 0.71,$ and the third is $13.50 - 12.53 = 0.97.$ A histogram of the differences is shown in @fig-diffInTextbookPricesF18.
-
+:::
+:::{#plot}
 ```{r}
 #| label: fig-diffInTextbookPricesF18
 #| fig-cap: Histogram of the differences in prices for each book sampled.
@@ -752,7 +759,8 @@ The first difference shown in @tbl-textbooksDF is computed as $47.97 - 47.45 = 0
 #|   Histogram of the differences in prices for each book samples,
 #|   UCLA minus Amazon. The prices differences range from -$10 to $80 with a
 #|   strong right skew.
-#| fig-asp: 0.5
+#| out-width: 100%
+#| fig-width: 4
 ucla_textbooks_f18 <- ucla_textbooks_f18 |>
   select(subject, course_num, bookstore_new, amazon_new) |>
   filter(!is.na(bookstore_new), !is.na(amazon_new)) |>
@@ -760,12 +768,18 @@ ucla_textbooks_f18 <- ucla_textbooks_f18 |>
 
 ggplot(ucla_textbooks_f18, aes(x = price_diff)) +
   geom_histogram(binwidth = 10) +
-  scale_x_continuous(labels = label_dollar(accuracy = 1), limits = c(-20, 100), breaks = seq(-20, 100, 20)) +
+  scale_x_continuous(
+    labels = label_dollar(accuracy = 1), 
+    limits = c(-20, 100), 
+    breaks = seq(-20, 100, 20)
+  ) +
   labs(
     x = "UCLA Bookstore Price - Amazon Price (USD)",
     y = "Count"
   )
 ```
+:::
+::::
 
 ### Variability of the statistic
 
@@ -804,17 +818,19 @@ Also, check the conditions for whether we can move forward with the test using t
 
 ------------------------------------------------------------------------
 
-We are considering two scenarios: there is no difference or there is some difference in average prices.
+We are considering two scenarios:
 
--   $H_0:$ $\mu_{diff} = 0.$ There is no difference in the average textbook price.
+-   $H_0:$ $\mu_{diff} = 0.$ There is no difference in the average textbook prices.
 
 -   $H_A:$ $\mu_{diff} \neq 0.$ There is a difference in average prices.
 
 Next, we check the independence and normality conditions.
-The observations are based on a simple random sample, so assuming the textbooks are independent seems reasonable.
+This is a simple random sample, so assuming the textbooks are independent seems reasonable.
 While there are some outliers, $n = 68$ and none of the outliers are particularly extreme, so the normality of $\bar{x}$ is satisfied.
 With these conditions satisfied, we can move forward with the $t$-distribution.
 :::
+
+\clearpage
 
 ### Observed statistic vs. null statistics
 
@@ -852,7 +868,7 @@ To compute the test compute the standard error associated with $\bar{x}_{diff}$ 
 
 $$SE_{\bar{x}_{diff}} = \frac{s_{diff}}{\sqrt{n_{diff}}} = \frac{13.42}{\sqrt{68}} = 1.63$$
 
-The test statistic is the T score of $\bar{x}_{diff}$ under the null condition that the actual mean difference is 0:
+The test statistic is the T score of $\bar{x}_{diff}$ under the null hypothess that the true mean difference is 0:
 
 $$T = \frac{\bar{x}_{diff} - 0}{SE_{\bar{x}_{diff}}} = \frac{3.58 - 0}{1.63} = 2.20$$
 
@@ -862,7 +878,9 @@ The degrees of freedom is $df = 68 - 1 = 67.$ Using statistical software, we fin
 ```{r}
 #| label: textbooksF18HTTails
 #| out-width: 60%
-#| fig-asp: 0.4
+#| fig-asp: 0.35
+#| fig-align: center
+#| fig-width: 5
 m <- mean(ucla_textbooks_f18$price_diff)
 s <- sd(ucla_textbooks_f18$price_diff)
 se <- s / sqrt(length(ucla_textbooks_f18$price_diff))
@@ -887,6 +905,8 @@ Because the p-value is less than 0.05, we reject the null hypothesis.
 The data provide evidence that Amazon prices are different, on average, 
 than the UCLA Bookstore prices for UCLA courses.
 :::
+
+\clearpage
 
 Recall that the margin of error is defined by the standard error.
 The margin of error for $\bar{x}_{diff}$ can be directly obtained from $SE(\bar{x}_{diff}).$
