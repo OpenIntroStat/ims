@@ -2,11 +2,11 @@
 
 ## Where is IMS 2?
 
-<https://openintro-ims2.netlify.app/>
+<https://openintro-ims.netlify.app/>
 
 ## Where did IMS 1 go?
 
-<https://openintro-ims.netlify.app/>
+<https://openintro-ims1.netlify.app/>
 
 ## Where did Introduction to Statistics with Randomization and Simulation go?
 
