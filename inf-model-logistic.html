@@ -1,0 +1,1925 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.23">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="author" content="Mine Çetinkaya-Rundel and Johanna Hardin">
+<title>26&nbsp; Inference for logistic regression – Introduction to Modern Statistics (2e)</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./inf-model-applications.html" rel="next">
+<link href="./inf-model-mlr.html" rel="prev">
+<link href="./images/openintro.png" rel="icon" type="image/png">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bbc06d6f6ef3926df35ba59865d9f801.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-378f0d7aee85f7ba334b728025a30d77.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bbc06d6f6ef3926df35ba59865d9f801.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-860897ce047b349f0abcbac7c46aa68b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-67a1a0d0d1c355d6091f60efc95b4fa8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-860897ce047b349f0abcbac7c46aa68b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script><script async="" src="https://hypothes.is/embed.js"></script><script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script><script src="site_libs/kePrint-0.0.1/kePrint.js"></script><link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+<link href="site_libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet">
+<script src="site_libs/bsTable-3.3.7/bootstrapTable.js"></script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+</head>
+<body class="nav-sidebar floating quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./inferential-modeling.html">Inferential modeling</a></li><li class="breadcrumb-item"><a href="./inf-model-logistic.html"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Inference for logistic regression</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="./index.html" class="sidebar-logo-link">
+      </a>
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Introduction to Modern Statistics (2e)</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/openintrostat/ims/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome to IMS2</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./authors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Authors</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./introduction-to-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to data</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data-hello.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Hello data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data-design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Study design</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Applications: Data</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./exploratory-data-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exploratory data analysis</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./explore-categorical.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Exploring categorical data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./explore-numerical.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Exploring numerical data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./explore-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Applications: Explore</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./regression-modeling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regression modeling</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model-slr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Linear regression with a single predictor</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model-mlr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Linear regression with multiple predictors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model-logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Logistic regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Applications: Model</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./foundations-of-inference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundations of inference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-randomization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Hypothesis testing with randomization</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-bootstrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Confidence intervals with bootstrapping</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-mathematical.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Inference with mathematical models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-errors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Decision Errors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Applications: Foundations</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./statistical-inference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Statistical inference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-one-prop.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Inference for a single proportion</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-two-props.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Inference for comparing two proportions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-tables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Inference for two-way tables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-one-mean.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Inference for a single mean</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-two-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Inference for comparing two independent means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-paired-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Inference for comparing paired means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-many-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Inference for comparing many means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Applications: Infer</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./inferential-modeling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Inferential modeling</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inf-model-slr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Inference for linear regression with a single predictor</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inf-model-mlr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Inference for linear regression with multiple predictors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inf-model-logistic.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Inference for logistic regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inf-model-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Applications: Model and infer</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./exercise-solutions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Exercise solutions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">References</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+    </ul>
+</div>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li><a href="#model-diagnostics" id="toc-model-diagnostics" class="nav-link active" data-scroll-target="#model-diagnostics"><span class="header-section-number">26.1</span> Model diagnostics</a></li>
+  <li><a href="#sec-inf-log-reg-soft" id="toc-sec-inf-log-reg-soft" class="nav-link" data-scroll-target="#sec-inf-log-reg-soft"><span class="header-section-number">26.2</span> Multiple logistic regression output from software</a></li>
+  <li><a href="#sec-inf-log-reg-cv" id="toc-sec-inf-log-reg-cv" class="nav-link" data-scroll-target="#sec-inf-log-reg-cv"><span class="header-section-number">26.3</span> Cross-validation for prediction error</a></li>
+  <li>
+<a href="#sec-chp27-review" id="toc-sec-chp27-review" class="nav-link" data-scroll-target="#sec-chp27-review"><span class="header-section-number">26.4</span> Chapter review</a>
+  <ul class="collapse">
+<li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">26.4.1</span> Summary</a></li>
+  <li><a href="#terms" id="toc-terms" class="nav-link" data-scroll-target="#terms"><span class="header-section-number">26.4.2</span> Terms</a></li>
+  </ul>
+</li>
+  <li><a href="#sec-chp26-exercises" id="toc-sec-chp26-exercises" class="nav-link" data-scroll-target="#sec-chp26-exercises"><span class="header-section-number">26.5</span> Exercises</a></li>
+  </ul><div class="toc-actions"><ul><li><a href="https://github.com/openintrostat/ims/edit/main/inf-model-logistic.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/openintrostat/ims/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./inferential-modeling.html">Inferential modeling</a></li><li class="breadcrumb-item"><a href="./inf-model-logistic.html"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Inference for logistic regression</span></a></li></ol></nav><div class="quarto-title">
+<h1 class="title"><span id="sec-inf-model-logistic" class="quarto-section-identifier"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Inference for logistic regression</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header><div class="chapterintro">
+<p>Combining ideas from <a href="model-logistic.html" class="quarto-xref">Chapter&nbsp;<span>9</span></a> on logistic regression, <a href="foundations-mathematical.html" class="quarto-xref">Chapter&nbsp;<span>13</span></a> on inference with mathematical models, and <a href="inf-model-slr.html" class="quarto-xref">Chapter&nbsp;<span>24</span></a> and <a href="inf-model-mlr.html" class="quarto-xref">Chapter&nbsp;<span>25</span></a> which apply inferential techniques to the linear model, we wrap up the book by considering inferential methods applied to a logistic regression model. Additionally, we use cross-validation as a method for independent assessment of the logistic regression model.</p>
+</div>
+<p>As with multiple linear regression, the inference aspect for logistic regression will focus on interpretation of coefficients and relationships between explanatory variables. Both p-values and cross-validation will be used for assessing a logistic regression model.</p>
+<p>Consider the <code>email</code> data which describes email characteristics which can be used to predict whether a particular incoming email is spam (unsolicited bulk email). Without reading every incoming message, it might be nice to have an automated way to identify spam emails. Which of the variables describing each email are important for predicting the status of the email?</p>
+<div class="data">
+<p>The <a href="http://openintrostat.github.io/openintro/reference/email.html"><code>email</code></a> data can be found in the <a href="http://openintrostat.github.io/openintro"><strong>openintro</strong></a> R package.</p>
+</div>
+<div class="cell">
+<div id="tbl-resume-variables" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-resume-variables-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;26.1: Variables and their descriptions for the <code>email</code> dataset. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.
+</figcaption><div aria-describedby="tbl-resume-variables-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Variable</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">spam</td>
+<td style="text-align: left; width: 30em;">Indicator for whether the email was spam.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">to_multiple</td>
+<td style="text-align: left; width: 30em;">Indicator for whether the email was addressed to more than one recipient.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">from</td>
+<td style="text-align: left; width: 30em;">Whether the message was listed as from anyone (this is usually set by default for regular outgoing email).</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">cc</td>
+<td style="text-align: left; width: 30em;">Number of people cc'ed.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">sent_email</td>
+<td style="text-align: left; width: 30em;">Indicator for whether the sender had been sent an email in the last 30 days.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">attach</td>
+<td style="text-align: left; width: 30em;">The number of attached files.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">dollar</td>
+<td style="text-align: left; width: 30em;">The number of times a dollar sign or the word “dollar” appeared in the email.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">winner</td>
+<td style="text-align: left; width: 30em;">Indicates whether “winner” appeared in the email.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">format</td>
+<td style="text-align: left; width: 30em;">Indicates whether the email was written using HTML (e.g., may have included bolding or active links).</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">re_subj</td>
+<td style="text-align: left; width: 30em;">Whether the subject started with “Re:”, “RE:”, “re:”, or “rE:”</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">exclaim_subj</td>
+<td style="text-align: left; width: 30em;">Whether there was an exclamation point in the subject.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">urgent_subj</td>
+<td style="text-align: left; width: 30em;">Whether the word “urgent” was in the email subject.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">exclaim_mess</td>
+<td style="text-align: left; width: 30em;">The number of exclamation points in the email message.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">number</td>
+<td style="text-align: left; width: 30em;">Factor variable saying whether there was no number, a small number (under 1 million), or a big number.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<section id="model-diagnostics" class="level2" data-number="26.1"><h2 data-number="26.1" class="anchored" data-anchor-id="model-diagnostics">
+<span class="header-section-number">26.1</span> Model diagnostics</h2>
+<p>Before looking at the hypothesis tests associated with the coefficients (turns out they are very similar to those in linear regression!), it is valuable to understand the technical conditions that underlie the inference applied to the logistic regression model. Generally, as you’ve seen in the logistic regression modeling examples, it is imperative that the response variable is binary. Additionally, the key technical condition for logistic regression has to do with the relationship between the predictor variables <span class="math inline">\((x_i\)</span> values) and the probability the outcome will be a success. It turns out, the relationship is a specific functional form called a logit function, where <span class="math inline">\({\rm logit}(p) = \log_e(\frac{p}{1-p}).\)</span> The function may feel complicated, and memorizing the formula of the logit is not necessary for understanding logistic regression. What you do need to remember is that the probability of the outcome being a success is a function of a linear combination of the explanatory variables.</p>
+<div class="important">
+<p><strong>Logistic regression conditions.</strong></p>
+<p></p>
+<p>There are two key conditions for fitting a logistic regression model:</p>
+<ol type="1">
+<li>Each outcome <span class="math inline">\(Y_i\)</span> is independent of the other outcomes.</li>
+<li>Each predictor <span class="math inline">\(x_i\)</span> is linearly related to logit<span class="math inline">\((p_i)\)</span> if all other predictors are held constant.</li>
+</ol>
+</div>
+<p>The first logistic regression model condition — independence of the outcomes — is reasonable if we can assume that the emails that arrive in an inbox within a few months are independent of each other with respect to whether they’re spam or not.</p>
+<p>The second condition of the logistic regression model is not easily checked without a fairly sizable amount of data. Luckily, we have 3921 emails in the dataset! Let’s first visualize these data by plotting the true classification of the emails against the model’s fitted probabilities, as shown in <a href="#fig-spam-predict" class="quarto-xref">Figure&nbsp;<span>26.1</span></a>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-spam-predict" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Scatterplot with predicted probability of being spam on the x-axis and  original class, either spam or not spam, on the y-axis. We can see that  the predictions do not perfectly classify the emails; however, the not spam  emails generally have lower prediction probabilities than the spam emails. ">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-spam-predict-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="inf-model-logistic_files/figure-html/fig-spam-predict-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;26.1: The predicted probability that each of the 3921 emails are spam. Points have been jittered so that those with nearly identical values aren’t plotted exactly on top of one another."><img src="inf-model-logistic_files/figure-html/fig-spam-predict-1.png" class="img-fluid figure-img" style="width:90.0%" alt="Scatterplot with predicted probability of being spam on the x-axis and  original class, either spam or not spam, on the y-axis. We can see that  the predictions do not perfectly classify the emails; however, the not spam  emails generally have lower prediction probabilities than the spam emails. "></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-spam-predict-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;26.1: The predicted probability that each of the 3921 emails are spam. Points have been jittered so that those with nearly identical values aren’t plotted exactly on top of one another.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>We’d like to assess the quality of the model. For example, we might ask: if we look at emails that we modeled as having 10% chance of being spam, do we find out 10% of them actually are spam? We can check this for groups of the data by constructing a plot as follows:</p>
+<ol type="1">
+<li>Bucket the observations into groups based on their predicted probabilities.</li>
+<li>Compute the average predicted probability for each group.</li>
+<li>Compute the observed probability for each group, along with a 95% confidence interval for the true probability of success for those individuals.</li>
+<li>Plot the observed probabilities (with 95% confidence intervals) against the average predicted probabilities for each group.</li>
+</ol>
+<p>If the model does a good job describing the data, the plotted points should fall close to the line <span class="math inline">\(y = x\)</span>, since the predicted probabilities should be similar to the observed probabilities. We can use the confidence intervals to roughly gauge whether anything might be amiss. Such a plot is shown in <a href="#fig-logisticModelBucketDiag" class="quarto-xref">Figure&nbsp;<span>26.2</span></a>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-logisticModelBucketDiag" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Scatterplot with predicted probability of being spam on the x-axis and  original class, either spam or not spam, on the y-axis. Superimposed are  the observed probabilities of being spam, calculated by the proportion of  spam emails in each bucket of predicted probabilities. The observed  probabilities and predicted probabilities line up reasonably well. ">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-logisticModelBucketDiag-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="inf-model-logistic_files/figure-html/fig-logisticModelBucketDiag-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;26.2: A reconfiguration of Figure&nbsp;fig-spam-predict. Again, the predicted probabilities are on the x-axis and the truth is on the y-axis for each email. After data have been bucketed into predicted probability groups, the proportion of spam emails (i.e., the observed probability) is given by the black circles. The dashed line is within the confidence bound of the 95% confidence intervals for many of the buckets, suggesting the logistic fit is reasonable."><img src="inf-model-logistic_files/figure-html/fig-logisticModelBucketDiag-1.png" class="img-fluid figure-img" style="width:90.0%" alt="Scatterplot with predicted probability of being spam on the x-axis and  original class, either spam or not spam, on the y-axis. Superimposed are  the observed probabilities of being spam, calculated by the proportion of  spam emails in each bucket of predicted probabilities. The observed  probabilities and predicted probabilities line up reasonably well. "></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-logisticModelBucketDiag-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;26.2: A reconfiguration of <a href="#fig-spam-predict" class="quarto-xref">Figure&nbsp;<span>26.1</span></a>. Again, the predicted probabilities are on the x-axis and the truth is on the y-axis for each email. After data have been bucketed into predicted probability groups, the proportion of spam emails (i.e., the observed probability) is given by the black circles. The dashed line is within the confidence bound of the 95% confidence intervals for many of the buckets, suggesting the logistic fit is reasonable.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>A plot like <a href="#fig-logisticModelBucketDiag" class="quarto-xref">Figure&nbsp;<span>26.2</span></a> helps to better understand the deviations. Additional diagnostics may be created that are similar to those featured in <a href="inf-model-slr.html#sec-tech-cond-linmod" class="quarto-xref"><span>Section 24.6</span></a>. For instance, we could compute residuals as the observed outcome minus the expected outcome (<span class="math inline">\(e_i = Y_i - \hat{p}_i\)</span>), and then we could create plots of these residuals against each predictor.</p>
+<p></p>
+</section><section id="sec-inf-log-reg-soft" class="level2" data-number="26.2"><h2 data-number="26.2" class="anchored" data-anchor-id="sec-inf-log-reg-soft">
+<span class="header-section-number">26.2</span> Multiple logistic regression output from software</h2>
+<p>As you learned in <a href="model-mlr.html" class="quarto-xref"><span>Chapter 8</span></a>, optimization can be used to find the coefficient estimates for the logistic model. The unknown population model can be written as:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\log_e\bigg(\frac{p}{1-p}\bigg) = \beta_0 &amp;+ \beta_1 \times \texttt{to\_multiple}\\
+&amp;+ \beta_2 \times \texttt{cc} \\
+&amp;+ \beta_3 \times \texttt{dollar}\\
+&amp;+ \beta_4 \times \texttt{urgent\_subj}
+\end{aligned}
+\]</span></p>
+<p>The estimated equation for the regression model may be written as a model with four predictor variables, where <span class="math inline">\(\hat{p}\)</span> is the estimated probability of being a spam email message:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) = -2.05 &amp;-1.91 \times \texttt{to\_multiple}\\
+&amp;+ 0.02 \times \texttt{cc} \\
+&amp;- 0.07 \times \texttt{dollar}\\
+&amp;+ 2.66 \times \texttt{urgent\_subj}
+\end{aligned}
+\]</span></p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-emaillogmodel" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-emaillogmodel-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;26.2: Summary of a logistic model for predicting whether an email is spam based on the variables to_multiple, cc, dollar, and urgent_subj. Each of the variables has its own coefficient estimate and p-value.
+</figcaption><div aria-describedby="tbl-emaillogmodel-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 15em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">-2.05</td>
+<td style="text-align: right; width: 5em;">0.06</td>
+<td style="text-align: right; width: 5em;">-34.67</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 15em; font-family: monospace;">to_multiple1</td>
+<td style="text-align: right; width: 5em;">-1.91</td>
+<td style="text-align: right; width: 5em;">0.30</td>
+<td style="text-align: right; width: 5em;">-6.37</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 15em; font-family: monospace;">cc</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">1.16</td>
+<td style="text-align: right; width: 5em;">0.245</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 15em; font-family: monospace;">dollar</td>
+<td style="text-align: right; width: 5em;">-0.07</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">-3.38</td>
+<td style="text-align: right; width: 5em;">7e-04</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 15em; font-family: monospace;">urgent_subj1</td>
+<td style="text-align: right; width: 5em;">2.66</td>
+<td style="text-align: right; width: 5em;">0.80</td>
+<td style="text-align: right; width: 5em;">3.32</td>
+<td style="text-align: right; width: 5em;">9e-04</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>Not only does <a href="#tbl-emaillogmodel" class="quarto-xref">Table&nbsp;<span>26.2</span></a> provide the estimates for the coefficients, it also provides information on the inference analysis (i.e., hypothesis testing) which is the focus of this chapter.</p>
+<p>As in <a href="inf-model-mlr.html" class="quarto-xref"><span>Chapter 25</span></a>, with <strong>multiple predictors</strong>, each hypothesis test (for each of the explanatory variables) is conditioned on each of the other variables remaining in the model.</p>
+<blockquote class="blockquote">
+<p>if multiple predictors <span class="math inline">\(H_0: \beta_i = 0\)</span> given other variables in the model</p>
+</blockquote>
+<p>Using the example above and focusing on each of the variable p-values (here we won’t discuss the p-value associated with the intercept), we can write out the four different hypotheses (associated with the p-value corresponding to each of the coefficients / rows in <a href="#tbl-emaillogmodel" class="quarto-xref">Table&nbsp;<span>26.2</span></a>):</p>
+<ul>
+<li>
+<span class="math inline">\(H_0: \beta_1 = 0\)</span> given <code>cc</code>, <code>dollar</code>, and <code>urgent_subj</code> are included in the model</li>
+<li>
+<span class="math inline">\(H_0: \beta_2 = 0\)</span> given <code>to_multiple</code>, <code>dollar</code>, and <code>urgent_subj</code> are included in the model</li>
+<li>
+<span class="math inline">\(H_0: \beta_3 = 0\)</span> given <code>to_multiple</code>, <code>cc</code>, and <code>urgent_subj</code> are included in the model</li>
+<li>
+<span class="math inline">\(H_0: \beta_4 = 0\)</span> given <code>to_multiple</code>, <code>cc</code>, and <code>dollar</code> are included in the model</li>
+</ul>
+<p>The very low p-values from the software output tell us that three of the variables (that is, not <code>cc</code>) act as statistically discernible predictors in the model at the discernibility level of 0.05, despite the inclusion of any of the other variables. Consider the p-value on <span class="math inline">\(H_0: \beta_1 = 0\)</span>. The low p-value says that it would be extremely unlikely to observe data that yield a coefficient on <code>to_multiple</code> at least as far from 0 as -1.91 (i.e., <span class="math inline">\(|b_1| &gt; 1.91\)</span>) if the true relationship between <code>to_multiple</code> and <code>spam</code> was non-existent (i.e., if <span class="math inline">\(\beta_1 = 0\)</span>) <strong>and</strong> the model also included <code>cc</code> and <code>dollar</code> and <code>urgent_subj</code>. Note also that the coefficient on <code>dollar</code> has a small associated p-value, but the magnitude of the coefficient is also seemingly small (0.07). It turns out that in units of standard errors (0.02 here), 0.07 is actually quite far from zero, it’s all about context! The p-values on the remaining variables are interpreted similarly. From the initial output (p-values) in <a href="#tbl-emaillogmodel" class="quarto-xref">Table&nbsp;<span>26.2</span></a>, it seems as though <code>to_multiple</code>, <code>dollar</code>, and <code>urgent_subj</code> are important variables for modeling whether an email is <code>spam</code>. We remind you that although p-values provide some information about the importance of each of the predictors in the model, there are many, arguably more important, aspects to consider when choosing the best model.</p>
+<p>As with linear regression (see <a href="inf-model-mlr.html#sec-inf-mult-reg-collin" class="quarto-xref"><span>Section 25.2</span></a>), existence of predictors that are correlated with each other can affect both the coefficient estimates and the associated p-values. However, investigating multicollinearity in a logistic regression model is saved for a text which provides more detail about logistic regression. Next, as a model building alternative (or enhancement) to p-values, we revisit cross-validation within the context of predicting status for each of the individual emails.</p>
+</section><section id="sec-inf-log-reg-cv" class="level2" data-number="26.3"><h2 data-number="26.3" class="anchored" data-anchor-id="sec-inf-log-reg-cv">
+<span class="header-section-number">26.3</span> Cross-validation for prediction error</h2>
+<p>The p-value is a probability measure under a setting of no relationship. That p-value provides information about the degree of the relationship (e.g., above we measure the relationship between <code>spam</code> and <code>to_multiple</code> using a p-value), but the p-value does not measure how well the model will predict the individual emails (e.g., the accuracy of the model). Depending on the goal of the research project, you might be inclined to focus on variable importance (through p-values) or you might be inclined to focus on prediction accuracy (through cross-validation).</p>
+<p>Here we present a method for using <strong>cross-validation</strong> <strong>accuracy</strong> to determine which variables (if any) should be used in a model which predicts whether an email is spam. A full treatment of cross-validation and logistic regression models is beyond the scope of this text. Using <span class="math inline">\(k\)</span>-fold cross-validation, we can build <span class="math inline">\(k\)</span> different models which are used to predict the observations in each of the <span class="math inline">\(k\)</span> holdout samples. As with linear regression (see <a href="inf-model-mlr.html#sec-inf-mult-reg-cv" class="quarto-xref"><span>Section 25.3</span></a>), we compare a smaller logistic regression model to a larger logistic regression model. The smaller model uses only the <code>to_multiple</code> variable, see the complete dataset (not cross-validated) model output in <a href="#tbl-emaillogmodel1" class="quarto-xref">Table&nbsp;<span>26.3</span></a>. The logistic regression model can be written as follows, where <span class="math inline">\(\hat{p}\)</span> is the estimated probability of being a spam email message.</p>
+<p><strong>The smaller model:</strong></p>
+<p><span class="math display">\[\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) =  -2.12 + -1.81 \times \texttt{to\_multiple}\]</span></p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-emaillogmodel1" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-emaillogmodel1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;26.3: The smaller model. Summary of a logistic model for predicting whether an email is spam based on only the predictor variable to_multiple. Each of the variables has its own coefficient estimate and p-value.
+</figcaption><div aria-describedby="tbl-emaillogmodel1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 15em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">-2.12</td>
+<td style="text-align: right; width: 5em;">0.06</td>
+<td style="text-align: right; width: 5em;">-37.67</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 15em; font-family: monospace;">to_multiple1</td>
+<td style="text-align: right; width: 5em;">-1.81</td>
+<td style="text-align: right; width: 5em;">0.30</td>
+<td style="text-align: right; width: 5em;">-6.09</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>For each cross-validated model, the coefficients change slightly, and the model is used to make independent predictions on the holdout sample. The model from the first cross-validation sample is given in <a href="#fig-emailCV1" class="quarto-xref">Figure&nbsp;<span>26.3</span></a> and can be compared to the coefficients in <a href="#tbl-emaillogmodel1" class="quarto-xref">Table&nbsp;<span>26.3</span></a>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-emailCV1" class="quarto-float quarto-figure quarto-figure-center anchored" alt="The left panel shows the logistic model predicting the probability of an  email being spam as a function of whether the email was sent to multiple  individuals; the model was built using the red, green, and yellow triangular  sections of the observed data. The right panel shows a confusion matrix of  the predicted spam label crossed with the observed spam label for the set of  observations in the blue triangular section of the observed data. Of the 83  spam emails, 80 were correctly classified as spam. Of the 897 non-spam emails, 143 were correctly classified as not spam. ">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-emailCV1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="images/emailCV1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;26.3: The smaller model. The coefficients are estimated using the least squares model on 3/4 of the data with a single predictor variable. Predictions are made on the remaining 1/4 of the observations. Note that the prediction error rate is quite high."><img src="images/emailCV1.png" class="img-fluid figure-img" style="width:90.0%" alt="The left panel shows the logistic model predicting the probability of an  email being spam as a function of whether the email was sent to multiple  individuals; the model was built using the red, green, and yellow triangular  sections of the observed data. The right panel shows a confusion matrix of  the predicted spam label crossed with the observed spam label for the set of  observations in the blue triangular section of the observed data. Of the 83  spam emails, 80 were correctly classified as spam. Of the 897 non-spam emails, 143 were correctly classified as not spam. "></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-emailCV1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;26.3: The smaller model. The coefficients are estimated using the least squares model on 3/4 of the data with a single predictor variable. Predictions are made on the remaining 1/4 of the observations. Note that the prediction error rate is quite high.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-email-spam" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-email-spam-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;26.4: The smaller model. One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted. The logistic regression model was fit independently of the removed emails. Only <code>to_multiple</code> is used to predict whether the email is spam. Because we used a cutoff designed to identify spam emails, the accuracy of the non-spam email predictions is very low. <code>spamTP</code> is the proportion of true spam emails that were predicted to be spam. <code>notspamTP</code> is the proportion of true not spam emails that were predicted to be not spam.
+</figcaption><div aria-describedby="tbl-email-spam-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">fold</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">count</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">accuracy</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">notspamTP</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">spamTP</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">1st quarter</td>
+<td style="text-align: right;">980</td>
+<td style="text-align: right;">0.26</td>
+<td style="text-align: right;">0.19</td>
+<td style="text-align: right;">0.98</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2nd quarter</td>
+<td style="text-align: right;">981</td>
+<td style="text-align: right;">0.23</td>
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">0.96</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">3rd quarter</td>
+<td style="text-align: right;">979</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">0.18</td>
+<td style="text-align: right;">0.96</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">4th quarter</td>
+<td style="text-align: right;">981</td>
+<td style="text-align: right;">0.24</td>
+<td style="text-align: right;">0.17</td>
+<td style="text-align: right;">0.98</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>Because the <code>email</code> dataset has a ratio of roughly 90% non-spam and 10% spam emails, a model which randomly guessed all non-spam would have an overall accuracy of 90%! Clearly, we would like to capture the information with the spam emails, so our interest is in the percent of spam emails which are identified as spam (see <a href="#tbl-email-spam" class="quarto-xref">Table&nbsp;<span>26.4</span></a>). Additionally, in the logistic regression model, we use a 10% cutoff to predict whether the email is spam. Fortunately, we have done a great job of predicting! However, the trade-off was that most of the non-spam emails are now predicted to be spam which is not acceptable for a prediction algorithm. Adding more variables to the model may help with both the spam and non-spam predictions.</p>
+<p>The larger model uses <code>to_multiple</code>, <code>attach</code>, <code>winner</code>, <code>format</code>, <code>re_subj</code>, <code>exclaim_mess</code>, and <code>number</code> as the set of seven predictor variables, see the complete dataset (not cross-validated) model output in <a href="#tbl-emaillogmodel2" class="quarto-xref">Table&nbsp;<span>26.5</span></a>. The logistic regression model can be written as follows, where <span class="math inline">\(\hat{p}\)</span> is the estimated probability of being a spam email message.</p>
+<p><strong>The larger model:</strong></p>
+<p><span class="math display">\[
+\begin{aligned}
+\log_e\bigg(\frac{\hat{p}}{1-\hat{p}}\bigg) = -0.34 &amp;- 2.56 \times \texttt{to\_multiple} + 0.20 \times \texttt{attach} + 1.73 \times \texttt{winner}_{yes} \\
+&amp;- 1.28 \times \texttt{format} - 2.86 \times \texttt{re\_subj} + 0.00 \times \texttt{exclaim\_mess} \\
+&amp;- 1.07 \times \texttt{number}_{small} - 0.42 \times \texttt{number}_{big}
+\end{aligned}
+\]</span></p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-emaillogmodel2" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-emaillogmodel2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;26.5: The larger model. Summary of a logistic model for predicting whether an email is spam based on the variables <code>to_multiple</code>, <code>attach</code>, <code>winner</code>, <code>format</code>, <code>re_subj</code>, <code>exclaim_mess</code>, and <code>number</code>. Each of the variables has its own coefficient estimate and p-value.
+</figcaption><div aria-describedby="tbl-emaillogmodel2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 15em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">-0.34</td>
+<td style="text-align: right; width: 5em;">0.11</td>
+<td style="text-align: right; width: 5em;">-3.02</td>
+<td style="text-align: right; width: 5em;">0.0025</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 15em; font-family: monospace;">to_multiple1</td>
+<td style="text-align: right; width: 5em;">-2.56</td>
+<td style="text-align: right; width: 5em;">0.31</td>
+<td style="text-align: right; width: 5em;">-8.28</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 15em; font-family: monospace;">attach</td>
+<td style="text-align: right; width: 5em;">0.20</td>
+<td style="text-align: right; width: 5em;">0.06</td>
+<td style="text-align: right; width: 5em;">3.29</td>
+<td style="text-align: right; width: 5em;">0.001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 15em; font-family: monospace;">winneryes</td>
+<td style="text-align: right; width: 5em;">1.73</td>
+<td style="text-align: right; width: 5em;">0.33</td>
+<td style="text-align: right; width: 5em;">5.33</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 15em; font-family: monospace;">format1</td>
+<td style="text-align: right; width: 5em;">-1.28</td>
+<td style="text-align: right; width: 5em;">0.13</td>
+<td style="text-align: right; width: 5em;">-9.80</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 15em; font-family: monospace;">re_subj1</td>
+<td style="text-align: right; width: 5em;">-2.86</td>
+<td style="text-align: right; width: 5em;">0.37</td>
+<td style="text-align: right; width: 5em;">-7.83</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 15em; font-family: monospace;">exclaim_mess</td>
+<td style="text-align: right; width: 5em;">0.00</td>
+<td style="text-align: right; width: 5em;">0.00</td>
+<td style="text-align: right; width: 5em;">0.26</td>
+<td style="text-align: right; width: 5em;">0.7925</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 15em; font-family: monospace;">numbersmall</td>
+<td style="text-align: right; width: 5em;">-1.07</td>
+<td style="text-align: right; width: 5em;">0.14</td>
+<td style="text-align: right; width: 5em;">-7.54</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 15em; font-family: monospace;">numberbig</td>
+<td style="text-align: right; width: 5em;">-0.42</td>
+<td style="text-align: right; width: 5em;">0.20</td>
+<td style="text-align: right; width: 5em;">-2.10</td>
+<td style="text-align: right; width: 5em;">0.0357</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-emailCV2" class="quarto-float quarto-figure quarto-figure-center anchored" alt="The left panel shows the logistic model predicting the probability of an  email being spam as a function of the email being sent to multiple  recipients, number of attachments, using the word winner, format of HTML,  RE in the subject line, number of exclamation points in the message, and  the existence of a number in the email; the model was built using the red,  green, and yellow triangular sections of the observed data. The right panel  shows a confusion matrix of the predicted spam label crossed with the  observed spam label for the set of observations in the blue triangular  section of the observed data. Of the 97 spam emails, 73 were correctly  classified as spam. Of the 883 non-spam emails, 688 were correctly classified  as not spam. ">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-emailCV2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="images/emailCV2.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;26.4: The larger model. The coefficients are estimated using the least squares model on 3/4 of the dataset with the seven specified predictor variables. Predictions are made on the remaining 1/4 of the observations. Note that the predictions are independent of the estimated model coefficients. The predictions are now much better for both the spam and the non-spam emails (than they were with a single predictor variable)."><img src="images/emailCV2.png" class="img-fluid figure-img" style="width:100.0%" alt="The left panel shows the logistic model predicting the probability of an  email being spam as a function of the email being sent to multiple  recipients, number of attachments, using the word winner, format of HTML,  RE in the subject line, number of exclamation points in the message, and  the existence of a number in the email; the model was built using the red,  green, and yellow triangular sections of the observed data. The right panel  shows a confusion matrix of the predicted spam label crossed with the  observed spam label for the set of observations in the blue triangular  section of the observed data. Of the 97 spam emails, 73 were correctly  classified as spam. Of the 883 non-spam emails, 688 were correctly classified  as not spam. "></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-emailCV2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;26.4: The larger model. The coefficients are estimated using the least squares model on 3/4 of the dataset with the seven specified predictor variables. Predictions are made on the remaining 1/4 of the observations. Note that the predictions are independent of the estimated model coefficients. The predictions are now much better for both the spam and the non-spam emails (than they were with a single predictor variable).
+</figcaption></figure>
+</div>
+</div>
+</div>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-email-spam2" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-email-spam2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;26.6: The larger model. One quarter at a time, the data were removed from the model building, and whether the email was spam (TRUE) or not (FALSE) was predicted. The logistic regression model was fit independently of the removed emails. Now, the variables <code>to_multiple</code>, <code>attach</code>, <code>winner</code>, <code>format</code>, <code>re_subj</code>, <code>exclaim_mess</code>, and <code>number</code> are used to predict whether the email is spam. <code>spamTP</code> is the proportion of true spam emails that were predicted to be spam. <code>notspamTP</code> is the proportion of true not spam emails that were predicted to be not spam.’
+</figcaption><div aria-describedby="tbl-email-spam2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">fold</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">count</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">accuracy</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">notspamTP</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">spamTP</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">1st quarter</td>
+<td style="text-align: right;">980</td>
+<td style="text-align: right;">0.77</td>
+<td style="text-align: right;">0.77</td>
+<td style="text-align: right;">0.71</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2nd quarter</td>
+<td style="text-align: right;">981</td>
+<td style="text-align: right;">0.80</td>
+<td style="text-align: right;">0.81</td>
+<td style="text-align: right;">0.70</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">3rd quarter</td>
+<td style="text-align: right;">979</td>
+<td style="text-align: right;">0.76</td>
+<td style="text-align: right;">0.77</td>
+<td style="text-align: right;">0.65</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">4th quarter</td>
+<td style="text-align: right;">981</td>
+<td style="text-align: right;">0.78</td>
+<td style="text-align: right;">0.79</td>
+<td style="text-align: right;">0.75</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>Somewhat expected, the larger model (see <a href="#tbl-email-spam2" class="quarto-xref">Table&nbsp;<span>26.6</span></a>) was able to capture more nuance in the emails which lead to better predictions. However, it is not true that adding variables will always lead to better predictions, as correlated or noise variables may dampen the signal from the set of variables that truly predict the status. We encourage you to learn more about multiple variable models and cross-validation in your future exploration of statistical topics.</p>
+</section><section id="sec-chp27-review" class="level2" data-number="26.4"><h2 data-number="26.4" class="anchored" data-anchor-id="sec-chp27-review">
+<span class="header-section-number">26.4</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="26.4.1"><h3 data-number="26.4.1" class="anchored" data-anchor-id="summary">
+<span class="header-section-number">26.4.1</span> Summary</h3>
+<p>Throughout the text, we have presented a modern view to introduction to statistics. Earlier, we presented graphical techniques which communicated relationships across multiple variables. We also used modeling to formalize the relationships. In <a href="#sec-inf-model-logistic" class="quarto-xref"><span>Chapter 26</span></a> we considered inferential claims on models which include many variables used to predict the probability of the outcome being a success. We continue to emphasize the importance of experimental design in making conclusions about research claims. In particular, recall that variability can come from different sources (e.g., random sampling vs.&nbsp;random allocation, see <a href="data-design.html#fig-randsampValloc" class="quarto-xref">Figure&nbsp;<span>2.8</span></a>).</p>
+<p>As you might guess, this text has only scratched the surface of the world of statistical analyses that can be applied to different datasets. In particular, to do justice to the topic, the linear models and generalized linear models we have introduced can each be covered with their own course or book. Hierarchical models, alternative methods for fitting parameters (e.g., Ridge Regression or LASSO), and advanced computational methods applied to multivariable models (e.g., permuting the response variable? one explanatory variable? all the explanatory variables?) are all beyond the scope of this book. However, your successful understanding of the ideas we have covered has set you up perfectly to move on to a higher level of statistical modeling and inference. Enjoy!</p>
+</section><section id="terms" class="level3" data-number="26.4.2"><h3 data-number="26.4.2" class="anchored" data-anchor-id="terms">
+<span class="header-section-number">26.4.2</span> Terms</h3>
+<p>The terms introduced in this chapter are presented in <a href="#tbl-terms-chp-26" class="quarto-xref">Table&nbsp;<span>26.7</span></a>. If you’re not sure what some of these terms mean, we recommend you go back in the text and review their definitions. You should be able to easily spot them as <strong>bolded text</strong>.</p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-terms-chp-26" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-terms-chp-26-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;26.7: Terms introduced in this chapter.
+</figcaption><div aria-describedby="tbl-terms-chp-26-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small"><tbody>
+<tr class="odd">
+<td style="text-align: left; width: 12em;">accuracy</td>
+<td style="text-align: left; width: 12em;">inference on logistic regression</td>
+<td style="text-align: left; width: 12em;">technical conditions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 12em;">cross-validation</td>
+<td style="text-align: left; width: 12em;">multiple predictors</td>
+<td style="text-align: left; width: 12em;"></td>
+</tr>
+</tbody></table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section></section><section id="sec-chp26-exercises" class="level2" data-number="26.5"><h2 data-number="26.5" class="anchored" data-anchor-id="sec-chp26-exercises">
+<span class="header-section-number">26.5</span> Exercises</h2>
+<p>Answers to odd-numbered exercises can be found in <a href="exercise-solutions.html#sec-exercise-solutions-26" class="quarto-xref">Appendix&nbsp;<span>A.26</span></a>.</p>
+<div class="exercises">
+<ol type="1">
+<li>
+<strong>Passing the driver’s test.</strong> A consulting company is hired to assess whether certain characteristics of a DMV (e.g., location, number of test takers, number of test givers, hours of operation, etc.) are associated with the pass rate of the driver’s test. The company is given information on 100 randomly selected DMVs across the country. For each DMV the annual driving test pass rate is recorded, along with other characteristics describing the DMV. Can logistic regression with multiple predictors be used to predict annual driving test pass rate for DMVs in this setting? Explain your reasoning.</li>
+</ol>
+<ol start="2" type="1">
+<li>
+<p><strong>Oceans and skin cancer.</strong> A researcher wants to investigate the relationship between living within 10 miles of an ocean for at least one year of life and developing skin cancer before the age of 50.</p>
+<ol type="a">
+<li><p>Explain why logistic regression can be used to study the relationship between these two binary variables? What is the technical assumption describing the relationship between the response (outcome) and explanatory (predictor) variables?</p></li>
+<li><p>What other methods covered in this text might be used to address the research question of interest? What advantages does logistic regression have over these methods?</p></li>
+</ol>
+</li>
+</ol>
+<ol start="3" type="1">
+<li>
+<p><strong>Marijuana use in college.</strong> Researchers studying whether the value systems of adolescents conflict with those of their parents asked 445 college students if they use marijuana. They also asked the students’ parents if they used marijuana when they were in college. Based on the regression output shown below for predicting student drug use from parent drug use, evaluate whether parents’ marijuana usage is a discernible predictor of their kids’ marijuana usage. State the hypotheses, the test statistics, the p-value, and the conclusion in context of the data and the research question.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> <span class="citation" data-cites="Ellis:1979">(<a href="references.html#ref-Ellis:1979" role="doc-biblioref">Ellis and Stone 1979</a>)</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">-0.405</td>
+<td style="text-align: right; width: 5em;">0.133</td>
+<td style="text-align: right; width: 5em;">-3.04</td>
+<td style="text-align: right; width: 5em;">0.0023</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">parentsused</td>
+<td style="text-align: right; width: 5em;">0.791</td>
+<td style="text-align: right; width: 5em;">0.194</td>
+<td style="text-align: right; width: 5em;">4.09</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</li>
+</ol>
+<ol start="4" type="1">
+<li>
+<p><strong>Treating heart attacks.</strong> Researchers studying the effectiveness of Sulfinpyrazone in the prevention of sudden death after a heart attack conducted a randomized experiment on 1,475 patients. Based on the regression output shown below for predicting the outcome (<code>died</code> or <code>lived</code>, where success is defined as <code>lived</code>) from the treatment group (<code>control</code> and <code>treatment</code>), evaluate whether treatment group is a discernible predictor of the outcome. State the hypotheses, the test statistics, the p-value, and the conclusion in context of the data and the research question.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> <span class="citation" data-cites="Anturane:1980">(<a href="references.html#ref-Anturane:1980" role="doc-biblioref">Anturane Reinfarction Trial Research Group 1980</a>)</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">2.431</td>
+<td style="text-align: right; width: 5em;">0.135</td>
+<td style="text-align: right; width: 5em;">18.05</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">grouptreatment</td>
+<td style="text-align: right; width: 5em;">0.395</td>
+<td style="text-align: right; width: 5em;">0.210</td>
+<td style="text-align: right; width: 5em;">1.89</td>
+<td style="text-align: right; width: 5em;">0.0594</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</li>
+</ol>
+<ol start="5" type="1">
+<li>
+<p><strong>Possum classification, cross-validation.</strong> The common brushtail possum of the Australia region is a bit cuter than its distant cousin, the American opossum. We consider 104 brushtail possums from two regions in Australia, where the possums may be considered a random sample from the population. The first region is Victoria, which is in the eastern half of Australia and traverses the southern coast. The second region consists of New South Wales and Queensland, which make up eastern and northeastern Australia. We use logistic regression to differentiate between possums in these two regions. The outcome variable, called <code>pop</code>, takes value 1 when a possum is from Victoria and 0 when it is from New South Wales or Queensland.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<div class="quarto-layout-panel" data-layout="[0.49, -0.02, 0.49]">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div id="smaller" class="quarto-layout-cell" style="flex-basis: 49.0%;justify-content: flex-start;">
+<p><span class="math display">\[
+\log_e \bigg(\frac{p}{1-p}\bigg) = \beta_0 + \beta_1 \times \texttt{tail\_l}
+\]</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><a href="inf-model-logistic_files/figure-html/unnamed-chunk-11-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="inf-model-logistic_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="quarto-figure-spacer quarto-layout-cell" style="flex-basis: 2.0%;justify-content: flex-start;">
+<p>&nbsp;</p>
+</div>
+<div id="larger" class="quarto-layout-cell" style="flex-basis: 49.0%;justify-content: flex-start;">
+<p><span class="math display">\[
+\log_e \bigg(\frac{p}{1-p}\bigg) = \beta_0 + \beta_1 \times \texttt{total\_l} + \beta_2\times \texttt{sex}
+\]</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><a href="inf-model-logistic_files/figure-html/unnamed-chunk-12-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="inf-model-logistic_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>How many observations are in Fold2? Use the model with only tail length as a predictor variable. Of the observations in Fold2, how many of them were correctly predicted to be from Vicotria? How many of them were incorrectly predicted to be from Victoria?</p></li>
+<li><p>How many observations are used to build the model which predicts for the observations in Fold2?</p></li>
+<li><p>For one of the cross-validation folds, how many coefficients were estimated for the model which uses tail length as a predictor? For one of the cross-validation folds, how many coefficients were estimated for the model which uses total length and sex as predictors?</p></li>
+</ol>
+</li>
+</ol>
+<ol start="6" type="1">
+<li>
+<p><strong>Premature babies, cross-validation.</strong> US Department of Health and Human Services, Centers for Disease Control and Prevention collect information on births recorded in the country. The data used here are a random sample of 1000 births from 2014 (with some rows removed due to missing data). We use logistic regression to model whether the baby is premature from various explanatory variables.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> <span class="citation" data-cites="data:births14">(<a href="references.html#ref-data:births14" role="doc-biblioref">ICPSR 2014</a>)</span></p>
+<div class="quarto-layout-panel" data-layout="[0.49, -0.02, 0.49]">
+<div class="quarto-layout-row quarto-layout-valign-bottom">
+<div id="larger" class="quarto-layout-cell" style="flex-basis: 49.0%;justify-content: flex-start;">
+<p><span class="math display">\[
+\begin{aligned}
+\log_e \bigg(\frac{p}{1-p}\bigg) = \beta_0 &amp;+ \beta_1\times \texttt{mage} \\
+&amp;+ \beta_2 \times \texttt{weight} \\
+&amp;+ \beta_3 \times \texttt{mature} \\
+&amp;+ \beta_4 \times \texttt{visits} \\
+&amp;+ \beta_5 \times \texttt{gained} \\
+&amp;+ \beta_6 \times \texttt{habit}
+\end{aligned}
+\]</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><a href="inf-model-logistic_files/figure-html/unnamed-chunk-14-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="inf-model-logistic_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="quarto-figure-spacer quarto-layout-cell" style="flex-basis: 2.0%;justify-content: flex-start;">
+<p>&nbsp;</p>
+</div>
+<div id="smaller" class="quarto-layout-cell" style="flex-basis: 49.0%;justify-content: flex-start;">
+<p><span class="math display">\[
+\begin{aligned}
+\log_e \bigg(\frac{p}{1-p}\bigg)  = \beta_0 &amp;+ \beta_1\times \texttt{weight} \\
+&amp;+ \beta_2 \times \texttt{mature}
+\end{aligned}
+\]</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><a href="inf-model-logistic_files/figure-html/unnamed-chunk-15-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="inf-model-logistic_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>How many observations are in Fold2? Use the model with only <code>weight</code> and <code>mature</code> as predictor variables. Of the observations in Fold2, how many of them were correctly predicted to be premature? How many of them were incorrectly predicted to be premature?</p></li>
+<li><p>How many observations are used to build the model which predicts for the observations in Fold2?</p></li>
+<li><p>In the original dataset, are most of the births premature or full term? Explain.</p></li>
+<li><p>For one of the cross-validation folds, how many coefficients were estimated for the model which uses <code>mage</code>, <code>weight</code>, <code>mature</code>, <code>visits</code>, <code>gained</code>, and <code>habit</code> as predictors? For one of the cross-validation folds, how many coefficients were estimated for the model which uses <code>weight</code> and <code>mature</code> as predictors?</p></li>
+</ol>
+</li>
+</ol>
+<ol start="7" type="1">
+<li>
+<p><strong>Possum classification, cross-validation to choose model.</strong> In this exercise we consider 104 brushtail possums from two regions in Australia (the first region is Victoria and the second is New South Wales and Queensland), where the possums may be considered a random sample from the population. We use logistic regression to classify the possums into the two regions. The outcome variable, called <code>pop</code>, takes value 1 when a possum is from Victoria and 0 when it is from New South Wales or Queensland.</p>
+<div class="quarto-layout-panel" data-layout="[0.49, -0.02, 0.49]">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div id="smaller" class="quarto-layout-cell" style="flex-basis: 49.0%;justify-content: flex-start;">
+<p><span class="math display">\[
+\log_e \bigg(\frac{p}{1-p}\bigg) = \beta_0 + \beta_1\times \texttt{tail\_l}
+\]</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><a href="inf-model-logistic_files/figure-html/unnamed-chunk-17-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="inf-model-logistic_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="quarto-figure-spacer quarto-layout-cell" style="flex-basis: 2.0%;justify-content: flex-start;">
+<p>&nbsp;</p>
+</div>
+<div id="larger" class="quarto-layout-cell" style="flex-basis: 49.0%;justify-content: flex-start;">
+<p><span class="math display">\[
+\log_e \bigg(\frac{p}{1-p}\bigg) = \beta_0 + \beta_1 \times \texttt{total\_l} + \beta_2 \times \texttt{sex}
+\]</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><a href="inf-model-logistic_files/figure-html/unnamed-chunk-18-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="inf-model-logistic_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>For the model with tail length, how many of the observations were correctly classified? What proportion of the observations were correctly classified?</p></li>
+<li><p>For the model with total length and sex, how many of the observations were correctly classified? What proportion of the observations were correctly classified?</p></li>
+<li><p>If you have to choose between using only tail length as a predictor versus using total length and sex as predictors (for classification into region), which model would you choose? Explain.</p></li>
+<li><p>Given the predictions above, what third model might be preferable to either of the models above? Explain.</p></li>
+</ol>
+</li>
+</ol>
+<ol start="8" type="1">
+<li>
+<p><strong>Premature babies, cross-validation to choose model.</strong> US Department of Health and Human Services, Centers for Disease Control and Prevention collect information on births recorded in the country. The data used here are a random sample of 1000 births from 2014 (with some rows removed due to missing data). We use logistic regression to model whether the baby is premature from various explanatory variables. <span class="citation" data-cites="data:births14">(<a href="references.html#ref-data:births14" role="doc-biblioref">ICPSR 2014</a>)</span></p>
+<div class="quarto-layout-panel" data-layout="[0.49, -0.02, 0.49]">
+<div class="quarto-layout-row quarto-layout-valign-bottom">
+<div id="larger" class="quarto-layout-cell" style="flex-basis: 49.0%;justify-content: flex-start;">
+<p><span class="math display">\[
+\begin{aligned}
+\log_e \bigg(\frac{p}{1-p}\bigg) = \beta_0 &amp;+ \beta_1 \times \texttt{mage} \\
+&amp;+ \beta_2 \times \texttt{weight} \\
+&amp;+ \beta_3 \times \texttt{mature} \\
+&amp;+ \beta_4 \times \texttt{visits} \\
+&amp;+ \beta_5 \times \texttt{gained} \\
+&amp;+ \beta_6 \times \texttt{habit}
+\end{aligned}
+\]</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><a href="inf-model-logistic_files/figure-html/unnamed-chunk-20-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="inf-model-logistic_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="quarto-figure-spacer quarto-layout-cell" style="flex-basis: 2.0%;justify-content: flex-start;">
+<p>&nbsp;</p>
+</div>
+<div id="smaller" class="quarto-layout-cell" style="flex-basis: 49.0%;justify-content: flex-start;">
+<p><span class="math display">\[
+\begin{aligned}
+\log_e \bigg(\frac{p}{1-p}\bigg) = \beta_0 &amp;+ \beta_1\times \texttt{weight} \\
+&amp;+ \beta_2 \times \texttt{mature}
+\end{aligned}
+\]</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><a href="inf-model-logistic_files/figure-html/unnamed-chunk-21-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-12"><img src="inf-model-logistic_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>For the model with 6 predictors, how many of the observations were correctly classified? What proportion of the observations were correctly classified?</p></li>
+<li><p>For the model with 2 predictors, how many of the observations were correctly classified? What proportion of the observations were correctly classified?</p></li>
+<li><p>If you have to choose between the model with 6 predictors and the model with 2 predictors (for predicting whether a baby will be premature), which model would you choose? Explain.</p></li>
+</ol>
+</li>
+</ol>
+</div>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-Anturane:1980" class="csl-entry" role="listitem">
+Anturane Reinfarction Trial Research Group. 1980. <span>“Sulfinpyrazone in the Prevention of Sudden Death After Myocardial Infarction.”</span> <em>New England Journal of Medicine</em> 302 (5): 250–56. <a href="https://doi.org/10.1056/NEJM198001313020502">https://doi.org/10.1056/NEJM198001313020502</a>.
+</div>
+<div id="ref-Ellis:1979" class="csl-entry" role="listitem">
+Ellis, G. J., and L. H. Stone. 1979. <span>“Marijuana Use in College:" an Evaluation of a Modeling Explanation".”</span> <em>Youth and Society</em> 10 (4): 323.
+</div>
+<div id="ref-data:births14" class="csl-entry" role="listitem">
+ICPSR. 2014. <span>“United States Department of Health and Human Services. Centers for Disease Control and Prevention. National Center for Health Statistics. Natality Detail File, 2014 United States. Inter-University Consortium for Political and Social Research, 2016-10-07.”</span> <a href="https://doi.org/10.3886/ICPSR36461.v1">https://doi.org/10.3886/ICPSR36461.v1</a>.
+</div>
+</div>
+</section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
+<ol>
+<li id="fn1"><p>The <a href="http://openintrostat.github.io/openintro/reference/drug_use.html"><code>drug_use</code></a> data used in this exercise can be found in the <a href="http://openintrostat.github.io/openintro"><strong>openintro</strong></a> R package.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>The <a href="http://openintrostat.github.io/openintro/reference/sulphinpyrazone.html"><code>sulphinpyrazone</code></a> data used in this exercise can be found in the <a href="http://openintrostat.github.io/openintro"><strong>openintro</strong></a> R package.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>The <a href="http://openintrostat.github.io/openintro/reference/possum.html"><code>possum</code></a> data used in this exercise can be found in the <a href="http://openintrostat.github.io/openintro"><strong>openintro</strong></a> R package.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>The <a href="http://openintrostat.github.io/openintro/reference/births14.html"><code>births14</code></a> data used in this exercise can be found in the <a href="http://openintrostat.github.io/openintro"><strong>openintro</strong></a> R package.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      <a href="./inf-model-mlr.html" class="pagination-link" aria-label="Inference for linear regression with multiple predictors">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Inference for linear regression with multiple predictors</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./inf-model-applications.html" class="pagination-link" aria-label="Applications: Model and infer">
+        <span class="nav-page-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Applications: Model and infer</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer"><div class="nav-footer">
+    <div class="nav-footer-left">
+<p>This is IMS2e!</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/openintrostat/ims/edit/main/inf-model-logistic.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/openintrostat/ims/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>This book was built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer><script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+</body></html>

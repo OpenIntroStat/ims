@@ -1,0 +1,2399 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.23">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="author" content="Mine Çetinkaya-Rundel and Johanna Hardin">
+<title>9&nbsp; Logistic regression – Introduction to Modern Statistics (2e)</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./model-applications.html" rel="next">
+<link href="./model-mlr.html" rel="prev">
+<link href="./images/openintro.png" rel="icon" type="image/png">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bbc06d6f6ef3926df35ba59865d9f801.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-378f0d7aee85f7ba334b728025a30d77.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bbc06d6f6ef3926df35ba59865d9f801.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-860897ce047b349f0abcbac7c46aa68b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-67a1a0d0d1c355d6091f60efc95b4fa8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-860897ce047b349f0abcbac7c46aa68b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script><script async="" src="https://hypothes.is/embed.js"></script><script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script><script src="site_libs/kePrint-0.0.1/kePrint.js"></script><link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+<link href="site_libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet">
+<script src="site_libs/bsTable-3.3.7/bootstrapTable.js"></script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+</head>
+<body class="nav-sidebar floating quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./regression-modeling.html">Regression modeling</a></li><li class="breadcrumb-item"><a href="./model-logistic.html"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Logistic regression</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="./index.html" class="sidebar-logo-link">
+      </a>
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Introduction to Modern Statistics (2e)</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/openintrostat/ims/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome to IMS2</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./authors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Authors</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./introduction-to-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to data</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data-hello.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Hello data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data-design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Study design</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Applications: Data</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./exploratory-data-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exploratory data analysis</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./explore-categorical.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Exploring categorical data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./explore-numerical.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Exploring numerical data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./explore-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Applications: Explore</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./regression-modeling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regression modeling</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model-slr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Linear regression with a single predictor</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model-mlr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Linear regression with multiple predictors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model-logistic.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Logistic regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Applications: Model</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./foundations-of-inference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundations of inference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-randomization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Hypothesis testing with randomization</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-bootstrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Confidence intervals with bootstrapping</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-mathematical.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Inference with mathematical models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-errors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Decision Errors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Applications: Foundations</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./statistical-inference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Statistical inference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-one-prop.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Inference for a single proportion</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-two-props.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Inference for comparing two proportions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-tables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Inference for two-way tables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-one-mean.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Inference for a single mean</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-two-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Inference for comparing two independent means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-paired-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Inference for comparing paired means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-many-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Inference for comparing many means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Applications: Infer</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./inferential-modeling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Inferential modeling</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inf-model-slr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Inference for linear regression with a single predictor</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inf-model-mlr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Inference for linear regression with multiple predictors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inf-model-logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Inference for logistic regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inf-model-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Applications: Model and infer</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./exercise-solutions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Exercise solutions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">References</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+    </ul>
+</div>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li><a href="#discrimination-in-hiring" id="toc-discrimination-in-hiring" class="nav-link active" data-scroll-target="#discrimination-in-hiring"><span class="header-section-number">9.1</span> Discrimination in hiring</a></li>
+  <li><a href="#sec-modelingTheProbabilityOfAnEvent" id="toc-sec-modelingTheProbabilityOfAnEvent" class="nav-link" data-scroll-target="#sec-modelingTheProbabilityOfAnEvent"><span class="header-section-number">9.2</span> Modelling the probability of an event</a></li>
+  <li><a href="#logistic-model-with-many-variables" id="toc-logistic-model-with-many-variables" class="nav-link" data-scroll-target="#logistic-model-with-many-variables"><span class="header-section-number">9.3</span> Logistic model with many variables</a></li>
+  <li><a href="#groups-of-different-sizes" id="toc-groups-of-different-sizes" class="nav-link" data-scroll-target="#groups-of-different-sizes"><span class="header-section-number">9.4</span> Groups of different sizes</a></li>
+  <li>
+<a href="#sec-chp9-review" id="toc-sec-chp9-review" class="nav-link" data-scroll-target="#sec-chp9-review"><span class="header-section-number">9.5</span> Chapter review</a>
+  <ul class="collapse">
+<li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">9.5.1</span> Summary</a></li>
+  <li><a href="#terms" id="toc-terms" class="nav-link" data-scroll-target="#terms"><span class="header-section-number">9.5.2</span> Terms</a></li>
+  </ul>
+</li>
+  <li><a href="#sec-chp09-exercises" id="toc-sec-chp09-exercises" class="nav-link" data-scroll-target="#sec-chp09-exercises"><span class="header-section-number">9.6</span> Exercises</a></li>
+  </ul><div class="toc-actions"><ul><li><a href="https://github.com/openintrostat/ims/edit/main/model-logistic.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/openintrostat/ims/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./regression-modeling.html">Regression modeling</a></li><li class="breadcrumb-item"><a href="./model-logistic.html"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Logistic regression</span></a></li></ol></nav><div class="quarto-title">
+<h1 class="title"><span id="sec-model-logistic" class="quarto-section-identifier"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Logistic regression</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header><div class="chapterintro">
+<p>In this chapter we introduce <strong>logistic regression</strong> as a tool for building models when there is a categorical response variable with two levels, e.g., yes and no. Logistic regression is a type of <strong>generalized linear model (GLM)</strong> for response variables where regular multiple regression does not work very well. GLMs can be thought of as a two-stage modeling approach. We first model the response variable using a probability distribution, such as the binomial or Poisson distribution. Second, we model the parameter of the distribution using a collection of predictors and a special form of multiple regression. Ultimately, the application of a GLM will feel very similar to multiple regression, even if some of the details are different.</p>
+</div>
+<section id="discrimination-in-hiring" class="level2" data-number="9.1"><h2 data-number="9.1" class="anchored" data-anchor-id="discrimination-in-hiring">
+<span class="header-section-number">9.1</span> Discrimination in hiring</h2>
+<p>We will consider experiment data from a study that sought to understand the effect of race and sex on job application callback rates <span class="citation" data-cites="bertrand2003">(<a href="references.html#ref-bertrand2003" role="doc-biblioref">Bertrand and Mullainathan 2003</a>)</span>. To evaluate which factors were important, job postings were identified in Boston and Chicago for the study, and researchers created many fake resumes to send off to these jobs to see which would elicit a callback.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> The researchers enumerated important characteristics, such as years of experience and education details, and they used these characteristics to randomly generate fake resumes. Finally, they randomly assigned a name to each resume, where the name would imply the applicant’s sex and race.</p>
+<div class="data">
+<p>The <a href="http://openintrostat.github.io/openintro/reference/resume.html"><code>resume</code></a> data can be found in the <a href="http://openintrostat.github.io/openintro"><strong>openintro</strong></a> R package.</p>
+</div>
+<p>The first names that were used and randomly assigned in the experiment were selected so that they would predominantly be recognized as belonging to Black or White individuals; other races were not considered in the study. While no name would definitively be inferred as pertaining to a Black individual or to a White individual, the researchers conducted a survey to check for racial association of the names; names that did not pass the survey check were excluded from usage in the experiment. You can find the full set of names that did pass the survey test and were ultimately used in the study in <a href="#tbl-resume-names" class="quarto-xref">Table&nbsp;<span>9.1</span></a>. For example, Lakisha was a name that their survey indicated would be interpreted as a Black woman, while Greg was a name that would generally be interpreted to be associated with a White male.</p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-resume-names" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-resume-names-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;9.1: List of all 36 unique names along with the commonly inferred race and sex associated with these names.
+</figcaption><div aria-describedby="tbl-resume-names-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">first_name</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">race</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">sex</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">first_name</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">race</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">sex</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">first_name</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">race</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">sex</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Aisha</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left; border-left: 1px solid;">Hakim</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left; border-left: 1px solid;">Laurie</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">female</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Allison</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left; border-left: 1px solid;">Jamal</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left; border-left: 1px solid;">Leroy</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">male</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Anne</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left; border-left: 1px solid;">Jay</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left; border-left: 1px solid;">Matthew</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">male</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Brad</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left; border-left: 1px solid;">Jermaine</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left; border-left: 1px solid;">Meredith</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">female</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Brendan</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left; border-left: 1px solid;">Jill</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left; border-left: 1px solid;">Neil</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">male</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Brett</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left; border-left: 1px solid;">Kareem</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left; border-left: 1px solid;">Rasheed</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">male</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Carrie</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left; border-left: 1px solid;">Keisha</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left; border-left: 1px solid;">Sarah</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">female</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Darnell</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left; border-left: 1px solid;">Kenya</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left; border-left: 1px solid;">Tamika</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">female</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ebony</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left; border-left: 1px solid;">Kristen</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left; border-left: 1px solid;">Tanisha</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">female</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Emily</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left; border-left: 1px solid;">Lakisha</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left; border-left: 1px solid;">Todd</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">male</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Geoffrey</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left; border-left: 1px solid;">Latonya</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left; border-left: 1px solid;">Tremayne</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">male</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Greg</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left; border-left: 1px solid;">Latoya</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left; border-left: 1px solid;">Tyrone</td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: left;">male</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>The response variable of interest is whether there was a callback from the employer for the applicant, and there were 8 attributes that were randomly assigned that we’ll consider, with special interest in the race and sex variables. Race and sex are protected classes in the United States, meaning they are not legally permitted factors for hiring or employment decisions. The full set of attributes considered is provided in <a href="inf-model-logistic.html#tbl-resume-variables" class="quarto-xref">Table&nbsp;<span>26.1</span></a>.</p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-resume-variables" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-resume-variables-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;9.2: Descriptions of nine variables from the <code>resume</code> dataset. Many of the variables are indicator variables, meaning they take the value 1 if the specified characteristic is present and 0 otherwise.
+</figcaption><div aria-describedby="tbl-resume-variables-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">variable</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">received_callback</td>
+<td style="text-align: left; width: 30em;">Specifies whether the employer called the applicant following submission of the application for the job.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">job_city</td>
+<td style="text-align: left; width: 30em;">City where the job was located: Boston or Chicago.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">college_degree</td>
+<td style="text-align: left; width: 30em;">An indicator for whether the resume listed a college degree.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">years_experience</td>
+<td style="text-align: left; width: 30em;">Number of years of experience listed on the resume.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">honors</td>
+<td style="text-align: left; width: 30em;">Indicator for the resume listing some sort of honors, e.g.&nbsp;employee of the month.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">military</td>
+<td style="text-align: left; width: 30em;">Indicator for if the resume listed any military experience.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">has_email_address</td>
+<td style="text-align: left; width: 30em;">Indicator for if the resume listed an email address for the applicant.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">race</td>
+<td style="text-align: left; width: 30em;">Race of the applicant, implied by their first name listed on the resume.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">sex</td>
+<td style="text-align: left; width: 30em;">Sex of the applicant (limited to only man and woman), implied by the first name listed on the resume.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>All of the attributes listed on each resume were randomly assigned, which means that no attributes that might be favorable or detrimental to employment would favor one demographic over another on these resumes. Importantly, due to the experimental nature of the study, we can infer causation between these variables and the callback rate, if substantial differences are found. Our analysis will allow us to compare the practical importance of each of the variables relative to each other.</p>
+</section><section id="sec-modelingTheProbabilityOfAnEvent" class="level2" data-number="9.2"><h2 data-number="9.2" class="anchored" data-anchor-id="sec-modelingTheProbabilityOfAnEvent">
+<span class="header-section-number">9.2</span> Modelling the probability of an event</h2>
+<p>Logistic regression is a generalized linear model where the outcome is a two-level categorical variable. The outcome, <span class="math inline">\(Y_i\)</span>, takes the value 1 (in our application, the outcome represents a callback for the resume) with probability <span class="math inline">\(p_i\)</span> and the value 0 with probability <span class="math inline">\(1 - p_i\)</span>. Because each observation has a slightly different context, e.g., different education level or a different number of years of experience, the probability <span class="math inline">\(p_i\)</span> will differ for each observation. Ultimately, it is the <strong>probability</strong> of the outcome taking the value 1 (i.e., being a “success”) that we model in relation to the predictor variables: we will examine which resume characteristics correspond to higher or lower callback rates.</p>
+<div class="important">
+<p><strong>Notation for a logistic regression model.</strong></p>
+<p>The outcome variable for a GLM is denoted by <span class="math inline">\(Y_i\)</span>, where the index <span class="math inline">\(i\)</span> is used to represent observation <span class="math inline">\(i\)</span>. In the resume application, <span class="math inline">\(Y_i\)</span> will be used to represent whether resume <span class="math inline">\(i\)</span> received a callback (<span class="math inline">\(Y_i=1\)</span>) or not (<span class="math inline">\(Y_i=0\)</span>).</p>
+</div>
+<p>The predictor variables are represented as follows: <span class="math inline">\(x_{1,i}\)</span> is the value of variable 1 for observation <span class="math inline">\(i\)</span>, <span class="math inline">\(x_{2,i}\)</span> is the value of variable 2 for observation <span class="math inline">\(i\)</span>, and so on.</p>
+<p><span class="math display">\[
+transformation(p_i) = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \cdots + \beta_k x_{k,i}
+\]</span></p>
+<p>We want to choose a <strong>transformation</strong> in the equation that makes practical and mathematical sense. For example, we want a transformation that makes the range of possibilities on the left hand side of the equation equal to the range of possibilities for the right hand side; if there was no transformation in the equation, the left hand side could only take values between 0 and 1, but the right hand side could take values well outside of the range from 0 to 1.</p>
+<p>A common transformation for <span class="math inline">\(p_i\)</span> is the <strong>logit transformation</strong>, which may be written as</p>
+<p><span class="math display">\[
+logit(p_i) = \log_{e}\left( \frac{p_i}{1-p_i} \right)
+\]</span></p>
+<p>The <strong>logit transformation</strong> is shown in <a href="#fig-logit-transformation" class="quarto-xref">Figure&nbsp;<span>9.1</span></a>. Below, we rewrite the equation relating <span class="math inline">\(Y_i\)</span> to its predictors using the logit transformation of <span class="math inline">\(p_i\)</span>:</p>
+<p><span class="math display">\[
+\log_{e}\left( \frac{p_i}{1-p_i} \right) = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \cdots + \beta_k x_{k,i}
+\]</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-logit-transformation" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A scatterplot with a superimposed line connecting values of p from -5  to +6 (on the x-axis) with their logit transformed value (on the y-axis). ">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-logit-transformation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="model-logistic_files/figure-html/fig-logit-transformation-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;9.1: Values of p_i against values of logit(p_i)."><img src="model-logistic_files/figure-html/fig-logit-transformation-1.png" class="img-fluid figure-img" style="width:100.0%" alt="A scatterplot with a superimposed line connecting values of p from -5  to +6 (on the x-axis) with their logit transformed value (on the y-axis). "></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-logit-transformation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;9.1: Values of <span class="math inline">\(p_i\)</span> against values of <span class="math inline">\(logit(p_i)\)</span>.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>In our resume example, there are 8 predictor variables, so <span class="math inline">\(k = 8\)</span>. While the precise choice of a logit function isn’t intuitive, it is based on theory that underpins generalized linear models, which is beyond the scope of this book. Fortunately, once we fit a model using software, it will start to feel like we are back in the multiple regression context, even if the interpretation of the coefficients is more complex.</p>
+<p>To convert from values on the logistic regression scale to the probability scale, we need to back transform and then solve for <span class="math inline">\(p_i\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\log_{e}\left( \frac{p_i}{1-p_i} \right) &amp;= \beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i} \\
+\frac{p_i}{1-p_i} &amp;= e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}} \\
+p_i &amp;= \left( 1 - p_i \right) e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}} \\
+p_i &amp;= e^{\beta_0 + \beta_1 x_{1,i}  + \cdots + \beta_k x_{k,i}} - p_i \times e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}} \\
+p_i + p_i \text{ } e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}} &amp;= e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}} \\
+p_i(1 + e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}}) &amp;= e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}} \\
+p_i &amp;= \frac{e^{\beta_0 + \beta_1 x_{1,i}  + \cdots + \beta_k x_{k,i}}}{1 + e^{\beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i}}}
+\end{aligned}
+\]</span></p>
+<p>As with most applied data problems, we substitute in the point estimates (the observed <span class="math inline">\(b_i\)</span>) to calculate relevant probabilities.</p>
+<div class="workedexample">
+<p>We start by fitting a model with a single predictor: <code>honors</code>. This variable indicates whether the applicant had any type of honors listed on their resume, such as employee of the month. A logistic regression model was fit using statistical software and the following model was found:</p>
+<p><span class="math display">\[\log_e \left( \frac{\widehat{p}_i}{1-\widehat{p}_i} \right) = -2.4998 + 0.8668 \times {\texttt{honors}}\]</span></p>
+<ol type="a">
+<li><p>If a resume is randomly selected from the study and it does not have any honors listed, what is the probability it resulted in a callback?</p></li>
+<li><p>What would the probability be if the resume did list some honors?</p></li>
+</ol>
+<hr>
+<ol type="a">
+<li><p>If a randomly chosen resume from those sent out is considered, and it does not list honors, then <code>honors</code> takes the value of 0 and the right side of the model equation equals -2.4998. Solving for <span class="math inline">\(p_i\)</span>: <span class="math inline">\(\frac{e^{-2.4998}}{1 + e^{-2.4998}} = 0.076\)</span>. Just as we labeled a fitted value of <span class="math inline">\(y_i\)</span> with a “hat” in single-variable and multiple regression, we do the same for this probability: <span class="math inline">\(\hat{p}_i = 0.076{}\)</span>.</p></li>
+<li><p>If the resume had listed some honors, then the right side of the model equation is <span class="math inline">\(-2.4998 + 0.8668 \times 1 = -1.6330\)</span>, which corresponds to a probability <span class="math inline">\(\hat{p}_i = 0.163\)</span>. Notice that we could examine -2.4998 and -1.6330 in <a href="#fig-logit-transformation" class="quarto-xref">Figure&nbsp;<span>9.1</span></a> to estimate the probability before formally calculating the value.</p></li>
+</ol>
+</div>
+<p>While knowing whether a resume listed honors provides some signal when predicting whether the employer would call, we would like to account for many different variables at once to understand how each of the different resume characteristics affected the chance of a callback.</p>
+</section><section id="logistic-model-with-many-variables" class="level2" data-number="9.3"><h2 data-number="9.3" class="anchored" data-anchor-id="logistic-model-with-many-variables">
+<span class="header-section-number">9.3</span> Logistic model with many variables</h2>
+<p>We used statistical software to fit the logistic regression model with all 8 predictors described in <a href="inf-model-logistic.html#tbl-resume-variables" class="quarto-xref">Table&nbsp;<span>26.1</span></a>. Like multiple regression, the result may be presented in a summary table, which is shown in <a href="#tbl-resume-full-fit" class="quarto-xref">Table&nbsp;<span>9.3</span></a>.</p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-resume-full-fit" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-resume-full-fit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;9.3: Summary table for the full logistic regression model for the resume callback example.
+</figcaption><div aria-describedby="tbl-resume-full-fit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">-2.66</td>
+<td style="text-align: right; width: 5em;">0.18</td>
+<td style="text-align: right; width: 5em;">-14.64</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">job_cityChicago</td>
+<td style="text-align: right; width: 5em;">-0.44</td>
+<td style="text-align: right; width: 5em;">0.11</td>
+<td style="text-align: right; width: 5em;">-3.85</td>
+<td style="text-align: right; width: 5em;">1e-04</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">college_degree1</td>
+<td style="text-align: right; width: 5em;">-0.07</td>
+<td style="text-align: right; width: 5em;">0.12</td>
+<td style="text-align: right; width: 5em;">-0.55</td>
+<td style="text-align: right; width: 5em;">0.5821</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">years_experience</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">0.01</td>
+<td style="text-align: right; width: 5em;">1.96</td>
+<td style="text-align: right; width: 5em;">0.0503</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">honors1</td>
+<td style="text-align: right; width: 5em;">0.77</td>
+<td style="text-align: right; width: 5em;">0.19</td>
+<td style="text-align: right; width: 5em;">4.14</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">military1</td>
+<td style="text-align: right; width: 5em;">-0.34</td>
+<td style="text-align: right; width: 5em;">0.22</td>
+<td style="text-align: right; width: 5em;">-1.59</td>
+<td style="text-align: right; width: 5em;">0.1127</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">has_email_address1</td>
+<td style="text-align: right; width: 5em;">0.22</td>
+<td style="text-align: right; width: 5em;">0.11</td>
+<td style="text-align: right; width: 5em;">1.93</td>
+<td style="text-align: right; width: 5em;">0.0541</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">raceWhite</td>
+<td style="text-align: right; width: 5em;">0.44</td>
+<td style="text-align: right; width: 5em;">0.11</td>
+<td style="text-align: right; width: 5em;">4.10</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">sexman</td>
+<td style="text-align: right; width: 5em;">-0.18</td>
+<td style="text-align: right; width: 5em;">0.14</td>
+<td style="text-align: right; width: 5em;">-1.32</td>
+<td style="text-align: right; width: 5em;">0.1863</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>Just like multiple regression, we could trim some variables from the model. Here we’ll use a statistic called <strong>Akaike information criterion (AIC)</strong>, which is analogous to how we used adjusted <span class="math inline">\(R^2\)</span> in multiple regression. AIC is a popular model selection method used in many disciplines, and is praised for its emphasis on model uncertainty and parsimony. AIC selects a “best” model by ranking models from best to worst according to their AIC values. In the calculation of a model’s AIC, a penalty is given for including additional variables. The penalty for added model complexity attempts to strike a balance between underfitting (too few variables in the model) and overfitting (too many variables in the model). When using AIC for model selection, models with a lower AIC value are considered to be “better.” Remember that when using adjusted <span class="math inline">\(R^2\)</span> we select models with higher values instead. It is important to note that AIC provides information about the quality of a model relative to other models, but does not provide information about the overall quality of a model.</p>
+<p><a href="#tbl-resume-full-fit-aic" class="quarto-xref">Table&nbsp;<span>9.4</span></a> provides the AIC and the number of observations used to fit the model. We also know from <a href="#tbl-resume-full-fit" class="quarto-xref">Table&nbsp;<span>9.3</span></a> that eight variables (with nine coefficients, including the intercept) were fit.</p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-resume-full-fit-aic" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-resume-full-fit-aic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;9.4: AIC for the full logistic regression model fit to the full resume callback example.
+</figcaption><div aria-describedby="tbl-resume-full-fit-aic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">AIC</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">number_observations</th>
+</tr></thead>
+<tbody><tr class="odd">
+<td style="text-align: right; width: 10em; font-family: monospace;">2677</td>
+<td style="text-align: right; width: 10em; font-family: monospace;">4870</td>
+</tr></tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>We will look for models with a lower AIC using a backward elimination strategy. <a href="#tbl-resume-fit-aic" class="quarto-xref">Table&nbsp;<span>9.5</span></a> provides the AIC values for the model with variables as given in <a href="#tbl-resume-fit" class="quarto-xref">Table&nbsp;<span>9.6</span></a>. Notice that the same number of observations are used, but one fewer variable (<code>college_degree</code> is dropped from the model).</p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-resume-fit-aic" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-resume-fit-aic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;9.5: AIC for the logistic regression model fit to the resume callback example without <code>college_degree</code>.
+</figcaption><div aria-describedby="tbl-resume-fit-aic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">AIC</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">number_observations</th>
+</tr></thead>
+<tbody><tr class="odd">
+<td style="text-align: right; width: 10em; font-family: monospace;">2676</td>
+<td style="text-align: right; width: 10em; font-family: monospace;">4870</td>
+</tr></tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>After using the AIC criteria, the variable <code>college_degree</code> is eliminated (the AIC value without <code>college_degree</code> is smaller than the AIC value on the full model), giving the model summarized in <a href="#tbl-resume-fit" class="quarto-xref">Table&nbsp;<span>9.6</span></a> with fewer variables, which is what we’ll rely on for the remainder of the section.</p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-resume-fit" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-resume-fit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;9.6: Summary table for the logistic regression model for the resume callback example, where variable selection has been performed using AIC and <code>college_degree</code> has been dropped from the model.
+</figcaption><div aria-describedby="tbl-resume-fit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">-2.72</td>
+<td style="text-align: right; width: 5em;">0.16</td>
+<td style="text-align: right; width: 5em;">-17.51</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">job_cityChicago</td>
+<td style="text-align: right; width: 5em;">-0.44</td>
+<td style="text-align: right; width: 5em;">0.11</td>
+<td style="text-align: right; width: 5em;">-3.83</td>
+<td style="text-align: right; width: 5em;">1e-04</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">years_experience</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">0.01</td>
+<td style="text-align: right; width: 5em;">2.02</td>
+<td style="text-align: right; width: 5em;">0.043</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">honors1</td>
+<td style="text-align: right; width: 5em;">0.76</td>
+<td style="text-align: right; width: 5em;">0.19</td>
+<td style="text-align: right; width: 5em;">4.12</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">military1</td>
+<td style="text-align: right; width: 5em;">-0.34</td>
+<td style="text-align: right; width: 5em;">0.22</td>
+<td style="text-align: right; width: 5em;">-1.60</td>
+<td style="text-align: right; width: 5em;">0.1105</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">has_email_address1</td>
+<td style="text-align: right; width: 5em;">0.22</td>
+<td style="text-align: right; width: 5em;">0.11</td>
+<td style="text-align: right; width: 5em;">1.97</td>
+<td style="text-align: right; width: 5em;">0.0494</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">raceWhite</td>
+<td style="text-align: right; width: 5em;">0.44</td>
+<td style="text-align: right; width: 5em;">0.11</td>
+<td style="text-align: right; width: 5em;">4.10</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">sexman</td>
+<td style="text-align: right; width: 5em;">-0.20</td>
+<td style="text-align: right; width: 5em;">0.14</td>
+<td style="text-align: right; width: 5em;">-1.45</td>
+<td style="text-align: right; width: 5em;">0.1473</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="workedexample">
+<p>The <code>race</code> variable had taken only two levels: <code>Black</code> and <code>White</code>. Based on the model results, what does the coefficient of the <code>race</code> variable say about callback decisions?</p>
+<hr>
+<p>The coefficient shown corresponds to the level of <code>White</code>, and it is positive. The positive coefficient reflects a positive gain in callback rate for resumes where the candidate’s first name implied they were White. The model results suggest that prospective employers favor resumes where the first name is typically interpreted to be White.</p>
+</div>
+<p>The coefficient of <span class="math inline">\(\texttt{race}_{\texttt{White}}\)</span> in the full model in <a href="#tbl-resume-full-fit" class="quarto-xref">Table&nbsp;<span>9.3</span></a>, is nearly identical to the model shown in <a href="#tbl-resume-fit" class="quarto-xref">Table&nbsp;<span>9.6</span></a>. The predictors in the experiment were thoughtfully laid out so that the coefficient estimates would typically not be much influenced by which other predictors were in the model, which aligned with the motivation of the study to tease out which effects were important to getting a callback. In most observational data, it’s common for point estimates to change a little, and sometimes a lot, depending on which other variables are included in the model.</p>
+<div class="workedexample">
+<p>Use the model summarized in <a href="#tbl-resume-fit" class="quarto-xref">Table&nbsp;<span>9.6</span></a> to estimate the probability of receiving a callback for a job in Chicago where the candidate lists 14 years experience, no honors, no military experience, includes an email address, and has a first name that implies they are a White male.</p>
+<hr>
+<p>We can start by writing out the equation using the coefficients from the model:</p>
+<p><span class="math display">\[
+\begin{aligned}
+log_e \left(\frac{\widehat{p}}{1 - \widehat{p}}\right) = -2.7162 &amp;- 0.4364 \times \texttt{job\_city}_{\texttt{Chicago}} + 0.0206 \times \texttt{years\_experience} \\
+&amp;+ 0.7634 \times \texttt{honors} - 0.3443 \times \texttt{military} + 0.2221 \times \texttt{email} \\
+&amp;+ 0.4429 \times \texttt{race}_{\texttt{White}} - 0.1959 \times \texttt{sex}_{\texttt{man}}
+\end{aligned}
+\]</span></p>
+<p>Now we can add in the corresponding values of each variable for the individual of interest:</p>
+<p><span class="math display">\[
+\begin{aligned}
+log_e \left(\frac{\widehat{p}}{1 - \widehat{p}}\right) = - 2.7162 &amp;- 0.4364 \times 1 + 0.0206 \times 14 \\
+&amp;+ 0.7634 \times 0 - 0.3443 \times 0 + 0.2221 \times 1 \\
+&amp;+ 0.4429 \times 1 - 0.1959 \times 1 = - 2.3955  
+\end{aligned}
+\]</span></p>
+<p>We can now back-solve for <span class="math inline">\(\widehat{p}\)</span>: the chance such an individual will receive a callback is about <span class="math inline">\(\frac{e^{-2.3955}}{1 + e^{-2.3955}} = 0.0835.\)</span></p>
+</div>
+<div class="workedexample">
+<p>Compute the probability of a callback for an individual with a name commonly inferred to be from a Black male but who otherwise has the same characteristics as the one described in the previous example.</p>
+<hr>
+<p>We can complete the same steps for an individual with the same characteristics who is Black, where the only difference in the calculation is that the indicator variable <span class="math inline">\(\texttt{race}_{\texttt{White}}\)</span> will take a value of 0. Doing so yields a probability of 0.0553. Let’s compare the results with those of the previous example.</p>
+<p>In practical terms, an individual perceived as White based on their first name would need to apply to <span class="math inline">\(\frac{1}{0.0835} \approx 12\)</span> jobs on average to receive a callback, while an individual perceived as Black based on their first name would need to apply to <span class="math inline">\(\frac{1}{0.0553} \approx 18\)</span> jobs on average to receive a callback. That is, applicants who are perceived as Black need to apply to 50% more employers to receive a callback than someone who is perceived as White based on their first name for jobs like those in the study.</p>
+</div>
+<p>What we have quantified in the current section is alarming and disturbing. However, one aspect that makes the racism so difficult to address is that the experiment, as well-designed as it is, cannot send us much signal about which employers are discriminating. It is only possible to say that discrimination is happening, even if we cannot say which particular callbacks — or non-callbacks — represent discrimination. Finding strong evidence of racism for individual cases is a persistent challenge in enforcing anti-discrimination laws.</p>
+</section><section id="groups-of-different-sizes" class="level2" data-number="9.4"><h2 data-number="9.4" class="anchored" data-anchor-id="groups-of-different-sizes">
+<span class="header-section-number">9.4</span> Groups of different sizes</h2>
+<p>Any form of discrimination is concerning, which is why we decided it was so important to discuss the topic using data. The resume study also only examined discrimination in a single aspect: whether a prospective employer would call a candidate who submitted their resume. There was a 50% higher barrier for resumes simply when the candidate had a first name that was perceived to be of a Black individual. It’s unlikely that discrimination would stop there.</p>
+<div class="workedexample">
+<p>Let’s consider a sex-imbalanced company that consists of 20% women and 80% men, and we’ll suppose that the company is very large, consisting of perhaps 20,000 employees. (A more deliberate example would include more inclusive gender identities.) Suppose when someone goes up for promotion at the company, 5 of their colleagues are randomly chosen to provide feedback on their work.</p>
+<p>Now let’s imagine that 10% of the people in the company are prejudiced against the other sex. That is, 10% of men are prejudiced against women, and similarly, 10% of women are prejudiced against men. Who is discriminated against more at the company, men or women?</p>
+<hr>
+<p>Let’s suppose we took 100 men who have gone up for promotion in the past few years. For these men, <span class="math inline">\(5 \times 100 = 500\)</span> random colleagues will be tapped for their feedback, of which about 20% will be women (100 women). Of these 100 women, 10 are expected to be biased against the man they are reviewing. Then, of the 500 colleagues reviewing them, men will experience discrimination by about 2% of their colleagues when they go up for promotion.</p>
+<p>Let’s do a similar calculation for 100 women who have gone up for promotion in the last few years. They will also have 500 random colleagues providing feedback, of which about 400 (80%) will be men. Of these 400 men, about 40 (10%) hold a bias against women. Of the 500 colleagues providing feedback on the promotion packet for these women, 8% of the colleagues hold a bias against the women.</p>
+</div>
+<p>The example highlights something profound: even in a hypothetical setting where each demographic has the same degree of prejudice against the other demographic, the smaller group experiences the negative effects more frequently. Additionally, if we would complete a handful of examples like the one above with different numbers, we would learn that the greater the imbalance in the population groups, the more the smaller group is disproportionately impacted.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>Of course, there are other considerable real-world omissions from the hypothetical example. For example, studies have found instances where people from an oppressed group also discriminate against others within their own oppressed group. As another example, there are also instances where a majority group can be oppressed, with apartheid in South Africa being one such historic example. Ultimately, discrimination is complex, and there are many factors at play beyond the mathematics property we observed in the previous example.</p>
+<p>We close the chapter on the serious topic of discrimination, and we hope it inspires you to think about the power of reasoning with data. Whether it is with a formal statistical model or by using critical thinking skills to structure a problem, we hope the ideas you have learned will help you do more and do better in life.</p>
+</section><section id="sec-chp9-review" class="level2" data-number="9.5"><h2 data-number="9.5" class="anchored" data-anchor-id="sec-chp9-review">
+<span class="header-section-number">9.5</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="9.5.1"><h3 data-number="9.5.1" class="anchored" data-anchor-id="summary">
+<span class="header-section-number">9.5.1</span> Summary</h3>
+<p>Logistic and linear regression models have many similarities. The strongest of which is the linear combination of the explanatory variables which is used to form predictions related to the response variable. However, with logistic regression, the response variable is binary and therefore a prediction is given on the probability of a successful event. Logistic model fit and variable selection can be carried out in similar ways as multiple linear regression.</p>
+</section><section id="terms" class="level3" data-number="9.5.2"><h3 data-number="9.5.2" class="anchored" data-anchor-id="terms">
+<span class="header-section-number">9.5.2</span> Terms</h3>
+<p>The terms introduced in this chapter are presented in <a href="#tbl-terms-chp-09" class="quarto-xref">Table&nbsp;<span>9.7</span></a>. If you’re not sure what some of these terms mean, we recommend you go back in the text and review their definitions. You should be able to easily spot them as <strong>bolded text</strong>.</p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-terms-chp-09" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-terms-chp-09-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;9.7: Terms introduced in this chapter.
+</figcaption><div aria-describedby="tbl-terms-chp-09-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small"><tbody>
+<tr class="odd">
+<td style="text-align: left; width: 12em;">AIC</td>
+<td style="text-align: left; width: 12em;">logistic regression</td>
+<td style="text-align: left; width: 12em;">transformation</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 12em;">Akaike information criterion</td>
+<td style="text-align: left; width: 12em;">logit transformation</td>
+<td style="text-align: left; width: 12em;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 12em;">generalized linear model</td>
+<td style="text-align: left; width: 12em;">probability of an event</td>
+<td style="text-align: left; width: 12em;"></td>
+</tr>
+</tbody></table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section></section><section id="sec-chp09-exercises" class="level2" data-number="9.6"><h2 data-number="9.6" class="anchored" data-anchor-id="sec-chp09-exercises">
+<span class="header-section-number">9.6</span> Exercises</h2>
+<p>Answers to odd-numbered exercises can be found in <a href="exercise-solutions.html#sec-exercise-solutions-09" class="quarto-xref">Appendix&nbsp;<span>A.9</span></a>.</p>
+<div class="exercises">
+<ol type="1">
+<li>
+<p><strong>True / False.</strong> Determine which of the following statements are true and false. For each statement that is false, explain why it is false.</p>
+<ol type="a">
+<li><p>In logistic regression we fit a line to model the relationship between the predictor(s) and the binary outcome.</p></li>
+<li><p>In logistic regression, we expect the residuals to be even scattered on either side of zero, just like with linear regression.</p></li>
+<li><p>In logistic regression, the outcome variable is binary but the predictor variable(s) can be either binary or continuous.</p></li>
+</ol>
+</li>
+</ol>
+<ol start="2" type="1">
+<li>
+<p><strong>Logistic regression fact checking.</strong> Determine which of the following statements are true and false. For each statement that is false, explain why it is false.</p>
+<ol type="a">
+<li><p>Suppose we consider the first two observations based on a logistic regression model, where the first variable in observation 1 takes a value of <span class="math inline">\(x_1 = 6\)</span> and observation 2 has <span class="math inline">\(x_1 = 4\)</span>. Suppose we realized we made an error for these two observations, and the first observation was actually <span class="math inline">\(x_1 = 7\)</span> (instead of 6) and the second observation actually had <span class="math inline">\(x_1 = 5\)</span> (instead of 4). Then the predicted probability from the logistic regression model would increase the same amount for each observation after we correct these variables.</p></li>
+<li><p>When using a logistic regression model, it is impossible for the model to predict a probability that is negative or a probability that is greater than 1.</p></li>
+<li><p>Because logistic regression predicts probabilities of outcomes, observations used to build a logistic regression model need not be independent.</p></li>
+<li><p>When fitting logistic regression, we typically complete model selection using adjusted <span class="math inline">\(R^2\)</span>.</p></li>
+</ol>
+</li>
+</ol>
+<ol start="3" type="1">
+<li>
+<p><strong>Possum classification, comparing models.</strong> The common brushtail possum of the Australia region is a bit cuter than its distant cousin, the American opossum (see <a href="model-slr.html#fig-brushtail-possum" class="quarto-xref">Figure&nbsp;<span>7.4</span></a>). We consider 104 brushtail possums from two regions in Australia, where the possums may be considered a random sample from the population. The first region is Victoria, which is in the eastern half of Australia and traverses the southern coast. The second region consists of New South Wales and Queensland, which make up eastern and northeastern Australia.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<p>We use logistic regression to differentiate between possums in these two regions. The outcome variable, called <code>pop</code>, takes value 1 when a possum is from Victoria and 0 when it is from New South Wales or Queensland. We consider five predictors: <code>sex</code> (an indicator for a possum being male), <code>head_l</code> (head length), <code>skull_w</code> (skull width), <code>total_l</code> (total length), and <code>tail_l</code> (tail length). Each variable is summarized in a histogram. The full logistic regression model and a reduced model after variable selection are summarized in the tables below.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><a href="model-logistic_files/figure-html/unnamed-chunk-7-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="model-logistic_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">39.23</td>
+<td style="text-align: right; width: 5em;">11.54</td>
+<td style="text-align: right; width: 5em;">3.40</td>
+<td style="text-align: right; width: 5em;">7e-04</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">sexmale</td>
+<td style="text-align: right; width: 5em;">-1.24</td>
+<td style="text-align: right; width: 5em;">0.67</td>
+<td style="text-align: right; width: 5em;">-1.86</td>
+<td style="text-align: right; width: 5em;">0.0632</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">head_l</td>
+<td style="text-align: right; width: 5em;">-0.16</td>
+<td style="text-align: right; width: 5em;">0.14</td>
+<td style="text-align: right; width: 5em;">-1.16</td>
+<td style="text-align: right; width: 5em;">0.248</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">skull_w</td>
+<td style="text-align: right; width: 5em;">-0.20</td>
+<td style="text-align: right; width: 5em;">0.13</td>
+<td style="text-align: right; width: 5em;">-1.52</td>
+<td style="text-align: right; width: 5em;">0.1294</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">total_l</td>
+<td style="text-align: right; width: 5em;">0.65</td>
+<td style="text-align: right; width: 5em;">0.15</td>
+<td style="text-align: right; width: 5em;">4.24</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">tail_l</td>
+<td style="text-align: right; width: 5em;">-1.87</td>
+<td style="text-align: right; width: 5em;">0.37</td>
+<td style="text-align: right; width: 5em;">-5.00</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">33.51</td>
+<td style="text-align: right; width: 5em;">9.91</td>
+<td style="text-align: right; width: 5em;">3.38</td>
+<td style="text-align: right; width: 5em;">7e-04</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">sexmale</td>
+<td style="text-align: right; width: 5em;">-1.42</td>
+<td style="text-align: right; width: 5em;">0.65</td>
+<td style="text-align: right; width: 5em;">-2.20</td>
+<td style="text-align: right; width: 5em;">0.0278</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">skull_w</td>
+<td style="text-align: right; width: 5em;">-0.28</td>
+<td style="text-align: right; width: 5em;">0.12</td>
+<td style="text-align: right; width: 5em;">-2.27</td>
+<td style="text-align: right; width: 5em;">0.0231</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">total_l</td>
+<td style="text-align: right; width: 5em;">0.57</td>
+<td style="text-align: right; width: 5em;">0.13</td>
+<td style="text-align: right; width: 5em;">4.30</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">tail_l</td>
+<td style="text-align: right; width: 5em;">-1.81</td>
+<td style="text-align: right; width: 5em;">0.36</td>
+<td style="text-align: right; width: 5em;">-5.02</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<ol type="a">
+<li><p>Examine each of the predictors given by the individual graphs. Are there any outliers that are likely to have a very large influence on the logistic regression model?</p></li>
+<li><p>Two models are provided above for predicting the region of the possum. (In <a href="inf-model-logistic.html" class="quarto-xref"><span>Chapter 26</span></a> we will cover a method for deciding between the models based on p-values.) The first model includes <code>head_l</code> and the second model does not. Explain why the remaining estimates (model coefficients) change between the two models.</p></li>
+</ol>
+</li>
+</ol>
+<ol start="4" type="1">
+<li>
+<p><strong>Challenger disaster and model building.</strong> On January 28, 1986, a routine launch was anticipated for the Challenger space shuttle. Seventy-three seconds into the flight, disaster happened: the shuttle broke apart, killing all seven crew members on board. An investigation into the cause of the disaster focused on a critical seal called an O-ring, and it is believed that damage to these O-rings during a shuttle launch may be related to the ambient temperature during the launch. The table below summarizes observational data on O-rings for 23 shuttle missions, where the mission order is based on the temperature at the time of the launch. <code>temperature</code> gives the temperature in Fahrenheit, <code>damaged</code> represents the number of damaged O-rings, and <code>undamaged</code> represents the number of O-rings that were not damaged.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small"><tbody>
+<tr class="odd">
+<td style="text-align: left;">mission</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">12</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">temperature</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">58</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">70</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">damaged</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">undamaged</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">6</td>
+</tr>
+</tbody></table>
+</div>
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small"><tbody>
+<tr class="odd">
+<td style="text-align: left;">mission</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: right;">23</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">temperature</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">73</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">81</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">damaged</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">undamaged</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">11.66</td>
+<td style="text-align: right; width: 5em;">3.30</td>
+<td style="text-align: right; width: 5em;">3.54</td>
+<td style="text-align: right; width: 5em;">4e-04</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">temperature</td>
+<td style="text-align: right; width: 5em;">-0.22</td>
+<td style="text-align: right; width: 5em;">0.05</td>
+<td style="text-align: right; width: 5em;">-4.07</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<ol type="a">
+<li><p>Each column of the table above represents a different shuttle mission. Examine these data and describe what you observe with respect to the relationship between temperatures and damaged O-rings.</p></li>
+<li><p>Failures have been coded as 1 for a damaged O-ring and 0 for an undamaged O-ring, and a logistic regression model was fit to these data. The regression output for this model is given above. Describe the key components of the output in words.</p></li>
+<li><p>Write out the logistic model using the point estimates of the model parameters.</p></li>
+<li><p>Based on the model, do you think concerns regarding O-rings are justified? Explain.</p></li>
+</ol>
+</li>
+</ol>
+<ol start="5" type="1">
+<li>
+<p><strong>Possum classification, prediction.</strong> A logistic regression model was proposed for classifying common brushtail possums into their two regions. The outcome variable took value 1 if the possum was from Victoria and 0 otherwise.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">33.51</td>
+<td style="text-align: right; width: 5em;">9.91</td>
+<td style="text-align: right; width: 5em;">3.38</td>
+<td style="text-align: right; width: 5em;">7e-04</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">sexmale</td>
+<td style="text-align: right; width: 5em;">-1.42</td>
+<td style="text-align: right; width: 5em;">0.65</td>
+<td style="text-align: right; width: 5em;">-2.20</td>
+<td style="text-align: right; width: 5em;">0.0278</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">skull_w</td>
+<td style="text-align: right; width: 5em;">-0.28</td>
+<td style="text-align: right; width: 5em;">0.12</td>
+<td style="text-align: right; width: 5em;">-2.27</td>
+<td style="text-align: right; width: 5em;">0.0231</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">total_l</td>
+<td style="text-align: right; width: 5em;">0.57</td>
+<td style="text-align: right; width: 5em;">0.13</td>
+<td style="text-align: right; width: 5em;">4.30</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">tail_l</td>
+<td style="text-align: right; width: 5em;">-1.81</td>
+<td style="text-align: right; width: 5em;">0.36</td>
+<td style="text-align: right; width: 5em;">-5.02</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<ol type="a">
+<li><p>Write out the form of the model. Also identify which of the variables are positively associated with the outcome of living in Victoria, when controlling for other variables.</p></li>
+<li><p>Suppose we see a brushtail possum at a zoo in the US, and a sign says the possum had been captured in the wild in Australia, but it doesn’t say which part of Australia. However, the sign does indicate that the possum is male, its skull is about 63 mm wide, its tail is 37 cm long, and its total length is 83 cm. What is the reduced model’s computed probability that this possum is from Victoria? How confident are you in the model’s accuracy of this probability calculation?</p></li>
+</ol>
+</li>
+</ol>
+<ol start="6" type="1">
+<li>
+<p><strong>Challenger disaster and prediction.</strong> On January 28, 1986, a routine launch was anticipated for the Challenger space shuttle. Seventy-three seconds into the flight, disaster happened: the shuttle broke apart, killing all seven crew members on board. An investigation into the cause of the disaster focused on a critical seal called an O-ring, and it is believed that damage to these O-rings during a shuttle launch may be related to the ambient temperature during the launch. The investigation found that the ambient temperature at the time of the shuttle launch was closely related to the damage of O-rings, which are a critical component of the shuttle.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><a href="model-logistic_files/figure-html/unnamed-chunk-12-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="model-logistic_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" style="width:90.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol type="a">
+<li>The data provided in the previous exercise are shown in the plot. The logistic model fit to these data may be written as</li>
+</ol>
+<p><span class="math display">\[\log\left( \frac{\hat{p}}{1 - \hat{p}} \right) = 11.6630 - 0.2162\times \texttt{temperature}\]</span></p>
+<p>where <span class="math inline">\(\hat{p}\)</span> is the model-estimated probability that an O-ring will become damaged. Use the model to calculate the probability that an O-ring will become damaged at each of the following ambient temperatures: 51, 53, and 55 degrees Fahrenheit. The model-estimated probabilities for several additional ambient temperatures are provided below, where subscripts indicate the temperature:</p>
+<p><span class="math display">\[
+\begin{aligned}
+    &amp;\hat{p}_{57} = 0.341
+        &amp;&amp; \hat{p}_{59} = 0.251
+        &amp;&amp; \hat{p}_{61} = 0.179
+        &amp;&amp; \hat{p}_{63} = 0.124 \\
+    &amp;\hat{p}_{65} = 0.084
+        &amp;&amp; \hat{p}_{67} = 0.056
+        &amp;&amp; \hat{p}_{69} = 0.037
+        &amp;&amp; \hat{p}_{71} = 0.024
+\end{aligned}
+\]</span></p>
+<ol start="2" type="a">
+<li><p>Add the model-estimated probabilities from part (a) on the plot, then connect these dots using a smooth curve to represent the model-estimated probabilities.</p></li>
+<li><p>Describe any concerns you may have regarding applying logistic regression in this application, and note any assumptions that are required to accept the model’s validity.</p></li>
+</ol>
+</li>
+</ol>
+<ol start="7" type="1">
+<li>
+<p><strong>Spam filtering, model selection.</strong> Spam filters are built on principles similar to those used in logistic regression. Using characteristics of individual emails, we fit a probability that each message is spam or not spam. We have several email variables for this problem, and we won’t describe what each variable means here for the sake of brevity, but each is either a numerical or indicator variable.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">-0.69</td>
+<td style="text-align: right; width: 5em;">0.09</td>
+<td style="text-align: right; width: 5em;">-7.42</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">to_multiple1</td>
+<td style="text-align: right; width: 5em;">-2.82</td>
+<td style="text-align: right; width: 5em;">0.31</td>
+<td style="text-align: right; width: 5em;">-9.05</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">cc</td>
+<td style="text-align: right; width: 5em;">0.03</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">1.41</td>
+<td style="text-align: right; width: 5em;">0.1585</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">attach</td>
+<td style="text-align: right; width: 5em;">0.28</td>
+<td style="text-align: right; width: 5em;">0.08</td>
+<td style="text-align: right; width: 5em;">3.44</td>
+<td style="text-align: right; width: 5em;">6e-04</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">dollar</td>
+<td style="text-align: right; width: 5em;">-0.08</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">-3.45</td>
+<td style="text-align: right; width: 5em;">6e-04</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">winneryes</td>
+<td style="text-align: right; width: 5em;">1.72</td>
+<td style="text-align: right; width: 5em;">0.34</td>
+<td style="text-align: right; width: 5em;">5.09</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">inherit</td>
+<td style="text-align: right; width: 5em;">0.32</td>
+<td style="text-align: right; width: 5em;">0.15</td>
+<td style="text-align: right; width: 5em;">2.10</td>
+<td style="text-align: right; width: 5em;">0.0355</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">password</td>
+<td style="text-align: right; width: 5em;">-0.79</td>
+<td style="text-align: right; width: 5em;">0.30</td>
+<td style="text-align: right; width: 5em;">-2.64</td>
+<td style="text-align: right; width: 5em;">0.0083</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">format1</td>
+<td style="text-align: right; width: 5em;">-1.50</td>
+<td style="text-align: right; width: 5em;">0.13</td>
+<td style="text-align: right; width: 5em;">-12.01</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">re_subj1</td>
+<td style="text-align: right; width: 5em;">-1.92</td>
+<td style="text-align: right; width: 5em;">0.38</td>
+<td style="text-align: right; width: 5em;">-5.10</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">exclaim_subj</td>
+<td style="text-align: right; width: 5em;">0.26</td>
+<td style="text-align: right; width: 5em;">0.23</td>
+<td style="text-align: right; width: 5em;">1.14</td>
+<td style="text-align: right; width: 5em;">0.2531</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">sent_email1</td>
+<td style="text-align: right; width: 5em;">-16.67</td>
+<td style="text-align: right; width: 5em;">293.19</td>
+<td style="text-align: right; width: 5em;">-0.06</td>
+<td style="text-align: right; width: 5em;">0.9547</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The AIC of the full model is 1863.5. We remove each variable one by one, refit the model, and record the updated AIC.</p>
+<ol type="a">
+<li>For variable selection, we fit the full model, which includes all variables, and then we also fit each model where we’ve dropped exactly one of the variables. In each of these reduced models, the AIC value for the model is reported below. Based on these results, which variable, if any, should we drop as part of model selection? Explain.</li>
+</ol>
+<div class="quarto-layout-panel" data-layout="[-0.05, 0.45, 0.5]">
+<div class="quarto-layout-row">
+<div class="quarto-figure-spacer quarto-layout-cell" style="flex-basis: 5.0%;justify-content: flex-start;">
+<p>&nbsp;</p>
+</div>
+<div id="list1" class="quarto-layout-cell" style="flex-basis: 45.0%;justify-content: flex-start;">
+<ul>
+<li>None Dropped: 1863.5</li>
+<li>Drop <code>to_multiple</code>: 2023.5</li>
+<li>Drop <code>cc</code>: 1863.2</li>
+<li>Drop <code>attach</code>: 1871.9</li>
+<li>Drop <code>dollar</code>: 1879.7</li>
+<li>Drop <code>winner</code>: 1885</li>
+</ul>
+</div>
+<div id="list2" class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<ul>
+<li>Drop <code>inherit</code>: 1865.5</li>
+<li>Drop <code>password</code>: 1879.3</li>
+<li>Drop <code>format</code>: 2008.9</li>
+<li>Drop <code>re_subj</code>: 1904.6</li>
+<li>Drop <code>exclaim_subj</code>: 1862.8</li>
+<li>Drop <code>sent_email</code>: 1958.2</li>
+</ul>
+</div>
+</div>
+</div>
+<ol start="2" type="a">
+<li>Consider the subsequent model selection stage (where the variable from part (a) has been removed, and we are considering removal of a second variable). Here again we’ve computed the AIC for each leave-one-variable-out model. Based on the results, which variable, if any, should we drop as part of model selection? Explain.</li>
+</ol>
+<div class="quarto-layout-panel" data-layout="[-0.05, 0.45, 0.5]">
+<div class="quarto-layout-row">
+<div class="quarto-figure-spacer quarto-layout-cell" style="flex-basis: 5.0%;justify-content: flex-start;">
+<p>&nbsp;</p>
+</div>
+<div id="list1" class="quarto-layout-cell" style="flex-basis: 45.0%;justify-content: flex-start;">
+<ul>
+<li>None dropped: 1862.8</li>
+<li>Drop <code>to_multiple</code>: 2021.5</li>
+<li>Drop <code>cc</code>: 1862.4</li>
+<li>Drop <code>attach</code>: 1871.2</li>
+<li>Drop <code>dollar</code>: 1877.8</li>
+<li>Drop <code>winner</code>: 1885.2</li>
+</ul>
+</div>
+<div id="list1" class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<ul>
+<li>Drop <code>inherit</code>: 1864.8</li>
+<li>Drop <code>password</code>: 1878.4</li>
+<li>Drop <code>format</code>: 2007</li>
+<li>Drop <code>re_subj</code>: 1904.3</li>
+<li>Drop <code>sent_email</code>: 1957.3</li>
+</ul>
+</div>
+</div>
+</div>
+<ol start="3" type="a">
+<li>Consider one more step in the process. Here again we’ve computed the AIC for each leave-one-variable-out model. Based on the results, which variable, if any, should we drop as part of model selection? Explain.</li>
+</ol>
+<div class="quarto-layout-panel" data-layout="[-0.05, 0.45, 0.5]">
+<div class="quarto-layout-row">
+<div class="quarto-figure-spacer quarto-layout-cell" style="flex-basis: 5.0%;justify-content: flex-start;">
+<p>&nbsp;</p>
+</div>
+<div id="list1" class="quarto-layout-cell" style="flex-basis: 45.0%;justify-content: flex-start;">
+<ul>
+<li>None Dropped: 1862.4</li>
+<li>Drop <code>to_multiple</code>: 2019.6</li>
+<li>Drop <code>attach</code>: 1871.2</li>
+<li>Drop <code>dollar</code>: 1877.7</li>
+<li>Drop <code>winner</code>: 1885</li>
+</ul>
+</div>
+<div id="list2" class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<ul>
+<li>Drop <code>inherit</code>: 1864.5</li>
+<li>Drop <code>password</code>: 1878.2</li>
+<li>Drop <code>format</code>: 2007.4</li>
+<li>Drop <code>re_subj</code>: 1902.9</li>
+<li>Drop <code>sent_email</code>: 1957.6</li>
+</ul>
+</div>
+</div>
+</div>
+</li>
+</ol>
+<ol start="8" type="1">
+<li>
+<p><strong>Spam filtering, prediction.</strong> Recall running a logistic regression to aid in spam classification for individual emails. In this exercise, we’ve taken a small set of the variables and fit a logistic model with the following output:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">-0.81</td>
+<td style="text-align: right; width: 5em;">0.09</td>
+<td style="text-align: right; width: 5em;">-9.34</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">to_multiple1</td>
+<td style="text-align: right; width: 5em;">-2.64</td>
+<td style="text-align: right; width: 5em;">0.30</td>
+<td style="text-align: right; width: 5em;">-8.68</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">winneryes</td>
+<td style="text-align: right; width: 5em;">1.63</td>
+<td style="text-align: right; width: 5em;">0.32</td>
+<td style="text-align: right; width: 5em;">5.11</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 8em; font-family: monospace;">format1</td>
+<td style="text-align: right; width: 5em;">-1.59</td>
+<td style="text-align: right; width: 5em;">0.12</td>
+<td style="text-align: right; width: 5em;">-13.28</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 8em; font-family: monospace;">re_subj1</td>
+<td style="text-align: right; width: 5em;">-3.05</td>
+<td style="text-align: right; width: 5em;">0.36</td>
+<td style="text-align: right; width: 5em;">-8.40</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<ol type="a">
+<li><p>Write down the model using the coefficients from the model fit.</p></li>
+<li><p>Suppose we have an observation where <span class="math inline">\(\texttt{to\_multiple} = 0\)</span>, <span class="math inline">\(\texttt{winner}= 1\)</span>, <span class="math inline">\(\texttt{format} = 0\)</span>, and <span class="math inline">\(\texttt{re\_subj} = 0\)</span>. What is the predicted probability that this message is spam?</p></li>
+<li><p>Put yourself in the shoes of a data scientist working on a spam filter. For a given message, how high must the probability a message is spam be before you think it would be reasonable to put it in a <em>spambox</em> (which the user is unlikely to check)? What tradeoffs might you consider? Any ideas about how you might make your spam-filtering system even better from the perspective of someone using your email service?</p></li>
+</ol>
+</li>
+</ol>
+<ol start="9" type="1">
+<li>
+<p><strong>Possum classification, model selection via AIC.</strong> A logistic regression model was proposed for classifying common brushtail possums into their two regions. The outcome variable took value 1 if the possum was from Victoria and 0 otherwise.</p>
+<p>We use logistic regression to classify the 104 possums in our dataset in these two regions. The outcome variable, called <code>pop</code>, takes value 1 when the possum is from Victoria and 0 when it is from New South Wales or Queensland. We consider five predictors: <code>sex</code> (an indicator for a possum being male), <code>head_l</code> (head length), <code>skull_w</code> (skull width), <code>total_l</code> (total length), and <code>tail_l</code> (tail length).</p>
+<p>A summary of the three models we fit and their AIC values are given below:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">formula</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">AIC</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right; width: 25em; font-family: monospace;">sex + head_l + skull_w + total_l + tail_l</td>
+<td style="text-align: right; width: 5em;">84.2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right; width: 25em; font-family: monospace;">sex + skull_w + total_l + tail_l</td>
+<td style="text-align: right; width: 5em;">83.5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right; width: 25em; font-family: monospace;">sex + head_l + total_l + tail_l</td>
+<td style="text-align: right; width: 5em;">84.7</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<ol type="a">
+<li><p>Using the AIC metric, which of the three models would be best to report?</p></li>
+<li><p>If, for example, the AIC is virtually equivalent for two models that have differing numbers of variables, which model would be prefered: the model with more variables or the model with fewer variables? Explain.</p></li>
+</ol>
+</li>
+</ol>
+<ol start="10" type="1">
+<li>
+<strong>Model selection.</strong> An important aspect of building a logistic regression model is figuring out which variables to include in the model. In <a href="#sec-model-logistic" class="quarto-xref"><span>Chapter 9</span></a> we covered using AIC to choose between variable subsets. In <a href="inf-model-logistic.html" class="quarto-xref"><span>Chapter 26</span></a> we will cover using something called p-values to choose between variables subsets. Alternatively, you might hope that a model gave the smallest number of false positives, the smallest number of false negatives, or the highest overall accuracy. If different criteria produce outcomes of <em>different variable subsets</em> for the final model, how might you decide which model to put forward? (Hint: There is no single correct answer to this question.)</li>
+</ol>
+</div>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-bertrand2003" class="csl-entry" role="listitem">
+Bertrand, M., and S. Mullainathan. 2003. <span>“<span class="nocase">Are Emily and Greg More Employable than Lakisha and Jamal? A Field Experiment on Labor Market Discrimination</span>.”</span> <a href="https://doi.org/10.3386/w9873">https://doi.org/10.3386/w9873</a>.
+</div>
+</div>
+</section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
+<ol>
+<li id="fn1"><p>We did omit discussion of some structure in the data for the analysis presented: the experiment design included blocking, where typically four resumes were sent to each job: one for each inferred race/sex combination (as inferred based on the first name). We did not worry about the blocking aspect, since accounting for the blocking would <em>reduce</em> the standard error without notably changing the point estimates for the <code>race</code> and <code>sex</code> variables versus the analysis performed in the section. That is, the most interesting conclusions in the study are unaffected even when completing a more sophisticated analysis.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>If a proportion <span class="math inline">\(p\)</span> of a company are women and the rest of the company consists of men, then under the hypothetical situation the ratio of rates of discrimination against women versus men would be given by <span class="math inline">\((1 - p) / p,\)</span> a ratio that is always greater than 1 when <span class="math inline">\(p &lt; 0.5\)</span>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>The <a href="http://openintrostat.github.io/openintro/reference/possum.html"><code>possum</code></a> data used in this exercise can be found in the <a href="http://openintrostat.github.io/openintro"><strong>openintro</strong></a> R package.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>The <a href="http://openintrostat.github.io/openintro/reference/orings.html"><code>orings</code></a> data used in this exercise can be found in the <a href="http://openintrostat.github.io/openintro"><strong>openintro</strong></a> R package.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>The <a href="http://openintrostat.github.io/openintro/reference/email.html"><code>email</code></a> data used in this exercise can be found in the <a href="http://openintrostat.github.io/openintro"><strong>openintro</strong></a> R package.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      <a href="./model-mlr.html" class="pagination-link" aria-label="Linear regression with multiple predictors">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Linear regression with multiple predictors</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./model-applications.html" class="pagination-link" aria-label="Applications: Model">
+        <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Applications: Model</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer"><div class="nav-footer">
+    <div class="nav-footer-left">
+<p>This is IMS2e!</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/openintrostat/ims/edit/main/model-logistic.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/openintrostat/ims/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>This book was built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer><script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+</body></html>

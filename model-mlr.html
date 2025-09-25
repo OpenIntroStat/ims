@@ -1,0 +1,2516 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.23">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="author" content="Mine Çetinkaya-Rundel and Johanna Hardin">
+<title>8&nbsp; Linear regression with multiple predictors – Introduction to Modern Statistics (2e)</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./model-logistic.html" rel="next">
+<link href="./model-slr.html" rel="prev">
+<link href="./images/openintro.png" rel="icon" type="image/png">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bbc06d6f6ef3926df35ba59865d9f801.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-378f0d7aee85f7ba334b728025a30d77.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bbc06d6f6ef3926df35ba59865d9f801.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-860897ce047b349f0abcbac7c46aa68b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-67a1a0d0d1c355d6091f60efc95b4fa8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-860897ce047b349f0abcbac7c46aa68b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script><script async="" src="https://hypothes.is/embed.js"></script><script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script><script src="site_libs/kePrint-0.0.1/kePrint.js"></script><link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+<link href="site_libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet">
+<script src="site_libs/bsTable-3.3.7/bootstrapTable.js"></script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+</head>
+<body class="nav-sidebar floating quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./regression-modeling.html">Regression modeling</a></li><li class="breadcrumb-item"><a href="./model-mlr.html"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Linear regression with multiple predictors</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="./index.html" class="sidebar-logo-link">
+      </a>
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Introduction to Modern Statistics (2e)</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/openintrostat/ims/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome to IMS2</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./authors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Authors</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./introduction-to-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction to data</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data-hello.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Hello data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data-design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Study design</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Applications: Data</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./exploratory-data-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exploratory data analysis</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./explore-categorical.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Exploring categorical data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./explore-numerical.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Exploring numerical data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./explore-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Applications: Explore</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./regression-modeling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regression modeling</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model-slr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Linear regression with a single predictor</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model-mlr.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Linear regression with multiple predictors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model-logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Logistic regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Applications: Model</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./foundations-of-inference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundations of inference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-randomization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Hypothesis testing with randomization</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-bootstrapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Confidence intervals with bootstrapping</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-mathematical.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Inference with mathematical models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-errors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Decision Errors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundations-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Applications: Foundations</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./statistical-inference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Statistical inference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-one-prop.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Inference for a single proportion</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-two-props.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Inference for comparing two proportions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-tables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Inference for two-way tables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-one-mean.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Inference for a single mean</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-two-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Inference for comparing two independent means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-paired-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Inference for comparing paired means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-many-means.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Inference for comparing many means</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Applications: Infer</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./inferential-modeling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Inferential modeling</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inf-model-slr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Inference for linear regression with a single predictor</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inf-model-mlr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Inference for linear regression with multiple predictors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inf-model-logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Inference for logistic regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inf-model-applications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Applications: Model and infer</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./exercise-solutions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Exercise solutions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">References</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+    </ul>
+</div>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li><a href="#sec-ind-and-cat-predictors" id="toc-sec-ind-and-cat-predictors" class="nav-link active" data-scroll-target="#sec-ind-and-cat-predictors"><span class="header-section-number">8.1</span> Indicator and categorical predictors</a></li>
+  <li><a href="#many-predictors-in-a-model" id="toc-many-predictors-in-a-model" class="nav-link" data-scroll-target="#many-predictors-in-a-model"><span class="header-section-number">8.2</span> Many predictors in a model</a></li>
+  <li><a href="#adjusted-r-squared" id="toc-adjusted-r-squared" class="nav-link" data-scroll-target="#adjusted-r-squared"><span class="header-section-number">8.3</span> Adjusted R-squared</a></li>
+  <li>
+<a href="#sec-model-selection" id="toc-sec-model-selection" class="nav-link" data-scroll-target="#sec-model-selection"><span class="header-section-number">8.4</span> Model selection</a>
+  <ul class="collapse">
+<li><a href="#stepwise-selection" id="toc-stepwise-selection" class="nav-link" data-scroll-target="#stepwise-selection"><span class="header-section-number">8.4.1</span> Stepwise selection</a></li>
+  <li><a href="#other-model-selection-strategies" id="toc-other-model-selection-strategies" class="nav-link" data-scroll-target="#other-model-selection-strategies"><span class="header-section-number">8.4.2</span> Other model selection strategies</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#sec-chp8-review" id="toc-sec-chp8-review" class="nav-link" data-scroll-target="#sec-chp8-review"><span class="header-section-number">8.5</span> Chapter review</a>
+  <ul class="collapse">
+<li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">8.5.1</span> Summary</a></li>
+  <li><a href="#terms" id="toc-terms" class="nav-link" data-scroll-target="#terms"><span class="header-section-number">8.5.2</span> Terms</a></li>
+  </ul>
+</li>
+  <li><a href="#sec-chp8-exercises" id="toc-sec-chp8-exercises" class="nav-link" data-scroll-target="#sec-chp8-exercises"><span class="header-section-number">8.6</span> Exercises</a></li>
+  </ul><div class="toc-actions"><ul><li><a href="https://github.com/openintrostat/ims/edit/main/model-mlr.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/openintrostat/ims/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./regression-modeling.html">Regression modeling</a></li><li class="breadcrumb-item"><a href="./model-mlr.html"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Linear regression with multiple predictors</span></a></li></ol></nav><div class="quarto-title">
+<h1 class="title"><span id="sec-model-mlr" class="quarto-section-identifier"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Linear regression with multiple predictors</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header><div class="chapterintro">
+<p>Building on the ideas of one predictor variable in a linear regression model (from <a href="model-slr.html" class="quarto-xref">Chapter&nbsp;<span>7</span></a>), a multiple linear regression model is now fit to two or more predictor variables. By considering how different explanatory variables interact, we can uncover complicated relationships between the predictor variables and the response variable. One challenge to working with multiple variables is that it is sometimes difficult to know which variables are most important to include in the model. Model building is an extensive topic, and we scratch the surface here by defining and utilizing the adjusted <span class="math inline">\(R^2\)</span> value.</p>
+</div>
+<p>Multiple regression extends single predictor variable regression to the case that still has one response but many predictors (denoted <span class="math inline">\(x_1\)</span>, <span class="math inline">\(x_2\)</span>, <span class="math inline">\(x_3\)</span>, …). The method is motivated by scenarios where many variables may be simultaneously connected to an output.</p>
+<p>We will consider data about loans from the peer-to-peer lender, Lending Club, which is a dataset we first encountered in <a href="data-hello.html" class="quarto-xref">Chapter&nbsp;<span>1</span></a>. The loan data includes terms of the loan as well as information about the borrower. The outcome variable we would like to better understand is the interest rate assigned to the loan. For instance, all other characteristics held constant, does it matter how much debt someone already has? Does it matter if their income has been verified? Multiple regression will help us answer these and other questions.</p>
+<p>The dataset includes information on 10000 loans, and we’ll be looking at a subset of the available variables, some of which will be new from those we saw in earlier chapters. The first six observations in the dataset are shown in <a href="#tbl-loans-data-matrix" class="quarto-xref">Table&nbsp;<span>8.1</span></a>, and descriptions for each variable are shown in <a href="#tbl-loans-variables" class="quarto-xref">Table&nbsp;<span>8.2</span></a>. Notice that the past bankruptcy variable (<code>bankruptcy</code>) is an indicator variable, where it takes the value 1 if the borrower had a past bankruptcy in their record and 0 if not. Using an indicator variable in place of a category name allows for these variables to be directly used in regression. Two of the other variables are categorical (<code>verified_income</code> and <code>issue_month</code>), each of which can take one of a few different non-numerical values; we’ll discuss how these are handled in the model in <a href="#sec-ind-and-cat-predictors" class="quarto-xref"><span>Section 8.1</span></a>.</p>
+<div class="data">
+<p>The <a href="http://openintrostat.github.io/openintro/reference/loans_full_schema.html"><code>loans_full_schema</code></a> data can be found in the <a href="http://openintrostat.github.io/openintro"><strong>openintro</strong></a> R package. Based on the data in this dataset we have created two new variables: <code>credit_util</code> which is calculated as the total credit utilized divided by the total credit limit and <code>bankruptcy</code> which turns the number of bankruptcies to an indicator variable (0 for no bankruptcies and 1 for at least 1 bankruptcy). We will refer to this modified dataset as <code>loans</code>.</p>
+</div>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-loans-data-matrix" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-loans-data-matrix-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;8.1: First six rows of the <code>loans</code> dataset.
+</figcaption><div aria-describedby="tbl-loans-data-matrix-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">interest_rate</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">verified_income</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">debt_to_income</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">credit_util</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">bankruptcy</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">credit_checks</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">issue_month</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">14.07</td>
+<td style="text-align: left;">Verified</td>
+<td style="text-align: right;">18.01</td>
+<td style="text-align: right;">0.548</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">Mar-2018</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">12.61</td>
+<td style="text-align: left;">Not Verified</td>
+<td style="text-align: right;">5.04</td>
+<td style="text-align: right;">0.150</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">Feb-2018</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">17.09</td>
+<td style="text-align: left;">Source Verified</td>
+<td style="text-align: right;">21.15</td>
+<td style="text-align: right;">0.661</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">Feb-2018</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6.72</td>
+<td style="text-align: left;">Not Verified</td>
+<td style="text-align: right;">10.16</td>
+<td style="text-align: right;">0.197</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">Jan-2018</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">14.07</td>
+<td style="text-align: left;">Verified</td>
+<td style="text-align: right;">57.96</td>
+<td style="text-align: right;">0.755</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">Mar-2018</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6.72</td>
+<td style="text-align: left;">Not Verified</td>
+<td style="text-align: right;">6.46</td>
+<td style="text-align: right;">0.093</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">Jan-2018</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-loans-variables" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-loans-variables-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;8.2: Variables and their descriptions for the <code>loans</code> dataset.
+</figcaption><div aria-describedby="tbl-loans-variables-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Variable</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">interest_rate</td>
+<td style="text-align: left; width: 30em;">Interest rate on the loan, in an annual percentage.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">verified_income</td>
+<td style="text-align: left; width: 30em;">Categorical variable describing whether the borrower's income source and amount have been verified, with levels Verified (source and amount verified), Source Verified (source only verified), and Not Verified.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">debt_to_income</td>
+<td style="text-align: left; width: 30em;">Debt-to-income ratio, which is the percentage of total debt of the borrower divided by their total income.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">credit_util</td>
+<td style="text-align: left; width: 30em;">Of all the credit available to the borrower, what fraction are they utilizing. For example, the credit utilization on a credit card would be the card's balance divided by the card's credit limit.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">bankruptcy</td>
+<td style="text-align: left; width: 30em;">An indicator variable for whether the borrower has a past bankruptcy in their record. This variable takes a value of `1` if the answer is *yes* and `0` if the answer is *no*.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">term</td>
+<td style="text-align: left; width: 30em;">The length of the loan, in months.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-family: monospace;">issue_month</td>
+<td style="text-align: left; width: 30em;">The month and year the loan was issued, which for these loans is always during the first quarter of 2018.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; font-family: monospace;">credit_checks</td>
+<td style="text-align: left; width: 30em;">Number of credit checks in the last 12 months. For example, when filing an application for a credit card, it is common for the company receiving the application to run a credit check.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<section id="sec-ind-and-cat-predictors" class="level2" data-number="8.1"><h2 data-number="8.1" class="anchored" data-anchor-id="sec-ind-and-cat-predictors">
+<span class="header-section-number">8.1</span> Indicator and categorical predictors</h2>
+<p>Let’s start by fitting a linear regression model for interest rate with a single predictor indicating whether a person has a bankruptcy in their record:</p>
+<p><span class="math display">\[
+\widehat{\texttt{interest\_rate}} = 12.34 + 0.74 \times \texttt{bankruptcy}
+\]</span></p>
+<p>Results of this model are shown in <a href="#tbl-int-rate-bankruptcy" class="quarto-xref">Table&nbsp;<span>8.3</span></a>.</p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-int-rate-bankruptcy" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-int-rate-bankruptcy-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;8.3: Summary of a linear model for predicting <code>interest_rate</code> based on whether the borrower has a bankruptcy in their record. Degrees of freedom for this model is 9998.
+</figcaption><div aria-describedby="tbl-int-rate-bankruptcy-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 13em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 4em;">12.34</td>
+<td style="text-align: right; width: 4em;">0.05</td>
+<td style="text-align: right; width: 4em;">231.49</td>
+<td style="text-align: right; width: 4em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 13em; font-family: monospace;">bankruptcy1</td>
+<td style="text-align: right; width: 4em;">0.74</td>
+<td style="text-align: right; width: 4em;">0.15</td>
+<td style="text-align: right; width: 4em;">4.82</td>
+<td style="text-align: right; width: 4em;">&lt;0.0001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="workedexample">
+<p>Interpret the coefficient for the past bankruptcy variable in the model.</p>
+<hr>
+<p>The variable takes one of two values: 1 when the borrower has a bankruptcy in their history and 0 otherwise. A slope of 0.74 means that the model predicts a 0.74% higher interest rate for those borrowers with a bankruptcy in their record. (See <a href="model-slr.html#sec-categorical-predictor-two-levels" class="quarto-xref"><span>Section 7.2.6</span></a> for a review of the interpretation for two-level categorical predictor variables.)</p>
+</div>
+<p>Suppose we had fit a model using a 3-level categorical variable, such as <code>verified_income</code>. The output from software is shown in <a href="#tbl-int-rate-ver-income" class="quarto-xref">Table&nbsp;<span>8.4</span></a>. This regression output provides multiple rows for the variable. Each row represents the relative difference for each level of <code>verified_income</code>. However, we are missing one of the levels: <code>Not Verified</code>. The missing level is called the <strong>reference level</strong> and it represents the default level that other levels are measured against.</p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-int-rate-ver-income" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-int-rate-ver-income-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;8.4: Summary of a linear model for predicting <code>interest_rate</code> from the borrower’s income source and amount verification. This predictor has three levels, which results in 2 rows in the regression output.
+</figcaption><div aria-describedby="tbl-int-rate-ver-income-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 17em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">11.10</td>
+<td style="text-align: right; width: 5em;">0.08</td>
+<td style="text-align: right; width: 5em;">137.2</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 17em; font-family: monospace;">verified_incomeSource Verified</td>
+<td style="text-align: right; width: 5em;">1.42</td>
+<td style="text-align: right; width: 5em;">0.11</td>
+<td style="text-align: right; width: 5em;">12.8</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 17em; font-family: monospace;">verified_incomeVerified</td>
+<td style="text-align: right; width: 5em;">3.25</td>
+<td style="text-align: right; width: 5em;">0.13</td>
+<td style="text-align: right; width: 5em;">25.1</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="workedexample">
+<p>How would we write an equation for this regression model?</p>
+<hr>
+<p>The equation for the regression model may be written as a model with two predictors:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\widehat{\texttt{interest\_rate}} &amp;= 11.10 \\
+&amp;+ 1.42 \times \texttt{verified\_income}_{\texttt{Source Verified}} \\
+&amp;+ 3.25 \times \texttt{verified\_income}_{\texttt{Verified}}
+\end{aligned}
+\]</span></p>
+<p>We use the notation <span class="math inline">\(\texttt{variable}_{\texttt{level}}\)</span> to represent indicator variables for when the categorical variable takes a particular value. For example, <span class="math inline">\(\texttt{verified\_income}_{\texttt{Source Verified}}\)</span> would take a value of 1 if it was for a borrower that was source verified, and it would take a value of 0 otherwise. Likewise, <span class="math inline">\(\texttt{verified\_income}_{\texttt{Verified}}\)</span> would take a value of 1 if it was for a borrower that was verified, and 0 if it took any other value.</p>
+</div>
+<p>The notation <span class="math inline">\(\texttt{variable}_{\texttt{level}}\)</span> may feel a bit confusing. Let’s figure out how to use the equation for each level of the <code>verified_income</code> variable.</p>
+<div class="workedexample">
+<p>Using the model for predicting interest rate from income verification type, compute the average interest rate for borrowers whose income source and amount are both <em>unverified</em>.</p>
+<hr>
+<p>When <code>verified_income</code> takes a value of <code>Not Verified</code>, then both indicator functions in the equation for the linear model are set to 0:</p>
+<p><span class="math display">\[
+\widehat{\texttt{interest\_rate}} = 11.10 + 1.42 \times 0 + 3.25 \times 0 = 11.10
+\]</span></p>
+<p>The average interest rate for these borrowers is 11.1%. Because the level does not have its own coefficient and it is the reference value, the indicators for the other levels for this variable all drop out.</p>
+</div>
+<div class="workedexample">
+<p>Using the model for predicting interest rate from income verification type, compute the average interest rate for borrowers whose income source is <em>source verified</em>.</p>
+<hr>
+<p>When <code>verified_income</code> takes a value of <code>Source Verified</code>, then the corresponding variable takes a value of 1 while the other is 0:</p>
+<p><span class="math display">\[
+\widehat{\texttt{interest\_rate}} = 11.10 + 1.42 \times 1 + 3.25 \times 0 = 12.52
+\]</span></p>
+<p>The average interest rate for these borrowers is 12.52%.</p>
+</div>
+<div class="guidedpractice">
+<p>Compute the average interest rate for borrowers whose income source and amount are both <em>verified</em>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
+<div class="important">
+<p><strong>Predictors with several categories.</strong></p>
+<p>When fitting a regression model with a categorical variable that has <span class="math inline">\(k\)</span> levels where <span class="math inline">\(k &gt; 2\)</span>, software will provide a coefficient for <span class="math inline">\(k - 1\)</span> of those levels. For the last level that does not receive a coefficient, this is the reference level, and the coefficients listed for the other levels are all considered relative to this reference level.</p>
+</div>
+<div class="guidedpractice">
+<p>Interpret the coefficients from the model above.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</div>
+<p>The higher interest rate for borrowers who have verified their income source or amount is surprising. Intuitively, we would think that a loan would look <em>less</em> risky if the borrower’s income has been verified. However, note that the situation may be more complex, and there may be confounding variables that we didn’t account for. For example, perhaps lenders require borrowers with poor credit to verify their income. That is, verifying income in our dataset might be a signal of some concerns about the borrower rather than a reassurance that the borrower will pay back the loan. For this reason, the borrower could be deemed higher risk, resulting in a higher interest rate. (What other confounding variables might explain this counter-intuitive relationship suggested by the model?)</p>
+<div class="guidedpractice">
+<p>How much larger of an interest rate would we expect for a borrower who has verified their income source and amount vs a borrower whose income source has only been verified?<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+</div>
+</section><section id="many-predictors-in-a-model" class="level2" data-number="8.2"><h2 data-number="8.2" class="anchored" data-anchor-id="many-predictors-in-a-model">
+<span class="header-section-number">8.2</span> Many predictors in a model</h2>
+<p>The world is complex, and it can be helpful to consider many factors at once in statistical modeling. For example, we might like to use the full context of borrowers to predict the interest rate they receive rather than using a single variable. This is the strategy used in <strong>multiple regression</strong>. While we remain cautious about making any causal interpretations using multiple regression on observational data, such models are a common first step in gaining insights or providing some evidence of a causal connection.</p>
+<p>We want to construct a model that accounts not only for any past bankruptcy or whether the borrower had their income source or amount verified, but simultaneously accounts for all the variables in the <code>loans</code> dataset: <code>verified_income</code>, <code>debt_to_income</code>, <code>credit_util</code>, <code>bankruptcy</code>, <code>term</code>, <code>issue_month</code>, and <code>credit_checks</code>.</p>
+<p><span class="math display">\[
+\begin{aligned}
+\widehat{\texttt{interest\_rate}} &amp;= b_0 \\
+&amp;+ b_1 \times \texttt{verified\_income}_{\texttt{Source Verified}} + b_2 \times \texttt{verified\_income}_{\texttt{Verified}} \\
+&amp;+ b_3 \times \texttt{debt\_to\_income} + b_4 \times \texttt{credit\_util} \\
+&amp;+ b_5 \times \texttt{bankruptcy} + b_6 \times \texttt{term} \\
+&amp;+ b_7 \times \texttt{credit\_checks} + b_8 \times \texttt{issue\_month}_{\texttt{Jan-2018}} \\
+&amp;+ b_9 \times \texttt{issue\_month}_{\texttt{Mar-2018}}
+\end{aligned}
+\]</span></p>
+<p>This equation represents a holistic approach for modeling all of the variables simultaneously. Notice that there are two coefficients for <code>verified_income</code> and two coefficients for <code>issue_month</code>, since both are 3-level categorical variables.</p>
+<p>We calculate <span class="math inline">\(b_0\)</span>, <span class="math inline">\(b_1\)</span>, <span class="math inline">\(b_2\)</span>, <span class="math inline">\(\cdots\)</span>, <span class="math inline">\(b_9\)</span> the same way as we did in the case of a model with a single predictor – we select values that minimize the sum of the squared residuals:</p>
+<p><span class="math display">\[
+SSE = e_1^2 + e_2^2 + \dots + e_{10000}^2 = \sum_{i=1}^{10000} e_i^2 = \sum_{i=1}^{10000} \left(y_i - \hat{y}_i\right)^2
+\]</span></p>
+<p>where <span class="math inline">\(y_i\)</span> and <span class="math inline">\(\hat{y}_i\)</span> represent the observed interest rates and their estimated values according to the model, respectively. 10,000 residuals are calculated, one for each observation. Note that these values are sample statistics and in the case where the observed data is a random sample from a target population that we are interested in making inferences about, they are estimates of the population parameters <span class="math inline">\(\beta_0\)</span>, <span class="math inline">\(\beta_1\)</span>, <span class="math inline">\(\beta_2\)</span>, <span class="math inline">\(\cdots\)</span>, <span class="math inline">\(\beta_9\)</span>. We will discuss inference based on linear models in <a href="inf-model-mlr.html" class="quarto-xref">Chapter&nbsp;<span>25</span></a>, for now we will focus on calculating sample statistics <span class="math inline">\(b_i\)</span>.</p>
+<p>We typically use a computer to minimize the sum of squares and compute point estimates, as shown in the sample output in <a href="#tbl-loans-full" class="quarto-xref">Table&nbsp;<span>8.5</span></a>. Using this output, we identify <span class="math inline">\(b_i,\)</span> just as we did in the one-predictor case.</p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-loans-full" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-loans-full-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;8.5: Output for the regression model, where interest rate is the outcome and the variables listed are the predictors. Degrees of freedom for this model is 9990.
+</figcaption><div aria-describedby="tbl-loans-full-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 15em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">1.89</td>
+<td style="text-align: right; width: 5em;">0.21</td>
+<td style="text-align: right; width: 5em;">9.01</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 15em; font-family: monospace;">verified_incomeSource Verified</td>
+<td style="text-align: right; width: 5em;">1.00</td>
+<td style="text-align: right; width: 5em;">0.10</td>
+<td style="text-align: right; width: 5em;">10.06</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 15em; font-family: monospace;">verified_incomeVerified</td>
+<td style="text-align: right; width: 5em;">2.56</td>
+<td style="text-align: right; width: 5em;">0.12</td>
+<td style="text-align: right; width: 5em;">21.87</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 15em; font-family: monospace;">debt_to_income</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">0.00</td>
+<td style="text-align: right; width: 5em;">7.43</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 15em; font-family: monospace;">credit_util</td>
+<td style="text-align: right; width: 5em;">4.90</td>
+<td style="text-align: right; width: 5em;">0.16</td>
+<td style="text-align: right; width: 5em;">30.25</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 15em; font-family: monospace;">bankruptcy1</td>
+<td style="text-align: right; width: 5em;">0.39</td>
+<td style="text-align: right; width: 5em;">0.13</td>
+<td style="text-align: right; width: 5em;">2.96</td>
+<td style="text-align: right; width: 5em;">0.0031</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 15em; font-family: monospace;">term</td>
+<td style="text-align: right; width: 5em;">0.15</td>
+<td style="text-align: right; width: 5em;">0.00</td>
+<td style="text-align: right; width: 5em;">38.89</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 15em; font-family: monospace;">credit_checks</td>
+<td style="text-align: right; width: 5em;">0.23</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">12.52</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 15em; font-family: monospace;">issue_monthJan-2018</td>
+<td style="text-align: right; width: 5em;">0.05</td>
+<td style="text-align: right; width: 5em;">0.11</td>
+<td style="text-align: right; width: 5em;">0.42</td>
+<td style="text-align: right; width: 5em;">0.6736</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 15em; font-family: monospace;">issue_monthMar-2018</td>
+<td style="text-align: right; width: 5em;">-0.04</td>
+<td style="text-align: right; width: 5em;">0.11</td>
+<td style="text-align: right; width: 5em;">-0.39</td>
+<td style="text-align: right; width: 5em;">0.696</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="important">
+<p><strong>Multiple regression model.</strong></p>
+<p>A multiple regression model is a linear model with many predictors. In general, we write the model as</p>
+<p><span class="math display">\[
+\hat{y} = b_0 + b_1 x_1 + b_2 x_2 + \cdots + b_k x_k
+\]</span></p>
+<p>when there are <span class="math inline">\(k\)</span> predictors. We always calculate <span class="math inline">\(b_i\)</span> using statistical software.</p>
+</div>
+<div class="workedexample">
+<p>Write out the regression model using the regression output from <a href="#tbl-loans-full" class="quarto-xref">Table&nbsp;<span>8.5</span></a>. How many predictors are there in this model?</p>
+<hr>
+<p>The fitted model for the interest rate is given by:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\widehat{\texttt{interest\_rate}} &amp;= 1.89 \\
+&amp;+ 1.00 \times \texttt{verified\_income}_{\texttt{Source Verified}} + 2.56 \times \texttt{verified\_income}_{\texttt{Verified}} \\
+&amp;+ 0.02 \times \texttt{debt\_to\_income} + 4.90 \times \texttt{credit\_util} \\
+&amp;+ 0.39 \times \texttt{bankruptcy} + 0.15 \times \texttt{term} \\
+&amp;+ 0.23 \times \texttt{credit\_checks} + 0.05 \times \texttt{issue\_month}_{\texttt{Jan-2018}} \\
+&amp;- 0.04 \times \texttt{issue\_month}_{\texttt{Mar-2018}}
+\end{aligned}
+\]</span></p>
+<p>If we count up the number of predictor coefficients, we get the <em>effective</em> number of predictors in the model; there are nine of those. Notice that the categorical predictor counts as two, once for each of the two levels shown in the model. In general, a categorical predictor with <span class="math inline">\(p\)</span> different levels will be represented by <span class="math inline">\(p - 1\)</span> terms in a multiple regression model. A total of seven variables were used as predictors to fit this model: <code>verified_income</code>, <code>debt_to_income</code>, <code>credit_util</code>, <code>bankruptcy</code>, <code>term</code>, <code>credit_checks</code>, <code>issue_month</code>.</p>
+</div>
+<div class="guidedpractice">
+<p>Interpret the coefficient of the variable <code>credit_checks</code>.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+</div>
+<div class="guidedpractice">
+<p>Compute the residual of the first observation in <a href="#tbl-loans-data-matrix" class="quarto-xref">Table&nbsp;<span>8.1</span></a> using the full model.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+</div>
+<div class="workedexample">
+<p>We calculated a slope coefficient of 0.74 for <code>bankruptcy</code> in <a href="#sec-ind-and-cat-predictors" class="quarto-xref"><span>Section 8.1</span></a> while the coefficient is 0.39 here. Why is there a difference between the coefficient values between the models with single and multiple predictors?</p>
+<hr>
+<p>If we examined the data carefully, we would see that some predictors are correlated. For instance, when we modeled the relationship of the outcome <code>interest_rate</code> and predictor <code>bankruptcy</code> using linear regression, we were unable to control for other variables like whether the borrower had their income verified, the borrower’s debt-to-income ratio, and other variables. That original model was constructed in a vacuum and did not consider the full context of everything that is considered when an interest rate is decided. When we include all of the variables, underlying and unintentional bias that was missed by not including these other variables is reduced or eliminated. Of course, bias can still exist from other confounding variables.</p>
+</div>
+<p>The previous example describes a common issue in multiple regression: correlation among predictor variables. We say the two predictor variables are <strong>collinear</strong> (pronounced as <em>co-linear</em>) when they are correlated, and this <strong>multicollinearity</strong> complicates model estimation. While it is impossible to prevent multicollinearity from arising in observational data, experiments are usually designed to prevent predictors from being multicollinear.</p>
+<div class="guidedpractice">
+<p>The estimated value of the intercept is 1.89, and one might be tempted to make some interpretation of this coefficient, such as, it is the model’s predicted interest rate when each of the variables take value zero: income source is not verified, the borrower has no debt (debt-to-income and credit utilization are zero), and so on. Is this reasonable? Is there any value gained by making this interpretation?<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+</div>
+</section><section id="adjusted-r-squared" class="level2" data-number="8.3"><h2 data-number="8.3" class="anchored" data-anchor-id="adjusted-r-squared">
+<span class="header-section-number">8.3</span> Adjusted R-squared</h2>
+<p>We first used <span class="math inline">\(R^2\)</span> in <a href="model-slr.html#sec-r-squared" class="quarto-xref"><span>Section 7.2.5</span></a> to determine the amount of variability in the response that was explained by the model:</p>
+<p><span class="math display">\[
+R^2 = 1 - \frac{\text{variability in residuals}}{\text{variability in the outcome}}
+    = 1 - \frac{Var(e_i)}{Var(y_i)}
+\]</span></p>
+<p>where <span class="math inline">\(e_i\)</span> represents the residuals of the model and <span class="math inline">\(y_i\)</span> the outcomes. This equation remains valid in the multiple regression framework, but a small enhancement can make it even more informative when comparing models.</p>
+<div class="guidedpractice">
+<p>The variance of the residuals for the model given in the earlier Guided Practice is 18.53, and the variance of the total price in all the auctions is 25.01. Calculate <span class="math inline">\(R^2\)</span> for this model.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a></p>
+</div>
+<p>This strategy for estimating <span class="math inline">\(R^2\)</span> works when there is a single predictor. However, it becomes less helpful when there are many variables. The regular <span class="math inline">\(R^2\)</span> is a biased estimate of the amount of variability explained by the model when applied to model with more than one predictor. To get a better estimate, we use the adjusted <span class="math inline">\(R^2\)</span>.</p>
+<div class="important">
+<p><strong>Adjusted R-squared as a tool for model assessment.</strong></p>
+<p>The <strong>adjusted R-squared</strong> is computed as</p>
+<p><span class="math display">\[
+\begin{aligned}
+  R_{adj}^{2}
+    &amp;= 1 - \frac{s_{\text{residuals}}^2 / (n-k-1)}
+        {s_{\text{outcome}}^2 / (n-1)} = 1 - \frac{s_{\text{residuals}}^2}{s_{\text{outcome}}^2}
+        \times \frac{n-1}{n-k-1}
+\end{aligned}
+\]</span></p>
+<p>where <span class="math inline">\(n\)</span> is the number of observations used to fit the model and <span class="math inline">\(k\)</span> is the number of predictor variables in the model. Remember that a categorical predictor with <span class="math inline">\(p\)</span> levels will contribute <span class="math inline">\(p - 1\)</span> to the number of variables in the model.</p>
+</div>
+<p>Because <span class="math inline">\(k\)</span> is never negative, the adjusted <span class="math inline">\(R^2\)</span> will be smaller – often times just a little smaller – than the unadjusted <span class="math inline">\(R^2\)</span>. The reasoning behind the adjusted <span class="math inline">\(R^2\)</span> lies in the <strong>degrees of freedom</strong> associated with each variance, which is equal to <span class="math inline">\(n - k - 1\)</span> in the multiple regression context. If we were to make predictions for <em>new data</em> using our current model, we would find that the unadjusted <span class="math inline">\(R^2\)</span> would tend to be slightly overly optimistic, while the adjusted <span class="math inline">\(R^2\)</span> formula helps correct this bias.</p>
+<div class="guidedpractice">
+<p>There were n = 10,000 auctions in the dataset and <span class="math inline">\(k=9\)</span> predictor variables in the model. Use <span class="math inline">\(n\)</span>, <span class="math inline">\(k\)</span>, and the variances from the earlier Guided Practice&nbsp;to calculate adjusted <span class="math inline">\(R^2\)</span> for the interest rate model.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a></p>
+</div>
+<div class="guidedpractice">
+<p>Suppose you added another predictor to the model, but the variance of the errors <span class="math inline">\(Var(e_i)\)</span> didn’t go down. What would happen to the&nbsp;<span class="math inline">\(R^2\)</span>? What would happen to the adjusted&nbsp;<span class="math inline">\(R^2\)</span>?<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a></p>
+</div>
+<p>Adjusted <span class="math inline">\(R^2\)</span> could also have been used in <a href="model-slr.html" class="quarto-xref">Chapter&nbsp;<span>7</span></a> where we introduced regression models with a single predictor. However, when there is only <span class="math inline">\(k = 1\)</span> predictors, adjusted <span class="math inline">\(R^2\)</span> is very close to regular <span class="math inline">\(R^2\)</span>, so this nuance isn’t typically important when the model has only one predictor.</p>
+</section><section id="sec-model-selection" class="level2" data-number="8.4"><h2 data-number="8.4" class="anchored" data-anchor-id="sec-model-selection">
+<span class="header-section-number">8.4</span> Model selection</h2>
+<p>The best model is not always the most complicated. Sometimes including predictors that are not evidently important can actually reduce the accuracy of predictions. In this section, we discuss model selection strategies, which will help us eliminate predictors from the model that are found to be less important. It’s common (and hip, at least in the statistical world) to refer to models that have undergone such predictor pruning as <strong>parsimonious</strong>.</p>
+<p>In practice, the model that includes all available predictors is often referred to as the <strong>full model</strong>. The full model may not be the best model, and if it isn’t, we want to identify a smaller model that is preferable.</p>
+<section id="stepwise-selection" class="level3" data-number="8.4.1"><h3 data-number="8.4.1" class="anchored" data-anchor-id="stepwise-selection">
+<span class="header-section-number">8.4.1</span> Stepwise selection</h3>
+<p>Two common strategies for adding or removing predictors in a multiple regression model are called backward elimination and forward selection. These techniques are often referred to as <strong>stepwise selection</strong> strategies, because they add or delete one variable at a time as they “step” through the candidate predictors.</p>
+<p><strong>Backward elimination</strong> starts with the full model – the model that includes all potential predictor variables. Predictors are eliminated one-at-a-time from the model until we cannot improve the model any further.</p>
+<p><strong>Forward selection</strong> is the reverse of the backward elimination technique. Instead, of eliminating predictors one-at-a-time, we add predictors one-at-a-time until we cannot find any predictors that improve the model any further.</p>
+<p>An important consideration in implementing either of these stepwise selection strategies is the criterion used to decide whether to eliminate or add a predictors. One commonly used decision criterion is adjusted <span class="math inline">\(R^2\)</span>. When using adjusted <span class="math inline">\(R^2\)</span> as the decision criterion, we seek to eliminate or add predictors depending on whether they lead to the largest improvement in adjusted <span class="math inline">\(R^2\)</span> and we stop when adding or elimination of another predictor does not lead to further improvement in adjusted <span class="math inline">\(R^2\)</span>.</p>
+<p>Adjusted <span class="math inline">\(R^2\)</span> describes the strength of a model fit, and it is a useful tool for evaluating which predictors are adding value to the model, where <em>adding value</em> means they are (likely) improving the accuracy in predicting future outcomes.</p>
+<p>Let’s consider two models, which are shown in <a href="#tbl-loans-full-for-model-selection" class="quarto-xref">Table&nbsp;<span>8.6</span></a> and <a href="#tbl-loans-full-except-issue-month" class="quarto-xref">Table&nbsp;<span>8.7</span></a>. The first table summarizes the full model since it includes all predictors, while the second does not include the <code>issue_month</code> variable.</p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-loans-full-for-model-selection" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-loans-full-for-model-selection-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;8.6: The fit for the full regression model, including the adjusted <span class="math inline">\(R^2\)</span>.
+</figcaption><div aria-describedby="tbl-loans-full-for-model-selection-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 17em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">1.89</td>
+<td style="text-align: right; width: 5em;">0.21</td>
+<td style="text-align: right; width: 5em;">9.01</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 17em; font-family: monospace;">verified_incomeSource Verified</td>
+<td style="text-align: right; width: 5em;">1.00</td>
+<td style="text-align: right; width: 5em;">0.10</td>
+<td style="text-align: right; width: 5em;">10.06</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 17em; font-family: monospace;">verified_incomeVerified</td>
+<td style="text-align: right; width: 5em;">2.56</td>
+<td style="text-align: right; width: 5em;">0.12</td>
+<td style="text-align: right; width: 5em;">21.87</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 17em; font-family: monospace;">debt_to_income</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">0.00</td>
+<td style="text-align: right; width: 5em;">7.43</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 17em; font-family: monospace;">credit_util</td>
+<td style="text-align: right; width: 5em;">4.90</td>
+<td style="text-align: right; width: 5em;">0.16</td>
+<td style="text-align: right; width: 5em;">30.25</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 17em; font-family: monospace;">bankruptcy1</td>
+<td style="text-align: right; width: 5em;">0.39</td>
+<td style="text-align: right; width: 5em;">0.13</td>
+<td style="text-align: right; width: 5em;">2.96</td>
+<td style="text-align: right; width: 5em;">0.0031</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 17em; font-family: monospace;">term</td>
+<td style="text-align: right; width: 5em;">0.15</td>
+<td style="text-align: right; width: 5em;">0.00</td>
+<td style="text-align: right; width: 5em;">38.89</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 17em; font-family: monospace;">credit_checks</td>
+<td style="text-align: right; width: 5em;">0.23</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">12.52</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 17em; font-family: monospace;">issue_monthJan-2018</td>
+<td style="text-align: right; width: 5em;">0.05</td>
+<td style="text-align: right; width: 5em;">0.11</td>
+<td style="text-align: right; width: 5em;">0.42</td>
+<td style="text-align: right; width: 5em;">0.6736</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 17em; font-family: monospace;">issue_monthMar-2018</td>
+<td style="text-align: right; width: 5em;">-0.04</td>
+<td style="text-align: right; width: 5em;">0.11</td>
+<td style="text-align: right; width: 5em;">-0.39</td>
+<td style="text-align: right; width: 5em;">0.696</td>
+</tr>
+<tr class="odd" data-grouplength="2">
+<td colspan="5" style="text-align: left; border-bottom: 1px solid;"><strong></strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 17em; padding-left: 4em; font-style: italic;" data-indentlevel="2">Adjusted R-sq = 0.2597</td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 17em; padding-left: 4em; font-style: italic;" data-indentlevel="2">df = 9964</td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-loans-full-except-issue-month" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-loans-full-except-issue-month-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;8.7: The fit for the regression model after dropping issue month, including the adjusted <span class="math inline">\(R^2\)</span>.
+</figcaption><div aria-describedby="tbl-loans-full-except-issue-month-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 17em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">1.90</td>
+<td style="text-align: right; width: 5em;">0.20</td>
+<td style="text-align: right; width: 5em;">9.56</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 17em; font-family: monospace;">verified_incomeSource Verified</td>
+<td style="text-align: right; width: 5em;">1.00</td>
+<td style="text-align: right; width: 5em;">0.10</td>
+<td style="text-align: right; width: 5em;">10.05</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 17em; font-family: monospace;">verified_incomeVerified</td>
+<td style="text-align: right; width: 5em;">2.56</td>
+<td style="text-align: right; width: 5em;">0.12</td>
+<td style="text-align: right; width: 5em;">21.86</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 17em; font-family: monospace;">debt_to_income</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">0.00</td>
+<td style="text-align: right; width: 5em;">7.44</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 17em; font-family: monospace;">credit_util</td>
+<td style="text-align: right; width: 5em;">4.90</td>
+<td style="text-align: right; width: 5em;">0.16</td>
+<td style="text-align: right; width: 5em;">30.25</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 17em; font-family: monospace;">bankruptcy1</td>
+<td style="text-align: right; width: 5em;">0.39</td>
+<td style="text-align: right; width: 5em;">0.13</td>
+<td style="text-align: right; width: 5em;">2.96</td>
+<td style="text-align: right; width: 5em;">0.0031</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 17em; font-family: monospace;">term</td>
+<td style="text-align: right; width: 5em;">0.15</td>
+<td style="text-align: right; width: 5em;">0.00</td>
+<td style="text-align: right; width: 5em;">38.89</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 17em; font-family: monospace;">credit_checks</td>
+<td style="text-align: right; width: 5em;">0.23</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">12.52</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd" data-grouplength="2">
+<td colspan="5" style="text-align: left; border-bottom: 1px solid;"><strong></strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 17em; padding-left: 4em; font-style: italic;" data-indentlevel="2">Adjusted R-sq = 0.2598</td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 17em; padding-left: 4em; font-style: italic;" data-indentlevel="2">df = 9966</td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+<td style="text-align: right; width: 5em; font-style: italic;"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="workedexample">
+<p>Which of the two models is better?</p>
+<hr>
+<p>We compare the adjusted <span class="math inline">\(R^2\)</span> of each model to determine which to choose. Since the second model has a higher adjusted <span class="math inline">\(R^2\)</span> compared to the first model, we prefer the second model to the first. We cannot know for sure, but based on the adjusted <span class="math inline">\(R^2\)</span>, this is our best assessment.</p>
+</div>
+<div class="workedexample">
+<p>Results corresponding to the full model for the <code>loans</code> data are shown in <a href="#tbl-loans-full-for-model-selection" class="quarto-xref">Table&nbsp;<span>8.6</span></a>. How should we proceed under the backward elimination strategy?</p>
+<hr>
+<p>Our baseline adjusted <span class="math inline">\(R^2\)</span> from the full model is 0.2597, and we need to determine whether dropping a predictor will improve the adjusted <span class="math inline">\(R^2\)</span>. To check, we fit models that each drop a different predictor, and we record the adjusted <span class="math inline">\(R^2\)</span>:</p>
+<ul>
+<li>Excluding <code>verified_income</code>: 0.2238</li>
+<li>Excluding <code>debt_to_income</code>: 0.2557</li>
+<li>Excluding <code>credit_util</code>: 0.1916</li>
+<li>Excluding <code>bankruptcy</code>: 0.2589</li>
+<li>Excluding <code>term</code>: 0.1468</li>
+<li>Excluding <code>credit_checks</code>: 0.2484</li>
+<li>Excluding <code>issue_month</code>: 0.2598</li>
+</ul>
+<p>The model without <code>issue_month</code> has the highest adjusted <span class="math inline">\(R^2\)</span> of 0.2598, higher than the adjusted <span class="math inline">\(R^2\)</span> for the full model; therefore, we drop <code>issue_month</code> from the model.</p>
+<p>Since we eliminated a predictor from the model in the first step, we see whether we should eliminate any additional predictors. Our baseline adjusted <span class="math inline">\(R^2\)</span> is now <span class="math inline">\(R^2_{adj} = 0.2598\)</span>. We now fit new models, which consider eliminating each of the remaining predictors in addition to <code>issue_month</code>:</p>
+<ul>
+<li>Excluding <code>issue_month</code> and <code>verified_income</code>: 0.22395</li>
+<li>Excluding <code>issue_month</code> and <code>debt_to_income</code>: 0.25579</li>
+<li>Excluding <code>issue_month</code> and <code>credit_util</code>: 0.19174</li>
+<li>Excluding <code>issue_month</code> and <code>bankruptcy</code>: 0.25898</li>
+<li>Excluding <code>issue_month</code> and <code>term</code>: 0.14692</li>
+<li>Excluding <code>issue_month</code> and <code>credit_checks</code>: 0.24801</li>
+</ul>
+<p>None of these models lead to an improvement in adjusted <span class="math inline">\(R^2\)</span>, so we do not eliminate any of the remaining predictors. That is, after backward elimination, we are left with the model that keeps all predictors except <code>issue_month</code>, which we can summarize using the coefficients from <a href="#tbl-loans-full-except-issue-month" class="quarto-xref">Table&nbsp;<span>8.7</span></a>.</p>
+<p><span class="math display">\[
+\begin{aligned}
+\widehat{\texttt{interest\_rate}} &amp;= 1.90 \\
+&amp;+ 1.00 \times \texttt{verified\_income}_\texttt{Source only} + 2.56 \times \texttt{verified\_income}_\texttt{Verified} \\
+&amp;+ 0.02 \times \texttt{debt\_to\_income} + 4.90 \times \texttt{credit\_util} \\
+&amp;+ 0.39 \times \texttt{bankruptcy} + 0.15 \times \texttt{term} \\
+&amp;+ 0.23 \times \texttt{credit\_checks}
+\end{aligned}
+\]</span></p>
+</div>
+<div class="workedexample">
+<p>Construct a model for predicting <code>interest_rate</code> from the <code>loans</code> data using forward selection.</p>
+<hr>
+<p>We start with the model that includes no predictors. Then we fit each of the possible models with just one predictor. Then we examine the adjusted <span class="math inline">\(R^2\)</span> for each of these models:</p>
+<ul>
+<li>Including <code>verified_income</code>: 0.05926</li>
+<li>Including <code>debt_to_income</code>: 0.01946</li>
+<li>Including <code>credit_util</code>: 0.06452</li>
+<li>Including <code>bankruptcy</code>: 0.00222</li>
+<li>Including <code>term</code>: 0.12855</li>
+<li>Including <code>credit_checks</code>: -0.0001</li>
+<li>Including <code>issue_month</code>: 0.01711</li>
+</ul>
+<p>In this first step, we compare the adjusted <span class="math inline">\(R^2\)</span> against a baseline model that has no predictors, which always has <span class="math inline">\(R_{adj}^2 = 0\)</span>. The model with one predictor that has the largest adjusted <span class="math inline">\(R^2\)</span> is the model with the <code>term</code> predictor, so we will add this variable to our model.</p>
+<p>We repeat the process again, this time considering 2-predictor models where one of the predictors is <code>term</code> and with a new baseline of <span class="math inline">\(R^2_{adj} = 0.12855:\)</span></p>
+<ul>
+<li>Including <code>term</code> and <code>verified_income</code>: 0.16851</li>
+<li>Including <code>term</code> and <code>debt_to_income</code>: 0.14368</li>
+<li>Including <code>term</code> and <code>credit_util</code>: 0.20046</li>
+<li>Including <code>term</code> and <code>bankruptcy</code>: 0.13070</li>
+<li>Including <code>term</code> and <code>credit_checks</code>: 0.12840</li>
+<li>Including <code>term</code> and <code>issue_month</code>: 0.14294</li>
+</ul>
+<p>The model including <code>credit_util</code> has the largest increase in adjusted <span class="math inline">\(R^2\)</span> (0.20046) from the baseline (0.12855), Thus, we will also add <code>credit_util</code> to the model as a predictor.</p>
+<p>Now we have a new baseline adjusted <span class="math inline">\(R^2\)</span> of 0.20046. We can continue on and see whether it would be beneficial to add a third predictor:</p>
+<ul>
+<li>Including <code>term</code>, <code>credit_util</code>, and <code>verified_income</code>: 0.24183</li>
+<li>Including <code>term</code>, <code>credit_util</code>, and <code>debt_to_income</code>: 0.20810</li>
+<li>Including <code>term</code>, <code>credit_util</code>, and <code>bankruptcy</code>: 0.20169</li>
+<li>Including <code>term</code>, <code>credit_util</code>, and <code>credit_checks</code>: 0.20031</li>
+<li>Including <code>term</code>, <code>credit_util</code>, and <code>issue_month</code>: 0.21629</li>
+</ul>
+<p>The model including <code>verified_income</code> has the largest increase in adjusted <span class="math inline">\(R^2\)</span> (0.24183) from the baseline (0.20046), so we add <code>verified_income</code> to the model as a predictor as well.</p>
+<p>We continue in this way, next adding <code>debt_to_income</code>, then <code>credit_checks</code>, and <code>bankruptcy</code>. At this point, we come again to the <code>issue_month</code> variable: adding this as a predictor leads to <span class="math inline">\(R_{adj}^2 = 0.25843\)</span>, while keeping all the other predictors but excluding <code>issue_month</code> has a higher <span class="math inline">\(R_{adj}^2 = 0.25854\)</span>. This means we do not add <code>issue_month</code> to the model as a predictor. In this example, we have arrived at the same model that we identified with backward elimination.</p>
+</div>
+<div class="important">
+<p><strong>Stepwise selection strategies.</strong></p>
+<p>Backward elimination begins with the model having the largest number of predictors and eliminates predictors one-by-one until we are satisfied that all remaining predictors are important to the model. Forward selection starts with no predictors included in the model, then it adds in predictors according to their importance until no other important predictors are found. Notice that, for both methods, we have always chosen to retain the model with the largest adjusted <span class="math inline">\(R^2\)</span> value, even if the difference is less than half a percent (e.g., 0.2597 versus 0.2598). One could argue that the difference between these two models is negligible, as they both explain nearly the same amount of variability in the <code>interest_rate</code>. These negligible differences are an important aspect to model selection. It is highly advised that <em>before</em> you begin the model selection process, you decide what a “meaningful” difference in adjusted <span class="math inline">\(R^2\)</span> is for the context of your data. Maybe this difference is 1% or maybe it is 5%. This “threshold” is what you will then use to decide if one model is “better” than another model. Using meaningful thresholds in model selection requires more critical thinking about what the adjusted <span class="math inline">\(R^2\)</span> values mean.</p>
+<p>Additionally, backward elimination and forward selection can arrive at different final models, because the decision for whether to include a given predictor or not depends on the other predictors that are already in the model. With forward selection, you start with a model that includes no predictors, and add predictors one at a time. In backward elimination, you start with a model that includes all of the potential predictors, and remove predictors one at a time. How much a given predictor changes the percentage of the variability in the outcome that is explained by the model depends on the other predictors in the model, particularly if the predictor variables are correlated with each other.</p>
+</div>
+<p>There is no “one size fits all” model selection strategy, which is why there are so many different model selection methods. We hope you walk away from this exploration understanding how stepwise selection is carried out and the considerations that should be made when using stepwise selection with regression models.</p>
+</section><section id="other-model-selection-strategies" class="level3" data-number="8.4.2"><h3 data-number="8.4.2" class="anchored" data-anchor-id="other-model-selection-strategies">
+<span class="header-section-number">8.4.2</span> Other model selection strategies</h3>
+<p>Stepwise selection using adjusted <span class="math inline">\(R^2\)</span> as the decision criteria is one of many commonly used model selection strategies. Stepwise selection can also be carried out with decision criteria other than adjusted <span class="math inline">\(R^2\)</span>, such as p-values, which you’ll learn about in <a href="inf-model-slr.html" class="quarto-xref"><span>Chapter 24</span></a> onward, or AIC (Akaike information criterion) or BIC (Bayesian information criterion), which you might learn about in more advanced courses.</p>
+<p>Alternatively, one could choose to include or exclude predictors from a model based on expert opinion or due to research focus. In fact, many statisticians discourage the use of stepwise regression <em>alone</em> for model selection and advocate, instead, for a more thoughtful approach that carefully considers the research focus and features of the data.</p>
+</section></section><section id="sec-chp8-review" class="level2" data-number="8.5"><h2 data-number="8.5" class="anchored" data-anchor-id="sec-chp8-review">
+<span class="header-section-number">8.5</span> Chapter review</h2>
+<section id="summary" class="level3" data-number="8.5.1"><h3 data-number="8.5.1" class="anchored" data-anchor-id="summary">
+<span class="header-section-number">8.5.1</span> Summary</h3>
+<p>With real data, there is often a need to describe how multiple variables can be modeled together. In this chapter, we have presented one approach using multiple linear regression. Each coefficient represents how the model predicts the outcome might change with one unit increase of that predictor <em>given</em> the rest of the predictor variables in the model. Working with and interpreting multivariable models can be tricky, especially when the predictor variables show multicollinearity. There is often no perfect or “right” final model, however, using the adjusted <span class="math inline">\(R^2\)</span> value is one way to identify important predictor variables for a final regression model. In later chapters we will generalize multiple linear regression models to a larger population of interest from which the dataset was sampled.</p>
+</section><section id="terms" class="level3" data-number="8.5.2"><h3 data-number="8.5.2" class="anchored" data-anchor-id="terms">
+<span class="header-section-number">8.5.2</span> Terms</h3>
+<p>The terms introduced in this chapter are presented in <a href="#tbl-terms-chp-08" class="quarto-xref">Table&nbsp;<span>8.8</span></a>. If you’re not sure what some of these terms mean, we recommend you go back in the text and review their definitions. You should be able to easily spot them as <strong>bolded text</strong>.</p>
+<div class="cell" data-tbl-pos="H">
+<div id="tbl-terms-chp-08" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-pos="H">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-terms-chp-08-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;8.8: Terms introduced in this chapter.
+</figcaption><div aria-describedby="tbl-terms-chp-08-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed do-not-create-environment cell caption-top table-sm small"><tbody>
+<tr class="odd">
+<td style="text-align: left; width: 12em;">adjusted R-squared</td>
+<td style="text-align: left; width: 12em;">forward selection</td>
+<td style="text-align: left; width: 12em;">parsimonious</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 12em;">backward elimination</td>
+<td style="text-align: left; width: 12em;">full model</td>
+<td style="text-align: left; width: 12em;">reference level</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 12em;">collinear</td>
+<td style="text-align: left; width: 12em;">multicollinearity</td>
+<td style="text-align: left; width: 12em;">stepwise selection</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 12em;">degrees of freedom</td>
+<td style="text-align: left; width: 12em;">multiple regression</td>
+<td style="text-align: left; width: 12em;"></td>
+</tr>
+</tbody></table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section></section><section id="sec-chp8-exercises" class="level2" data-number="8.6"><h2 data-number="8.6" class="anchored" data-anchor-id="sec-chp8-exercises">
+<span class="header-section-number">8.6</span> Exercises</h2>
+<p>Answers to odd-numbered exercises can be found in <a href="exercise-solutions.html#sec-exercise-solutions-08" class="quarto-xref">Appendix&nbsp;<span>A.8</span></a>.</p>
+<div class="exercises">
+<ol type="1">
+<li><p><strong>High correlation, good or bad?</strong> Two friends, Frances and Annika, are in disagreement about whether high correlation values are <em>always</em> good in the context of regression. Frances claims that it’s desirable for all variables in the dataset to be highly correlated to each other when building linear models. Annika claims that while it’s desirable for each of the predictors to be highly correlated with the outcome, it is not desirable for the predictors to be highly correlated with each other. Who is right: Frances, Annika, both, or neither? Explain your reasoning using appropriate terminology.</p></li>
+<li><p><strong>Dealing with categorical predictors.</strong> Two friends, Elliott and Adrian, want to build a model predicting typing speed (average number of words typed per minute) from whether the person wears glasses or not. Before building the model they want to conduct some exploratory analysis to evaluate the strength of the association between these two variables, but they’re in disagreement about how to evaluate how strongly a categorical predictor is associated with a numerical outcome. Elliott claims that it is not possible to calculate a correlation coefficient to summarize the relationship between a categorical predictor and a numerical outcome, however they’re not sure what a better alternative is. Adrian claims that you can recode a binary predictor as a 0/1 variable (assign one level to be 0 and the other to be 1), thus converting it to a numerical variable. According to Adrian, you can then calculate the correlation coefficient between the predictor and the outcome. Who is right: Elliott or Adrian? If you pick Elliott, can you suggest a better alternative for evaluating the association between the categorical predictor and the numerical outcome?</p></li>
+<li>
+<p><strong>Meat consumption and life expectancy.</strong> In data collected for <span class="citation" data-cites="You:2022">You et al. (<a href="references.html#ref-You:2022" role="doc-biblioref">2022</a>)</span>, total meat intake is associated with life expectancy (at birth) in 175 countries. Meat intake is measured in kg per capita per year (averaged over 2011 to 2013). The scatterplot on the top left displays the relationship between life expectancy at birth vs.&nbsp;per capita meat consumption. The scatterplot on the top right displays the same relationship colored by income status of the country. The set of scatterplots across the bottom display the same relationship by income status of the country.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><a href="model-mlr_files/figure-html/unnamed-chunk-11-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="model-mlr_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" style="width:90.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>Describe the relationship between meat consumption and life expectancy.</p></li>
+<li><p>Why do you think the variables are positively associated?</p></li>
+<li><p>Is the relationship between meat consumption and life expectancy stronger, similar, or weaker when broken down by income bracket in the separate plots along the bottom (as compared with the relationship when combined in the top left figure)?</p></li>
+</ol>
+</li>
+</ol>
+<ol start="4" type="1">
+<li>
+<p><strong>Arrival delays.</strong> Consider all of the flights out of New York City in 2013 that flew into Puerto Rico (BQN) or San Francisco (SFO) on the following two airlines: JetBlue (B6) or United Airlines (UA). We consider the relationship between day of the year and arrival delay (in minutes). Note that a negative arrival delay means that the flight arrived early. The figures display a least squares regression line for arrival delay versus time (day of the year).<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><a href="model-mlr_files/figure-html/unnamed-chunk-12-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="model-mlr_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" style="width:90.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<ol type="a">
+<li><p>Does it seem like there are differences in arrival delays across time when looking at BQN and SFO airports combined (left figure)? Explain.</p></li>
+<li><p>Does it seem like there are difference in arrival delays across time when looking at BQN and SFO airports separately (right figure)? Explain.</p></li>
+<li><p>Would it be more appropriate to display the combined plot or the plots which display the airports separately? Explain.</p></li>
+</ol>
+</li>
+<li>
+<p><strong>Training for a 5K.</strong> Nico signs up for a 5K (a 5,000 metre running race) 30 days prior to the race. They decide to run a 5K every day to train for it, and each day they record the following information: <code>days_since_start</code> (number of days since starting training), <code>days_till_race</code> (number of days left until the race), <code>mood</code> (poor, good, awesome), <code>tiredness</code> (1-not tired to 10-very tired), and <code>time</code> (time it takes to run 5K, recorded as mm:ss). Top few rows of the data they collect is shown below. Using these data Nico wants to build a model predicting <code>time</code> from the other variables. Should they include all variables shown above in their model? Why or why not?</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">days_since_start</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">days_till_race</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">mood</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">tiredness</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">time</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: left;">good</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">25:45</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: left;">poor</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">27:13</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: left;">awesome</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">24:13</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">...</td>
+<td style="text-align: right;">...</td>
+<td style="text-align: left;">...</td>
+<td style="text-align: right;">...</td>
+<td style="text-align: right;">...</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Multiple regression fact checking.</strong> Determine which of the following statements are true and false. For each statement that is false, explain why it is false.</p>
+<ol type="a">
+<li><p>If predictors are collinear, then removing one variable will have no influence on the point estimate of another variable’s coefficient.</p></li>
+<li><p>Suppose a numerical variable <span class="math inline">\(x\)</span> has a coefficient of <span class="math inline">\(b_1 = 2.5\)</span> in the multiple regression model. Suppose also that the first observation has <span class="math inline">\(x_1 = 7.2\)</span>, the second observation has a value of <span class="math inline">\(x_1 = 8.2\)</span>, and these two observations have the same values for all other predictors. Then the predicted value of the second observation will be 2.5 higher than the prediction of the first observation based on the multiple regression model.</p></li>
+<li><p>If a regression model’s first variable has a coefficient of <span class="math inline">\(b_1 = 5.7\)</span>, then if we are able to influence the data so that an observation will have its <span class="math inline">\(x_1\)</span> be 1 larger than it would otherwise, the value <span class="math inline">\(y_1\)</span> for this observation would increase by 5.7.</p></li>
+</ol>
+</li>
+</ol>
+<ol start="7" type="1">
+<li>
+<p><strong>Baby weights and smoking.</strong> US Department of Health and Human Services, Centers for Disease Control and Prevention collect information on births recorded in the country. The data used here are a random sample of 1,000 births from 2014. Here, we study the relationship between smoking and weight of the baby. The variable <code>smoke</code> is coded 1 if the mother is a smoker, and 0 if not. The summary table below shows the results of a linear regression model for predicting the average birth weight of babies, measured in pounds, based on the smoking status of the mother.<a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a> <span class="citation" data-cites="data:births14">(<a href="references.html#ref-data:births14" role="doc-biblioref">ICPSR 2014</a>)</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">7.270</td>
+<td style="text-align: right; width: 5em;">0.0435</td>
+<td style="text-align: right; width: 5em;">167.22</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">habitsmoker</td>
+<td style="text-align: right; width: 5em;">-0.593</td>
+<td style="text-align: right; width: 5em;">0.1275</td>
+<td style="text-align: right; width: 5em;">-4.65</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<ol type="a">
+<li><p>Write the equation of the regression model.</p></li>
+<li><p>Interpret the slope in this context, and calculate the predicted birth weight of babies born to smoker and non-smoker mothers.</p></li>
+</ol>
+</li>
+</ol>
+<ol start="8" type="1">
+<li>
+<p><strong>Baby weights and mature moms.</strong> The following is a model for predicting baby weight from whether the mom is classified as a <code>mature</code> mom (35 years or older at the time of pregnancy). <span class="citation" data-cites="data:births14">(<a href="references.html#ref-data:births14" role="doc-biblioref">ICPSR 2014</a>)</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">7.354</td>
+<td style="text-align: right; width: 5em;">0.103</td>
+<td style="text-align: right; width: 5em;">71.02</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">matureyounger mom</td>
+<td style="text-align: right; width: 5em;">-0.185</td>
+<td style="text-align: right; width: 5em;">0.113</td>
+<td style="text-align: right; width: 5em;">-1.64</td>
+<td style="text-align: right; width: 5em;">0.102</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<ol type="a">
+<li><p>Write the equation of the regression model.</p></li>
+<li><p>Interpret the slope in this context, and calculate the predicted birth weight of babies born to mature and younger mothers.</p></li>
+</ol>
+</li>
+</ol>
+<ol start="9" type="1">
+<li>
+<p><strong>Movie returns, prediction.</strong> A model was fit to predict return-on-investment (ROI) on movies based on release year and genre (Adventure, Action, Drama, Horror, and Comedy). The model output is shown below. <span class="citation" data-cites="webpage:horrormovies">(<a href="references.html#ref-webpage:horrormovies" role="doc-biblioref">FiveThirtyEight 2015</a>)</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">-156.04</td>
+<td style="text-align: right; width: 5em;">169.15</td>
+<td style="text-align: right; width: 5em;">-0.92</td>
+<td style="text-align: right; width: 5em;">0.3565</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">release_year</td>
+<td style="text-align: right; width: 5em;">0.08</td>
+<td style="text-align: right; width: 5em;">0.08</td>
+<td style="text-align: right; width: 5em;">0.94</td>
+<td style="text-align: right; width: 5em;">0.348</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">genreAdventure</td>
+<td style="text-align: right; width: 5em;">0.30</td>
+<td style="text-align: right; width: 5em;">0.74</td>
+<td style="text-align: right; width: 5em;">0.40</td>
+<td style="text-align: right; width: 5em;">0.6914</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">genreComedy</td>
+<td style="text-align: right; width: 5em;">0.57</td>
+<td style="text-align: right; width: 5em;">0.69</td>
+<td style="text-align: right; width: 5em;">0.83</td>
+<td style="text-align: right; width: 5em;">0.4091</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">genreDrama</td>
+<td style="text-align: right; width: 5em;">0.37</td>
+<td style="text-align: right; width: 5em;">0.62</td>
+<td style="text-align: right; width: 5em;">0.61</td>
+<td style="text-align: right; width: 5em;">0.5438</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">genreHorror</td>
+<td style="text-align: right; width: 5em;">8.61</td>
+<td style="text-align: right; width: 5em;">0.86</td>
+<td style="text-align: right; width: 5em;">9.97</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<ol type="a">
+<li><p>For a given release year, which genre of movies are predicted, on average, to have the highest predicted return on investment?</p></li>
+<li><p>The adjusted <span class="math inline">\(R^2\)</span> of this model is 10.71%. Adding the production budget of the movie to the model increases the adjusted <span class="math inline">\(R^2\)</span> to 10.84%. Should production budget be added to the model?</p></li>
+</ol>
+</li>
+</ol>
+<ol start="10" type="1">
+<li>
+<p><strong>Movie returns by genre.</strong> A model was fit to predict return-on-investment (ROI) on movies based on release year and genre (Adventure, Action, Drama, Horror, and Comedy). The plots below show the predicted ROI vs.&nbsp;actual ROI for each of the genres separately. Do these figures support the comment in the FiveThirtyEight.com article that states, “The return-on-investment potential for horror movies is absurd.” Note that the x-axis range varies for each plot. <span class="citation" data-cites="webpage:horrormovies">(<a href="references.html#ref-webpage:horrormovies" role="doc-biblioref">FiveThirtyEight 2015</a>)</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><a href="model-mlr_files/figure-html/unnamed-chunk-17-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="model-mlr_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" style="width:90.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</li>
+</ol>
+<ol start="11" type="1">
+<li>
+<p><strong>Predicting baby weights.</strong> A more realistic approach to modeling baby weights is to consider all possibly related variables at once. Other variables of interest include length of pregnancy in weeks (<code>weeks</code>), mother’s age in years (<code>mage</code>), the sex of the baby (<code>sex</code>), smoking status of the mother (<code>habit</code>), and the number of hospital (<code>visits</code>) visits during pregnancy. Below are three observations from this dataset.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: center;" data-quarto-table-cell-role="th">weight</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">weeks</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">mage</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">sex</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">visits</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">habit</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center; width: 5em;">6.96</td>
+<td style="text-align: center; width: 5em;">37</td>
+<td style="text-align: center; width: 5em;">34</td>
+<td style="text-align: center; width: 5em;">male</td>
+<td style="text-align: center; width: 5em;">14</td>
+<td style="text-align: center;">nonsmoker</td>
+</tr>
+<tr class="even">
+<td style="text-align: center; width: 5em;">8.86</td>
+<td style="text-align: center; width: 5em;">41</td>
+<td style="text-align: center; width: 5em;">31</td>
+<td style="text-align: center; width: 5em;">female</td>
+<td style="text-align: center; width: 5em;">12</td>
+<td style="text-align: center;">nonsmoker</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center; width: 5em;">7.51</td>
+<td style="text-align: center; width: 5em;">37</td>
+<td style="text-align: center; width: 5em;">36</td>
+<td style="text-align: center; width: 5em;">female</td>
+<td style="text-align: center; width: 5em;">10</td>
+<td style="text-align: center;">nonsmoker</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The summary table below shows the results of a regression model for predicting the average birth weight of babies based on all of the variables presented above.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">-3.82</td>
+<td style="text-align: right; width: 5em;">0.57</td>
+<td style="text-align: right; width: 5em;">-6.73</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">weeks</td>
+<td style="text-align: right; width: 5em;">0.26</td>
+<td style="text-align: right; width: 5em;">0.01</td>
+<td style="text-align: right; width: 5em;">18.93</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">mage</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">0.01</td>
+<td style="text-align: right; width: 5em;">2.53</td>
+<td style="text-align: right; width: 5em;">0.0115</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">sexmale</td>
+<td style="text-align: right; width: 5em;">0.37</td>
+<td style="text-align: right; width: 5em;">0.07</td>
+<td style="text-align: right; width: 5em;">5.30</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">visits</td>
+<td style="text-align: right; width: 5em;">0.02</td>
+<td style="text-align: right; width: 5em;">0.01</td>
+<td style="text-align: right; width: 5em;">2.09</td>
+<td style="text-align: right; width: 5em;">0.0373</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">habitsmoker</td>
+<td style="text-align: right; width: 5em;">-0.43</td>
+<td style="text-align: right; width: 5em;">0.13</td>
+<td style="text-align: right; width: 5em;">-3.41</td>
+<td style="text-align: right; width: 5em;">7e-04</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<ol type="a">
+<li><p>Write the equation of the regression model that includes all of the variables.</p></li>
+<li><p>Interpret the slopes of <code>weeks</code> and <code>habit</code> in this context.</p></li>
+<li><p>If we fit a model predicting baby weight from only <code>habit</code> (whether the mom smokes), we observe a difference in the slope coefficient for <code>habit</code> in this small model and the slope coefficient for <code>habit</code> in the larger model. Why might there be a difference?</p></li>
+<li><p>Calculate the residual for the first observation in the dataset.</p></li>
+</ol>
+</li>
+</ol>
+<ol start="12" type="1">
+<li>
+<p><strong>Palmer penguins, predicting body mass.</strong> Researchers studying a community of Antarctic penguins collected body measurement (bill length, bill depth, and flipper length measured in millimeters and body mass, measured in grams), species (<em>Adelie</em>, <em>Chinstrap</em>, or <em>Gentoo</em>), and sex (female or male) data on 344 penguins living on three islands (Torgersen, Biscoe, and Dream) in the Palmer Archipelago, Antarctica.<a href="#fn12" class="footnote-ref" id="fnref12" role="doc-noteref"><sup>12</sup></a> The summary table below shows the results of a linear regression model for predicting body mass (which is more difficult to measure) from the other variables in the dataset. <span class="citation" data-cites="palmerpenguins">(<a href="references.html#ref-palmerpenguins" role="doc-biblioref">Gorman, Williams, and Fraser 2014</a>)</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">-1461.0</td>
+<td style="text-align: right; width: 5em;">571.3</td>
+<td style="text-align: right; width: 5em;">-2.6</td>
+<td style="text-align: right; width: 5em;">0.011</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">bill_length_mm</td>
+<td style="text-align: right; width: 5em;">18.2</td>
+<td style="text-align: right; width: 5em;">7.1</td>
+<td style="text-align: right; width: 5em;">2.6</td>
+<td style="text-align: right; width: 5em;">0.0109</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">bill_depth_mm</td>
+<td style="text-align: right; width: 5em;">67.2</td>
+<td style="text-align: right; width: 5em;">19.7</td>
+<td style="text-align: right; width: 5em;">3.4</td>
+<td style="text-align: right; width: 5em;">7e-04</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">flipper_length_mm</td>
+<td style="text-align: right; width: 5em;">16.0</td>
+<td style="text-align: right; width: 5em;">2.9</td>
+<td style="text-align: right; width: 5em;">5.5</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">sexmale</td>
+<td style="text-align: right; width: 5em;">389.9</td>
+<td style="text-align: right; width: 5em;">47.8</td>
+<td style="text-align: right; width: 5em;">8.1</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">speciesChinstrap</td>
+<td style="text-align: right; width: 5em;">-251.5</td>
+<td style="text-align: right; width: 5em;">81.1</td>
+<td style="text-align: right; width: 5em;">-3.1</td>
+<td style="text-align: right; width: 5em;">0.0021</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">speciesGentoo</td>
+<td style="text-align: right; width: 5em;">1014.6</td>
+<td style="text-align: right; width: 5em;">129.6</td>
+<td style="text-align: right; width: 5em;">7.8</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<ol type="a">
+<li><p>Write the equation of the regression model.</p></li>
+<li><p>Interpret each one of the slopes in this context.</p></li>
+<li>
+<p>Calculate the residual for a male Adelie penguin that weighs 3,750 grams with the following body measurements:</p>
+<ul>
+<li>
+<code>bill_length_mm</code> = 39.1</li>
+<li>
+<code>bill_depth_mm</code> = 18.7</li>
+<li>
+<code>flipper_length_mm</code> = 181</li>
+</ul>
+<p>Does the model overpredict or underpredict this penguin’s weight?</p>
+</li>
+<li><p>The <span class="math inline">\(R^2\)</span> of this model is 87.5%. Interpret this value in context of the data and the model.</p></li>
+</ol>
+</li>
+</ol>
+<ol start="13" type="1">
+<li>
+<p><strong>Baby weights, backwards elimination.</strong> Let’s consider a model that predicts <code>weight</code> of newborns using several predictors: whether the mother is considered <code>mature</code>, number of <code>weeks</code> of gestation, number of hospital <code>visits</code> during pregnancy, weight <code>gained</code> by the mother during pregnancy, <code>sex</code> of the baby, and whether the mother smoke cigarettes during pregnancy (<code>habit</code>). <span class="citation" data-cites="data:births14">(<a href="references.html#ref-data:births14" role="doc-biblioref">ICPSR 2014</a>)</span></p>
+<p>The adjusted <span class="math inline">\(R^2\)</span> of the full model is 0.326. We remove each variable one by one, refit the model, and record the adjusted <span class="math inline">\(R^2\)</span>. Which, if any, variable should be removed from the model?</p>
+<ul>
+<li>Drop <code>mature</code>: 0.321</li>
+<li>Drop <code>weeks</code>: 0.061</li>
+<li>Drop <code>visits</code>: 0.326</li>
+<li>Drop <code>gained</code>: 0.327</li>
+<li>Drop <code>sex</code>: 0.301</li>
+</ul>
+</li>
+</ol>
+<ol start="14" type="1">
+<li>
+<p><strong>Palmer penguins, backwards elimination.</strong> The following full model is built to predict the weights of three species (<em>Adelie</em>, <em>Chinstrap</em>, or <em>Gentoo</em>) of penguins living in the Palmer Archipelago, Antarctica. <span class="citation" data-cites="palmerpenguins">(<a href="references.html#ref-palmerpenguins" role="doc-biblioref">Gorman, Williams, and Fraser 2014</a>)</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead><tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">(Intercept)</td>
+<td style="text-align: right; width: 5em;">-1461.0</td>
+<td style="text-align: right; width: 5em;">571.3</td>
+<td style="text-align: right; width: 5em;">-2.6</td>
+<td style="text-align: right; width: 5em;">0.011</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">bill_length_mm</td>
+<td style="text-align: right; width: 5em;">18.2</td>
+<td style="text-align: right; width: 5em;">7.1</td>
+<td style="text-align: right; width: 5em;">2.6</td>
+<td style="text-align: right; width: 5em;">0.0109</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">bill_depth_mm</td>
+<td style="text-align: right; width: 5em;">67.2</td>
+<td style="text-align: right; width: 5em;">19.7</td>
+<td style="text-align: right; width: 5em;">3.4</td>
+<td style="text-align: right; width: 5em;">7e-04</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">flipper_length_mm</td>
+<td style="text-align: right; width: 5em;">16.0</td>
+<td style="text-align: right; width: 5em;">2.9</td>
+<td style="text-align: right; width: 5em;">5.5</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">sexmale</td>
+<td style="text-align: right; width: 5em;">389.9</td>
+<td style="text-align: right; width: 5em;">47.8</td>
+<td style="text-align: right; width: 5em;">8.1</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left; width: 10em; font-family: monospace;">speciesChinstrap</td>
+<td style="text-align: right; width: 5em;">-251.5</td>
+<td style="text-align: right; width: 5em;">81.1</td>
+<td style="text-align: right; width: 5em;">-3.1</td>
+<td style="text-align: right; width: 5em;">0.0021</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; width: 10em; font-family: monospace;">speciesGentoo</td>
+<td style="text-align: right; width: 5em;">1014.6</td>
+<td style="text-align: right; width: 5em;">129.6</td>
+<td style="text-align: right; width: 5em;">7.8</td>
+<td style="text-align: right; width: 5em;">&lt;0.0001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The adjusted <span class="math inline">\(R^2\)</span> of the full model is 0.9. In order to evaluate whether any of the predictors can be dropped from the model without losing predictive performance of the model, the researchers dropped one variable at a time, refit the model, and recorded the adjusted <span class="math inline">\(R^2\)</span> of the smaller model. These values are given below.</p>
+<ul>
+<li>Drop <code>bill_length_mm</code>: 0.87</li>
+<li>Drop <code>bill_depth_mm</code>: 0.869</li>
+<li>Drop <code>flipper_length_mm</code>: 0.861</li>
+<li>Drop <code>sex</code>: 0.845</li>
+<li>Drop <code>species</code>: 0.821</li>
+</ul>
+<p>Which, if any, variable should be removed from the model first?</p>
+</li>
+</ol>
+<ol start="15" type="1">
+<li>
+<p><strong>Baby weights, forward selection.</strong> Using information on the mother and the sex of the baby (which can be determined prior to birth), we want to build a model that predicts the birth weight of babies. In order to do so, we will evaluate six candidate predictors: whether the mother is considered <code>mature</code>, number of <code>weeks</code> of gestation, number of hospital <code>visits</code> during pregnancy, weight <code>gained</code> by the mother during pregnancy, <code>sex</code> of the baby, and whether the mother smoke cigarettes during pregnancy (<code>habit</code>). And we will make a decision about including them in the model using forward selection and adjusted <span class="math inline">\(R^2\)</span>. Below are the six models we evaluate and their adjusted <span class="math inline">\(R^2\)</span> values. <span class="citation" data-cites="data:births14">(<a href="references.html#ref-data:births14" role="doc-biblioref">ICPSR 2014</a>)</span></p>
+<ul>
+<li>Predict <code>weight</code> from <code>mature</code>: 0.002</li>
+<li>Predict <code>weight</code> from <code>weeks</code>: 0.3</li>
+<li>Predict <code>weight</code> from <code>visits</code>: 0.034</li>
+<li>Predict <code>weight</code> from <code>gained</code>: 0.021</li>
+<li>Predict <code>weight</code> from <code>sex</code>: 0.018</li>
+<li>Predict <code>weight</code> from <code>habit</code>: 0.021</li>
+</ul>
+<p>Which variable should be added to the model first?</p>
+</li>
+</ol>
+<ol start="16" type="1">
+<li>
+<p><strong>Palmer penguins, forward selection.</strong> Using body measurement and other relevant data on three species (<em>Adelie</em>, <em>Chinstrap</em>, or <em>Gentoo</em>) of penguins living in the Palmer Archipelago, Antarctica, we want to predict their body mass. In order to do so, we will evaluate five candidate predictors and make a decision about including them in the model using forward selection and adjusted <span class="math inline">\(R^2\)</span>. Below are the five models we evaluate and their adjusted <span class="math inline">\(R^2\)</span> values:</p>
+<ul>
+<li>Predict body mass from <code>bill_length_mm</code>: 0.352</li>
+<li>Predict body mass from <code>bill_depth_mm</code>: 0.22</li>
+<li>Predict body mass from <code>flipper_length_mm</code>: 0.758</li>
+<li>Predict body mass from <code>sex</code>: 0.178</li>
+<li>Predict body mass from <code>species</code>: 0.668</li>
+</ul>
+<p>Which variable should be added to the model first?</p>
+</li>
+</ol>
+</div>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-webpage:horrormovies" class="csl-entry" role="listitem">
+FiveThirtyEight. 2015. <a href="http://www.openintro.org/redirect.php?go=textbook-fivethirtyeight-scary-movies">http://www.openintro.org/redirect.php?go=textbook-fivethirtyeight-scary-movies</a>.
+</div>
+<div id="ref-palmerpenguins" class="csl-entry" role="listitem">
+Gorman, K. B., T. D. Williams, and W. R. Fraser. 2014. <span>“Ecological Sexual Dimorphism and Environmental Variability Within a Community of Antarctic Penguins (Genus Pygoscelis).”</span> <em>PLoS ONE</em> 9(3) (e90081): –13. <a href="https://doi.org/10.1371/journal.pone.0090081">https://doi.org/10.1371/journal.pone.0090081</a>.
+</div>
+<div id="ref-data:births14" class="csl-entry" role="listitem">
+ICPSR. 2014. <span>“United States Department of Health and Human Services. Centers for Disease Control and Prevention. National Center for Health Statistics. Natality Detail File, 2014 United States. Inter-University Consortium for Political and Social Research, 2016-10-07.”</span> <a href="https://doi.org/10.3886/ICPSR36461.v1">https://doi.org/10.3886/ICPSR36461.v1</a>.
+</div>
+<div id="ref-You:2022" class="csl-entry" role="listitem">
+You, W., R. Henneberg, A. Saniotis, Y. Ge, and M. Henneberg. 2022. <span>“Total Meat Intake Is Associated with Life Expectancy: A Cross-Sectional Data Analysis of 175 Contemporary Populations.”</span> <em>International Journal of General Medicine</em> 15: 1833–51.
+</div>
+</div>
+</section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
+<ol>
+<li id="fn1"><p>When <code>verified_income</code> takes a value of <code>Verified</code>, then the corresponding variable takes a value of 1 while the other is 0: <span class="math inline">\(11.10 + 1.42 \times 0 + 3.25 \times 1 = 14.35.\)</span> The average interest rate for these borrowers is 14.35%.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Each of the coefficients gives the incremental interest rate for the corresponding level relative to the <code>Not Verified</code> level, which is the reference level. For example, for a borrower whose income source and amount have been verified, the model predicts that they will have a 3.25% higher interest rate than a borrower who has not had their income source or amount verified.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Relative to the <code>Not Verified</code> category, the <code>Verified</code> category has an interest rate of 3.25% higher, while the <code>Source Verified</code> category is only 1.42% higher. Thus, <code>Verified</code> borrowers will tend to get an interest rate about <span class="math inline">\(3.25\% - 1.42\% = 1.83\%\)</span> higher than <code>Source Verified</code> borrowers.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>All else held constant, for each additional inquiry into the applicant’s credit during the last 12 months, we would expect the interest rate for the loan to be higher, on average, by 0.23 points.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>To compute the residual, we first need the predicted value, which we compute by plugging values into the equation from earlier. For example, <span class="math inline">\(\texttt{verified\_income}_{\texttt{Source Verified}}\)</span> takes a value of 0, <span class="math inline">\(\texttt{verified\_income}_{\texttt{Verified}}\)</span> takes a value of 1 (since the borrower’s income source and amount were verified), <span class="math inline">\(\texttt{debt\_to\_income}\)</span> was 18.01, and so on. This leads to a prediction of <span class="math inline">\(\widehat{\texttt{interest\_rate}}_1 = 17.84\)</span>. The observed interest rate was 14.07%, which leads to a residual of <span class="math inline">\(e_1 = 14.07 - 17.84 = -3.77\)</span>.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>Many of the variables do take a value 0 for at least one data point, and for those variables, it is reasonable. However, one variable never takes a value of zero: <code>term</code>, which describes the length of the loan, in months. If <code>term</code> is set to zero, then the loan must be paid back immediately; the borrower must give the money back as soon as they receive it, which means it is not a real loan. Ultimately, the interpretation of the intercept in this setting is not insightful.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p><span class="math inline">\(R^2 = 1 - \frac{18.53}{25.01} = 0.2591\)</span>.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p><span class="math inline">\(R_{adj}^2 = 1 - \frac{18.53}{25.01}\times \frac{10000-1}{10000-9-1} = 0.2584\)</span>. While the difference is very small, it will be important when we fine tune the model in the next section.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>The unadjusted <span class="math inline">\(R^2\)</span> would stay the same and the adjusted <span class="math inline">\(R^2\)</span> would go down.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>The <code>flights</code> data used in this exercise can be found in the <a href="https://github.com/tidyverse/nycflights13"><strong>nycflights13</strong></a> R package.<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p>The <a href="http://openintrostat.github.io/openintro/reference/births14.html"><code>births14</code></a> data used in this exercise can be found in the <a href="http://openintrostat.github.io/openintro"><strong>openintro</strong></a> R package.<a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn12"><p>The <a href="https://allisonhorst.github.io/palmerpenguins/reference/penguins.html"><code>penguins</code></a> data used in this exercise can be found in the <a href="https://allisonhorst.github.io/palmerpenguins/"><strong>palmerpenguins</strong></a> R package.<a href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      <a href="./model-slr.html" class="pagination-link" aria-label="Linear regression with a single predictor">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Linear regression with a single predictor</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./model-logistic.html" class="pagination-link" aria-label="Logistic regression">
+        <span class="nav-page-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Logistic regression</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer"><div class="nav-footer">
+    <div class="nav-footer-left">
+<p>This is IMS2e!</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/openintrostat/ims/edit/main/model-mlr.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/openintrostat/ims/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>This book was built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer><script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+</body></html>
