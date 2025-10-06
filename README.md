@@ -1,6 +1,6 @@
 # Introduction to Modern Statistics
 
-The e-book is powered by [Netlify](https://www.netlify.com).
+The e-book is hosted by [Netlify](https://www.netlify.com).
 
 ## Where is IMS 2?
 
