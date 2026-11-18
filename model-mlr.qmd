@@ -334,7 +334,7 @@ Using this output, we identify $b_i,$ just as we did in the one-predictor case.
 #| tbl-cap: |
 #|   Output for the regression model, where interest rate is the
 #|   outcome and the variables listed are the predictors. Degrees
-#|   of freedom for this model is 9990.
+#|   of freedom for this model is 9964.
 #| tbl-pos: H
 m_full <- lm(interest_rate ~ ., data = loans)
 
@@ -450,11 +450,11 @@ where $e_i$ represents the residuals of the model and $y_i$ the outcomes.
 This equation remains valid in the multiple regression framework, but a small enhancement can make it even more informative when comparing models.
 
 ::: {.guidedpractice data-latex=""}
-The variance of the residuals for the model given in the earlier Guided Practice is 18.53, and the variance of the total price in all the auctions is 25.01.
+The variance of the residuals for the model given in the earlier Guided Practice is 18.473, and the variance of the interest rates for the loans used to fit the model is 24.975.
 Calculate $R^2$ for this model.[^08-model-mlr-7]
 :::
 
-[^08-model-mlr-7]: $R^2 = 1 - \frac{18.53}{25.01} = 0.2591$.
+[^08-model-mlr-7]: $R^2 = 1 - \frac{18.473}{24.975} = 0.2603$.
 
 This strategy for estimating $R^2$ works when there is a single predictor.
 However, it becomes less helpful when there are many variables.
@@ -496,11 +496,11 @@ terms_chp_08 <- c(terms_chp_08, "degrees of freedom")
 ```
 
 ::: {.guidedpractice data-latex=""}
-There were n = 10,000 auctions in the dataset and $k=9$ predictor variables in the model.
+There were n = 9,974 loans used to fit the model (the other 26 loans are missing a value for `debt_to_income` or `credit_util`) and $k=9$ predictor variables in the model.
 Use $n$, $k$, and the variances from the earlier Guided Practice to calculate adjusted $R^2$ for the interest rate model.[^08-model-mlr-8]
 :::
 
-[^08-model-mlr-8]: $R_{adj}^2 = 1 - \frac{18.53}{25.01}\times \frac{10000-1}{10000-9-1} = 0.2584$.
+[^08-model-mlr-8]: $R_{adj}^2 = 1 - \frac{18.473}{24.975}\times \frac{9974-1}{9974-9-1} = 0.2597$.
     While the difference is very small, it will be important when we fine tune the model in the next section.
 
 ::: {.guidedpractice data-latex=""}
@@ -672,12 +672,12 @@ How should we proceed under the backward elimination strategy?
 Our baseline adjusted $R^2$ from the full model is 0.2597, and we need to determine whether dropping a predictor will improve the adjusted $R^2$.
 To check, we fit models that each drop a different predictor, and we record the adjusted $R^2$:
 
--   Excluding `verified_income`: 0.2238
--   Excluding `debt_to_income`: 0.2557
--   Excluding `credit_util`: 0.1916
--   Excluding `bankruptcy`: 0.2589
--   Excluding `term`: 0.1468
--   Excluding `credit_checks`: 0.2484
+-   Excluding `verified_income`: 0.2243
+-   Excluding `debt_to_income`: 0.2551
+-   Excluding `credit_util`: 0.1915
+-   Excluding `bankruptcy`: 0.2591
+-   Excluding `term`: 0.1474
+-   Excluding `credit_checks`: 0.2481
 -   Excluding `issue_month`: 0.2598
 
 The model without `issue_month` has the highest adjusted $R^2$ of 0.2598, higher than the adjusted $R^2$ for the full model; therefore, we drop `issue_month` from the model.
@@ -686,12 +686,12 @@ Since we eliminated a predictor from the model in the first step, we see whether
 Our baseline adjusted $R^2$ is now $R^2_{adj} = 0.2598$.
 We now fit new models, which consider eliminating each of the remaining predictors in addition to `issue_month`:
 
--   Excluding `issue_month` and `verified_income`: 0.22395
--   Excluding `issue_month` and `debt_to_income`: 0.25579
--   Excluding `issue_month` and `credit_util`: 0.19174
--   Excluding `issue_month` and `bankruptcy`: 0.25898
--   Excluding `issue_month` and `term`: 0.14692
--   Excluding `issue_month` and `credit_checks`: 0.24801
+-   Excluding `issue_month` and `verified_income`: 0.22444
+-   Excluding `issue_month` and `debt_to_income`: 0.25525
+-   Excluding `issue_month` and `credit_util`: 0.19162
+-   Excluding `issue_month` and `bankruptcy`: 0.25921
+-   Excluding `issue_month` and `term`: 0.14752
+-   Excluding `issue_month` and `credit_checks`: 0.24822
 
 None of these models lead to an improvement in adjusted $R^2$, so we do not eliminate any of the remaining predictors.
 That is, after backward elimination, we are left with the model that keeps all predictors except `issue_month`, which we can summarize using the coefficients from @tbl-loans-full-except-issue-month.
@@ -719,12 +719,12 @@ Then we fit each of the possible models with just one predictor.
 Then we examine the adjusted $R^2$ for each of these models:
 
 -   Including `verified_income`: 0.05926
--   Including `debt_to_income`: 0.01946
--   Including `credit_util`: 0.06452
+-   Including `debt_to_income`: 0.01997
+-   Including `credit_util`: 0.06471
 -   Including `bankruptcy`: 0.00222
 -   Including `term`: 0.12855
--   Including `credit_checks`: -0.0001
--   Including `issue_month`: 0.01711
+-   Including `credit_checks`: 0.01711
+-   Including `issue_month`: -0.00008
 
 In this first step, we compare the adjusted $R^2$ against a baseline model that has no predictors, which always has $R_{adj}^2 = 0$.
 The model with one predictor that has the largest adjusted $R^2$ is the model with the `term` predictor, so we will add this variable to our model.
@@ -732,28 +732,28 @@ The model with one predictor that has the largest adjusted $R^2$ is the model wi
 We repeat the process again, this time considering 2-predictor models where one of the predictors is `term` and with a new baseline of $R^2_{adj} = 0.12855:$
 
 -   Including `term` and `verified_income`: 0.16851
--   Including `term` and `debt_to_income`: 0.14368
--   Including `term` and `credit_util`: 0.20046
+-   Including `term` and `debt_to_income`: 0.14374
+-   Including `term` and `credit_util`: 0.20085
 -   Including `term` and `bankruptcy`: 0.13070
--   Including `term` and `credit_checks`: 0.12840
--   Including `term` and `issue_month`: 0.14294
+-   Including `term` and `credit_checks`: 0.14294
+-   Including `term` and `issue_month`: 0.12840
 
-The model including `credit_util` has the largest increase in adjusted $R^2$ (0.20046) from the baseline (0.12855),
+The model including `credit_util` has the largest increase in adjusted $R^2$ (0.20085) from the baseline (0.12855).
 Thus, we will also add `credit_util` to the model as a predictor.
 
-Now we have a new baseline adjusted $R^2$ of 0.20046.
+Now we have a new baseline adjusted $R^2$ of 0.20085.
 We can continue on and see whether it would be beneficial to add a third predictor:
 
--   Including `term`, `credit_util`, and `verified_income`: 0.24183
--   Including `term`, `credit_util`, and `debt_to_income`: 0.20810
--   Including `term`, `credit_util`, and `bankruptcy`: 0.20169
--   Including `term`, `credit_util`, and `credit_checks`: 0.20031
--   Including `term`, `credit_util`, and `issue_month`: 0.21629
+-   Including `term`, `credit_util`, and `verified_income`: 0.24222
+-   Including `term`, `credit_util`, and `debt_to_income`: 0.20845
+-   Including `term`, `credit_util`, and `bankruptcy`: 0.20209
+-   Including `term`, `credit_util`, and `credit_checks`: 0.21675
+-   Including `term`, `credit_util`, and `issue_month`: 0.20070
 
-The model including `verified_income` has the largest increase in adjusted $R^2$ (0.24183) from the baseline (0.20046), so we add `verified_income` to the model as a predictor as well.
+The model including `verified_income` has the largest increase in adjusted $R^2$ (0.24222) from the baseline (0.20085), so we add `verified_income` to the model as a predictor as well.
 
-We continue in this way, next adding `debt_to_income`, then `credit_checks`, and `bankruptcy`.
-At this point, we come again to the `issue_month` variable: adding this as a predictor leads to $R_{adj}^2 = 0.25843$, while keeping all the other predictors but excluding `issue_month` has a higher $R_{adj}^2 = 0.25854$.
+We continue in this way, next adding `credit_checks`, then `debt_to_income`, and `bankruptcy`.
+At this point, we come again to the `issue_month` variable: adding this as a predictor leads to $R_{adj}^2 = 0.25969$, while keeping all the other predictors but excluding `issue_month` has a higher $R_{adj}^2 = 0.25979$.
 This means we do not add `issue_month` to the model as a predictor.
 In this example, we have arrived at the same model that we identified with backward elimination.
 :::
